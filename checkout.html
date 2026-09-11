@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Secure Checkout - Complete your luxury fashion and lifestyle purchase safely at VELORA.">
+  <title>Checkout | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/checkout.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP ANNOUNCEMENT BAR
+       ======================================================================== -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-text">
+        <span class="announcement-badge">Secure Checkout</span>
+        <span>Free Express Delivery Across India on orders over ₹999 • 30-Day Guaranteed Returns</span>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="homepage.html#about">Our Story</a>
+        <span>•</span>
+        <a href="contact-support.html">Need Help? 24/7 Support</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       CHECKOUT NAVIGATION WITH PROGRESS STEPPER
+       ======================================================================== -->
+  <header class="checkout-header">
+    <div class="container">
+      <div class="checkout-nav-inner">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Stepper: Cart -> Information -> Payment -> Confirmation -->
+        <ol class="checkout-stepper" aria-label="Checkout Progress">
+          <li class="step-item completed">
+            <span class="step-num">✓</span>
+            <span class="step-label">Cart</span>
+          </li>
+          <div class="step-divider active"></div>
+          <li class="step-item active">
+            <span class="step-num">2</span>
+            <span class="step-label">Information</span>
+          </li>
+          <div class="step-divider"></div>
+          <li class="step-item">
+            <span class="step-num">3</span>
+            <span class="step-label">Payment</span>
+          </li>
+          <div class="step-divider"></div>
+          <li class="step-item">
+            <span class="step-num">4</span>
+            <span class="step-label">Confirmation</span>
+          </li>
+        </ol>
+
+        <!-- Right SSL Trust Badge -->
+        <div class="checkout-trust-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>256-Bit SSL Encrypted</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN CHECKOUT SECTION
+       ======================================================================== -->
+  <main class="checkout-page-section">
+    <div class="container">
+
+      <!-- Breadcrumbs -->
+      <nav class="checkout-breadcrumb" aria-label="Breadcrumb">
+        <a href="homepage.html">Home</a>
+        <span class="sep">/</span>
+        <a href="shop.html">Shop</a>
+        <span class="sep">/</span>
+        <span class="current">Checkout</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="checkout-page-title-row">
+        <h1 class="checkout-page-title">Secure Checkout</h1>
+        <p class="checkout-page-subtitle">Please verify your delivery address and choose your preferred payment method.</p>
+      </div>
+
+      <!-- Empty Cart Fallback State (Shown if cart has 0 items) -->
+      <div id="checkout-empty-state" class="checkout-empty-state">
+        <div class="empty-state-icon-circle">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+        </div>
+        <h2 class="empty-state-title">Your Cart is Empty</h2>
+        <p class="empty-state-desc">
+          You do not have any items ready for checkout. Discover our premier handcrafted footwear, luxury timepieces, and lifestyle essentials.
+        </p>
+        <a href="shop.html" class="btn-return-shop">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Explore All Products
+        </a>
+      </div>
+
+      <!-- Checkout 2-Column Grid -->
+      <div id="checkout-main-grid" class="checkout-grid">
+
+        <!-- Left Column: Customer Form & Payment -->
+        <div class="checkout-form-column">
+
+          <!-- Card 1: Delivery Information -->
+          <div class="checkout-card" id="card-delivery-info">
+            <div class="checkout-card-header">
+              <div class="card-step-badge">1</div>
+              <div class="card-header-titles">
+                <h2 class="card-title">Delivery Address</h2>
+                <p class="card-desc">Where should we deliver your order? Ensure your phone number is accurate for courier updates.</p>
+              </div>
+            </div>
+
+            <form id="delivery-form" novalidate>
+
+              <!-- Row: Full Name & Mobile Number -->
+              <div class="form-row">
+                <div class="form-group" id="group-fullname">
+                  <label for="input-fullname" class="form-label">
+                    Full Name <span class="req">*</span>
+                  </label>
+                  <input type="text" id="input-fullname" class="form-input" placeholder="e.g. Alexander Hayes" required autocomplete="name">
+                  <span class="form-error-msg">Please enter your full name (at least 3 characters).</span>
+                </div>
+
+                <div class="form-group" id="group-phone">
+                  <label for="input-phone" class="form-label">
+                    Mobile Number <span class="req">*</span>
+                  </label>
+                  <input type="tel" id="input-phone" class="form-input" placeholder="e.g. +91 98765 43210" required autocomplete="tel">
+                  <span class="form-error-msg">Please enter a valid 10-digit Indian mobile number.</span>
+                </div>
+              </div>
+
+              <!-- Row: Email Address -->
+              <div class="form-group" id="group-email">
+                <label for="input-email" class="form-label">
+                  Email Address <span class="req">*</span>
+                  <span class="optional">Order confirmation receipt will be sent here</span>
+                </label>
+                <input type="email" id="input-email" class="form-input" placeholder="alexander.hayes@example.com" required autocomplete="email">
+                <span class="form-error-msg">Please enter a valid email address.</span>
+              </div>
+
+              <!-- Row: House / Flat / Building -->
+              <div class="form-group" id="group-house">
+                <label for="input-house" class="form-label">
+                  House / Flat / Building No. <span class="req">*</span>
+                </label>
+                <input type="text" id="input-house" class="form-input" placeholder="Flat 402, Building 3, Oberoi Splendor" required>
+                <span class="form-error-msg">Please enter your house or building number.</span>
+              </div>
+
+              <!-- Row: Street / Area / Landmark -->
+              <div class="form-group" id="group-street">
+                <label for="input-street" class="form-label">
+                  Street Address & Landmark <span class="req">*</span>
+                </label>
+                <input type="text" id="input-street" class="form-input" placeholder="JVLR, Andheri East, Near SEEPZ" required autocomplete="street-address">
+                <span class="form-error-msg">Please enter your street address and area.</span>
+              </div>
+
+              <!-- Row 3: City, State, ZIP / PIN -->
+              <div class="form-row-3">
+                <div class="form-group" id="group-city">
+                  <label for="input-city" class="form-label">
+                    City <span class="req">*</span>
+                  </label>
+                  <input type="text" id="input-city" class="form-input" placeholder="Mumbai" required autocomplete="address-level2">
+                  <span class="form-error-msg">City required.</span>
+                </div>
+
+                <div class="form-group" id="group-state">
+                  <label for="input-state" class="form-label">
+                    State / UT <span class="req">*</span>
+                  </label>
+                  <select id="input-state" class="form-select" required autocomplete="address-level1">
+                    <option value="">Select State / UT</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra" selected>Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Andaman and Nicobar Islands">Andaman & Nicobar</option>
+                    <option value="Chandigarh">Chandigarh</option>
+                    <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra & Daman</option>
+                    <option value="Delhi">Delhi (NCT)</option>
+                    <option value="Jammu and Kashmir">Jammu & Kashmir</option>
+                    <option value="Ladakh">Ladakh</option>
+                    <option value="Lakshadweep">Lakshadweep</option>
+                    <option value="Puducherry">Puducherry</option>
+                  </select>
+                  <span class="form-error-msg">State required.</span>
+                </div>
+
+                <div class="form-group" id="group-zip">
+                  <label for="input-zip" class="form-label">
+                    PIN Code <span class="req">*</span>
+                  </label>
+                  <input type="text" id="input-zip" class="form-input" placeholder="400072" maxlength="6" required autocomplete="postal-code">
+                  <span class="form-error-msg">6-digit PIN.</span>
+                </div>
+              </div>
+
+              <!-- Country Dropdown -->
+              <div class="form-group" id="group-country">
+                <label for="select-country" class="form-label">Country / Region <span class="req">*</span></label>
+                <select id="select-country" class="form-select">
+                  <option value="India" selected>India (INR ₹)</option>
+                  <option value="United Kingdom">United Kingdom (GBP £)</option>
+                  <option value="Canada">Canada (CAD $)</option>
+                  <option value="Australia">Australia (AUD $)</option>
+                  <option value="Germany">Germany (EUR €)</option>
+                  <option value="France">France (EUR €)</option>
+                  <option value="United States">United States (USD $)</option>
+                  <option value="Japan">Japan (JPY ¥)</option>
+                  <option value="Singapore">Singapore (SGD $)</option>
+                  <option value="United Arab Emirates">United Arab Emirates (AED)</option>
+                </select>
+              </div>
+
+              <!-- Address Type Selector -->
+              <div class="form-group">
+                <label class="form-label">Address Type</label>
+                <div class="address-type-selector">
+                  <div class="address-type-pill active" data-type="Home">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span>Home (All Day Delivery)</span>
+                  </div>
+                  <div class="address-type-pill" data-type="Work">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <span>Work / Office (9 AM - 6 PM)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preferences Checkboxes -->
+              <label class="custom-checkbox-label">
+                <input type="checkbox" id="check-save-address" checked>
+                <div class="checkmark-box">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <span>Save this address for one-click orders in the future</span>
+              </label>
+
+              <label class="custom-checkbox-label">
+                <input type="checkbox" id="check-billing-same" checked>
+                <div class="checkmark-box">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <span>Billing address matches delivery address</span>
+              </label>
+
+            </form>
+          </div>
+
+          <!-- Card 2: Payment Method -->
+          <div class="checkout-card" id="card-payment-method">
+            <div class="checkout-card-header">
+              <div class="card-step-badge">2</div>
+              <div class="card-header-titles">
+                <h2 class="card-title">Payment Method</h2>
+                <p class="card-desc">All transactions are encrypted with bank-grade 256-bit security.</p>
+              </div>
+            </div>
+
+            <div class="payment-methods-list" id="payment-methods-list">
+
+              <!-- Method 1: Cash on Delivery (COD) -->
+              <div class="payment-method-card selected" data-method="Cash on Delivery">
+                <div class="payment-method-header">
+                  <div class="pm-left">
+                    <div class="pm-radio-circle">
+                      <div class="pm-radio-dot"></div>
+                    </div>
+                    <div class="pm-info">
+                      <div class="pm-title">
+                        Cash on Delivery (COD)
+                        <span class="pm-badge">Popular & Safe</span>
+                      </div>
+                      <div class="pm-desc">Pay with cash or mobile scan upon courier arrival. Zero advance charge.</div>
+                    </div>
+                  </div>
+                  <div class="pm-icons">
+                    <span class="pm-brand-badge">💵 Cash</span>
+                  </div>
+                </div>
+                <div class="payment-details-body">
+                  <div class="pm-note-box cod-note">
+                    <strong>✓ Guaranteed Handover:</strong> You can inspect the outer packaging and seal before handing over cash or scanning the courier UPI QR. Zero COD surcharge.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Method 2: Credit / Debit Card -->
+              <div class="payment-method-card" data-method="Credit / Debit Card">
+                <div class="payment-method-header">
+                  <div class="pm-left">
+                    <div class="pm-radio-circle">
+                      <div class="pm-radio-dot"></div>
+                    </div>
+                    <div class="pm-info">
+                      <div class="pm-title">Credit or Debit Card</div>
+                      <div class="pm-desc">Instant confirmation via Visa, MasterCard, American Express, or RuPay.</div>
+                    </div>
+                  </div>
+                  <div class="pm-icons">
+                    <span class="pm-brand-badge">VISA</span>
+                    <span class="pm-brand-badge">MC</span>
+                    <span class="pm-brand-badge">RuPay</span>
+                  </div>
+                </div>
+                <div class="payment-details-body">
+                  <!-- Demo autofill banner -->
+                  <div class="card-helper-banner">
+                    <span>Test Card: <strong>4242 •••• •••• 4242</strong></span>
+                    <button type="button" id="btn-fill-demo-card" class="card-helper-fill-btn">Autofill Demo Card</button>
+                  </div>
+
+                  <div class="form-group" id="group-card-num">
+                    <label class="form-label">Card Number <span class="req">*</span></label>
+                    <input type="text" id="input-card-num" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19">
+                    <span class="form-error-msg">Please enter a valid 16-digit card number.</span>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group" id="group-card-exp">
+                      <label class="form-label">Expiry Date <span class="req">*</span></label>
+                      <input type="text" id="input-card-exp" class="form-input" placeholder="MM / YY" maxlength="7">
+                      <span class="form-error-msg">Invalid expiry (MM/YY).</span>
+                    </div>
+                    <div class="form-group" id="group-card-cvv">
+                      <label class="form-label">CVV / CVC <span class="req">*</span></label>
+                      <input type="password" id="input-card-cvv" class="form-input" placeholder="•••" maxlength="4">
+                      <span class="form-error-msg">3 or 4 digits.</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group" id="group-card-name">
+                    <label class="form-label">Name on Card <span class="req">*</span></label>
+                    <input type="text" id="input-card-name" class="form-input" placeholder="Alexander Hayes">
+                    <span class="form-error-msg">Please enter the cardholder's name.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Method 3: UPI / Instant QR -->
+              <div class="payment-method-card" data-method="UPI / QR Payment">
+                <div class="payment-method-header">
+                  <div class="pm-left">
+                    <div class="pm-radio-circle">
+                      <div class="pm-radio-dot"></div>
+                    </div>
+                    <div class="pm-info">
+                      <div class="pm-title">UPI / Instant Payment</div>
+                      <div class="pm-desc">Google Pay, PhonePe, Paytm, or any Virtual Payment Address (VPA).</div>
+                    </div>
+                  </div>
+                  <div class="pm-icons">
+                    <span class="pm-brand-badge">⚡ UPI</span>
+                  </div>
+                </div>
+                <div class="payment-details-body">
+                  <div class="form-group" id="group-upi-id" style="margin-top: 14px;">
+                    <label class="form-label">Virtual Payment Address (UPI ID) <span class="req">*</span></label>
+                    <input type="text" id="input-upi-id" class="form-input" placeholder="username@oksbi / username@paytm">
+                    <span class="form-error-msg">Please enter a valid UPI ID (e.g. name@bank).</span>
+                  </div>
+                  <div class="pm-note-box">
+                    A payment request will be triggered to your UPI application upon tapping "Complete Order".
+                  </div>
+                </div>
+              </div>
+
+              <!-- Method 4: Net Banking -->
+              <div class="payment-method-card" data-method="Net Banking">
+                <div class="payment-method-header">
+                  <div class="pm-left">
+                    <div class="pm-radio-circle">
+                      <div class="pm-radio-dot"></div>
+                    </div>
+                    <div class="pm-info">
+                      <div class="pm-title">Net Banking</div>
+                      <div class="pm-desc">Direct bank transfer via leading retail financial institutions.</div>
+                    </div>
+                  </div>
+                  <div class="pm-icons">
+                    <span class="pm-brand-badge">🏦 Bank</span>
+                  </div>
+                </div>
+                <div class="payment-details-body">
+                  <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 14px; margin-bottom: 6px; font-weight: 600;">
+                    Select Your Bank:
+                  </p>
+                  <div class="bank-chips-grid">
+                    <div class="bank-chip active" data-bank="State Bank of India">SBI</div>
+                    <div class="bank-chip" data-bank="HDFC Bank">HDFC Bank</div>
+                    <div class="bank-chip" data-bank="ICICI Bank">ICICI Bank</div>
+                    <div class="bank-chip" data-bank="Axis Bank">Axis Bank</div>
+                    <div class="bank-chip" data-bank="Kotak Mahindra Bank">Kotak Bank</div>
+                    <div class="bank-chip" data-bank="Punjab National Bank">PNB</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Sticky Order Summary -->
+        <aside class="checkout-summary-column">
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <h2 class="summary-card-title">Order Summary</h2>
+              <span id="summary-items-count" class="summary-items-count">0 Items</span>
+            </div>
+
+            <!-- Scrollable Items List -->
+            <div id="summary-items-container" class="summary-items-container">
+              <!-- Dynamically populated by js/checkout.js -->
+            </div>
+
+            <!-- Free Shipping Progress Meter -->
+            <div id="shipping-progress-box" class="shipping-progress-box">
+              <div id="shipping-progress-text" class="shipping-progress-text">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                <span>Calculating free shipping threshold...</span>
+              </div>
+              <div class="shipping-progress-bar-bg">
+                <div id="shipping-progress-bar-fill" class="shipping-progress-bar-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Coupon Code Field -->
+            <div class="coupon-input-wrapper">
+              <form id="coupon-form" class="coupon-form" onsubmit="return false;">
+                <input type="text" id="coupon-input" class="coupon-input" placeholder="Promo Code" maxlength="15">
+                <button type="button" id="btn-apply-coupon" class="coupon-btn">Apply</button>
+              </form>
+
+              <!-- Applied Coupon Badge -->
+              <div id="applied-coupon-pill" class="applied-coupon-pill">
+                <span>✓ Applied: <strong id="applied-coupon-name">VELORA10</strong> (-<span id="applied-coupon-percent">10</span>%)</span>
+                <button type="button" id="btn-remove-coupon" class="remove-coupon-btn" title="Remove coupon">✕</button>
+              </div>
+
+              <!-- Quick Coupon Suggestions -->
+              <div class="coupon-suggestions">
+                <span>Try code:</span>
+                <span class="coupon-chip-suggestion" data-code="VELORA10">VELORA10 (10% off)</span>
+                <span class="coupon-chip-suggestion" data-code="VELORA15">VELORA15 (15% off)</span>
+              </div>
+            </div>
+
+            <!-- Cost Breakdown -->
+            <div class="cost-breakdown-list">
+              <div class="cost-row">
+                <span>Product Subtotal</span>
+                <span id="cost-subtotal">₹0</span>
+              </div>
+              <div class="cost-row discount-row" id="row-discount">
+                <span>Promo Discount</span>
+                <span id="cost-discount">-₹0</span>
+              </div>
+              <div class="cost-row">
+                <span>Standard Delivery</span>
+                <span id="cost-shipping">₹0</span>
+              </div>
+              <div class="cost-row">
+                <span>Estimated Taxes</span>
+                <span style="color: var(--color-success); font-weight: 600;">Included (0%)</span>
+              </div>
+              <div class="cost-row advance-row" id="row-advance" style="display: none; color: #6366f1; font-weight: 600; padding: 6px 0; border-top: 1px dashed var(--border-color);">
+                <span>Advance Payable Now</span>
+                <span id="cost-advance" style="font-weight: 700; color: #6366f1;">₹0</span>
+              </div>
+              <div class="cost-row cod-row" id="row-cod-balance" style="display: none; color: #d97706; font-weight: 600; padding-bottom: 6px;">
+                <span>Remaining COD at Delivery</span>
+                <span id="cost-cod-balance" style="font-weight: 700; color: #d97706;">₹0</span>
+              </div>
+              <div class="cost-row total-row">
+                <span>Final Order Total</span>
+                <span id="cost-total" class="total-amount">₹0</span>
+              </div>
+            </div>
+
+            <!-- Advance Information Banner -->
+            <div id="checkout-advance-summary-notice" style="display: none; margin-top: 14px; padding: 12px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #6366f1; font-size: 0.85rem;">
+                <span>⚡ Advance Payment Required</span>
+              </div>
+              <div id="checkout-advance-notice-text" style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
+                Deposit will be charged online now. Balance is payable via Cash on Delivery upon shipment arrival.
+              </div>
+            </div>
+
+            <!-- Primary Place Order Button -->
+            <button type="button" id="btn-place-order" class="btn-place-order">
+              <svg class="spinner-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+              </svg>
+              <svg class="lock-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span class="btn-text-content" id="btn-place-order-text">Complete Order • ₹0</span>
+            </button>
+
+            <!-- Trust Badges -->
+            <div class="order-trust-strip">
+              <div class="order-trust-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>SSL Encrypted</span>
+              </div>
+              <div class="order-trust-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                <span>30-Day Returns</span>
+              </div>
+              <div class="order-trust-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span>24/7 Support</span>
+              </div>
+            </div>
+
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       TOAST CONTAINER
+       ======================================================================== -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer id="footer" class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <a href="homepage.html" class="brand-logo footer-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA<span class="dot">.</span></span>
+          </a>
+          <p class="footer-bio">
+            Curating luxury essentials and modern fashion for those who demand distinction, comfort, and unmatched craftsmanship.
+          </p>
+          <div class="footer-security-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>Certified Level 1 PCI DSS Compliant</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="homepage.html">Home</a></li>
+            <li><a href="shop.html">Browse All Products</a></li>
+            <li><a href="shop.html?category=shoes">Shoes Collection</a></li>
+            <li><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li><a href="shop.html?deals=true">Flash Deals</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Customer Care</h4>
+          <ul class="footer-links">
+            <li><a href="shipping-policy.html">Shipping & Deliveries</a></li>
+            <li><a href="returns-exchanges.html">30-Day Hassle-Free Returns</a></li>
+            <li><a href="account.html#orders">Track Your Shipment</a></li>
+            <li><a href="terms-conditions.html">Terms & Conditions</a></li>
+            <li><a href="privacy-policy.html">Privacy Protection</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Contact & Support</h4>
+          <ul class="footer-contact-list">
+            <li><strong>Concierge:</strong> <a href="mailto:support@velora-style.com">support@velora-style.com</a></li>
+            <li><strong>Toll-Free:</strong> <a href="tel:+9118001028356">+91 1800 102 8356</a></li>
+            <li><strong>Hours:</strong> Mon - Sun: 8:00 AM - 11:00 PM EST</li>
+            <li><strong>Global HQ:</strong> 12 Connaught Place, New Delhi 110001</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 VELORA Inc. All rights reserved. Style That Speaks For You.</p>
+        <div class="footer-bottom-badges">
+          <span class="trust-badge-pill">🔒 Verified 256-Bit SSL</span>
+          <span class="trust-badge-pill">⚡ Instant Dispatch</span>
+          <span class="trust-badge-pill">🛡️ Buyer Protection</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Profile | VELORA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VELORA</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        
+        <a href="dashboard.html" class="sidebar-link ">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+  
+
+        <a href="products.html" class="sidebar-link ">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+  
+
+        <a href="add-product.html" class="sidebar-link ">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+  
+
+        <a href="categories.html" class="sidebar-link ">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+  
+
+        <a href="orders.html" class="sidebar-link ">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+  
+
+        <a href="customers.html" class="sidebar-link active">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+  
+
+        <a href="coupons.html" class="sidebar-link ">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+  
+
+        <a href="reviews.html" class="sidebar-link ">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+  
+
+        <a href="analytics.html" class="sidebar-link ">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+  
+
+        <a href="banners.html" class="sidebar-link ">
+          <i class="fas fa-images"></i>
+          <span>Hero Banners</span>
+        </a>
+  
+
+        <a href="delivery-partners.html" class="sidebar-link ">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+  
+
+        <a href="settings.html" class="sidebar-link ">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+  
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+  
+    <div class="admin-main">
+      
+    <header class="admin-header">
+      <div class="header-left">
+        <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-breadcrumbs">
+          <a href="dashboard.html">Velora Admin</a>
+          <span>/</span>
+          <span class="current">Customer Details</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="admin-user-menu-wrap">
+          <div class="admin-user-pill" id="admin-user-pill">
+            <div class="admin-avatar" id="header-admin-avatar">AD</div>
+            <div class="admin-info-text">
+              <div class="admin-name-display" id="header-admin-name">Admin</div>
+              <div class="admin-role-display">ADMINISTRATOR</div>
+            </div>
+            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+          </div>
+          <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+            <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+            <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-heading" id="customer-name-heading">Customer Profile</h1>
+            <p class="page-subheading" id="customer-email-subheading">Account details and complete purchase history</p>
+          </div>
+          <a href="customers.html" class="btn-admin-secondary"><i class="fas fa-arrow-left"></i> Back to Customers</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div class="admin-card" id="customer-profile-card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Account Details</h3>
+            <div id="customer-info-box" style="line-height: 1.8; font-size: 0.9rem;">
+              <p>Loading details...</p>
+            </div>
+          </div>
+
+          <div class="admin-card" id="customer-address-card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Shipping Addresses</h3>
+            <div id="customer-address-box" style="line-height: 1.8; font-size: 0.9rem;">
+              <p>Loading addresses...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3 class="card-title" style="margin-bottom: 16px;">Order History</h3>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Date</th>
+                  <th>Amount (₹)</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="customer-orders-tbody">
+                <tr><td colspan="5" style="text-align:center; padding: 20px;">Loading order history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const admin = await window.AdminAuth.guardRoute();
+      if (!admin) return;
+      window.initLayout(admin);
+
+      const client = window.AdminAuth.getClient();
+      const params = new URLSearchParams(window.location.search);
+      const customerId = params.get('id');
+      if (!customerId) {
+        window.location.href = 'customers.html';
+        return;
+      }
+
+      // Load Profile
+      const { data: profile } = await client.from('profiles').select('*').eq('id', customerId).single();
+      if (profile) {
+        document.getElementById('customer-name-heading').textContent = profile.full_name || 'Anonymous User';
+        document.getElementById('customer-email-subheading').textContent = profile.email;
+        document.getElementById('customer-info-box').innerHTML = `
+          <p><strong>User ID:</strong> <code style="color:var(--admin-accent);">${profile.id}</code></p>
+          <p><strong>Email:</strong> ${profile.email}</p>
+          <p><strong>Role:</strong> <span class="badge ${profile.role === 'admin' ? 'badge-indigo' : 'badge-emerald'}">${profile.role || 'customer'}</span></p>
+          <p><strong>Phone:</strong> ${profile.phone || 'Not provided'}</p>
+          <p><strong>Joined:</strong> ${new Date(profile.created_at).toLocaleString('en-IN')}</p>
+        `;
+      }
+
+      // Load Addresses
+      const { data: addresses } = await client.from('addresses').select('*').eq('user_id', customerId);
+      const addrBox = document.getElementById('customer-address-box');
+      if (addresses && addresses.length > 0) {
+        addrBox.innerHTML = addresses.map(a => `
+          <div style="border-bottom: 1px solid var(--admin-card-border); padding-bottom: 8px; margin-bottom: 8px;">
+            <p><strong>${a.full_name}</strong> (${a.phone})</p>
+            <p style="color: var(--admin-text-muted);">${a.house || ''}, ${a.street || ''}, ${a.city}, ${a.state} - ${a.pincode}</p>
+          </div>
+        `).join('');
+      } else {
+        addrBox.innerHTML = '<p style="color:var(--admin-text-muted);">No saved addresses found.</p>';
+      }
+
+      // Load Orders
+      const { data: orders } = await client.from('orders').select('*').eq('user_id', customerId).order('created_at', { ascending: false });
+      const ordersTbody = document.getElementById('customer-orders-tbody');
+      if (orders && orders.length > 0) {
+        ordersTbody.innerHTML = orders.map(o => `
+          <tr>
+            <td><strong>${o.order_number}</strong></td>
+            <td>${new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+            <td><strong>${window.formatINR(o.total)}</strong></td>
+            <td><span class="badge badge-info">${o.order_status}</span></td>
+            <td><a href="order-details.html?id=${o.id}" class="btn-admin-secondary" style="padding: 4px 8px; font-size: 0.75rem;">View</a></td>
+          </tr>
+        `).join('');
+      } else {
+        ordersTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:var(--admin-text-muted);">No orders placed yet.</td></tr>';
+      }
+    });
+  </script>
+</body>
+</html>

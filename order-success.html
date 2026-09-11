@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Order Confirmed - Thank you for shopping with VELORA. Your receipt and delivery details are confirmed.">
+  <title>Order Confirmation | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/checkout.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP ANNOUNCEMENT BAR
+       ======================================================================== -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-text">
+        <span class="announcement-badge">Order Confirmed</span>
+        <span>Your order has been safely placed and prioritized for express fulfillment.</span>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="homepage.html#about">Our Story</a>
+        <span>•</span>
+        <a href="#footer">Need Assistance? 24/7 Support</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       HEADER WITH COMPLETED PROGRESS STEPPER
+       ======================================================================== -->
+  <header class="checkout-header">
+    <div class="container">
+      <div class="checkout-nav-inner">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Stepper: All steps complete up to confirmation -->
+        <ol class="checkout-stepper" aria-label="Order Progress">
+          <li class="step-item completed">
+            <span class="step-num">✓</span>
+            <span class="step-label">Cart</span>
+          </li>
+          <div class="step-divider completed"></div>
+          <li class="step-item completed">
+            <span class="step-num">✓</span>
+            <span class="step-label">Information</span>
+          </li>
+          <div class="step-divider completed"></div>
+          <li class="step-item completed">
+            <span class="step-num">✓</span>
+            <span class="step-label">Payment</span>
+          </li>
+          <div class="step-divider completed"></div>
+          <li class="step-item active completed">
+            <span class="step-num">✓</span>
+            <span class="step-label">Confirmation</span>
+          </li>
+        </ol>
+
+        <!-- Right SSL Trust Badge -->
+        <div class="checkout-trust-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>Verified Order</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       ORDER CONFIRMATION HERO & CONTENT
+       ======================================================================== -->
+  <main class="order-success-section">
+    <div class="container">
+
+      <!-- Hero Checkmark & Greeting -->
+      <div class="order-success-hero">
+        <div class="success-checkmark-wrapper">
+          <svg class="checkmark-svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+
+        <div class="order-success-pill">
+          <span>✓ Order Placed & Confirmed</span>
+        </div>
+
+        <h1 class="order-success-title" id="receipt-hero-title">Thank You For Your Order!</h1>
+        <p class="order-success-desc" id="receipt-hero-desc">
+          We’ve received your order and our artisans are already preparing your items with meticulous attention to detail. A confirmation email with receipt details has been sent to your inbox.
+        </p>
+      </div>
+
+      <!-- Main Receipt Card Container -->
+      <div class="order-confirmation-container">
+
+        <!-- Top Order Metadata Strip -->
+        <div class="order-meta-banner">
+          <div class="meta-col">
+            <span class="meta-label">Order Number</span>
+            <span class="meta-value">
+              <strong id="receipt-order-id">#VEL-84920</strong>
+              <button type="button" id="btn-copy-order-id" class="btn-copy-order-id" title="Copy Order ID">Copy</button>
+            </span>
+          </div>
+
+          <div class="meta-col">
+            <span class="meta-label">Order Date</span>
+            <span class="meta-value" id="receipt-order-date">September 7, 2026</span>
+          </div>
+
+          <div class="meta-col">
+            <span class="meta-label">Estimated Delivery</span>
+            <span class="meta-value" id="receipt-delivery-estimate" style="color: var(--color-success);">3 - 5 Business Days</span>
+          </div>
+
+          <div class="meta-col">
+            <span class="meta-label">Payment Method</span>
+            <span class="meta-value" id="receipt-payment-method">Cash on Delivery</span>
+          </div>
+        </div>
+
+        <!-- Two Column Grid: Items on Left, Address & Cost on Right -->
+        <div class="order-details-grid">
+
+          <!-- Left Column: Purchased Items -->
+          <div class="receipt-card">
+            <div class="receipt-card-header">
+              <h2 class="receipt-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                Ordered Items (<span id="receipt-items-count">0</span>)
+              </h2>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Standard Dispatch</span>
+            </div>
+
+            <div id="receipt-items-list" class="receipt-items-list">
+              <!-- Dynamically populated by js/order-success.js -->
+            </div>
+          </div>
+
+          <!-- Right Column: Shipping Details & Financial Breakdown -->
+          <div>
+
+            <!-- Customer Shipping Address Card -->
+            <div class="receipt-card" style="margin-bottom: 24px;">
+              <div class="receipt-card-header">
+                <h2 class="receipt-card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  Shipping Address
+                </h2>
+                <span id="receipt-address-type" class="pm-badge">Home</span>
+              </div>
+
+              <div class="customer-summary-box" id="receipt-customer-address">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Financial Summary Card -->
+            <div class="receipt-card">
+              <div class="receipt-card-header">
+                <h2 class="receipt-card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                  Payment Summary
+                </h2>
+                <span style="font-size: 0.75rem; color: var(--color-success); font-weight: 700;">✓ Confirmed</span>
+              </div>
+
+              <div class="cost-breakdown-list" style="border: none; padding: 0; margin-bottom: 0;">
+                <div class="cost-row">
+                  <span>Subtotal</span>
+                  <span id="receipt-subtotal">₹0</span>
+                </div>
+                <div class="cost-row discount-row" id="receipt-discount-row">
+                  <span>Discount</span>
+                  <span id="receipt-discount">-₹0</span>
+                </div>
+                <div class="cost-row">
+                  <span>Shipping Fee</span>
+                  <span id="receipt-shipping">₹0</span>
+                </div>
+                <div class="cost-row">
+                  <span>Estimated Tax</span>
+                  <span style="color: var(--color-success); font-weight: 600;">₹0 (GST Included)</span>
+                </div>
+                <div class="cost-row" id="receipt-advance-row" style="display: none; color: #6366f1; font-weight: 600; padding: 6px 0; border-top: 1px dashed var(--border-color);">
+                  <span>Advance Paid Online</span>
+                  <span id="receipt-advance-paid" style="font-weight: 700; color: #6366f1;">₹0</span>
+                </div>
+                <div class="cost-row" id="receipt-cod-row" style="display: none; color: #d97706; font-weight: 600; padding-bottom: 6px;">
+                  <span>Balance Payable on Delivery (COD)</span>
+                  <span id="receipt-cod-balance" style="font-weight: 700; color: #d97706;">₹0</span>
+                </div>
+                <div class="cost-row total-row" style="margin-top: 8px; padding-top: 12px; border-top: 1.5px dashed var(--border-color);">
+                  <span>Total Order Value</span>
+                  <span id="receipt-total" class="total-amount">₹0</span>
+                </div>
+              </div>
+
+              <!-- Advance Status Banner -->
+              <div id="receipt-advance-card" style="display: none; margin-top: 14px; padding: 12px 14px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25);">
+                <div style="font-weight: 700; font-size: 0.85rem; color: #6366f1; display: flex; align-items: center; justify-content: space-between;">
+                  <span>⚡ Advance Payment Confirmed</span>
+                  <span class="pm-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.3);">Paid Online ✓</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.4;">
+                  Your advance payment of <strong id="receipt-advance-highlight" style="color: #6366f1;">₹0</strong> has been processed successfully. Please keep <strong id="receipt-cod-highlight" style="color: #d97706;">₹0</strong> ready in cash or UPI when the delivery executive arrives.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="order-success-actions">
+          <a href="shop.html" class="btn-receipt-action btn-receipt-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            Continue Shopping
+          </a>
+
+          <button type="button" id="btn-print-receipt" class="btn-receipt-action btn-receipt-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print Receipt / Invoice
+          </button>
+
+          <button type="button" id="btn-track-package" class="btn-receipt-action btn-receipt-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            Track Package
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       INTERACTIVE TRACKING DEMO MODAL
+       ======================================================================== -->
+  <div id="track-modal" class="track-modal-overlay" aria-hidden="true">
+    <div class="track-modal-card">
+      <div class="track-modal-header">
+        <div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">
+            Shipment Tracking
+          </h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="tracking-modal-order-id">#VEL-84920</span>
+        </div>
+        <button type="button" id="btn-close-track-modal" class="cart-close-btn" aria-label="Close Tracking Modal">✕</button>
+      </div>
+
+      <div class="track-modal-body">
+        <div class="tracking-timeline">
+          <div class="timeline-step completed">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-content">
+              <div class="timeline-step-title">Order Placed & Verified</div>
+              <div class="timeline-step-time" id="tracking-time-1">Just now • Automated System</div>
+            </div>
+          </div>
+
+          <div class="timeline-step current">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-content">
+              <div class="timeline-step-title">Preparing for Dispatch</div>
+              <div class="timeline-step-time">Estimated: Today • Fulfillment Center</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-content">
+              <div class="timeline-step-title">Handed to Express Courier</div>
+              <div class="timeline-step-time">Carrier: DHL Express Worldwide</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="timeline-step-dot"></div>
+            <div class="timeline-step-content">
+              <div class="timeline-step-title">Delivered to Recipient</div>
+              <div class="timeline-step-time" id="tracking-time-eta">Estimated: In 3-5 days</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: center;">
+          <button type="button" id="btn-ok-track-modal" class="btn-receipt-action btn-receipt-primary" style="width: 100%; justify-content: center;">
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer id="footer" class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <a href="homepage.html" class="brand-logo footer-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA<span class="dot">.</span></span>
+          </a>
+          <p class="footer-bio">
+            Curating luxury essentials and modern fashion for those who demand distinction, comfort, and unmatched craftsmanship.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="homepage.html">Home</a></li>
+            <li><a href="shop.html">Browse All Products</a></li>
+            <li><a href="shop.html?category=shoes">Shoes Collection</a></li>
+            <li><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li><a href="shop.html?deals=true">Flash Deals</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Customer Care</h4>
+          <ul class="footer-links">
+            <li><a href="account.html#orders">Order Status & Tracking</a></li>
+            <li><a href="shipping-policy.html">Shipping & Deliveries</a></li>
+            <li><a href="returns-exchanges.html">30-Day Hassle-Free Returns</a></li>
+            <li><a href="terms-conditions.html">Terms & Conditions</a></li>
+            <li><a href="privacy-policy.html">Privacy Protection</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Contact & Support</h4>
+          <ul class="footer-contact-list">
+            <li><strong>Email:</strong> <a href="mailto:support@velora-style.com">support@velora-style.com</a></li>
+            <li><strong>Phone:</strong> <a href="tel:+9118001028356">+91 1800 102 8356</a></li>
+            <li><strong>Hours:</strong> Mon - Sun: 8:00 AM - 11:00 PM EST</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 VELORA Inc. All rights reserved. Style That Speaks For You.</p>
+        <div class="footer-bottom-badges">
+          <span class="trust-badge-pill">🔒 Verified 256-Bit SSL</span>
+          <span class="trust-badge-pill">⚡ Instant Dispatch</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/order-success.js"></script>
+</body>
+</html>
+

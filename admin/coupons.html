@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coupons & Discounts | VELORA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VELORA</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        
+        <a href="dashboard.html" class="sidebar-link ">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+  
+
+        <a href="products.html" class="sidebar-link ">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+  
+
+        <a href="add-product.html" class="sidebar-link ">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+  
+
+        <a href="categories.html" class="sidebar-link ">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+  
+
+        <a href="orders.html" class="sidebar-link ">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+  
+
+        <a href="customers.html" class="sidebar-link ">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+  
+
+        <a href="coupons.html" class="sidebar-link active">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+  
+
+        <a href="reviews.html" class="sidebar-link ">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+  
+
+        <a href="analytics.html" class="sidebar-link ">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+  
+
+        <a href="banners.html" class="sidebar-link ">
+          <i class="fas fa-images"></i>
+          <span>Hero Banners</span>
+        </a>
+  
+
+        <a href="delivery-partners.html" class="sidebar-link ">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+  
+
+        <a href="settings.html" class="sidebar-link ">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+  
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+  
+    <div class="admin-main">
+      
+    <header class="admin-header">
+      <div class="header-left">
+        <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-breadcrumbs">
+          <a href="dashboard.html">Velora Admin</a>
+          <span>/</span>
+          <span class="current">Promo Codes</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="admin-user-menu-wrap">
+          <div class="admin-user-pill" id="admin-user-pill">
+            <div class="admin-avatar" id="header-admin-avatar">AD</div>
+            <div class="admin-info-text">
+              <div class="admin-name-display" id="header-admin-name">Admin</div>
+              <div class="admin-role-display">ADMINISTRATOR</div>
+            </div>
+            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+          </div>
+          <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+            <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+            <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-heading">Discount Coupons</h1>
+            <p class="page-subheading">Manage promotional discount codes and cart redemption rules</p>
+          </div>
+          <button type="button" id="btn-add-coupon" class="btn-admin-primary"><i class="fas fa-plus"></i> Create Coupon</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Promo Code</th>
+                  <th>Discount</th>
+                  <th>Min Order (₹)</th>
+                  <th>Max Cap</th>
+                  <th>Redemptions</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="coupons-tbody">
+                <tr><td colspan="7" style="text-align:center; padding: 24px;">Loading coupons...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Coupon Modal -->
+  <div class="admin-modal-backdrop" id="coupon-modal-backdrop">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title">Create Promo Code</h3>
+        <button class="admin-modal-close" id="btn-close-coupon-modal">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <form id="coupon-form">
+          <div class="form-group">
+            <label class="admin-label">Coupon Code *</label>
+            <input type="text" id="coupon-code" class="admin-input" placeholder="e.g. VELORA20" required style="width:100%; text-transform: uppercase;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+            <div class="form-group">
+              <label class="admin-label">Discount Type</label>
+              <select id="coupon-type" class="admin-select" style="width:100%;">
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed INR (₹)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="admin-label">Discount Value *</label>
+              <input type="number" id="coupon-val" class="admin-input" placeholder="20" required min="1" style="width:100%;">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+            <div class="form-group">
+              <label class="admin-label">Min Spend (₹)</label>
+              <input type="number" id="coupon-min-order" class="admin-input" placeholder="999" value="999" style="width:100%;">
+            </div>
+            <div class="form-group">
+              <label class="admin-label">Max Discount (₹)</label>
+              <input type="number" id="coupon-max-discount" class="admin-input" placeholder="1000" style="width:100%;">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 12px;">
+            <label class="admin-label">Usage Limit</label>
+            <input type="number" id="coupon-limit" class="admin-input" value="100" style="width:100%;">
+          </div>
+          <div style="margin-top: 14px;">
+            <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer;">
+              <input type="checkbox" id="coupon-active" checked> <span>Active Immediately</span>
+            </label>
+          </div>
+          <div style="margin-top: 20px; text-align: right;">
+            <button type="submit" class="btn-admin-primary">Create Promo Code</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/admin-coupons.js"></script>
+</body>
+</html>

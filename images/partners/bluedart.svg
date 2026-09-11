@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <g transform="translate(10, 12)">
+    <!-- Blue Dart Text -->
+    <text x="0" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="900" font-style="italic" fill="#00205B" letter-spacing="0.5">
+      BLUE DART
+    </text>
+    <!-- Arrow Dart Accent -->
+    <path d="M5 28 L155 28 L148 34 L175 28 L148 22 L155 28 Z" fill="#E31837"/>
+    <text x="2" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8.5" font-weight="700" fill="#64748B" letter-spacing="2.5">
+      EXPRESS LIMITED
+    </text>
+  </g>
+</svg>

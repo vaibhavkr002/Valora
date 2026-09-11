@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <!-- Classic DHL Red & Gold Badge -->
+  <g transform="translate(8, 10)">
+    <rect x="0" y="0" width="184" height="40" rx="6" fill="#FFCC00"/>
+    <!-- Speed stripes -->
+    <path d="M12 14 L42 14 L38 18 L8 18 Z" fill="#D40511"/>
+    <path d="M14 22 L44 22 L40 26 L10 26 Z" fill="#D40511"/>
+    <!-- DHL Letters -->
+    <g transform="translate(48, 6) skewX(-15)">
+      <!-- D -->
+      <path d="M4 3 L16 3 C23 3 27 6 27 14 C27 21 23 25 16 25 L4 25 Z M10 8 L10 20 L15 20 C18 20 20 18 20 14 C20 9 18 8 15 8 Z" fill="#D40511"/>
+      <!-- H -->
+      <path d="M33 3 L39 3 L39 11 L49 11 L49 3 L55 3 L55 25 L49 25 L49 17 L39 17 L39 25 L33 25 Z" fill="#D40511"/>
+      <!-- L -->
+      <path d="M62 3 L68 3 L68 19 L80 19 L80 25 L62 25 Z" fill="#D40511"/>
+    </g>
+    <!-- Trailing speed stripes -->
+    <path d="M144 14 L174 14 L170 18 L140 18 Z" fill="#D40511"/>
+    <path d="M146 22 L176 22 L172 26 L142 26 Z" fill="#D40511"/>
+  </g>
+</svg>

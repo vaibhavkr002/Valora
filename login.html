@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to your VELORA account to access your orders, saved addresses, wishlist, and exclusive member privileges.">
+  <title>Login | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP NAVIGATION BAR
+       ======================================================================== -->
+  <header class="auth-top-nav">
+    <div class="container">
+      <div class="auth-nav-inner">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Return to Shop Link -->
+        <a href="shop.html" class="auth-back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Return to Shop
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN AUTHENTICATION CONTAINER
+       ======================================================================== -->
+  <main class="auth-page-wrapper">
+    <div class="auth-container">
+
+      <!-- Left Column: Visual Fashion Feature -->
+      <div class="auth-visual-col">
+        <div class="auth-visual-top">
+          <div class="auth-visual-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>Member Privileges</span>
+          </div>
+
+          <h2 class="auth-visual-headline">
+            Style That Speaks <span>For You.</span>
+          </h2>
+
+          <p class="auth-visual-desc">
+            Sign in to unlock personalized recommendations, private seasonal drops, and frictionless express checkout.
+          </p>
+
+          <div class="auth-perks-list">
+            <div class="auth-perk-item">
+              <span class="auth-perk-icon">✓</span>
+              <span>Priority dispatch on luxury footwear & watches</span>
+            </div>
+            <div class="auth-perk-item">
+              <span class="auth-perk-icon">✓</span>
+              <span>30-day effortless worldwide returns</span>
+            </div>
+            <div class="auth-perk-item">
+              <span class="auth-perk-icon">✓</span>
+              <span>Exclusive invitations to preview new collections</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endorsement Quote -->
+        <div class="auth-visual-testimonial">
+          <p class="testimonial-quote">
+            "VELORA sets a new standard for online luxury shopping. The craft and curation are unparalleled."
+          </p>
+          <div class="testimonial-author">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Eleanor Vance" class="author-avatar">
+            <div class="author-info">
+              <h5>Eleanor Vance</h5>
+              <p>Verified Collector & Member</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Login Form -->
+      <div class="auth-form-col">
+        <div class="auth-header">
+          <h1 class="auth-title">Welcome Back</h1>
+          <p class="auth-subtitle">Sign in with your verified VELORA account</p>
+        </div>
+
+        <!-- 1-Click Demo Credentials Pill -->
+        <div class="auth-demo-banner">
+          <div class="demo-banner-text">
+            <span>Test Login: <strong>alex@velora.com</strong></span><br>
+            <span>Pass: <strong>Velora@2026</strong></span>
+          </div>
+          <button type="button" id="btn-autofill-demo" class="btn-fill-demo">Autofill Demo</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form" novalidate>
+
+          <!-- Email Field -->
+          <div class="auth-group" id="group-login-email">
+            <label for="login-email" class="auth-label">
+              Email Address <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="email" id="login-email" class="auth-input" placeholder="name@example.com" autocomplete="email" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </span>
+            </div>
+            <span class="auth-error-msg">Please enter a valid email address.</span>
+          </div>
+
+          <!-- Password Field -->
+          <div class="auth-group" id="group-login-password">
+            <label for="login-password" class="auth-label">
+              Password <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="password" id="login-password" class="auth-input has-toggle" placeholder="Enter your password" autocomplete="current-password" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </span>
+              <button type="button" id="btn-toggle-password" class="btn-toggle-password" aria-label="Toggle Password Visibility">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-closed" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+            <span class="auth-error-msg">Please enter your password.</span>
+          </div>
+
+          <!-- Remember Me & Forgot Password -->
+          <div class="auth-extra-row">
+            <label class="custom-checkbox-label" style="margin-bottom: 0;">
+              <input type="checkbox" id="login-remember-me" checked>
+              <div class="checkmark-box">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span style="font-size: 0.85rem; color: var(--text-secondary);">Remember Me</span>
+            </label>
+
+            <a href="forgot-password.html" class="auth-forgot-link">Forgot Password?</a>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="btn-login-submit" class="btn-auth-submit">
+            <svg class="spinner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none;">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+            </svg>
+            <span class="btn-text">Sign In</span>
+          </button>
+        </form>
+
+        <!-- Social OR Divider -->
+        <div class="auth-divider">Or continue with</div>
+
+        <!-- Google Login Option (Ready for Supabase OAuth) -->
+        <button type="button" id="btn-google-login" class="btn-social-google">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <!-- Switch to Signup Link -->
+        <p class="auth-switch-text">
+          Don't have an account? 
+          <a href="signup.html" class="auth-switch-link">Create Account</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Redirect if already logged in
+      if (window.VeloraAuth && VeloraAuth.isLoggedIn()) {
+        const target = VeloraAuth.getRedirectUrl("account.html");
+        window.location.href = target;
+        return;
+      }
+      const form = document.getElementById("login-form");
+      const emailInput = document.getElementById("login-email");
+      const passwordInput = document.getElementById("login-password");
+      const rememberCheckbox = document.getElementById("login-remember-me");
+      const submitBtn = document.getElementById("btn-login-submit");
+      const btnAutofill = document.getElementById("btn-autofill-demo");
+      const btnTogglePwd = document.getElementById("btn-toggle-password");
+      const btnGoogle = document.getElementById("btn-google-login");
+
+      // Auto-fill remembered email if saved
+      const remembered = localStorage.getItem("velora_remembered_email");
+      if (remembered && emailInput) {
+        emailInput.value = remembered;
+      }
+
+      // Password Toggle
+      if (btnTogglePwd && passwordInput) {
+        btnTogglePwd.addEventListener("click", () => {
+          const isPass = passwordInput.type === "password";
+          passwordInput.type = isPass ? "text" : "password";
+          const openEye = btnTogglePwd.querySelector(".eye-open");
+          const closedEye = btnTogglePwd.querySelector(".eye-closed");
+          if (openEye) openEye.style.display = isPass ? "none" : "block";
+          if (closedEye) closedEye.style.display = isPass ? "block" : "none";
+        });
+      }
+
+      // 1-Click Demo Fill
+      if (btnAutofill) {
+        btnAutofill.addEventListener("click", () => {
+          emailInput.value = "alex@velora.com";
+          passwordInput.value = "Velora@2026";
+          document.querySelectorAll(".auth-group").forEach(g => g.classList.remove("has-error"));
+        });
+      }
+
+      // Social Google Login (Simulated UI ready for Supabase OAuth)
+      if (btnGoogle) {
+        btnGoogle.addEventListener("click", async () => {
+          btnGoogle.disabled = true;
+          btnGoogle.innerHTML = `<span>Connecting with Google...</span>`;
+          await new Promise(r => setTimeout(r, 600));
+          // Log in with demo account
+          await VeloraAuth.login("alex@velora.com", "Velora@2026", true);
+          const target = VeloraAuth.getRedirectUrl("account.html");
+          window.location.href = target;
+        });
+      }
+
+      // Remove error state on input
+      [emailInput, passwordInput].forEach(inp => {
+        if (inp) {
+          inp.addEventListener("input", () => {
+            const group = inp.closest(".auth-group");
+            if (group) group.classList.remove("has-error");
+          });
+        }
+      });
+
+      // Submit Form
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          let isValid = true;
+          const emailVal = emailInput.value.trim();
+          const passVal = passwordInput.value;
+
+          // Email validation
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailVal)) {
+            document.getElementById("group-login-email").classList.add("has-error");
+            isValid = false;
+          }
+
+          // Password validation
+          if (!passVal) {
+            document.getElementById("group-login-password").classList.add("has-error");
+            isValid = false;
+          }
+
+          if (!isValid) return;
+
+          // Loading state
+          submitBtn.disabled = true;
+          const spinner = submitBtn.querySelector(".spinner-icon");
+          const btnText = submitBtn.querySelector(".btn-text");
+          if (spinner) spinner.style.display = "inline-block";
+          if (btnText) btnText.textContent = "Verifying...";
+
+          const result = await VeloraAuth.login(emailVal, passVal, rememberCheckbox.checked);
+
+          if (result.success) {
+            if (btnText) btnText.textContent = "Welcome Back!";
+            const target = VeloraAuth.getRedirectUrl("account.html");
+            setTimeout(() => {
+              window.location.href = target;
+            }, 500);
+          } else {
+            submitBtn.disabled = false;
+            if (spinner) spinner.style.display = "none";
+            if (btnText) btnText.textContent = "Sign In";
+
+            const passGroup = document.getElementById("group-login-password");
+            passGroup.classList.add("has-error");
+            const errSpan = passGroup.querySelector(".auth-error-msg");
+            if (errSpan) errSpan.textContent = result.error || "Invalid credentials.";
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

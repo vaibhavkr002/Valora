@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <g transform="translate(12, 10)">
+    <!-- Amazon Text -->
+    <text x="0" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="27" font-weight="800" fill="#131921" letter-spacing="-0.5">
+      amazon
+    </text>
+    <text x="110" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#FF9900" letter-spacing="1">
+      LOGISTICS
+    </text>
+    <!-- Amazon Smile Arrow from a to z -->
+    <path d="M12 33 Q56 46 95 32 Q97 31 99 33 Q102 36 104 38 Q103 40 100 40 Q84 48 56 48 Q28 48 10 37 Q8 36 9 34 Q10 32 12 33 Z" fill="#FF9900"/>
+    <polygon points="98,32 108,35 102,43" fill="#FF9900"/>
+  </g>
+</svg>

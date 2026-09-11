@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VELORA Press and Media: Brand story, press kit downloads, sample editorial mentions, and media relations contact.">
+  <title>Press & Media | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/info-pages.css">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-text">
+        <span class="announcement-badge">Exclusive</span>
+        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="homepage.html#about">Our Story</a>
+        <span>•</span>
+        <a href="account.html#orders">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Nav -->
+  <header class="header-nav-wrapper">
+    <div class="container">
+      <nav class="navbar" aria-label="Main Navigation">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Center Nav Menu -->
+        <ul class="nav-menu">
+          <li><a href="homepage.html" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link">Shop</a></li>
+          <li><a href="shop.html?category=shoes" class="nav-link">Shoes</a></li>
+          <li><a href="shop.html?category=watches" class="nav-link">Watches</a></li>
+          <li><a href="shop.html?deals=true" class="nav-link">Deals <span class="nav-badge-deal">Hot</span></a></li>
+          <li><a href="homepage.html#about" class="nav-link">About</a></li>
+        </ul>
+
+        <!-- Large Search Bar with Real-Time Preview -->
+        <div class="nav-search-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" id="nav-search-input" placeholder="Search shoes, watches, caps, clothing..." autocomplete="off">
+            <button id="search-clear-btn" class="search-clear-btn" aria-label="Clear Search">✕</button>
+          </div>
+          <div id="search-results-dropdown" class="search-results-dropdown"></div>
+        </div>
+
+        <!-- Right Action Icons -->
+        <div class="nav-actions">
+          <div class="nav-account-wrapper">
+            <button class="action-btn" aria-label="Account Profile" title="Account / Profile">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+          </div>
+
+          <a href="wishlist.html" class="action-btn wishlist-drawer-trigger" aria-label="Wishlist" title="Saved Wishlist">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span class="badge-count wishlist-count-badge">0</span>
+          </a>
+
+          <button class="action-btn cart-drawer-trigger" aria-label="Shopping Cart" title="View Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="badge-count cart-count-badge">0</span>
+          </button>
+
+          <button id="mobile-toggle-btn" class="mobile-toggle-btn" aria-label="Toggle Mobile Navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="mobile-drawer" class="mobile-drawer">
+    <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop"></div>
+    <div class="mobile-drawer-content">
+      <div class="mobile-drawer-header">
+        <a href="homepage.html" class="brand-logo">
+          <div class="brand-icon">V</div>
+          <span>VELORA</span>
+        </a>
+        <button id="mobile-drawer-close" class="mobile-drawer-close" aria-label="Close Menu">✕</button>
+      </div>
+      <ul class="mobile-nav-menu">
+        <li><a href="homepage.html" class="mobile-nav-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-nav-link">Shop All Products</a></li>
+        <li><a href="shop.html?category=shoes" class="mobile-nav-link">Shoes & Sneakers</a></li>
+        <li><a href="shop.html?category=watches" class="mobile-nav-link">Luxury Watches</a></li>
+        <li><a href="shop.html?deals=true" class="mobile-nav-link">Flash Deals</a></li>
+        <li><a href="wishlist.html" class="mobile-nav-link">Saved Wishlist</a></li>
+        <li><a href="account.html" class="mobile-nav-link">My Account / Orders</a></li>
+        <li><a href="contact-support.html" class="mobile-nav-link">Contact Support</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Page Hero & Breadcrumbs -->
+  <section class="info-page-hero">
+    <div class="container">
+      <nav class="info-breadcrumbs" aria-label="Breadcrumb">
+        <a href="homepage.html">Home</a>
+        <span class="separator">/</span>
+        <span class="current">Press & Media</span>
+      </nav>
+      <div>
+        <span class="info-hero-badge">Media Relations</span>
+        <h1 class="info-hero-title">Press & Brand Story</h1>
+        <p class="info-hero-subtitle">Stories, editorial coverage, and brand assets from the VELORA design studio.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="info-content-section">
+    <div class="container">
+      <div class="info-single-column">
+        <article class="policy-block">
+          <h2 class="policy-block-title" style="font-size: 1.6rem; margin-bottom: 14px;">The VELORA Narrative</h2>
+          <p class="policy-paragraph">
+            Founded in 2026, VELORA is an independent modern luxury label redefining contemporary wardrobe essentials. We merge architectural lines, performance materials, and artisan leather craftsmanship across footwear, horology, caps, tailored apparel, and travel bags.
+          </p>
+          <div style="background: rgba(99, 102, 241, 0.08); border-radius: 8px; padding: 12px 18px; display: inline-block; font-size: 0.85rem; color: #4338ca; font-weight: 600; margin-top: 10px;">
+            🎓 Note: Editorial features and press articles below are curated as realistic demo concepts for this college project.
+          </div>
+        </article>
+
+        <!-- Sample Editorial Mentions -->
+        <div style="margin: 36px 0;">
+          <h3 style="font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 20px;">Media Highlights & Spotlights</h3>
+          
+          <div class="press-coverage-grid">
+            <div class="press-quote-card">
+              <p class="press-quote-text">
+                "VELORA represents the new wave of minimalist e-commerce: uncompromising material selection paired with intuitive digital craftsmanship."
+              </p>
+              <div class="press-source-row">
+                <div>
+                  <div class="press-source-name">Urban Modernist Review</div>
+                  <div class="press-source-meta">Design & Lifestyle Feature</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="press-quote-card">
+              <p class="press-quote-text">
+                "From responsive cloud-foam sneakers to titanium chronographs, VELORA proves everyday essentials can feel elevated without pretension."
+              </p>
+              <div class="press-source-row">
+                <div>
+                  <div class="press-source-name">Atelier Horology Quarterly</div>
+                  <div class="press-source-meta">Accessories & Timepieces</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Press Kit & Brand Assets -->
+        <article class="policy-block">
+          <h2 class="policy-block-title">Brand Assets & Resources</h2>
+          <p class="policy-paragraph">
+            Members of the media, content creators, and editorial publications may download our high-resolution vector logos, approved color palettes, and studio lifestyle photography.
+          </p>
+          <div style="margin-top: 20px;">
+            <button id="btn-download-brand-assets" class="btn-primary" style="display: inline-flex; align-items: center; gap: 10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Download Brand Assets Kit (.ZIP)</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- Media Contact -->
+        <div class="info-cta-banner">
+          <h3 class="info-cta-title">Direct Press & Media Inquiries</h3>
+          <p class="info-cta-text">For interview requests, sample loans, lookbook photography, or press releases, connect with our communications desk.</p>
+          <div class="info-hero-actions">
+            <a href="mailto:press@velorastudio.com" class="btn-primary">Email Media Desk: press@velorastudio.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Multi-Column Professional Footer -->
+  <footer id="footer" class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Summary Column -->
+        <div class="footer-brand-col" id="about">
+          <a href="homepage.html" class="footer-brand-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA</span>
+          </a>
+          <p class="footer-brand-desc">
+            VELORA is an independent modern lifestyle brand bringing curated footwear, luxury timepieces, tailored apparel, and timeless accessories to discerning customers worldwide.
+          </p>
+          <div class="footer-social-links">
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Twitter / X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Facebook">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Pinterest">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Shop Links Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Shop</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="shop.html?category=shoes">Shoes & Sneakers</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=caps">Caps & Headwear</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=bags">Bags & Luggage</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=clothing">Modern Clothing</a></li>
+            <li class="footer-link-item"><a href="shop.html?deals=true">Flash Deals</a></li>
+          </ul>
+        </div>
+
+        <!-- Customer Help Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Customer Care</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="account.html#orders">Order Status & Tracking</a></li>
+            <li class="footer-link-item"><a href="shipping-policy.html">Shipping Policy</a></li>
+            <li class="footer-link-item"><a href="returns-exchanges.html">Returns & Exchanges</a></li>
+            <li class="footer-link-item"><a href="size-guide.html">Size & Fit Guide</a></li>
+            <li class="footer-link-item"><a href="faq.html">FAQs</a></li>
+            <li class="footer-link-item"><a href="contact-support.html">Contact Support</a></li>
+          </ul>
+        </div>
+
+        <!-- Company Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Company</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="homepage.html#about">About Our Studio</a></li>
+            <li class="footer-link-item"><a href="sustainability.html">Sustainability Pledge</a></li>
+            <li class="footer-link-item"><a href="careers.html">Careers</a></li>
+            <li class="footer-link-item"><a href="press-media.html">Press & Media</a></li>
+            <li class="footer-link-item"><a href="affiliate-program.html">Affiliate Program</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact & Legal Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Contact & Legal</h4>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>12 Connaught Place, New Delhi 110001</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span><a href="mailto:support@velorastudio.com">support@velorastudio.com</a></span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span><a href="tel:+9118001028356">+91 1800 102 8356</a></span>
+          </div>
+          <ul class="footer-links-list" style="margin-top: 14px;">
+            <li class="footer-link-item"><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li class="footer-link-item"><a href="terms-conditions.html">Terms & Conditions</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <p class="footer-copyright">
+          © 2026 VELORA Inc. All rights reserved. Designed for modern living.
+        </p>
+        <div class="footer-payments-list">
+          <span class="payment-badge">VISA</span>
+          <span class="payment-badge">MASTERCARD</span>
+          <span class="payment-badge">AMEX</span>
+          <span class="payment-badge">APPLE PAY</span>
+          <span class="payment-badge">PAYPAL</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slide-Over Shopping Cart Drawer -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay">
+    <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-drawer-header">
+        <h3 id="cart-title" class="cart-drawer-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          Your Shopping Cart
+        </h3>
+        <button id="cart-drawer-close" class="cart-close-btn" aria-label="Close Cart">✕</button>
+      </div>
+
+      <!-- Free Shipping Meter -->
+      <div class="free-shipping-box">
+        <div class="free-shipping-text">
+          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Delivery!</span>
+        </div>
+        <div class="free-shipping-progress">
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 80%;"></div>
+        </div>
+      </div>
+
+      <!-- Cart Items List Container -->
+      <div id="cart-items-container" class="cart-items-list">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Empty Cart State -->
+      <div id="cart-empty-state" class="cart-empty" style="display: none;">
+        <div class="cart-empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
+        <p class="cart-empty-msg">Your shopping cart is currently empty.</p>
+        <a href="shop.html" class="btn-primary" style="display: inline-flex; margin-top: 12px;">Browse Products</a>
+      </div>
+
+      <!-- Cart Drawer Footer -->
+      <div class="cart-drawer-footer">
+        <div class="cart-summary-row">
+          <span class="cart-subtotal-label">Estimated Total</span>
+          <span id="cart-total" class="cart-subtotal-val">₹0</span>
+        </div>
+        <p class="cart-tax-notice">Taxes, discounts and express shipping calculated at checkout.</p>
+        <button id="checkout-btn" class="checkout-btn">
+          <span>Proceed to Checkout</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Core Scripts -->
+  <script src="js/products.js"></script>
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/info-pages.js"></script>
+
+</body>
+</html>

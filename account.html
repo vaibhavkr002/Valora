@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage your VELORA profile, review your orders, and update your delivery addresses.">
+  <title>My Account | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP ANNOUNCEMENT BAR
+       ======================================================================== -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-text">
+        <span class="announcement-badge">Member Privileges</span>
+        <span>Welcome to VELORA Privé • Complimentary Express Shipping Enabled</span>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="shop.html">Browse Catalog</a>
+        <span>•</span>
+        <a href="#footer">Concierge Support</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       STICKY NAVIGATION BAR
+       ======================================================================== -->
+  <header class="header-nav-wrapper">
+    <div class="container">
+      <nav class="navbar" aria-label="Main Navigation">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Center Nav Menu -->
+        <ul class="nav-menu">
+          <li><a href="homepage.html" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link">Shop</a></li>
+          <li><a href="shop.html?category=shoes" class="nav-link">Shoes</a></li>
+          <li><a href="shop.html?category=watches" class="nav-link">Watches</a></li>
+          <li><a href="homepage.html#deals-section" class="nav-link">Deals</a></li>
+        </ul>
+
+        <!-- Right Action Icons -->
+        <div class="nav-actions">
+          <!-- Account Icon (Updated dynamically by js/auth.js) -->
+          <div class="nav-account-wrapper">
+            <button class="action-btn" aria-label="Account Profile" title="Account / Profile">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+          </div>
+
+          <!-- Cart Link -->
+          <a href="checkout.html" class="action-btn" aria-label="Shopping Cart" title="Go to Checkout">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN ACCOUNT DASHBOARD SECTION
+       ======================================================================== -->
+  <main class="account-page-section">
+    <div class="container">
+
+      <!-- Breadcrumbs -->
+      <nav class="checkout-breadcrumb" aria-label="Breadcrumb">
+        <a href="homepage.html">Home</a>
+        <span class="sep">/</span>
+        <span class="current">My Account</span>
+      </nav>
+
+      <div class="checkout-page-title-row">
+        <h1 class="checkout-page-title">Member Dashboard</h1>
+        <p class="checkout-page-subtitle">Manage your personal details, order status, and preferences.</p>
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div class="account-dashboard-grid">
+
+        <!-- Left Sidebar Navigation Card -->
+        <aside class="account-sidebar-card">
+          <div class="account-user-badge-header">
+            <div id="account-avatar-circle" class="account-avatar-lg">--</div>
+            <h2 id="account-user-name" class="account-user-title">Loading Profile...</h2>
+            <p id="account-user-email" class="account-user-subtitle">Connecting to Supabase...</p>
+            <span class="account-vip-tag">★ VELORA Privé Member</span>
+          </div>
+
+          <ul class="account-nav-tabs">
+            <li>
+              <button type="button" class="account-tab-btn active" data-tab="profile">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>Profile Information</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="account-tab-btn" data-tab="orders">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                <span>My Orders</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="account-tab-btn" data-tab="addresses">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>Delivery Addresses</span>
+              </button>
+            </li>
+            <li>
+              <a href="wishlist.html" class="account-tab-btn" style="text-decoration: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <span>My Wishlist</span>
+              </a>
+            </li>
+            <li>
+              <a href="shop.html" class="account-tab-btn" style="text-decoration: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <span>Continue Shopping</span>
+              </a>
+            </li>
+            <li>
+              <button type="button" id="btn-account-logout" class="account-tab-btn logout-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span>Sign Out</span>
+              </button>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Right Content Panels Card -->
+        <div class="account-content-card">
+
+          <!-- Panel 1: Profile Information -->
+          <div id="panel-profile" class="account-panel active">
+            <h3 class="panel-title">Personal Information</h3>
+            <p class="panel-desc">Update your personal contact information and delivery preferences.</p>
+
+            <form id="profile-edit-form" class="auth-form" onsubmit="return false;">
+              <div id="profile-loading-indicator" style="padding: 16px; margin-bottom: 16px; background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main);">
+                <svg class="spinner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path></svg>
+                <span>Retrieving verified profile from Supabase...</span>
+              </div>
+
+              <div id="profile-status-message" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 0.88rem; font-weight: 500;"></div>
+
+              <div class="form-row">
+                <div class="auth-group">
+                  <label class="auth-label">Full Name <span class="req">*</span></label>
+                  <input type="text" id="profile-name-input" class="auth-input" placeholder="Your Full Name" style="padding-left: 16px;">
+                </div>
+                <div class="auth-group">
+                  <label class="auth-label">Mobile Number</label>
+                  <input type="tel" id="profile-phone-input" class="auth-input" placeholder="Not added" style="padding-left: 16px;">
+                </div>
+              </div>
+
+              <div class="auth-group">
+                <label class="auth-label">Email Address (Supabase Account)</label>
+                <input type="email" id="profile-email-input" class="auth-input" style="padding-left: 16px; background: rgba(0,0,0,0.03); cursor: not-allowed;" readonly>
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Primary email tied to your secure authentication credentials.</span>
+              </div>
+
+              <button type="button" id="btn-save-profile" class="btn-auth-submit" style="max-width: 220px; margin-top: 14px;">
+                <span class="btn-text">Save Changes</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Panel 2: Orders History -->
+          <div id="panel-orders" class="account-panel">
+            <h3 class="panel-title">Order History</h3>
+            <p class="panel-desc">Track, review, or reorder your recent luxury purchases.</p>
+
+            <div id="orders-list-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Panel 3: Saved Addresses -->
+          <div id="panel-addresses" class="account-panel">
+            <h3 class="panel-title">Saved Delivery Addresses</h3>
+            <p class="panel-desc">Manage your shipping destinations for faster one-click checkout.</p>
+
+            <div id="addresses-container" class="addresses-grid">
+              <!-- Dynamically populated from public.addresses -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Footer -->
+  <footer id="footer" class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <a href="homepage.html" class="brand-logo footer-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA<span class="dot">.</span></span>
+          </a>
+          <p class="footer-bio">
+            Curating luxury essentials and modern fashion for those who demand distinction, comfort, and unmatched craftsmanship.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="homepage.html">Home</a></li>
+            <li><a href="shop.html">Browse All Products</a></li>
+            <li><a href="shop.html?category=shoes">Shoes Collection</a></li>
+            <li><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li><a href="shop.html?deals=true">Flash Deals</a></li>
+            <li><a href="wishlist.html">Saved Wishlist</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Customer Care</h4>
+          <ul class="footer-links">
+            <li><a href="shipping-policy.html">Shipping & Deliveries</a></li>
+            <li><a href="returns-exchanges.html">30-Day Hassle-Free Returns</a></li>
+            <li><a href="account.html#orders">My Orders</a></li>
+            <li><a href="contact-support.html">Support Concierge</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Contact & Support</h4>
+          <ul class="footer-contact-list">
+            <li><strong>Concierge:</strong> <a href="mailto:support@velora-style.com">support@velora-style.com</a></li>
+            <li><strong>Toll-Free:</strong> <a href="tel:+9118001028356">+91 1800 102 8356</a></li>
+            <li><strong>Hours:</strong> Mon - Sun: 8:00 AM - 11:00 PM EST</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <p>&copy; 2026 VELORA Inc. All rights reserved. Style That Speaks For You.</p>
+        <div class="footer-bottom-badges">
+          <span class="trust-badge-pill">🔒 Verified 256-Bit SSL</span>
+          <span class="trust-badge-pill">🛡️ Member Protection</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Elements
+      const avatarCircle = document.getElementById("account-avatar-circle");
+      const userNameElem = document.getElementById("account-user-name");
+      const userEmailElem = document.getElementById("account-user-email");
+      const nameInput = document.getElementById("profile-name-input");
+      const emailInput = document.getElementById("profile-email-input");
+      const phoneInput = document.getElementById("profile-phone-input");
+      const saveBtn = document.getElementById("btn-save-profile");
+      const loadingIndicator = document.getElementById("profile-loading-indicator");
+      const statusMsg = document.getElementById("profile-status-message");
+      const ordersContainer = document.getElementById("orders-list-container");
+      const addressesContainer = document.getElementById("addresses-container");
+
+      function showStatus(text, type) {
+        if (!statusMsg) return;
+        statusMsg.style.display = "block";
+        statusMsg.textContent = text;
+        if (type === "success") {
+          statusMsg.style.background = "rgba(16, 185, 129, 0.1)";
+          statusMsg.style.color = "#059669";
+          statusMsg.style.border = "1px solid rgba(16, 185, 129, 0.2)";
+        } else if (type === "error") {
+          statusMsg.style.background = "rgba(239, 68, 68, 0.1)";
+          statusMsg.style.color = "#dc2626";
+          statusMsg.style.border = "1px solid rgba(239, 68, 68, 0.2)";
+        } else {
+          statusMsg.style.background = "rgba(99, 102, 241, 0.1)";
+          statusMsg.style.color = "#4f46e5";
+          statusMsg.style.border = "1px solid rgba(99, 102, 241, 0.2)";
+        }
+        setTimeout(() => {
+          if (statusMsg) statusMsg.style.display = "none";
+        }, 5000);
+      }
+
+      // 1. Get Supabase client
+      const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+
+      if (!client) {
+        userNameElem.textContent = "Connection Error";
+        userEmailElem.textContent = "Supabase client not initialized";
+        if (loadingIndicator) loadingIndicator.style.display = "none";
+        return;
+      }
+
+      // 2. Authenticate User
+      let authUser = null;
+      try {
+        const { data: { user }, error: authErr } = await client.auth.getUser();
+        if (authErr || !user) {
+          window.location.href = "login.html?redirect=account.html";
+          return;
+        }
+        authUser = user;
+      } catch (err) {
+        window.location.href = "login.html?redirect=account.html";
+        return;
+      }
+
+      // 3. Fetch user profile from public.profiles table using user.id
+      async function fetchAndRenderProfile() {
+        if (loadingIndicator) loadingIndicator.style.display = "flex";
+
+        let profileData = null;
+        try {
+          const { data, error } = await client
+            .from("profiles")
+            .select("*")
+            .eq("id", authUser.id)
+            .maybeSingle();
+
+          if (!error && data) {
+            profileData = data;
+          }
+        } catch (err) {
+          console.warn("Profile fetch notice:", err);
+        }
+
+        // If profile record does not exist in profiles table, create/insert it
+        if (!profileData) {
+          const fallbackName = (authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name)) || "";
+          const fallbackPhone = (authUser.user_metadata && authUser.user_metadata.phone) || "";
+          try {
+            const { data: inserted, error: insErr } = await client
+              .from("profiles")
+              .upsert([{
+                id: authUser.id,
+                full_name: fallbackName,
+                email: authUser.email,
+                phone: fallbackPhone,
+                role: "customer"
+              }], { onConflict: "id" })
+              .select()
+              .maybeSingle();
+
+            if (!insErr && inserted) {
+              profileData = inserted;
+            } else {
+              profileData = {
+                id: authUser.id,
+                full_name: fallbackName,
+                email: authUser.email,
+                phone: fallbackPhone
+              };
+            }
+          } catch (e) {
+            profileData = {
+              id: authUser.id,
+              full_name: "",
+              email: authUser.email,
+              phone: ""
+            };
+          }
+        }
+
+        // Determine correct full name, email, and phone
+        const realName = (profileData.full_name && profileData.full_name.trim())
+          || (authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name))
+          || "";
+
+        const realEmail = authUser.email || profileData.email || "";
+        const realPhone = (profileData.phone && profileData.phone.trim())
+          || (authUser.user_metadata && authUser.user_metadata.phone)
+          || "";
+
+        // Calculate initials
+        let initials = "ME";
+        if (realName) {
+          const parts = realName.trim().split(/\s+/);
+          initials = parts.length > 1
+            ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+            : parts[0].substring(0, 2).toUpperCase();
+        } else if (realEmail) {
+          initials = realEmail.substring(0, 2).toUpperCase();
+        }
+
+        // Update UI elements
+        if (avatarCircle) avatarCircle.textContent = initials;
+        if (userNameElem) userNameElem.textContent = realName || "VELORA Member";
+        if (userEmailElem) userEmailElem.textContent = realEmail;
+
+        if (nameInput) nameInput.value = realName;
+        if (emailInput) emailInput.value = realEmail;
+        if (phoneInput) {
+          phoneInput.value = realPhone;
+          phoneInput.placeholder = realPhone ? "e.g. +91 98765 43210" : "Not added";
+        }
+
+        if (loadingIndicator) loadingIndicator.style.display = "none";
+
+        // Update navbar with user name
+        if (window.VeloraAuth && typeof window.VeloraAuth.updateNavbarAuth === "function") {
+          window.VeloraAuth.updateNavbarAuth();
+        }
+      }
+
+      await fetchAndRenderProfile();
+
+      // Listen for auth state change to refresh dynamically
+      client.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          window.location.href = "login.html";
+        } else if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED") {
+          authUser = session.user;
+          await fetchAndRenderProfile();
+        }
+      });
+
+      // 4. Save Profile Changes
+      if (saveBtn) {
+        saveBtn.addEventListener("click", async () => {
+          const newName = nameInput.value.trim();
+          const newPhone = phoneInput.value.trim();
+
+          if (newName.length < 2) {
+            showStatus("Full Name must be at least 2 characters.", "error");
+            return;
+          }
+
+          saveBtn.disabled = true;
+          const originalText = saveBtn.querySelector(".btn-text") ? saveBtn.querySelector(".btn-text").textContent : saveBtn.textContent;
+          if (saveBtn.querySelector(".btn-text")) saveBtn.querySelector(".btn-text").textContent = "Saving...";
+
+          try {
+            // Update Supabase profiles table
+            const { error: profileUpdErr } = await client
+              .from("profiles")
+              .update({
+                full_name: newName,
+                phone: newPhone,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", authUser.id);
+
+            if (profileUpdErr) {
+              console.warn("Profile update notice:", profileUpdErr);
+            }
+
+            // Update user metadata in Supabase Auth
+            await client.auth.updateUser({
+              data: { full_name: newName, phone: newPhone }
+            });
+
+            // Update local fields immediately
+            if (userNameElem) userNameElem.textContent = newName;
+            const newParts = newName.split(/\s+/);
+            const newInitials = newParts.length > 1
+              ? (newParts[0][0] + newParts[newParts.length - 1][0]).toUpperCase()
+              : newParts[0].substring(0, 2).toUpperCase();
+            if (avatarCircle) avatarCircle.textContent = newInitials;
+
+            if (window.VeloraAuth && typeof window.VeloraAuth.updateNavbarAuth === "function") {
+              window.VeloraAuth.updateNavbarAuth();
+            }
+
+            showStatus("Profile details updated successfully!", "success");
+          } catch (err) {
+            showStatus("Failed to update profile: " + (err.message || "Network error"), "error");
+          } finally {
+            saveBtn.disabled = false;
+            if (saveBtn.querySelector(".btn-text")) saveBtn.querySelector(".btn-text").textContent = originalText;
+          }
+        });
+      }
+
+      // 5. Render Orders History (from public.orders)
+      async function renderOrders() {
+        if (!ordersContainer) return;
+        ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading your order history...</div>';
+
+        try {
+          const { data: dbOrders, error } = await client
+            .from("orders")
+            .select("*, order_items(*)")
+            .eq("user_id", authUser.id)
+            .order("created_at", { ascending: false });
+
+          if (!error && dbOrders && dbOrders.length > 0) {
+            ordersContainer.innerHTML = dbOrders.map(ord => {
+              const statusClass = ord.order_status === "delivered" ? "color: var(--color-success);" : "color: var(--accent);";
+              const itemsHtml = (ord.order_items || []).map(item => `
+                <div style="display:flex; align-items:center; gap:14px; padding: 8px 0;">
+                  <img src="${item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80'}" alt="${item.product_name}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
+                  <div style="flex:1;">
+                    <strong style="font-size:0.88rem; color:var(--text-main);">${item.product_name}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + item.selected_size : ''} • Qty: ${item.quantity}</div>
+                  </div>
+                  <div style="font-weight:700; color:var(--text-main); font-size:0.9rem;">₹${Math.round(item.subtotal || (item.price * item.quantity)).toLocaleString("en-IN")}</div>
+                </div>
+              `).join("");
+
+              const formattedDate = new Date(ord.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+              const displayStatus = ord.order_status === "placed" ? "Confirmed & In Process" : ord.order_status;
+              const hasAdvance = Number(ord.advance_paid || ord.advance_amount || 0) > 0;
+              const advPaid = Number(ord.advance_paid || ord.advance_amount || 0);
+              const codBal = Number(ord.cod_balance || 0);
+              const advanceHtml = hasAdvance ? `
+                <div style="margin-top: 10px; padding: 8px 12px; background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; font-size: 0.8rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
+                  <span>⚡ Advance Paid: <strong style="color: #6366f1;">₹${Math.round(advPaid).toLocaleString("en-IN")}</strong> (Online ✓)</span>
+                  <span>Balance on Delivery (COD): <strong style="color: #d97706;">₹${Math.round(codBal).toLocaleString("en-IN")}</strong></span>
+                </div>
+              ` : '';
+
+              return `
+                <div class="order-history-card">
+                  <div class="order-history-header">
+                    <div>
+                      <strong style="font-size: 0.95rem; color: var(--text-main);">${ord.order_number}</strong>
+                      <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">Placed on ${formattedDate}</span>
+                    </div>
+                    <span style="font-size: 0.8rem; font-weight: 700; ${statusClass}">
+                      ● ${displayStatus}
+                    </span>
+                  </div>
+                  <div class="order-history-items">
+                    ${itemsHtml}
+                  </div>
+                  ${advanceHtml}
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border-light);">
+                    <span style="font-size:0.85rem; color:var(--text-secondary);">Total Order: <strong style="color:var(--text-main); font-size:1rem;">₹${Math.round(ord.total).toLocaleString("en-IN")}</strong></span>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">${ord.payment_method}</span>
+                  </div>
+                </div>
+              `;
+            }).join("");
+          } else {
+            ordersContainer.innerHTML = `
+              <div style="padding: 40px 20px; text-align: center; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(0,0,0,0.01);">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🛍️</div>
+                <h4 style="font-size: 1rem; color: var(--text-main); margin-bottom: 6px;">No Orders Placed Yet</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 360px; margin: 0 auto 16px;">When you place an order, your items and tracking updates will appear right here.</p>
+                <a href="shop.html" class="btn-auth-submit" style="display: inline-block; max-width: 180px; text-decoration: none; padding: 8px 16px; font-size: 0.85rem;">Start Shopping</a>
+              </div>
+            `;
+          }
+        } catch (err) {
+          ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Could not load orders at this time.</div>';
+        }
+      }
+
+      // 6. Render Saved Addresses (from public.addresses)
+      async function renderAddresses() {
+        if (!addressesContainer) return;
+        addressesContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading saved addresses...</div>';
+
+        try {
+          const { data: dbAddresses, error } = await client
+            .from("addresses")
+            .select("*")
+            .eq("user_id", authUser.id)
+            .order("is_default", { ascending: false });
+
+          if (!error && dbAddresses && dbAddresses.length > 0) {
+            addressesContainer.innerHTML = dbAddresses.map(addr => `
+              <div class="address-box ${addr.is_default ? 'is-default' : ''}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                  <strong style="font-size: 0.95rem; color: var(--text-main);">${addr.address_type} Address</strong>
+                  ${addr.is_default ? '<span class="pm-badge">Default</span>' : ''}
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                  ${addr.full_name}<br>
+                  ${addr.house}, ${addr.street}${addr.landmark ? ', ' + addr.landmark : ''}<br>
+                  ${addr.city}, ${addr.state} ${addr.pincode}, ${addr.country}<br>
+                  Phone: ${addr.phone}
+                </div>
+              </div>
+            `).join("");
+          } else {
+            addressesContainer.innerHTML = `
+              <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(0,0,0,0.01);">
+                <div style="font-size: 2rem; margin-bottom: 8px;">📍</div>
+                <h4 style="font-size: 1rem; color: var(--text-main); margin-bottom: 6px;">No Saved Addresses</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 360px; margin: 0 auto 16px;">Delivery addresses you provide during checkout will be saved here for rapid reordering.</p>
+                <a href="shop.html" class="btn-auth-submit" style="display: inline-block; max-width: 180px; text-decoration: none; padding: 8px 16px; font-size: 0.85rem;">Browse Shop</a>
+              </div>
+            `;
+          }
+        } catch (err) {
+          addressesContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Could not load addresses at this time.</div>';
+        }
+      }
+
+      renderOrders();
+      renderAddresses();
+
+      // Realtime listener for order status changes
+      if (typeof client.channel === "function") {
+        try {
+          client
+            .channel(`public:user_orders_${authUser.id}`)
+            .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${authUser.id}` }, () => {
+              renderOrders();
+            })
+            .subscribe();
+        } catch (e) {
+          console.warn("Realtime order subscription notice:", e);
+        }
+      }
+
+      // 7. Tab Switching
+      const tabBtns = document.querySelectorAll(".account-tab-btn[data-tab]");
+      const panels = {
+        profile: document.getElementById("panel-profile"),
+        orders: document.getElementById("panel-orders"),
+        addresses: document.getElementById("panel-addresses")
+      };
+
+      function switchTab(tabKey) {
+        tabBtns.forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.tab === tabKey);
+        });
+        Object.keys(panels).forEach(key => {
+          if (panels[key]) panels[key].classList.toggle("active", key === tabKey);
+        });
+      }
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+      });
+
+      if (window.location.hash === "#orders") {
+        switchTab("orders");
+      }
+
+      // 8. Sign Out Button
+      const logoutBtn = document.getElementById("btn-account-logout");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          if (window.VeloraAuth) {
+            window.VeloraAuth.logout();
+          } else {
+            client.auth.signOut().then(() => window.location.href = "login.html");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

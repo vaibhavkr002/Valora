@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shop VELORA's curated collection of luxury shoes, watches, caps, clothing, bags, and modern accessories.">
+  <title>All Products | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheet & Shop Extensions -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/shop.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP ANNOUNCEMENT BAR
+       ======================================================================== -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-text">
+        <span class="announcement-badge">Exclusive</span>
+        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="homepage.html#about">Our Story</a>
+        <span>•</span>
+        <a href="homepage.html#why-us">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       STICKY NAVIGATION BAR
+       ======================================================================== -->
+  <header class="header-nav-wrapper">
+    <div class="container">
+      <nav class="navbar" aria-label="Main Navigation">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Center Nav Menu -->
+        <ul class="nav-menu">
+          <li><a href="homepage.html" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link active">Shop</a></li>
+          <li><a href="shop.html?category=shoes" class="nav-link">Shoes</a></li>
+          <li><a href="shop.html?category=watches" class="nav-link">Watches</a></li>
+          <li><a href="homepage.html#deals-section" class="nav-link">Deals <span class="nav-badge-deal">Hot</span></a></li>
+          <li><a href="homepage.html#about" class="nav-link">About</a></li>
+        </ul>
+
+        <!-- Large Search Bar with Real-Time Preview -->
+        <div class="nav-search-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" id="nav-search-input" placeholder="Search shoes, watches, caps, clothing..." autocomplete="off">
+            <button id="search-clear-btn" class="search-clear-btn" aria-label="Clear Search">✕</button>
+          </div>
+          <div id="search-results-dropdown" class="search-results-dropdown"></div>
+        </div>
+
+        <!-- Right Action Icons -->
+        <div class="nav-actions">
+          <button class="action-btn" aria-label="Account Profile" title="Account / Profile">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </button>
+
+          <a href="wishlist.html" class="action-btn wishlist-drawer-trigger" aria-label="Wishlist" title="Saved Wishlist">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span class="badge-count wishlist-count-badge">2</span>
+          </a>
+
+          <button class="action-btn cart-drawer-trigger" aria-label="Shopping Cart" title="View Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="badge-count cart-count-badge">1</span>
+          </button>
+
+          <button id="mobile-toggle-btn" class="mobile-toggle-btn" aria-label="Toggle Mobile Navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MOBILE NAVIGATION DRAWER
+       ======================================================================== -->
+  <div id="mobile-drawer" class="mobile-drawer">
+    <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop"></div>
+    <div class="mobile-drawer-content">
+      <div class="mobile-drawer-header">
+        <a href="homepage.html" class="brand-logo">
+          <div class="brand-icon">V</div>
+          <span>VELORA</span>
+        </a>
+        <button id="mobile-drawer-close" class="cart-close-btn" aria-label="Close Navigation">✕</button>
+      </div>
+
+      <div class="mobile-nav-links">
+        <a href="homepage.html">Home <span>→</span></a>
+        <a href="shop.html">Shop All Products <span>→</span></a>
+        <a href="shop.html?category=shoes">Shoes & Footwear <span>→</span></a>
+        <a href="shop.html?category=watches">Luxury Watches <span>→</span></a>
+        <a href="shop.html?category=clothing">Modern Clothing <span>→</span></a>
+        <a href="homepage.html#deals-section">Today's Deals <span class="nav-badge-deal">Hot</span></a>
+        <a href="homepage.html#about">About VELORA <span>→</span></a>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);">
+        <button class="btn-primary cart-drawer-trigger" style="width: 100%; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          Open Cart (<span class="cart-count-badge">1</span>)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <!-- ========================================================================
+         PAGE HEADER & BREADCRUMBS
+         ======================================================================== -->
+    <section class="shop-page-header">
+      <div class="container">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="homepage.html">Home</a>
+          <span class="separator">/</span>
+          <a href="shop.html">Shop</a>
+          <span class="separator">/</span>
+          <span id="breadcrumb-category" class="current">All Products</span>
+        </nav>
+
+        <div class="shop-header-content">
+          <div>
+            <h1 id="shop-page-title" class="shop-title">All Products</h1>
+            <p id="shop-page-subtitle" class="shop-subtitle">Discover products you’ll love, crafted with exceptional materials and timeless silhouettes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         MAIN SHOP BROWSING AREA (Sidebar + Product Grid)
+         ======================================================================== -->
+    <section class="shop-layout-section">
+      <div class="container">
+        <div class="shop-layout-grid">
+          
+          <!-- LEFT SIDEBAR: FILTERS -->
+          <aside class="shop-sidebar" aria-label="Filter Products">
+            <div class="sidebar-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                Filters
+              </h3>
+              <button class="clear-all-btn clear-all-filters-action">Clear All</button>
+            </div>
+
+            <!-- 1. Category Filter -->
+            <div class="filter-group">
+              <span class="filter-group-title">Categories</span>
+              <div id="category-filter-list" class="category-filter-list">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- 2. Price Range Filter -->
+            <div class="filter-group">
+              <span class="filter-group-title">Price Range</span>
+              <div class="price-slider-wrap">
+                <input type="range" id="price-range-slider" class="price-range-slider" min="0" max="20000" value="20000" step="500">
+                <div class="price-display-label">
+                  <span>Range:</span>
+                  <strong id="price-display-val">₹0 - ₹20,000</strong>
+                </div>
+                <div class="price-inputs-row">
+                  <div class="price-input-box">
+                    <span>₹</span>
+                    <input type="number" id="price-min-input" value="0" min="0" max="20000">
+                  </div>
+                  <span style="color: var(--text-light);">-</span>
+                  <div class="price-input-box">
+                    <span>₹</span>
+                    <input type="number" id="price-max-input" value="20000" min="0" max="20000">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Brand Filter -->
+            <div class="filter-group">
+              <span class="filter-group-title">Brand</span>
+              <div id="brand-checkboxes-container" class="filter-checkbox-list">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- 4. Customer Rating Filter -->
+            <div class="filter-group">
+              <span class="filter-group-title">Customer Rating</span>
+              <div class="filter-checkbox-list" style="max-height: none;">
+                <label class="custom-checkbox-label">
+                  <div class="checkbox-left">
+                    <input type="radio" name="filter-rating" value="4.8">
+                    <div class="rating-filter-row">
+                      <span class="rating-filter-stars">★★★★☆</span>
+                      <span style="font-size: 0.82rem;">4.8 & Above</span>
+                    </div>
+                  </div>
+                </label>
+                <label class="custom-checkbox-label">
+                  <div class="checkbox-left">
+                    <input type="radio" name="filter-rating" value="4.5">
+                    <div class="rating-filter-row">
+                      <span class="rating-filter-stars">★★★★☆</span>
+                      <span style="font-size: 0.82rem;">4.5 & Above</span>
+                    </div>
+                  </div>
+                </label>
+                <label class="custom-checkbox-label">
+                  <div class="checkbox-left">
+                    <input type="radio" name="filter-rating" value="4.0">
+                    <div class="rating-filter-row">
+                      <span class="rating-filter-stars">★★★★☆</span>
+                      <span style="font-size: 0.82rem;">4.0 & Above</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- 5. Availability Filter -->
+            <div class="filter-group">
+              <span class="filter-group-title">Availability</span>
+              <label class="custom-checkbox-label">
+                <div class="checkbox-left">
+                  <input type="checkbox" id="filter-in-stock">
+                  <span>In Stock Only</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="sidebar-action-group">
+              <button class="clear-all-btn clear-all-filters-action" style="text-align: center; width: 100%; padding: 8px;">
+                Reset All Filters
+              </button>
+            </div>
+          </aside>
+
+          <!-- RIGHT COLUMN: PRODUCT LISTING & TOOLBAR -->
+          <section class="products-listing-wrapper">
+            
+            <!-- Toolbar (Count, Filter Chips, In-Shop Search, Sort) -->
+            <div class="shop-toolbar">
+              <div class="toolbar-left">
+                <!-- Mobile Filter Trigger Button -->
+                <button id="btn-mobile-filter" class="btn-mobile-filter" aria-label="Open Filter Options">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                  <span>Filters</span>
+                  <span id="mobile-filter-badge" class="mobile-filter-badge" style="display: none;">0</span>
+                </button>
+
+                <div id="results-count-text" class="results-count-text">
+                  Showing <strong>0</strong> products
+                </div>
+
+                <!-- Active Filter Tags / Chips -->
+                <div id="active-filters-container" class="active-filters-container">
+                  <!-- Injected via JavaScript -->
+                </div>
+              </div>
+
+              <div class="toolbar-right">
+                <!-- In-Shop Search Field -->
+                <div class="toolbar-search-box">
+                  <input type="text" id="toolbar-search-input" placeholder="Search within results...">
+                  <span class="toolbar-search-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  </span>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="sort-select-wrapper">
+                  <span class="sort-select-label">Sort:</span>
+                  <select id="sort-dropdown" class="sort-dropdown" aria-label="Sort products by">
+                    <option value="featured">Featured</option>
+                    <option value="newest">Newest Arrivals</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="discount">Biggest Discount</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Responsive Product Cards Grid (4 Desktop, 3 Tablet, 2 Mobile) -->
+            <div id="shop-products-grid" class="products-grid">
+              <!-- Skeletons and products injected dynamically -->
+            </div>
+
+            <!-- Pagination / Load More -->
+            <div id="pagination-wrapper" class="pagination-wrapper">
+              <div class="pagination-progress-text" id="pagination-progress-text">Showing 8 of 24 products</div>
+              <div class="pagination-progress-bar">
+                <div id="pagination-progress-fill" class="pagination-progress-fill" style="width: 33%;"></div>
+              </div>
+              <button id="btn-load-more" class="btn-load-more">
+                <span>Load More Products</span>
+              </button>
+            </div>
+
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       MOBILE SLIDE-OUT FILTER DRAWER
+       ======================================================================== -->
+  <div id="mobile-filter-drawer-overlay" class="mobile-filter-drawer-overlay">
+    <div class="mobile-filter-drawer" role="dialog" aria-modal="true" aria-label="Product Filters">
+      <div class="mobile-filter-drawer-header">
+        <h3 style="font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
+          Filters
+        </h3>
+        <button id="mobile-filter-drawer-close" class="cart-close-btn" aria-label="Close Filters">✕</button>
+      </div>
+
+      <div class="mobile-filter-drawer-body">
+        <div class="filter-group">
+          <span class="filter-group-title">Categories</span>
+          <div id="mobile-category-filter-list" class="category-filter-list"></div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-group-title">Brands</span>
+          <div id="mobile-brand-checkboxes" class="filter-checkbox-list"></div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-group-title">Availability</span>
+          <label class="custom-checkbox-label">
+            <div class="checkbox-left">
+              <input type="checkbox" id="mobile-filter-in-stock">
+              <span>In Stock Only</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="mobile-filter-drawer-footer">
+        <button class="clear-all-btn clear-all-filters-action" style="flex: 1; text-align: center; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px;">
+          Reset
+        </button>
+        <button id="mobile-filter-apply-btn" class="btn-primary" style="flex: 2; padding: 10px; justify-content: center;">
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       SLIDE-OVER SHOPPING CART DRAWER (Shared with Homepage)
+       ======================================================================== -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay">
+    <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-drawer-header">
+        <h3 id="cart-title" class="cart-drawer-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          Your Shopping Cart
+        </h3>
+        <button id="cart-drawer-close" class="cart-close-btn" aria-label="Close Cart">✕</button>
+      </div>
+
+      <div class="free-shipping-box">
+        <div class="free-shipping-text">
+          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Express Delivery!</span>
+        </div>
+        <div class="free-shipping-progress">
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 70%;"></div>
+        </div>
+      </div>
+
+      <div id="cart-items-container" class="cart-drawer-items"></div>
+
+      <div id="cart-empty-state" class="cart-empty-view" style="display: none;">
+        <div class="cart-empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
+        <h4>Your Cart is Empty</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 8px 0 20px;">Explore our catalog to add items.</p>
+        <button class="btn-primary" onclick="document.getElementById('cart-drawer-close').click();">
+          Start Shopping
+        </button>
+      </div>
+
+      <div class="cart-drawer-footer">
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" style="font-weight: 700; color: var(--text-main);">₹0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Standard Shipping</span>
+          <span style="color: var(--color-success); font-weight: 700;">FREE</span>
+        </div>
+        <div class="cart-summary-row cart-summary-total">
+          <span>Total (Incl. Taxes)</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <div id="cart-advance-breakdown" style="display: none; padding: 8px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+          <div class="cart-summary-row" style="margin-bottom: 2px;">
+            <span style="color: #6366f1; font-weight: 600;">Advance Payable Now:</span>
+            <span id="cart-advance-payable" style="font-weight: 700; color: #6366f1;">₹0</span>
+          </div>
+          <div class="cart-summary-row" style="margin-bottom: 0;">
+            <span style="color: var(--text-muted);">Remaining by COD:</span>
+            <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
+          </div>
+        </div>
+        <button id="checkout-btn" class="btn-checkout">
+          <span>Proceed to Checkout</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       QUICK VIEW PRODUCT MODAL
+       ======================================================================== -->
+  <div id="quick-view-modal-overlay" class="modal-overlay">
+    <div class="quick-view-modal" role="dialog" aria-modal="true">
+      <button id="modal-close-btn" class="modal-close-btn" aria-label="Close Modal">✕</button>
+      <div class="quick-view-grid">
+        <div class="modal-media-col">
+          <img id="modal-product-img" src="" alt="">
+        </div>
+        <div class="modal-info-col">
+          <span id="modal-product-category" class="modal-category"></span>
+          <h3 id="modal-product-title" class="modal-title"></h3>
+          
+          <div class="modal-rating-row">
+            <span style="color: var(--color-warning);">★</span>
+            <span id="modal-rating-score" style="font-weight: 700;">4.9</span>
+            <span id="modal-reviews-count" style="color: var(--text-muted); font-size: 0.8rem;"></span>
+          </div>
+
+          <div class="modal-price-row">
+            <span id="modal-product-price" class="modal-current-price"></span>
+            <span id="modal-product-orig-price" class="price-original"></span>
+          </div>
+
+          <p id="modal-product-desc" class="modal-desc"></p>
+
+          <span class="option-label">Select Size / Variant:</span>
+          <div id="modal-sizes-container" class="size-selector-pills"></div>
+
+          <div class="modal-actions-row">
+            <button id="modal-add-to-cart-btn" class="btn-primary" style="flex: 1;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       TOAST NOTIFICATION CONTAINER
+       ======================================================================== -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       MULTI-COLUMN FOOTER
+       ======================================================================== -->
+  <footer id="footer" class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <a href="homepage.html" class="footer-brand-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA</span>
+          </a>
+          <p class="footer-brand-desc">
+            VELORA is an independent modern lifestyle brand bringing curated footwear, luxury timepieces, tailored apparel, and timeless accessories to discerning customers worldwide.
+          </p>
+          <div class="footer-social-links">
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Twitter / X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Facebook">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Pinterest">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Shop</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="shop.html?category=shoes">Shoes & Sneakers</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=caps">Caps & Headwear</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=bags">Bags & Luggage</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=clothing">Modern Clothing</a></li>
+            <li class="footer-link-item"><a href="shop.html?deals=true">Flash Deals</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Customer Care</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="account.html#orders">Order Status & Tracking</a></li>
+            <li class="footer-link-item"><a href="shipping-policy.html">Shipping Policy</a></li>
+            <li class="footer-link-item"><a href="returns-exchanges.html">Returns & Exchanges</a></li>
+            <li class="footer-link-item"><a href="size-guide.html">Size & Fit Guide</a></li>
+            <li class="footer-link-item"><a href="faq.html">FAQs</a></li>
+            <li class="footer-link-item"><a href="contact-support.html">Contact Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Company</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="homepage.html#about">About Our Studio</a></li>
+            <li class="footer-link-item"><a href="sustainability.html">Sustainability Pledge</a></li>
+            <li class="footer-link-item"><a href="careers.html">Careers</a></li>
+            <li class="footer-link-item"><a href="press-media.html">Press & Media</a></li>
+            <li class="footer-link-item"><a href="affiliate-program.html">Affiliate Program</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Contact & Legal</h4>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span id="footer-studio-address">12 Connaught Place, New Delhi 110001</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span><a href="mailto:support@velorastudio.com" id="footer-support-email">support@velorastudio.com</a></span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span><a href="tel:+9118001028356" id="footer-support-phone">+91 1800 102 8356</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <p class="footer-copyright">
+          © 2026 VELORA Inc. All rights reserved. Designed for modern living.
+        </p>
+        <div class="footer-payments-list">
+          <span class="payment-badge">VISA</span>
+          <span class="payment-badge">MASTERCARD</span>
+          <span class="payment-badge">AMEX</span>
+          <span class="payment-badge">APPLE PAY</span>
+          <span class="payment-badge">PAYPAL</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>
+

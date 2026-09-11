@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create your VELORA account today to unlock personalized curations, express global delivery, and exclusive access to seasonal drops.">
+  <title>Create Account | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP NAVIGATION BAR
+       ======================================================================== -->
+  <header class="auth-top-nav">
+    <div class="container">
+      <div class="auth-nav-inner">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Return to Shop Link -->
+        <a href="shop.html" class="auth-back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Return to Shop
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN AUTHENTICATION CONTAINER
+       ======================================================================== -->
+  <main class="auth-page-wrapper">
+    <div class="auth-container">
+
+      <!-- Left Column: Visual Fashion Feature -->
+      <div class="auth-visual-col signup-visual">
+        <div class="auth-visual-top">
+          <div class="auth-visual-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>Welcome to Privé</span>
+          </div>
+
+          <h2 class="auth-visual-headline">
+            Elevate Your <span>Lifestyle.</span>
+          </h2>
+
+          <p class="auth-visual-desc">
+            Become a VELORA member to enjoy bespoke shopping assistance, private sales, and complimentary worldwide express delivery.
+          </p>
+
+          <div class="auth-perks-list">
+            <div class="auth-perk-item">
+              <span class="auth-perk-icon">✓</span>
+              <span>15% off your first purchase with code <strong>WELCOME15</strong></span>
+            </div>
+            <div class="auth-perk-item">
+              <span class="auth-perk-icon">✓</span>
+              <span>Complimentary express delivery across India on orders over ₹999</span>
+            </div>
+            <div class="auth-perk-item">
+              <span class="auth-perk-icon">✓</span>
+              <span>Guaranteed authenticity & 2-year international warranty</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endorsement Quote -->
+        <div class="auth-visual-testimonial">
+          <p class="testimonial-quote">
+            "Joining VELORA changed the way I shop for footwear and accessories. The quality is simply beyond compare."
+          </p>
+          <div class="testimonial-author">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" alt="Marcus Sterling" class="author-avatar">
+            <div class="author-info">
+              <h5>Marcus Sterling</h5>
+              <p>Architect & Fashion Enthusiast</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Registration Form -->
+      <div class="auth-form-col">
+        <div class="auth-header">
+          <h1 class="auth-title">Create Your Account</h1>
+          <p class="auth-subtitle">Join VELORA and start discovering products you’ll love</p>
+        </div>
+
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form" novalidate>
+
+          <!-- Full Name Field -->
+          <div class="auth-group" id="group-signup-name">
+            <label for="signup-name" class="auth-label">
+              Full Name <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="text" id="signup-name" class="auth-input" placeholder="e.g. Julian Croft" autocomplete="name" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </span>
+            </div>
+            <span class="auth-error-msg">Please enter your full name (at least 3 characters).</span>
+          </div>
+
+          <!-- Email Address Field -->
+          <div class="auth-group" id="group-signup-email">
+            <label for="signup-email" class="auth-label">
+              Email Address <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="email" id="signup-email" class="auth-input" placeholder="julian.croft@example.com" autocomplete="email" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </span>
+            </div>
+            <span class="auth-error-msg" id="signup-email-error">Please enter a valid email address.</span>
+          </div>
+
+          <!-- Mobile Number Field -->
+          <div class="auth-group" id="group-signup-phone">
+            <label for="signup-phone" class="auth-label">
+              Mobile Number <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="tel" id="signup-phone" class="auth-input" placeholder="+91 98765 43210" autocomplete="tel" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              </span>
+            </div>
+            <span class="auth-error-msg">Please enter a valid phone number (at least 10 digits).</span>
+          </div>
+
+          <!-- Password Field with Strength Indicator -->
+          <div class="auth-group" id="group-signup-password">
+            <label for="signup-password" class="auth-label">
+              Password <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="password" id="signup-password" class="auth-input has-toggle" placeholder="Create a strong password" autocomplete="new-password" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </span>
+              <button type="button" class="btn-toggle-password" data-target="signup-password" aria-label="Toggle Password Visibility">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-closed" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+
+            <!-- Password Strength Bar -->
+            <div id="password-strength-container" class="password-strength-container">
+              <div class="strength-meter-bars" id="strength-bars">
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+              </div>
+              <div class="strength-meter-label">
+                <span>Strength: <strong id="strength-text">Too weak</strong></span>
+                <span>Min. 8 characters</span>
+              </div>
+            </div>
+            <span class="auth-error-msg">Password must be at least 8 characters.</span>
+          </div>
+
+          <!-- Confirm Password Field -->
+          <div class="auth-group" id="group-signup-confirm-password">
+            <label for="signup-confirm-password" class="auth-label">
+              Confirm Password <span class="req">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input type="password" id="signup-confirm-password" class="auth-input has-toggle" placeholder="Re-enter your password" autocomplete="new-password" required>
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </span>
+              <button type="button" class="btn-toggle-password" data-target="signup-confirm-password" aria-label="Toggle Password Visibility">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-closed" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+            <span class="auth-error-msg">Passwords do not match.</span>
+          </div>
+
+          <!-- Terms & Conditions Checkbox -->
+          <div class="auth-group" id="group-signup-terms">
+            <label class="custom-checkbox-label">
+              <input type="checkbox" id="signup-terms" required>
+              <div class="checkmark-box">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span>I agree to VELORA's <a href="#" style="color: var(--accent); text-decoration: underline;">Terms of Service</a> and <a href="privacy-policy.html">Privacy Policy</a> <span class="req">*</span></span>
+            </label>
+            <span class="auth-error-msg">You must accept the terms and conditions to create an account.</span>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="btn-signup-submit" class="btn-auth-submit">
+            <svg class="spinner-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none;">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+            </svg>
+            <span class="btn-text">Create Account</span>
+          </button>
+        </form>
+
+        <!-- Social OR Divider -->
+        <div class="auth-divider">Or continue with</div>
+
+        <!-- Google Signup Option -->
+        <button type="button" id="btn-google-signup" class="btn-social-google">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Sign up with Google</span>
+        </button>
+
+        <!-- Switch to Login Link -->
+        <p class="auth-switch-text">
+          Already have an account? 
+          <a href="login.html" class="auth-switch-link">Sign In</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Redirect if already logged in
+      if (window.VeloraAuth && VeloraAuth.isLoggedIn()) {
+        const target = VeloraAuth.getRedirectUrl("account.html");
+        window.location.href = target;
+        return;
+      }
+      const form = document.getElementById("signup-form");
+      const nameInput = document.getElementById("signup-name");
+      const emailInput = document.getElementById("signup-email");
+      const phoneInput = document.getElementById("signup-phone");
+      const passInput = document.getElementById("signup-password");
+      const confirmInput = document.getElementById("signup-confirm-password");
+      const termsCheckbox = document.getElementById("signup-terms");
+      const submitBtn = document.getElementById("btn-signup-submit");
+      const strengthContainer = document.getElementById("password-strength-container");
+      const strengthText = document.getElementById("strength-text");
+      const btnGoogle = document.getElementById("btn-google-signup");
+
+      // Password Toggles
+      document.querySelectorAll(".btn-toggle-password").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.dataset.target;
+          const target = document.getElementById(targetId);
+          if (target) {
+            const isPass = target.type === "password";
+            target.type = isPass ? "text" : "password";
+            const openEye = btn.querySelector(".eye-open");
+            const closedEye = btn.querySelector(".eye-closed");
+            if (openEye) openEye.style.display = isPass ? "none" : "block";
+            if (closedEye) closedEye.style.display = isPass ? "block" : "none";
+          }
+        });
+      });
+
+      // Real-time Password Strength Meter
+      if (passInput) {
+        passInput.addEventListener("input", () => {
+          const val = passInput.value;
+          const result = VeloraAuth.checkPasswordStrength(val);
+
+          strengthContainer.className = "password-strength-container";
+          if (result.score === 1) strengthContainer.classList.add("strength-weak");
+          else if (result.score === 2) strengthContainer.classList.add("strength-fair");
+          else if (result.score === 3) strengthContainer.classList.add("strength-good");
+          else if (result.score >= 4) strengthContainer.classList.add("strength-strong");
+
+          strengthText.textContent = result.label;
+        });
+      }
+
+      // Real-time Confirm Password Validation
+      if (confirmInput && passInput) {
+        confirmInput.addEventListener("input", () => {
+          const group = document.getElementById("group-signup-confirm-password");
+          if (confirmInput.value && confirmInput.value !== passInput.value) {
+            group.classList.add("has-error");
+          } else {
+            group.classList.remove("has-error");
+          }
+        });
+      }
+
+      // Remove error state on input
+      [nameInput, emailInput, phoneInput, passInput, confirmInput].forEach(inp => {
+        if (inp) {
+          inp.addEventListener("input", () => {
+            const group = inp.closest(".auth-group");
+            if (group) group.classList.remove("has-error");
+          });
+        }
+      });
+
+      if (termsCheckbox) {
+        termsCheckbox.addEventListener("change", () => {
+          const group = document.getElementById("group-signup-terms");
+          if (termsCheckbox.checked) group.classList.remove("has-error");
+        });
+      }
+
+      // Google Sign up Demo
+      if (btnGoogle) {
+        btnGoogle.addEventListener("click", async () => {
+          btnGoogle.disabled = true;
+          btnGoogle.innerHTML = `<span>Connecting with Google...</span>`;
+          await new Promise(r => setTimeout(r, 600));
+          await VeloraAuth.login("alex@velora.com", "Velora@2026", true);
+          window.location.href = "account.html";
+        });
+      }
+
+      // Submit Form
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          let isValid = true;
+          const nameVal = nameInput.value.trim();
+          const emailVal = emailInput.value.trim();
+          const phoneVal = phoneInput.value.replace(/\D/g, "");
+          const passVal = passInput.value;
+          const confirmVal = confirmInput.value;
+
+          // Name validation
+          if (nameVal.length < 3) {
+            document.getElementById("group-signup-name").classList.add("has-error");
+            isValid = false;
+          }
+
+          // Email validation
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailVal)) {
+            document.getElementById("group-signup-email").classList.add("has-error");
+            isValid = false;
+          }
+
+          // Phone validation
+          if (phoneVal.length < 10) {
+            document.getElementById("group-signup-phone").classList.add("has-error");
+            isValid = false;
+          }
+
+          // Password validation
+          if (passVal.length < 8) {
+            document.getElementById("group-signup-password").classList.add("has-error");
+            isValid = false;
+          }
+
+          // Confirm password validation
+          if (confirmVal !== passVal) {
+            document.getElementById("group-signup-confirm-password").classList.add("has-error");
+            isValid = false;
+          }
+
+          // Terms validation
+          if (!termsCheckbox.checked) {
+            document.getElementById("group-signup-terms").classList.add("has-error");
+            isValid = false;
+          }
+
+          if (!isValid) return;
+
+          // Loading state
+          submitBtn.disabled = true;
+          const spinner = submitBtn.querySelector(".spinner-icon");
+          const btnText = submitBtn.querySelector(".btn-text");
+          if (spinner) spinner.style.display = "inline-block";
+          if (btnText) btnText.textContent = "Creating Account...";
+
+          const result = await VeloraAuth.signup({
+            name: nameVal,
+            email: emailVal,
+            phone: phoneInput.value.trim(),
+            password: passVal
+          });
+
+          if (result.success) {
+            if (btnText) btnText.textContent = "Account Created!";
+            const target = VeloraAuth.getRedirectUrl("account.html");
+            setTimeout(() => {
+              window.location.href = target;
+            }, 600);
+          } else {
+            submitBtn.disabled = false;
+            if (spinner) spinner.style.display = "none";
+            if (btnText) btnText.textContent = "Create Account";
+
+            const emailGroup = document.getElementById("group-signup-email");
+            emailGroup.classList.add("has-error");
+            const errSpan = document.getElementById("signup-email-error");
+            if (errSpan) errSpan.textContent = result.error || "Registration failed.";
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

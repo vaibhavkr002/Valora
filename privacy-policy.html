@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VELORA Privacy Policy: Learn how we collect, store, and safeguard your data across our modern e-commerce storefront.">
+  <title>Privacy Policy | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/info-pages.css">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-text">
+        <span class="announcement-badge">Exclusive</span>
+        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="homepage.html#about">Our Story</a>
+        <span>•</span>
+        <a href="account.html#orders">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Nav -->
+  <header class="header-nav-wrapper">
+    <div class="container">
+      <nav class="navbar" aria-label="Main Navigation">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Center Nav Menu -->
+        <ul class="nav-menu">
+          <li><a href="homepage.html" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link">Shop</a></li>
+          <li><a href="shop.html?category=shoes" class="nav-link">Shoes</a></li>
+          <li><a href="shop.html?category=watches" class="nav-link">Watches</a></li>
+          <li><a href="shop.html?deals=true" class="nav-link">Deals <span class="nav-badge-deal">Hot</span></a></li>
+          <li><a href="homepage.html#about" class="nav-link">About</a></li>
+        </ul>
+
+        <!-- Large Search Bar with Real-Time Preview -->
+        <div class="nav-search-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" id="nav-search-input" placeholder="Search shoes, watches, caps, clothing..." autocomplete="off">
+            <button id="search-clear-btn" class="search-clear-btn" aria-label="Clear Search">✕</button>
+          </div>
+          <div id="search-results-dropdown" class="search-results-dropdown"></div>
+        </div>
+
+        <!-- Right Action Icons -->
+        <div class="nav-actions">
+          <div class="nav-account-wrapper">
+            <button class="action-btn" aria-label="Account Profile" title="Account / Profile">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+          </div>
+
+          <a href="wishlist.html" class="action-btn wishlist-drawer-trigger" aria-label="Wishlist" title="Saved Wishlist">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span class="badge-count wishlist-count-badge">0</span>
+          </a>
+
+          <button class="action-btn cart-drawer-trigger" aria-label="Shopping Cart" title="View Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="badge-count cart-count-badge">0</span>
+          </button>
+
+          <button id="mobile-toggle-btn" class="mobile-toggle-btn" aria-label="Toggle Mobile Navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="mobile-drawer" class="mobile-drawer">
+    <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop"></div>
+    <div class="mobile-drawer-content">
+      <div class="mobile-drawer-header">
+        <a href="homepage.html" class="brand-logo">
+          <div class="brand-icon">V</div>
+          <span>VELORA</span>
+        </a>
+        <button id="mobile-drawer-close" class="mobile-drawer-close" aria-label="Close Menu">✕</button>
+      </div>
+      <ul class="mobile-nav-menu">
+        <li><a href="homepage.html" class="mobile-nav-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-nav-link">Shop All Products</a></li>
+        <li><a href="shop.html?category=shoes" class="mobile-nav-link">Shoes & Sneakers</a></li>
+        <li><a href="shop.html?category=watches" class="mobile-nav-link">Luxury Watches</a></li>
+        <li><a href="shop.html?deals=true" class="mobile-nav-link">Flash Deals</a></li>
+        <li><a href="wishlist.html" class="mobile-nav-link">Saved Wishlist</a></li>
+        <li><a href="account.html" class="mobile-nav-link">My Account / Orders</a></li>
+        <li><a href="contact-support.html" class="mobile-nav-link">Contact Support</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Hero & Breadcrumb -->
+  <section class="info-page-hero">
+    <div class="container">
+      <nav class="info-breadcrumbs" aria-label="Breadcrumb">
+        <a href="homepage.html">Home</a>
+        <span class="separator">/</span>
+        <a href="javascript:void(0)">Legal</a>
+        <span class="separator">/</span>
+        <span class="current">Privacy Policy</span>
+      </nav>
+
+      <div>
+        <span class="info-hero-badge">Legal & Transparency</span>
+        <h1 class="info-hero-title">Privacy Policy</h1>
+        <p class="info-hero-subtitle">Transparent data practices designed to safeguard your trust while delivering a modern shopping experience.</p>
+      </div>
+
+      <div class="legal-meta-row">
+        <span class="legal-last-updated">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Last Updated: September 2026
+        </span>
+      </div>
+
+      <!-- Legal Navigation Switcher -->
+      <div class="legal-nav-switcher">
+        <a href="privacy-policy.html">Privacy Policy</a>
+        <a href="terms-conditions.html">Terms & Conditions</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Legal Content Layout -->
+  <main class="info-content-section">
+    <div class="container">
+      <div class="info-layout-grid">
+        <!-- Sticky Table of Contents Sidebar -->
+        <aside class="info-sidebar-nav">
+          <div class="info-sidebar-title">Table of Contents</div>
+          <ul class="info-sidebar-menu">
+            <li><a href="#intro" class="active">1. Introduction & Scope</a></li>
+            <li><a href="#info-collect" >2. Information We Collect</a></li>
+            <li><a href="#account-info" >3. Account Information</a></li>
+            <li><a href="#contact-info" >4. Contact & Support Data</a></li>
+            <li><a href="#order-info" >5. Order & Transaction Data</a></li>
+            <li><a href="#payment-info" >6. Payment Information</a></li>
+            <li><a href="#device-info" >7. Device & Usage Information</a></li>
+            <li><a href="#cookies-storage" >8. Cookies & Local Storage</a></li>
+            <li><a href="#how-we-use" >9. How We Use Information</a></li>
+            <li><a href="#security" >10. How We Protect Information</a></li>
+            <li><a href="#sharing" >11. How Information May Be Shared</a></li>
+            <li><a href="#third-party" >12. Third-Party Services</a></li>
+            <li><a href="#analytics" >13. Analytics & Product Metrics</a></li>
+            <li><a href="#retention" >14. Data Retention</a></li>
+            <li><a href="#user-rights" >15. User Choices & Rights</a></li>
+            <li><a href="#account-deletion" >16. Account Deletion</a></li>
+            <li><a href="#children" >17. Children’s Privacy</a></li>
+            <li><a href="#updates" >18. Policy Updates & Contact</a></li>
+          </ul>
+        </aside>
+
+        <!-- Main Articles -->
+        <div class="info-main-content">
+          <!-- Educational Notice Box -->
+          <div class="legal-notice-box">
+            <strong>Educational Showcase Notice:</strong> This Privacy Policy outlines the general data handling philosophies of the VELORA e-commerce website. Because this platform currently functions as a frontend college project, user accounts, shopping cart items, saved wishlists, and demo orders are managed locally within your browser's localStorage or in simulated runtime memory. We do not sell, trade, or distribute your information to external advertising brokers.
+          </div>
+
+          
+          <article id="intro" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <h2 class="policy-block-title">1. Introduction & Scope</h2>
+            </div>
+            <p class="policy-paragraph">
+              VELORA ("we", "our", or "us") is dedicated to providing a secure, transparent, and respectful digital shopping experience. This Privacy Policy outlines how information is gathered, utilized, stored, and safeguarded when you explore our digital storefront, browse footwear, timepieces, caps, and apparel, create an account, save wishlist items, or simulate an order.
+            </p>
+            <p class="policy-paragraph">
+              By accessing or using the VELORA website, you acknowledge the informational and data handling practices described herein. If you do not agree with these principles, we advise discontinuing use of the website.
+            </p>
+          </article>
+
+          <article id="info-collect" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              </div>
+              <h2 class="policy-block-title">2. Information We Collect</h2>
+            </div>
+            <p class="policy-paragraph">
+              In the course of operating a modern e-commerce storefront, certain pieces of information are submitted voluntarily by you (such as when filling out a checkout form or creating an account), while other technical parameters are recognized automatically by your web browser during navigation.
+            </p>
+          </article>
+
+          <article id="account-info" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <h2 class="policy-block-title">3. Account Information</h2>
+            </div>
+            <p class="policy-paragraph">
+              When you register for a VELORA member account, we collect your full name, email address, and chosen password credential. Within this demo architecture, accounts (including preconfigured demo accounts such as Alex Morgan) are stored in client-side storage (<code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">velora_users_db</code>) to simulate session persistence, order history tracking, and profile customization without transmitting credentials to an external server.
+            </p>
+          </article>
+
+          <article id="contact-info" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <h2 class="policy-block-title">4. Contact & Support Data</h2>
+            </div>
+            <p class="policy-paragraph">
+              When you submit an inquiry through our Contact Support form, careers application, or affiliate request, we collect your name, email address, optional telephone number, order reference number, and message text. In our current implementation, support tickets are assigned a unique reference code (e.g. <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">#VEL-TKT-XXXXX</code>) and stored in browser memory to facilitate demonstration feedback.
+            </p>
+          </article>
+
+          <article id="order-info" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+              </div>
+              <h2 class="policy-block-title">5. Order & Transaction Data</h2>
+            </div>
+            <p class="policy-paragraph">
+              When simulating an order through Checkout, we gather recipient delivery information (shipping name, delivery address, apartment or suite, city, state, postal code, and contact phone number). Completed demo orders are recorded locally so that they can be viewed immediately in your My Account &rarr; Orders dashboard.
+            </p>
+          </article>
+
+          <article id="payment-info" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+              </div>
+              <h2 class="policy-block-title">6. Payment Information</h2>
+            </div>
+            <p class="policy-paragraph">
+              <strong>Zero Card Data Stored:</strong> In this educational frontend project, credit card numbers, expiration dates, and CVV security codes entered into checkout inputs are processed solely for client-side form validation and demonstration display. No raw credit card data is transmitted, captured, or retained on external payment processor servers.
+            </p>
+          </article>
+
+          <article id="device-info" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              </div>
+              <h2 class="policy-block-title">7. Device & Usage Information</h2>
+            </div>
+            <p class="policy-paragraph">
+              When accessing VELORA, standard non-identifying technical information is processed by your browser to ensure optimal visual rendering. This includes screen resolution, viewport width, browser type, operating system, and language preferences. This information enables our responsive design system to serve mobile drawers, touch carousels, or multi-column grids appropriately.
+            </p>
+          </article>
+
+          <article id="cookies-storage" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>
+              </div>
+              <h2 class="policy-block-title">8. Cookies & Local Storage</h2>
+            </div>
+            <p class="policy-paragraph">
+              VELORA utilizes modern web browser <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">localStorage</code> rather than intrusive third-party tracking cookies. The keys utilized across our site include:
+            </p>
+            <ul class="policy-list">
+              <li class="policy-list-item"><strong>velora_cart:</strong> Retains your active shopping bag items, chosen sizes, colors, and quantities.</li>
+              <li class="policy-list-item"><strong>velora_wishlist:</strong> Stores your bookmarked products for convenient access.</li>
+              <li class="policy-list-item"><strong>velora_user_session:</strong> Maintains your authenticated member state while navigating between pages.</li>
+              <li class="policy-list-item"><strong>velora_remembered_email:</strong> Pre-fills your login email if "Remember Me" is checked.</li>
+            </ul>
+          </article>
+
+          <article id="how-we-use" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <h2 class="policy-block-title">9. How We Use Information</h2>
+            </div>
+            <p class="policy-paragraph">
+              Information collected within VELORA is used strictly to fulfill core e-commerce interactions:
+            </p>
+            <ul class="policy-list">
+              <li class="policy-list-item">Processing and rendering your simulated orders, receipts, and shipping timelines.</li>
+              <li class="policy-list-item">Maintaining persistent cart item counts and wishlist badges in the header navigation.</li>
+              <li class="policy-list-item">Filtering and sorting catalog items according to category parameters and deals queries.</li>
+              <li class="policy-list-item">Providing realistic customer support ticket confirmations and simulated career submissions.</li>
+            </ul>
+          </article>
+
+          <article id="security" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              <h2 class="policy-block-title">10. How We Protect Information</h2>
+            </div>
+            <p class="policy-paragraph">
+              We employ structured client-side form validation, sanitized text rendering, and secure coding practices to prevent cross-site scripting (XSS) and injection errors. In production deployment, e-commerce architectures require end-to-end SSL/TLS encryption, secure tokenized payment gateways, and hashed database storage. Within this demo showcase, sensitive personal data is avoided entirely.
+            </p>
+          </article>
+
+          <article id="sharing" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              </div>
+              <h2 class="policy-block-title">11. How Information May Be Shared</h2>
+            </div>
+            <p class="policy-paragraph">
+              <strong>We do not sell your data:</strong> VELORA does not monetize, license, or sell user email addresses, browsing habits, or order records to external telemarketers, ad networks, or data brokers.
+            </p>
+          </article>
+
+          <article id="third-party" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+              </div>
+              <h2 class="policy-block-title">12. Third-Party Services</h2>
+            </div>
+            <p class="policy-paragraph">
+              Our website may reference links to external platforms such as social media channels or carrier websites. These external sites operate under independent privacy protocols. We encourage customers to inspect external privacy terms before providing information on third-party sites.
+            </p>
+          </article>
+
+          <article id="analytics" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              </div>
+              <h2 class="policy-block-title">13. Analytics & Product Metrics</h2>
+            </div>
+            <p class="policy-paragraph">
+              Product popularity counters, review counts, and bestseller badges displayed on catalog cards are driven by local JavaScript arrays in <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">js/products.js</code> to deliver realistic browsing dynamics without deploying invasive third-party telemetry.
+            </p>
+          </article>
+
+          <article id="retention" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <h2 class="policy-block-title">14. Data Retention</h2>
+            </div>
+            <p class="policy-paragraph">
+              Information stored in your web browser's local cache remains active until cleared through your browser settings or explicitly removed through the "Sign Out" or "Reset Filters" controls on VELORA.
+            </p>
+          </article>
+
+          <article id="user-rights" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+              </div>
+              <h2 class="policy-block-title">15. User Choices & Rights</h2>
+            </div>
+            <p class="policy-paragraph">
+              You maintain total control over your browsing session data:
+            </p>
+            <ul class="policy-list">
+              <li class="policy-list-item"><strong>Access & Review:</strong> View all saved order histories and shipping addresses inside your My Account panel.</li>
+              <li class="policy-list-item"><strong>Cart & Wishlist Clear:</strong> Remove individual saved items or clear the entire bag using the in-drawer controls.</li>
+              <li class="policy-list-item"><strong>Sign Out:</strong> Terminate your authenticated demo session with one click in the header account menu.</li>
+            </ul>
+          </article>
+
+          <article id="account-deletion" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </div>
+              <h2 class="policy-block-title">16. Account Deletion & Local Data Reset</h2>
+            </div>
+            <p class="policy-paragraph">
+              To delete all locally saved credentials, orders, wishlists, and cart items created during your exploration of VELORA, simply clear your browser's site data for this domain or execute <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">localStorage.clear()</code> in the developer console.
+            </p>
+          </article>
+
+          <article id="children" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+              </div>
+              <h2 class="policy-block-title">17. Children’s Privacy</h2>
+            </div>
+            <p class="policy-paragraph">
+              VELORA is designed for adult fashion enthusiasts, horology collectors, and general consumers aged 18 and older. We do not knowingly solicit or collect personal information from individuals under the age of 16.
+            </p>
+          </article>
+
+          <article id="updates" class="policy-block">
+            <div class="policy-block-header">
+              <div class="policy-block-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l6-5.62"></path></svg>
+              </div>
+              <h2 class="policy-block-title">18. Policy Updates & Contact Us</h2>
+            </div>
+            <p class="policy-paragraph">
+              We may periodically revise this Privacy Policy to reflect enhancements in site features, legal updates, or backend API migrations (such as Supabase or Stripe connectivity). Changes will be documented on this page alongside an updated date.
+            </p>
+            <p class="policy-paragraph">
+              For questions regarding our privacy principles, connect with our team through the <a href="contact-support.html" style="color: #6366f1; font-weight: 600;">Contact Support</a> page or email <a href="mailto:support@velorastudio.com" style="color: #6366f1; font-weight: 600;">support@velorastudio.com</a>.
+            </p>
+          </article>
+
+
+          <!-- Bottom CTA -->
+          <div class="info-cta-banner">
+            <h3 class="info-cta-title">Have Questions About Our Policies?</h3>
+            <p class="info-cta-text">Our customer care concierge is available to clarify any terms, data practices, order guidelines, or return inquiries.</p>
+            <div class="info-hero-actions">
+              <a href="contact-support.html" class="btn-primary">Contact Support</a>
+              <a href="faq.html" class="btn-secondary" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);">Browse FAQs</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Floating Back to Top Button -->
+  <button id="btn-back-to-top" class="btn-back-to-top" aria-label="Back to top" title="Back to top">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  </button>
+
+  <!-- Multi-Column Professional Footer -->
+  <footer id="footer" class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Summary Column -->
+        <div class="footer-brand-col" id="about">
+          <a href="homepage.html" class="footer-brand-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA</span>
+          </a>
+          <p class="footer-brand-desc">
+            VELORA is an independent modern lifestyle brand bringing curated footwear, luxury timepieces, tailored apparel, and timeless accessories to discerning customers worldwide.
+          </p>
+          <div class="footer-social-links">
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Twitter / X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Facebook">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Pinterest">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Shop Links Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Shop</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="shop.html?category=shoes">Shoes & Sneakers</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=caps">Caps & Headwear</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=bags">Bags & Luggage</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=clothing">Modern Clothing</a></li>
+            <li class="footer-link-item"><a href="shop.html?deals=true">Flash Deals</a></li>
+          </ul>
+        </div>
+
+        <!-- Customer Help Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Customer Care</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="account.html#orders">Order Status & Tracking</a></li>
+            <li class="footer-link-item"><a href="shipping-policy.html">Shipping Policy</a></li>
+            <li class="footer-link-item"><a href="returns-exchanges.html">Returns & Exchanges</a></li>
+            <li class="footer-link-item"><a href="size-guide.html">Size & Fit Guide</a></li>
+            <li class="footer-link-item"><a href="faq.html">FAQs</a></li>
+            <li class="footer-link-item"><a href="contact-support.html">Contact Support</a></li>
+          </ul>
+        </div>
+
+        <!-- Company Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Company</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="homepage.html#about">About Our Studio</a></li>
+            <li class="footer-link-item"><a href="sustainability.html">Sustainability Pledge</a></li>
+            <li class="footer-link-item"><a href="careers.html">Careers</a></li>
+            <li class="footer-link-item"><a href="press-media.html">Press & Media</a></li>
+            <li class="footer-link-item"><a href="affiliate-program.html">Affiliate Program</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact & Legal Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Contact & Legal</h4>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>12 Connaught Place, New Delhi 110001</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span><a href="mailto:support@velorastudio.com">support@velorastudio.com</a></span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span><a href="tel:+9118001028356">+91 1800 102 8356</a></span>
+          </div>
+          <ul class="footer-links-list" style="margin-top: 14px;">
+            <li class="footer-link-item"><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li class="footer-link-item"><a href="terms-conditions.html">Terms & Conditions</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <p class="footer-copyright">
+          © 2026 VELORA Inc. All rights reserved. Designed for modern living.
+        </p>
+        <div class="footer-payments-list">
+          <span class="payment-badge">VISA</span>
+          <span class="payment-badge">MASTERCARD</span>
+          <span class="payment-badge">AMEX</span>
+          <span class="payment-badge">APPLE PAY</span>
+          <span class="payment-badge">PAYPAL</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slide-Over Shopping Cart Drawer -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay">
+    <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-drawer-header">
+        <h3 id="cart-title" class="cart-drawer-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          Your Shopping Cart
+        </h3>
+        <button id="cart-drawer-close" class="cart-close-btn" aria-label="Close Cart">✕</button>
+      </div>
+
+      <!-- Free Shipping Meter -->
+      <div class="free-shipping-box">
+        <div class="free-shipping-text">
+          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Delivery!</span>
+        </div>
+        <div class="free-shipping-progress">
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 80%;"></div>
+        </div>
+      </div>
+
+      <!-- Cart Items List Container -->
+      <div id="cart-items-container" class="cart-items-list">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Empty Cart State -->
+      <div id="cart-empty-state" class="cart-empty" style="display: none;">
+        <div class="cart-empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
+        <p class="cart-empty-msg">Your shopping cart is currently empty.</p>
+        <a href="shop.html" class="btn-primary" style="display: inline-flex; margin-top: 12px;">Browse Products</a>
+      </div>
+
+      <!-- Cart Drawer Footer -->
+      <div class="cart-drawer-footer">
+        <div class="cart-summary-row">
+          <span class="cart-subtotal-label">Estimated Total</span>
+          <span id="cart-total" class="cart-subtotal-val">₹0</span>
+        </div>
+        <p class="cart-tax-notice">Taxes, discounts and express shipping calculated at checkout.</p>
+        <button id="checkout-btn" class="checkout-btn">
+          <span>Proceed to Checkout</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Core Scripts -->
+  <script src="js/products.js"></script>
+    <!-- Supabase JS Client & Global Client Initializer -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/info-pages.js"></script>
+
+</body>
+</html>

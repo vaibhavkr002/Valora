@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details | VELORA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VELORA</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        
+        <a href="dashboard.html" class="sidebar-link ">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+  
+
+        <a href="products.html" class="sidebar-link ">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+  
+
+        <a href="add-product.html" class="sidebar-link ">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+  
+
+        <a href="categories.html" class="sidebar-link ">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+  
+
+        <a href="orders.html" class="sidebar-link active">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+  
+
+        <a href="customers.html" class="sidebar-link ">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+  
+
+        <a href="coupons.html" class="sidebar-link ">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+  
+
+        <a href="reviews.html" class="sidebar-link ">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+  
+
+        <a href="analytics.html" class="sidebar-link ">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+  
+
+        <a href="banners.html" class="sidebar-link ">
+          <i class="fas fa-images"></i>
+          <span>Hero Banners</span>
+        </a>
+  
+
+        <a href="delivery-partners.html" class="sidebar-link ">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+  
+
+        <a href="settings.html" class="sidebar-link ">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+  
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+  
+    <div class="admin-main">
+      
+    <header class="admin-header">
+      <div class="header-left">
+        <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-breadcrumbs">
+          <a href="dashboard.html">Velora Admin</a>
+          <span>/</span>
+          <span class="current">Order View</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="admin-user-menu-wrap">
+          <div class="admin-user-pill" id="admin-user-pill">
+            <div class="admin-avatar" id="header-admin-avatar">AD</div>
+            <div class="admin-info-text">
+              <div class="admin-name-display" id="header-admin-name">Admin</div>
+              <div class="admin-role-display">ADMINISTRATOR</div>
+            </div>
+            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+          </div>
+          <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+            <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+            <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-heading">Order #<span id="detail-order-number">...</span></h1>
+            <p class="page-subheading">Placed on <span id="detail-order-date">...</span></p>
+          </div>
+          <div style="display:flex; align-items:center; gap: 10px;">
+            <select id="select-order-status" class="admin-select" style="min-width: 150px;">
+              <option value="placed">Placed</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button type="button" id="btn-update-status" class="btn-admin-primary">Update Status</button>
+            <a href="orders.html" class="btn-admin-secondary"><i class="fas fa-arrow-left"></i> All Orders</a>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+          <div>
+            <div class="admin-card">
+              <h3 class="card-title" style="margin-bottom: 16px;">Purchased Items</h3>
+              <div id="order-items-container">
+                <p style="color: var(--admin-text-muted);">Loading items...</p>
+              </div>
+            </div>
+
+            <div class="admin-card">
+              <h3 class="card-title" style="margin-bottom: 16px;">Financial Breakdown (INR ₹)</h3>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+                <div style="display:flex; justify-content:space-between; color: var(--admin-text-muted);">
+                  <span>Subtotal</span>
+                  <span id="detail-subtotal">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; color: #10b981;">
+                  <span>Discount Applied</span>
+                  <span id="detail-discount">-₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; color: var(--admin-text-muted);">
+                  <span>Delivery & Handling</span>
+                  <span id="detail-shipping">₹0</span>
+                </div>
+                <div id="detail-advance-row" style="display:none; justify-content:space-between; color: #818cf8; font-weight: 600; padding-top: 6px; border-top: 1px dashed var(--admin-card-border);">
+                  <span>Advance Paid Online</span>
+                  <span id="detail-advance-paid">₹0</span>
+                </div>
+                <div id="detail-cod-row" style="display:none; justify-content:space-between; color: #f59e0b; font-weight: 600;">
+                  <span>Remaining COD Balance</span>
+                  <span id="detail-cod-balance">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size: 1.15rem; font-weight: 700; color: #fff; padding-top: 10px; border-top: 1px solid var(--admin-card-border); margin-top: 6px;">
+                  <span>Total Amount</span>
+                  <span id="detail-total" style="color: var(--admin-accent);">₹0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="admin-card">
+              <h3 class="card-title" style="margin-bottom: 16px;">Recipient & Shipping</h3>
+              <div style="line-height: 1.6; font-size: 0.9rem;">
+                <p><strong id="detail-customer-name" style="color:#fff; font-size:1rem;">-</strong></p>
+                <p style="color: var(--admin-text-muted);"><i class="fas fa-phone"></i> <span id="detail-customer-phone">-</span></p>
+                <div id="detail-customer-address" style="color: var(--admin-text-muted); margin-top: 8px;">-</div>
+              </div>
+            </div>
+
+            <div class="admin-card">
+              <h3 class="card-title" style="margin-bottom: 16px;">Payment Information</h3>
+              <div style="font-size: 0.9rem; line-height: 1.8;">
+                <p><strong>Method:</strong> <span id="detail-payment-method" style="text-transform: uppercase;">-</span></p>
+                <p><strong>Payment Status:</strong> <span id="detail-payment-status" class="badge badge-success">-</span></p>
+              </div>
+
+              <!-- Advance Status Details -->
+              <div id="detail-advance-status-box" style="display: none; margin-top: 14px; padding: 12px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px;">
+                <div style="font-size: 0.85rem; color: #818cf8; font-weight: 700; margin-bottom: 6px;">⚡ Advance Payment Split</div>
+                <div style="font-size: 0.8rem; color: var(--admin-text-muted); line-height: 1.6;">
+                  Advance Status: <span id="detail-advance-status" class="badge badge-success">Paid</span><br>
+                  COD Balance Status: <span id="detail-cod-status" class="badge badge-warning">Pending</span>
+                </div>
+                <div id="cod-collection-control" style="margin-top: 10px; display: none;">
+                  <button type="button" id="btn-mark-cod-collected" class="btn-admin-secondary" style="width: 100%; font-size: 0.78rem; padding: 6px;">
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i> Mark COD Balance Collected
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/admin-order-details.js"></script>
+</body>
+</html>

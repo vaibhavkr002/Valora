@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | VELORA Luxury Fashion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body class="login-page-body">
+  <div class="login-card">
+    <div class="login-brand">
+      <h1>VELORA</h1>
+      <span class="badge badge-indigo">ADMIN PORTAL</span>
+    </div>
+    <h2 class="login-heading">Control Center</h2>
+    <p class="login-subheading">Sign in with verified VELORA administrator credentials</p>
+
+    <div id="loginAlert" class="admin-card" style="display:none; background: rgba(239, 68, 68, 0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5; padding: 12px; margin-bottom: 18px; font-size: 0.88rem;"></div>
+
+    <form id="adminLoginForm">
+      <div class="form-group">
+        <label class="admin-label" for="adminEmail">Administrator Email</label>
+        <input type="email" id="adminEmail" class="admin-input" placeholder="admin@velora.com" required autocomplete="email" style="width:100%;">
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="admin-label" for="adminPassword">Security Key / Password</label>
+        <input type="password" id="adminPassword" class="admin-input" placeholder="••••••••••••" required autocomplete="current-password" style="width:100%;">
+      </div>
+
+      <button type="submit" id="adminLoginSubmitBtn" class="btn-admin-primary" style="width:100%; justify-content:center; margin-top: 22px; padding: 12px;">
+        <span>Authenticate & Access</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </form>
+
+    <div style="margin-top: 24px; text-align: center;">
+      <a href="../index.html" style="font-size: 0.82rem; color: var(--admin-text-muted); text-decoration: none;">
+        <i class="fas fa-arrow-left"></i> Return to VELORA Customer Storefront
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const check = await window.AdminAuth.checkAdmin();
+      if (check.isAdmin) {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      const form = document.getElementById('adminLoginForm');
+      const submitBtn = document.getElementById('adminLoginSubmitBtn');
+      const alertBox = document.getElementById('loginAlert');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+        alertBox.style.display = 'none';
+
+        const result = await window.AdminAuth.login(email, password);
+        if (result.success) {
+          submitBtn.innerHTML = '<i class="fas fa-check"></i> Authorized! Redirecting...';
+          window.location.href = 'dashboard.html';
+        } else {
+          alertBox.textContent = result.error || 'Access Denied: This account lacks administrator privileges.';
+          alertBox.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Authenticate & Access</span> <i class="fas fa-arrow-right"></i>';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

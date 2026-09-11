@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <!-- Ekart Speed Wing / Box Icon -->
+  <g transform="translate(10, 8)">
+    <path d="M5 28 L28 8 L42 22 L19 42 Z" fill="#003399"/>
+    <path d="M28 8 L38 2 L52 16 L42 22 Z" fill="#FF7700"/>
+    <path d="M19 42 L42 22 L46 26 L23 46 Z" fill="#E65100"/>
+    <polygon points="12,24 24,14 28,18 16,28" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  <!-- Text: eKart -->
+  <text x="68" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="900" font-style="italic" fill="#002984" letter-spacing="-0.5">
+    e<tspan fill="#FF6D00">Kart</tspan>
+  </text>
+  <text x="69" y="49" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="#64748B" letter-spacing="2.5">
+    LOGISTICS
+  </text>
+</svg>

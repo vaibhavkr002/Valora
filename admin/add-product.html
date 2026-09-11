@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Product | VELORA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VELORA</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        
+        <a href="dashboard.html" class="sidebar-link ">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+  
+
+        <a href="products.html" class="sidebar-link ">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+  
+
+        <a href="add-product.html" class="sidebar-link active">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+  
+
+        <a href="categories.html" class="sidebar-link ">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+  
+
+        <a href="orders.html" class="sidebar-link ">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+  
+
+        <a href="customers.html" class="sidebar-link ">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+  
+
+        <a href="coupons.html" class="sidebar-link ">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+  
+
+        <a href="reviews.html" class="sidebar-link ">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+  
+
+        <a href="analytics.html" class="sidebar-link ">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+  
+
+        <a href="banners.html" class="sidebar-link ">
+          <i class="fas fa-images"></i>
+          <span>Hero Banners</span>
+        </a>
+  
+
+        <a href="delivery-partners.html" class="sidebar-link ">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+  
+
+        <a href="settings.html" class="sidebar-link ">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+  
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+  
+    <div class="admin-main">
+      
+    <header class="admin-header">
+      <div class="header-left">
+        <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-breadcrumbs">
+          <a href="dashboard.html">Velora Admin</a>
+          <span>/</span>
+          <span class="current">Create New Item</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="admin-user-menu-wrap">
+          <div class="admin-user-pill" id="admin-user-pill">
+            <div class="admin-avatar" id="header-admin-avatar">AD</div>
+            <div class="admin-info-text">
+              <div class="admin-name-display" id="header-admin-name">Admin</div>
+              <div class="admin-role-display">ADMINISTRATOR</div>
+            </div>
+            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+          </div>
+          <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+            <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+            <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+            <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-heading">Add New Product</h1>
+            <p class="page-subheading">Create a luxury item with full Indian pricing, variants, and gallery</p>
+          </div>
+          <button type="button" id="btn-open-import-modal" class="btn-admin-secondary">
+            <i class="fas fa-file-import"></i> Import by URL
+          </button>
+        </div>
+
+        <form id="add-product-form">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            <div>
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Product Information</h3>
+                <div class="form-group">
+                  <label class="admin-label">Product Name *</label>
+                  <input type="text" id="product-name" class="admin-input" placeholder="e.g. Italian Wool Double-Breasted Blazer" required style="width:100%;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px;">
+                  <div class="form-group">
+                    <label class="admin-label">Brand *</label>
+                    <input type="text" id="product-brand" class="admin-input" value="VELORA Atelier" required style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label">Slug (Optional)</label>
+                    <input type="text" id="product-slug" class="admin-input" placeholder="auto-generated-from-name" style="width:100%;">
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top: 14px;">
+                  <label class="admin-label">Detailed Description</label>
+                  <textarea id="product-description" class="admin-textarea" rows="5" placeholder="Description of fabric, silhouette, craftsmanship..." style="width:100%;"></textarea>
+                </div>
+              </div>
+
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Pricing & Inventory (INR ₹)</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                  <div class="form-group">
+                    <label class="admin-label">Selling Price (₹) *</label>
+                    <input type="number" id="product-price" class="admin-input" placeholder="4999" required min="1" style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label">Original MRP (₹)</label>
+                    <input type="number" id="product-original-price" class="admin-input" placeholder="7999" style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label">Stock Quantity *</label>
+                    <input type="number" id="product-stock" class="admin-input" value="25" min="0" required style="width:100%;">
+                  </div>
+                </div>
+              </div>
+
+              <div class="admin-card" id="card-advance-payment">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 class="card-title" style="margin: 0;">
+                    <i class="fas fa-hand-holding-dollar" style="color: var(--admin-accent); margin-right: 6px;"></i>
+                    Advance Payment Settings
+                  </h3>
+                  <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer; font-size: 0.88rem;">
+                    <input type="checkbox" id="advance-payment-enabled"> 
+                    <span style="font-weight: 600;">Require Advance</span>
+                  </label>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--admin-text-muted); margin-bottom: 14px;">
+                  Configure whether customers must pay an upfront deposit (via UPI/Card) before order confirmation, with the balance collected via COD upon delivery.
+                </p>
+
+                <div id="advance-config-fields" style="display: none; padding-top: 10px; border-top: 1px solid var(--admin-card-border);">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                      <label class="admin-label">Advance Calculation Type *</label>
+                      <select id="advance-payment-type" class="admin-select" style="width:100%;">
+                        <option value="fixed" selected>Fixed Amount (₹ INR)</option>
+                        <option value="percentage">Percentage of Selling Price (%)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="admin-label" id="label-advance-value">Advance Amount (₹) *</label>
+                      <input type="number" id="advance-payment-value" class="admin-input" placeholder="e.g. 1000" min="0" step="any" style="width:100%;">
+                    </div>
+                  </div>
+
+                  <!-- Live Preview Box -->
+                  <div id="advance-preview-box" style="margin-top: 14px; padding: 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 1.5rem;">💳</div>
+                    <div>
+                      <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--admin-accent); font-weight: 700;">Customer Payment Split Preview</div>
+                      <div id="advance-preview-text" style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-top: 2px;">Customer pays ₹0 now + ₹0 COD</div>
+                      <div id="advance-preview-subtext" style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 2px;">Calculated on selling price of ₹0</div>
+                    </div>
+                  </div>
+                  <div id="advance-error-msg" style="display: none; color: var(--admin-danger); font-size: 0.8rem; margin-top: 8px;"></div>
+                </div>
+              </div>
+
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Variants (Sizes & Colors)</h3>
+                <div class="form-group">
+                  <label class="admin-label">Sizes (Comma separated)</label>
+                  <input type="text" id="product-sizes" class="admin-input" value="XS, S, M, L, XL" style="width:100%;">
+                </div>
+                <div class="form-group" style="margin-top: 14px;">
+                  <label class="admin-label">Colors (Comma separated)</label>
+                  <input type="text" id="product-colors" class="admin-input" value="Midnight Black, Ivory Cream, Royal Navy" style="width:100%;">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Category & Badges</h3>
+                <div class="form-group">
+                  <label class="admin-label">Category *</label>
+                  <select id="product-category" class="admin-select" required style="width:100%;">
+                    <option value="">Select Category</option>
+                  </select>
+                </div>
+                <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+                  <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer;">
+                    <input type="checkbox" id="check-active" checked> <span>Active in Store</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer;">
+                    <input type="checkbox" id="check-featured"> <span>Featured on Homepage</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer;">
+                    <input type="checkbox" id="check-new" checked> <span>New Arrival Badge</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer;">
+                    <input type="checkbox" id="check-deal"> <span>Deal of Week</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="admin-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                  <h3 class="card-title" style="margin:0;">Images</h3>
+                  <button type="button" id="btn-add-image-url" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.78rem;">+ Add URL</button>
+                </div>
+                <div id="image-inputs-container">
+                  <div style="display:flex; gap: 8px; margin-top: 8px;">
+                    <input type="url" class="admin-input image-url-input" placeholder="https://images.unsplash.com/..." style="flex:1;" required>
+                  </div>
+                </div>
+                <div id="images-preview-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px;"></div>
+              </div>
+
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 12px;">Source Provenance</h3>
+                <div class="form-group">
+                  <label class="admin-label">Source URL</label>
+                  <input type="url" id="product-source-url" class="admin-input" placeholder="https://..." style="width:100%;">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                  <label class="admin-label">Source / Supplier Name</label>
+                  <input type="text" id="product-source-name" class="admin-input" placeholder="e.g. Milan Atelier" style="width:100%;">
+                </div>
+              </div>
+
+              <button type="submit" class="btn-admin-primary" style="width:100%; justify-content:center; padding: 14px; font-size: 1rem;">
+                <i class="fas fa-save"></i> Publish Product
+              </button>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="admin-modal-backdrop" id="import-modal-backdrop">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title"><i class="fas fa-file-import"></i> Import Product by URL</h3>
+        <button class="admin-modal-close" id="btn-close-import">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <p style="font-size: 0.88rem; color: var(--admin-text-muted); margin-bottom: 14px;">
+          Paste a partner product link or catalog feed URL to extract specifications safely.
+        </p>
+        <div style="display:flex; gap: 8px;">
+          <input type="url" id="input-import-url" class="admin-input" placeholder="https://example.com/product/..." style="flex:1;">
+          <button type="button" id="btn-fetch-product-url" class="btn-admin-primary">Fetch</button>
+        </div>
+        <div id="import-result-preview" style="display:none; margin-top: 16px;"></div>
+        <div style="margin-top: 16px; text-align: right;">
+          <button type="button" id="btn-apply-import" class="btn-admin-primary" style="display:none;">Approve & Apply to Form</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/admin-add-product.js"></script>
+</body>
+</html>
