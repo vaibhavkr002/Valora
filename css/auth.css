@@ -956,13 +956,66 @@
   }
 }
 
-@media (max-width: 640px) {
-  .auth-title {
-    font-size: 1.6rem;
+@media (max-width: 768px) {
+  .auth-section {
+    padding: 24px 0 40px !important;
+  }
+
+  .auth-container {
+    border-radius: 16px;
   }
 
   .auth-form-col {
     padding: 28px 20px;
+  }
+
+  .account-dashboard-section {
+    padding: 20px 0 40px !important;
+  }
+
+  /* Account Navigation as Horizontal Swipeable Pills on Mobile */
+  .account-nav-tabs {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 8px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .account-nav-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .account-tab-btn {
+    white-space: nowrap !important;
+    width: auto !important;
+    padding: 8px 14px !important;
+    font-size: 0.82rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .account-tab-btn.logout-btn {
+    border-top: none !important;
+    margin-top: 0 !important;
+    padding-top: 8px !important;
+  }
+
+  .account-content-card {
+    padding: 20px 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .order-history-card {
+    padding: 16px 14px !important;
+  }
+
+  .form-group input,
+  .form-group select,
+  .input-field,
+  .form-input {
+    font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+    min-height: 44px;
   }
 
   .auth-extra-row {
@@ -973,6 +1026,47 @@
 
   .addresses-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-form-col {
+    padding: 22px 14px;
+  }
+
+  .social-auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-user-card {
+    padding: 16px 14px;
+  }
+
+  .account-content-card {
+    padding: 16px 12px !important;
+  }
+
+  .order-history-card {
+    padding: 14px 10px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-title {
+    font-size: 1.35rem;
+  }
+
+  .auth-form-col {
+    padding: 18px 10px;
+  }
+
+  .account-tab-btn {
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
   }
 }
 

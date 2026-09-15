@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,18 +13,26 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/auth.css">
   <link rel="stylesheet" href="css/info-pages.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
   <!-- Top Announcement Bar -->
-  <div class="top-announcement-bar">
+    <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Exclusive</span>
-        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="homepage.html#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
         <a href="account.html#orders">Track Order</a>
         <span>•</span>
@@ -174,7 +182,7 @@
             <li><a href="#third-party" >15. Third-Party Links</a></li>
             <li><a href="#availability" >16. Availability & Service</a></li>
             <li><a href="#disclaimers" >17. Disclaimers & Liability</a></li>
-            <li><a href="#governing-law" >18. Governing Law (Demo)</a></li>
+            <li><a href="#governing-law" >18. Governing Law & Jurisdiction</a></li>
             <li><a href="#changes" >19. Changes to These Terms</a></li>
             <li><a href="#contact-info" >20. Contact Information</a></li>
           </ul>
@@ -182,10 +190,6 @@
 
         <!-- Main Articles -->
         <div class="info-main-content">
-          <!-- Educational Notice Box -->
-          <div class="legal-notice-box">
-            <strong>Educational Showcase Notice:</strong> Welcome to VELORA. This website is currently developed and showcased as a collegiate frontend e-commerce portfolio demonstration. All catalog products, inventory counts, discount codes, checkout flows, and member accounts represent simulated design interactions. No real retail contracts or monetary charges are executed. Product availability and pricing are subject to demonstration updates.
-          </div>
 
           
           <article id="acceptance" class="policy-block">
@@ -244,7 +248,7 @@
               <h2 class="policy-block-title">5. Pricing & Availability</h2>
             </div>
             <p class="policy-paragraph">
-              All prices are displayed in Indian Rupees (₹ / INR) inclusive of applicable GST, and are subject to demonstration updates without prior notice. While we strive for absolute accuracy, occasional typographical errors in pricing or inventory counts may occur. We reserve the right to correct any error and modify or cancel orders placed under incorrect price listings.
+              All prices are displayed in Indian Rupees (₹ / INR) inclusive of applicable GST, and are subject to catalog updates without prior notice. While we strive for absolute accuracy, occasional typographical errors in pricing or inventory counts may occur. We reserve the right to correct any error and modify or cancel orders placed under incorrect price listings.
             </p>
           </article>
 
@@ -256,7 +260,7 @@
               <h2 class="policy-block-title">6. Orders & Order Acceptance</h2>
             </div>
             <p class="policy-paragraph">
-              The submission of an order via our Checkout page constitutes a simulated purchase request. Acceptance of your order occurs upon generation of your official Order Confirmation page and dispatch notification email. We reserve the right to decline or limit orders for any legitimate business reason.
+              The submission of an order via our Checkout page constitutes a confirmed purchase request. Acceptance of your order occurs upon generation of your official Order Confirmation page and dispatch notification. We reserve the right to decline or limit orders for legitimate verification reasons.
             </p>
           </article>
 
@@ -268,7 +272,7 @@
               <h2 class="policy-block-title">7. Payment Terms</h2>
             </div>
             <p class="policy-paragraph">
-              Checkout accepts simulated credit card payments, PayPal, and Apple Pay. You agree that any payment details submitted are authorized by the account holder. In this demonstration environment, no real bank cards are billed.
+              Checkout accepts secure credit/debit card payments, UPI, net banking, and Cash on Delivery (COD) with advance split options where applicable. You represent and warrant that any payment details submitted are authorized by the account holder.
             </p>
           </article>
 
@@ -280,7 +284,7 @@
               <h2 class="policy-block-title">8. Promotions, Coupons & Flash Deals</h2>
             </div>
             <p class="policy-paragraph">
-              Promotional codes (such as <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">VELORA10</code> for 10% off) must be entered before completing checkout and cannot be applied retroactively. Flash Deals and promotional markdowns are valid only for specified promotional periods and while demo supplies last.
+              Promotional codes (such as <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">VELORA10</code> for 10% off) must be entered before completing checkout and cannot be applied retroactively. Flash Deals and promotional markdowns are valid only for specified promotional periods and while inventory supplies last.
             </p>
           </article>
 
@@ -358,7 +362,7 @@
               <h2 class="policy-block-title">14. Intellectual Property & Brand Assets</h2>
             </div>
             <p class="policy-paragraph">
-              All visual designs, layout compositions, brand iconography, text copy, and CSS stylesheets on this website are the intellectual property of VELORA and its student creators for portfolio showcase purposes. Product imagery is utilized under royalty-free editorial licenses (such as Unsplash). Reproduction or commercial redistribution without authorization is prohibited.
+              All visual designs, layout compositions, brand iconography, text copy, and CSS stylesheets on this website are the intellectual property of VELORA Inc. Product imagery is utilized under royalty-free editorial licenses. Reproduction or commercial redistribution without authorization is prohibited.
             </p>
           </article>
 
@@ -394,7 +398,7 @@
               <h2 class="policy-block-title">17. Disclaimers & Limitation of Liability</h2>
             </div>
             <p class="policy-paragraph">
-              THE VELORA SITE AND ALL CONTENT, PRODUCTS, AND SIMULATED SERVICES ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, VELORA AND ITS CREATORS DISCLAIM ALL WARRANTIES, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+              THE VELORA SITE AND ALL CONTENT, PRODUCTS, AND SERVICES ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, VELORA DISCLAIMS ALL WARRANTIES, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
             </p>
           </article>
 
@@ -403,7 +407,7 @@
               <div class="policy-block-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
               </div>
-              <h2 class="policy-block-title">18. Governing Law (Demo Placeholder)</h2>
+              <h2 class="policy-block-title">18. Governing Law & Jurisdiction</h2>
             </div>
             <p class="policy-paragraph">
               These Terms shall be interpreted and governed in accordance with the laws of the Republic of India, including the Information Technology Act, 2000 and the Consumer Protection (E-Commerce) Rules, 2020. Any disputes shall be subject to the exclusive jurisdiction of the competent courts in New Delhi, India.
@@ -560,7 +564,10 @@
   </footer>
 
   <!-- Slide-Over Shopping Cart Drawer -->
-  <div id="cart-drawer-overlay" class="cart-drawer-overlay">
+  <!-- ========================================================================
+       SLIDE-OVER SHOPPING CART DRAWER
+       ======================================================================== -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay" aria-hidden="true">
     <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
       <div class="cart-drawer-header">
         <h3 id="cart-title" class="cart-drawer-title">
@@ -573,37 +580,57 @@
       <!-- Free Shipping Meter -->
       <div class="free-shipping-box">
         <div class="free-shipping-text">
-          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Delivery!</span>
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
         </div>
         <div class="free-shipping-progress">
-          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 80%;"></div>
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
         </div>
       </div>
 
-      <!-- Cart Items List Container -->
-      <div id="cart-items-container" class="cart-items-list">
-        <!-- Injected via JS -->
+      <!-- Cart Items List -->
+      <div id="cart-items-container" class="cart-drawer-items">
+        <!-- Injected via JavaScript -->
       </div>
 
       <!-- Empty Cart State -->
-      <div id="cart-empty-state" class="cart-empty" style="display: none;">
+      <div id="cart-empty-state" class="cart-empty-view" style="display: none;">
         <div class="cart-empty-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         </div>
-        <p class="cart-empty-msg">Your shopping cart is currently empty.</p>
-        <a href="shop.html" class="btn-primary" style="display: inline-flex; margin-top: 12px;">Browse Products</a>
+        <h4>Your Cart is Empty</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 8px 0 20px;">Looks like you haven't added any items yet.</p>
+        <button type="button" class="btn-primary" onclick="window.location.href='shop.html';">
+          Start Shopping
+        </button>
       </div>
 
-      <!-- Cart Drawer Footer -->
+      <!-- Cart Footer -->
       <div class="cart-drawer-footer">
         <div class="cart-summary-row">
-          <span class="cart-subtotal-label">Estimated Total</span>
-          <span id="cart-total" class="cart-subtotal-val">₹0</span>
+          <span>Subtotal</span>
+          <span id="cart-subtotal" style="font-weight: 700; color: var(--text-main);">₹0</span>
         </div>
-        <p class="cart-tax-notice">Taxes, discounts and express shipping calculated at checkout.</p>
-        <button id="checkout-btn" class="checkout-btn">
+        <div class="cart-summary-row">
+          <span>Standard Shipping</span>
+          <span style="color: var(--color-success); font-weight: 700;">FREE</span>
+        </div>
+        <div class="cart-summary-row cart-summary-total">
+          <span>Total (Incl. Taxes)</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <div id="cart-advance-breakdown" style="display: none; padding: 8px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+          <div class="cart-summary-row" style="margin-bottom: 2px;">
+            <span style="color: #6366f1; font-weight: 600;">Advance Payable Now:</span>
+            <span id="cart-advance-payable" style="font-weight: 700; color: #6366f1;">₹0</span>
+          </div>
+          <div class="cart-summary-row" style="margin-bottom: 0;">
+            <span style="color: var(--text-muted);">Remaining by COD:</span>
+            <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
+          </div>
+        </div>
+        <button type="button" id="checkout-btn" class="btn-checkout">
           <span>Proceed to Checkout</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </div>
     </div>
@@ -619,5 +646,7 @@
   <script src="js/auth.js"></script>
   <script src="js/info-pages.js"></script>
 
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>

@@ -136,52 +136,305 @@
       <main class="admin-content">
         <div class="page-title-row">
           <div>
-            <h1 class="page-heading">Sales & Analytics</h1>
-            <p class="page-subheading">Statistical revenue metrics, order velocity, and distribution</p>
+            <h1 class="page-heading">Customer Analytics & Traffic</h1>
+            <p class="page-subheading">First-party storefront visitor insights, IST hourly velocity, and conversion funnel</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <!-- Real-Time Online Now Pulse Badge -->
+            <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 7px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; display: inline-block;"></span>
+              <span><strong id="stat-active-now" style="font-size: 0.95rem;">0</strong> Visitors Online Now</span>
+            </div>
+
+            <!-- Time Range Selector -->
+            <div class="admin-btn-group" style="display: inline-flex; background: var(--admin-card-bg); border: 1px solid var(--admin-card-border); border-radius: 8px; overflow: hidden; padding: 2px;">
+              <button type="button" class="btn-time-range active" data-range="today" style="background: var(--admin-accent); border: none; color: #fff; padding: 6px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 6px;">Today</button>
+              <button type="button" class="btn-time-range" data-range="7d" style="background: transparent; border: none; color: var(--admin-text-muted); padding: 6px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 6px;">7 Days</button>
+              <button type="button" class="btn-time-range" data-range="30d" style="background: transparent; border: none; color: var(--admin-text-muted); padding: 6px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 6px;">30 Days</button>
+            </div>
+
+            <button type="button" id="btn-refresh-analytics" class="btn-admin-secondary" style="padding: 7px 12px; font-size: 0.82rem;" title="Refresh Analytics">
+              <i class="fas fa-arrows-rotate"></i>
+            </button>
           </div>
         </div>
 
-        <div class="metrics-grid">
+        <!-- 9 Core KPI Metrics Grid -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+          <!-- KPI 1: Today's Visitors -->
           <div class="metric-card">
             <div class="metric-data">
-              <span class="metric-title">Gross Revenue</span>
-              <span class="metric-value" id="stat-total-rev">₹0</span>
-              <span class="metric-sub">Total merchandise sales</span>
+              <span class="metric-title">Today's Visitors</span>
+              <span class="metric-value" id="stat-today-visitors">0</span>
+              <span class="metric-sub">Unique visitors today</span>
             </div>
-            <div class="metric-icon-box amber"><i class="fas fa-coins fa-lg"></i></div>
+            <div class="metric-icon-box emerald"><i class="fas fa-user-clock fa-lg"></i></div>
           </div>
 
+          <!-- KPI 2: Unique Visitors -->
           <div class="metric-card">
             <div class="metric-data">
-              <span class="metric-title">Average Order Value</span>
-              <span class="metric-value" id="stat-aov">₹0</span>
-              <span class="metric-sub">Per completed checkout</span>
+              <span class="metric-title">Unique Visitors</span>
+              <span class="metric-value" id="stat-unique-visitors">0</span>
+              <span class="metric-sub">Across selected timeframe</span>
             </div>
-            <div class="metric-icon-box indigo"><i class="fas fa-chart-bar fa-lg"></i></div>
+            <div class="metric-icon-box indigo"><i class="fas fa-users fa-lg"></i></div>
           </div>
 
+          <!-- KPI 3: Total Sessions -->
           <div class="metric-card">
             <div class="metric-data">
-              <span class="metric-title">Total Orders</span>
-              <span class="metric-value" id="stat-total-orders">0</span>
-              <span class="metric-sub">Processed transactions</span>
+              <span class="metric-title">Sessions</span>
+              <span class="metric-value" id="stat-total-sessions">0</span>
+              <span class="metric-sub">Active browsing visits</span>
             </div>
-            <div class="metric-icon-box emerald"><i class="fas fa-truck fa-lg"></i></div>
+            <div class="metric-icon-box amber"><i class="fas fa-compass fa-lg"></i></div>
+          </div>
+
+          <!-- KPI 4: Total Page Views -->
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Page Views</span>
+              <span class="metric-value" id="stat-total-pv">0</span>
+              <span class="metric-sub">Total page impressions</span>
+            </div>
+            <div class="metric-icon-box blue"><i class="fas fa-eye fa-lg"></i></div>
+          </div>
+
+          <!-- KPI 5: Product Views -->
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Product Views</span>
+              <span class="metric-value" id="stat-product-views">0</span>
+              <span class="metric-sub">Detailed PDP inspections</span>
+            </div>
+            <div class="metric-icon-box purple"><i class="fas fa-box-open fa-lg"></i></div>
+          </div>
+
+          <!-- KPI 6: Add to Cart -->
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Add to Cart</span>
+              <span class="metric-value" id="stat-add-to-cart">0</span>
+              <span class="metric-sub">Items added to drawer</span>
+            </div>
+            <div class="metric-icon-box emerald"><i class="fas fa-cart-plus fa-lg"></i></div>
+          </div>
+
+          <!-- KPI 7: Checkout Started -->
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Checkout Started</span>
+              <span class="metric-value" id="stat-checkout-started">0</span>
+              <span class="metric-sub">Checkout funnel entries</span>
+            </div>
+            <div class="metric-icon-box amber"><i class="fas fa-credit-card fa-lg"></i></div>
+          </div>
+
+          <!-- KPI 8: Completed Orders -->
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Orders Placed</span>
+              <span class="metric-value" id="stat-orders-count">0</span>
+              <span class="metric-sub">Settled purchases</span>
+            </div>
+            <div class="metric-icon-box indigo"><i class="fas fa-bag-shopping fa-lg"></i></div>
+          </div>
+
+          <!-- KPI 9: Conversion Rate -->
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Conversion Rate</span>
+              <span class="metric-value" id="stat-conversion-rate">0.0%</span>
+              <span class="metric-sub">Orders ÷ Sessions</span>
+            </div>
+            <div class="metric-icon-box emerald"><i class="fas fa-arrow-trend-up fa-lg"></i></div>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-          <div class="admin-card">
-            <h3 class="card-title" style="margin-bottom: 16px;">Order Status Distribution</h3>
-            <div id="status-breakdown-list">
-              <p style="color: var(--admin-text-muted);">Calculating status distribution...</p>
+        <!-- Row 2: Hourly Traffic Graph & Device Breakdown -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+          <!-- Hourly Traffic Card (IST Aware) -->
+          <div class="admin-card" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;">
+                  <i class="fas fa-chart-area" style="color: var(--admin-accent); margin-right: 6px;"></i>
+                  Hourly Traffic Distribution (Today, IST Asia/Kolkata)
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin: 2px 0 0 0;">
+                  Indian Standard Time (UTC+05:30) hourly traffic and activity velocity
+                </p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="stat-peak-hour" style="font-size: 0.78rem; background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 600;">
+                  Peak: Analyzing...
+                </span>
+              </div>
+            </div>
+            <div style="position: relative; width: 100%; height: 260px;">
+              <canvas id="hourlyTrafficChart"></canvas>
             </div>
           </div>
 
+          <!-- Device Breakdown Donut Card -->
+          <div class="admin-card" style="margin-bottom: 0; display: flex; flex-direction: column;">
+            <h3 class="card-title" style="margin-bottom: 4px;">
+              <i class="fas fa-mobile-screen-button" style="color: var(--admin-accent); margin-right: 6px;"></i>
+              Device Breakdown
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-bottom: 14px;">Storefront sessions by device platform</p>
+            
+            <div style="position: relative; width: 100%; height: 170px; margin-bottom: 12px;">
+              <canvas id="deviceBreakdownChart"></canvas>
+            </div>
+
+            <!-- Device Stats Summary List -->
+            <div id="device-summary-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px solid var(--admin-card-border);">
+                <span><i class="fas fa-laptop" style="color: #6366f1; width: 18px;"></i> Desktop</span>
+                <strong id="device-count-desktop">0 (0%)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px solid var(--admin-card-border);">
+                <span><i class="fas fa-mobile" style="color: #10b981; width: 18px;"></i> Mobile</span>
+                <strong id="device-count-mobile">0 (0%)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 4px 0;">
+                <span><i class="fas fa-tablet-screen-button" style="color: #f59e0b; width: 18px;"></i> Tablet</span>
+                <strong id="device-count-tablet">0 (0%)</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Daily Traffic Trend & Conversion Funnel -->
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 24px;">
+          <!-- Daily Traffic Trend Card -->
+          <div class="admin-card" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3 class="card-title" style="margin: 0;">
+                  <i class="fas fa-chart-line" style="color: var(--admin-accent); margin-right: 6px;"></i>
+                  Daily Traffic Trend
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin: 2px 0 0 0;">
+                  Historical volume over selected date range
+                </p>
+              </div>
+            </div>
+            <div style="position: relative; width: 100%; height: 260px;">
+              <canvas id="dailyTrafficChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Storefront Conversion Funnel Card -->
+          <div class="admin-card" style="margin-bottom: 0;">
+            <h3 class="card-title" style="margin-bottom: 4px;">
+              <i class="fas fa-filter" style="color: var(--admin-accent); margin-right: 6px;"></i>
+              Storefront Conversion Funnel
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-bottom: 16px;">Customer drop-off across purchase stages</p>
+
+            <div id="funnel-container" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Funnel Step 1 -->
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                  <span>1. Store Visits (Page Views)</span>
+                  <strong id="funnel-pv-val">0</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; height: 10px;">
+                  <div id="funnel-pv-bar" style="background: #3b82f6; width: 100%; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                </div>
+              </div>
+
+              <!-- Funnel Step 2 -->
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                  <span>2. Product Views (PDP)</span>
+                  <span style="font-size: 0.75rem; color: var(--admin-text-muted);"><strong id="funnel-pdp-val">0</strong> (<span id="funnel-pdp-pct">0%</span>)</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; height: 10px;">
+                  <div id="funnel-pdp-bar" style="background: #8b5cf6; width: 0%; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                </div>
+              </div>
+
+              <!-- Funnel Step 3 -->
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                  <span>3. Added to Cart</span>
+                  <span style="font-size: 0.75rem; color: var(--admin-text-muted);"><strong id="funnel-cart-val">0</strong> (<span id="funnel-cart-pct">0%</span>)</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; height: 10px;">
+                  <div id="funnel-cart-bar" style="background: #10b981; width: 0%; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                </div>
+              </div>
+
+              <!-- Funnel Step 4 -->
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                  <span>4. Checkout Started</span>
+                  <span style="font-size: 0.75rem; color: var(--admin-text-muted);"><strong id="funnel-checkout-val">0</strong> (<span id="funnel-checkout-pct">0%</span>)</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; height: 10px;">
+                  <div id="funnel-checkout-bar" style="background: #f59e0b; width: 0%; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                </div>
+              </div>
+
+              <!-- Funnel Step 5 -->
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                  <span>5. Completed Orders</span>
+                  <span style="font-size: 0.75rem; color: var(--admin-text-muted);"><strong id="funnel-orders-val">0</strong> (<span id="funnel-orders-pct">0%</span>)</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; height: 10px;">
+                  <div id="funnel-orders-bar" style="background: #059669; width: 0%; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Top Pages, Viewed Products, and Search Queries -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+          <!-- Top Visited Pages -->
           <div class="admin-card">
-            <h3 class="card-title" style="margin-bottom: 16px;">Analytics Summary</h3>
-            <div id="analytics-summary">
-              <p style="color: var(--admin-text-muted);">Real-time metrics active.</p>
+            <h3 class="card-title" style="margin-bottom: 12px;">
+              <i class="fas fa-file-lines" style="color: var(--admin-accent); margin-right: 6px;"></i>
+              Top Visited Pages
+            </h3>
+            <div id="top-pages-container" style="display: flex; flex-direction: column; gap: 8px;">
+              <p style="color: var(--admin-text-muted); font-size: 0.82rem;">Loading top pages...</p>
+            </div>
+          </div>
+
+          <!-- Top Viewed Products -->
+          <div class="admin-card">
+            <h3 class="card-title" style="margin-bottom: 12px;">
+              <i class="fas fa-award" style="color: var(--admin-accent); margin-right: 6px;"></i>
+              Most Viewed Products
+            </h3>
+            <div id="top-products-container" style="display: flex; flex-direction: column; gap: 8px;">
+              <p style="color: var(--admin-text-muted); font-size: 0.82rem;">Loading top products...</p>
+            </div>
+          </div>
+
+          <!-- Top Categories & Searches -->
+          <div class="admin-card">
+            <h3 class="card-title" style="margin-bottom: 12px;">
+              <i class="fas fa-magnifying-glass" style="color: var(--admin-accent); margin-right: 6px;"></i>
+              Popular Searches & Categories
+            </h3>
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--admin-text-muted); font-weight: 700; margin-bottom: 6px;">Top Search Queries</div>
+              <div id="top-searches-container" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <span style="color: var(--admin-text-muted); font-size: 0.82rem;">No search queries yet</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--admin-text-muted); font-weight: 700; margin-bottom: 6px;">Top Categories</div>
+              <div id="top-categories-container" style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="color: var(--admin-text-muted); font-size: 0.82rem;">Loading categories...</span>
+              </div>
             </div>
           </div>
         </div>
@@ -189,6 +442,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabaseClient.js"></script>
   <script src="js/admin-auth.js"></script>

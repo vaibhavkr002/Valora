@@ -12,6 +12,7 @@
   <!-- Core Stylesheets -->
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
@@ -20,14 +21,18 @@
        ======================================================================== -->
   <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Member Privileges</span>
-        <span>Welcome to VELORA Privé • Complimentary Express Shipping Enabled</span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-text">Free Express Delivery Across India on All Orders | Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="shop.html">Browse Catalog</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
-        <a href="#footer">Concierge Support</a>
+        <a href="account.html#orders" class="active">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
       </div>
     </div>
   </div>
@@ -62,10 +67,11 @@
             </button>
           </div>
 
-          <!-- Cart Link -->
-          <a href="checkout.html" class="action-btn" aria-label="Shopping Cart" title="Go to Checkout">
+          <!-- Cart Button -->
+          <button class="action-btn cart-drawer-trigger" aria-label="Shopping Cart" title="View Cart">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-          </a>
+            <span class="badge-count cart-count-badge">0</span>
+          </button>
         </div>
       </nav>
     </div>
@@ -207,6 +213,108 @@
     </div>
   </main>
 
+  <!-- ========================================================================
+       ORDER TRACKING MODAL (5-Step Visual Timeline & Official Courier Sync)
+       ======================================================================== -->
+  <div id="tracking-modal-overlay" class="modal-overlay tracking-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div class="tracking-modal-content" style="background: #ffffff; border-radius: 16px; max-width: 560px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); overflow: hidden; position: relative;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div>
+          <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;">Live Shipment Tracking</span>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 2px 0 0;" id="track-modal-order-number">Order #...</h3>
+        </div>
+        <button type="button" id="btn-close-tracking-modal" style="background: none; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer; line-height: 1; padding: 4px;" aria-label="Close Tracking Modal">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 22px 24px; max-height: 75vh; overflow-y: auto;">
+        
+        <!-- Status & Delivery ETA Banner -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(37, 99, 235, 0.06); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 22px;">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px;">Current Status</div>
+            <div id="track-modal-status-text" style="font-size: 0.98rem; font-weight: 800; color: #0f172a; margin-top: 2px;">Processing</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Estimated Arrival</div>
+            <div id="track-modal-eta-text" style="font-size: 0.92rem; font-weight: 700; color: #059669; margin-top: 2px;">3-5 Business Days</div>
+          </div>
+        </div>
+
+        <!-- 5-Step Visual Timeline -->
+        <div class="tracking-timeline-wrap" style="margin-bottom: 24px;">
+          <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 14px;">Shipment Progress</div>
+          
+          <div class="tracking-steps-container" style="display: flex; justify-content: space-between; position: relative; margin-top: 8px;">
+            <div class="tracking-progress-line" style="position: absolute; top: 15px; left: 20px; right: 20px; height: 3px; background: #e2e8f0; z-index: 1;">
+              <div id="timeline-progress-bar" style="height: 100%; width: 25%; background: #2563eb; transition: width 0.4s ease;"></div>
+            </div>
+
+            <!-- Step 1: Placed -->
+            <div class="timeline-step" id="timeline-step-1" style="display: flex; flex-direction: column; align-items: center; z-index: 2; width: 60px; text-align: center;">
+              <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; box-shadow: 0 0 0 4px #eff6ff;">✓</div>
+              <span style="font-size: 0.7rem; font-weight: 700; color: #0f172a; margin-top: 6px;">Placed</span>
+            </div>
+
+            <!-- Step 2: Processing -->
+            <div class="timeline-step" id="timeline-step-2" style="display: flex; flex-direction: column; align-items: center; z-index: 2; width: 60px; text-align: center;">
+              <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">2</div>
+              <span style="font-size: 0.7rem; font-weight: 600; color: #64748b; margin-top: 6px;">Processing</span>
+            </div>
+
+            <!-- Step 3: Shipped -->
+            <div class="timeline-step" id="timeline-step-3" style="display: flex; flex-direction: column; align-items: center; z-index: 2; width: 60px; text-align: center;">
+              <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">3</div>
+              <span style="font-size: 0.7rem; font-weight: 600; color: #64748b; margin-top: 6px;">Shipped</span>
+            </div>
+
+            <!-- Step 4: Out for Delivery -->
+            <div class="timeline-step" id="timeline-step-4" style="display: flex; flex-direction: column; align-items: center; z-index: 2; width: 60px; text-align: center;">
+              <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">4</div>
+              <span style="font-size: 0.7rem; font-weight: 600; color: #64748b; margin-top: 6px;">Out for Delivery</span>
+            </div>
+
+            <!-- Step 5: Delivered -->
+            <div class="timeline-step" id="timeline-step-5" style="display: flex; flex-direction: column; align-items: center; z-index: 2; width: 60px; text-align: center;">
+              <div class="step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">5</div>
+              <span style="font-size: 0.7rem; font-weight: 600; color: #64748b; margin-top: 6px;">Delivered</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Courier Partner & AWB Card -->
+        <div id="track-modal-courier-card" style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; background: #f8fafc;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.15rem;">🚚</span>
+              <div>
+                <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Courier Partner</span>
+                <div id="track-modal-courier-name" style="font-size: 0.92rem; font-weight: 800; color: #0f172a;">Assigned Express Courier</div>
+              </div>
+            </div>
+            <span id="track-modal-courier-badge" style="background: #e0e7ff; color: #4338ca; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">Air Express</span>
+          </div>
+
+          <div style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div>
+              <span style="font-size: 0.68rem; color: #64748b; display: block;">Tracking / AWB Number</span>
+              <strong id="track-modal-awb" style="font-size: 0.88rem; color: #0f172a; letter-spacing: 0.5px;">Pending Dispatch</strong>
+            </div>
+            <button type="button" id="btn-copy-tracking-id" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; font-weight: 600; color: #334155; cursor: pointer;">Copy ID</button>
+          </div>
+
+          <a id="track-modal-portal-link" href="#" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #0f172a; color: #ffffff; padding: 9px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; transition: background 0.2s;">
+            <span>Track on Official Courier Website</span>
+            <span>→</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
@@ -323,13 +431,27 @@
       try {
         const { data: { user }, error: authErr } = await client.auth.getUser();
         if (authErr || !user) {
-          window.location.href = "login.html?redirect=account.html";
+          const redirectTarget = encodeURIComponent("account.html" + window.location.search + window.location.hash);
+          window.location.href = `login.html?redirect=${redirectTarget}`;
           return;
         }
         authUser = user;
       } catch (err) {
-        window.location.href = "login.html?redirect=account.html";
+        const redirectTarget = encodeURIComponent("account.html" + window.location.search + window.location.hash);
+        window.location.href = `login.html?redirect=${redirectTarget}`;
         return;
+      }
+
+      // Security: HTML escaping helper to eliminate XSS vectors
+      function escapeHTML(str) {
+        if (typeof str !== 'string') return str == null ? '' : String(str);
+        return str.replace(/[&<>'"]/g, tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag));
       }
 
       // 3. Fetch user profile from public.profiles table using user.id
@@ -341,6 +463,7 @@
           const { data, error } = await client
             .from("profiles")
             .select("*")
+            .select("id, full_name, email, phone, avatar_url, role")
             .eq("id", authUser.id)
             .maybeSingle();
 
@@ -504,9 +627,11 @@
         ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading your order history...</div>';
 
         try {
+          const orderCols = "id, order_number, total, subtotal, discount, shipping_charge, payment_method, payment_status, order_status, advance_amount, advance_paid, cod_balance, delivery_preference, free_gifts_eligible, free_gifts_items, is_full_online_payment, estimated_delivery, tracking_data, created_at, order_items(id, product_name, product_image, price, quantity, selected_size, selected_color, subtotal)";
           const { data: dbOrders, error } = await client
             .from("orders")
             .select("*, order_items(*)")
+            .select(orderCols)
             .eq("user_id", authUser.id)
             .order("created_at", { ascending: false });
 
@@ -516,9 +641,12 @@
               const itemsHtml = (ord.order_items || []).map(item => `
                 <div style="display:flex; align-items:center; gap:14px; padding: 8px 0;">
                   <img src="${item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80'}" alt="${item.product_name}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
+                  <img src="${escapeHTML(item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80')}" alt="${escapeHTML(item.product_name)}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
                   <div style="flex:1;">
                     <strong style="font-size:0.88rem; color:var(--text-main);">${item.product_name}</strong>
                     <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + item.selected_size : ''} • Qty: ${item.quantity}</div>
+                    <strong style="font-size:0.88rem; color:var(--text-main);">${escapeHTML(item.product_name)}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} • Qty: ${item.quantity}</div>
                   </div>
                   <div style="font-weight:700; color:var(--text-main); font-size:0.9rem;">₹${Math.round(item.subtotal || (item.price * item.quantity)).toLocaleString("en-IN")}</div>
                 </div>
@@ -529,6 +657,49 @@
               const hasAdvance = Number(ord.advance_paid || ord.advance_amount || 0) > 0;
               const advPaid = Number(ord.advance_paid || ord.advance_amount || 0);
               const codBal = Number(ord.cod_balance || 0);
+
+              const isFullOnline = Boolean(
+                ord.free_gifts_eligible || 
+                ord.is_full_online_payment || 
+                (ord.payment_method && ord.payment_method.includes("Full Online"))
+              );
+              const isDeliveryOpenBox = Boolean(
+                ord.delivery_preference === "Open Box Delivery" || 
+                (ord.payment_method && ord.payment_method.includes("Open Box"))
+              );
+
+              let giftItems = [];
+              try {
+                if (Array.isArray(ord.free_gifts_items)) {
+                  giftItems = ord.free_gifts_items;
+                } else if (typeof ord.free_gifts_items === "string") {
+                  giftItems = JSON.parse(ord.free_gifts_items);
+                }
+              } catch (e) {
+                giftItems = [];
+              }
+
+              let badgesHtml = '';
+              if (isFullOnline && giftItems.length > 0) {
+                const giftNames = giftItems.map(g => g.name || g.gift_name).filter(Boolean).join(", ");
+                badgesHtml += `<span title="${giftNames}" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(16, 185, 129, 0.3);">🎁 ${giftItems.length} FREE GIFT${giftItems.length > 1 ? 'S' : ''}</span>`;
+              } else if (isFullOnline && ord.free_gifts_eligible) {
+                badgesHtml += `<span style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(16, 185, 129, 0.3);">🎁 FREE GIFTS</span>`;
+              }
+              if (isDeliveryOpenBox) {
+                badgesHtml += `<span style="background: rgba(2, 132, 199, 0.15); color: #0284c7; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(2, 132, 199, 0.3);">📦 OPEN BOX</span>`;
+              }
+
+              let giftsDetailsHtml = '';
+              if (isFullOnline && giftItems.length > 0) {
+                giftsDetailsHtml = `
+                  <div style="margin-top: 8px; padding: 8px 12px; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 0.78rem; color: #059669; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <strong>🎁 Free Gifts Included:</strong>
+                    <span>${giftItems.map(g => (g.icon || '🎁') + ' ' + (g.name || g.gift_name) + (g.quantity > 1 ? ' (' + g.quantity + 'x)' : '')).join(' • ')}</span>
+                  </div>
+                `;
+              }
+
               const advanceHtml = hasAdvance ? `
                 <div style="margin-top: 10px; padding: 8px 12px; background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; font-size: 0.8rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
                   <span>⚡ Advance Paid: <strong style="color: #6366f1;">₹${Math.round(advPaid).toLocaleString("en-IN")}</strong> (Online ✓)</span>
@@ -542,6 +713,7 @@
                     <div>
                       <strong style="font-size: 0.95rem; color: var(--text-main);">${ord.order_number}</strong>
                       <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">Placed on ${formattedDate}</span>
+                      ${badgesHtml}
                     </div>
                     <span style="font-size: 0.8rem; font-weight: 700; ${statusClass}">
                       ● ${displayStatus}
@@ -550,10 +722,16 @@
                   <div class="order-history-items">
                     ${itemsHtml}
                   </div>
+                  ${giftsDetailsHtml}
                   ${advanceHtml}
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border-light);">
-                    <span style="font-size:0.85rem; color:var(--text-secondary);">Total Order: <strong style="color:var(--text-main); font-size:1rem;">₹${Math.round(ord.total).toLocaleString("en-IN")}</strong></span>
-                    <span style="font-size:0.8rem; color:var(--text-muted);">${ord.payment_method}</span>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
+                    <div>
+                      <span style="font-size:0.85rem; color:var(--text-secondary);">Total Order: <strong style="color:var(--text-main); font-size:1rem;">₹${Math.round(ord.total).toLocaleString("en-IN")}</strong></span>
+                      <span style="font-size:0.8rem; color:var(--text-muted); margin-left: 8px;">• ${ord.payment_method}</span>
+                    </div>
+                    <button type="button" class="btn-track-order" data-order-id="${ord.id}" data-order-number="${ord.order_number}" data-order-status="${ord.order_status}" data-order-eta="${ord.estimated_delivery || ''}" style="background: #0f172a; color: #ffffff; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s;">
+                      <span>🚚 Track Order</span>
+                    </button>
                   </div>
                 </div>
               `;
@@ -579,9 +757,11 @@
         addressesContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading saved addresses...</div>';
 
         try {
+          const addrCols = "id, user_id, full_name, phone, house, street, landmark, city, state, country, pincode, address_type, is_default, created_at";
           const { data: dbAddresses, error } = await client
             .from("addresses")
             .select("*")
+            .select(addrCols)
             .eq("user_id", authUser.id)
             .order("is_default", { ascending: false });
 
@@ -590,6 +770,7 @@
               <div class="address-box ${addr.is_default ? 'is-default' : ''}">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                   <strong style="font-size: 0.95rem; color: var(--text-main);">${addr.address_type} Address</strong>
+                  <strong style="font-size: 0.95rem; color: var(--text-main);">${escapeHTML(addr.address_type)} Address</strong>
                   ${addr.is_default ? '<span class="pm-badge">Default</span>' : ''}
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
@@ -597,6 +778,10 @@
                   ${addr.house}, ${addr.street}${addr.landmark ? ', ' + addr.landmark : ''}<br>
                   ${addr.city}, ${addr.state} ${addr.pincode}, ${addr.country}<br>
                   Phone: ${addr.phone}
+                  ${escapeHTML(addr.full_name)}<br>
+                  ${escapeHTML(addr.house)}, ${escapeHTML(addr.street)}${addr.landmark ? ', ' + escapeHTML(addr.landmark) : ''}<br>
+                  ${escapeHTML(addr.city)}, ${escapeHTML(addr.state)} ${escapeHTML(addr.pincode)}, ${escapeHTML(addr.country)}<br>
+                  Phone: ${escapeHTML(addr.phone)}
                 </div>
               </div>
             `).join("");
@@ -617,6 +802,229 @@
 
       renderOrders();
       renderAddresses();
+
+      // ========================================================================
+      // ORDER TRACKING MODAL CONTROLLER
+      // ========================================================================
+      const trackingOverlay = document.getElementById("tracking-modal-overlay");
+      const closeTrackingBtn = document.getElementById("btn-close-tracking-modal");
+      const trackOrderNum = document.getElementById("track-modal-order-number");
+      const trackStatusText = document.getElementById("track-modal-status-text");
+      const trackEtaText = document.getElementById("track-modal-eta-text");
+      const timelineProgressBar = document.getElementById("timeline-progress-bar");
+      const trackCourierName = document.getElementById("track-modal-courier-name");
+      const trackCourierBadge = document.getElementById("track-modal-courier-badge");
+      const trackAwb = document.getElementById("track-modal-awb");
+      const copyAwbBtn = document.getElementById("btn-copy-tracking-id");
+      const trackPortalLink = document.getElementById("track-modal-portal-link");
+
+      async function openTrackingModal(orderId, orderNum, status, fallbackEta) {
+        if (!trackingOverlay) return;
+
+        if (trackOrderNum) trackOrderNum.textContent = `Order #${orderNum}`;
+        const normStatus = (status || "placed").toLowerCase();
+
+        let displayStatus = "Placed & Verified";
+        let step = 1;
+        let progressPct = "0%";
+
+        if (normStatus === "placed") {
+          displayStatus = "Order Placed & Confirmed";
+          step = 1;
+          progressPct = "0%";
+        } else if (normStatus === "processing" || normStatus === "confirmed") {
+          displayStatus = "Processing in Atelier";
+          step = 2;
+          progressPct = "25%";
+        } else if (normStatus === "shipped") {
+          displayStatus = "Shipped & In Transit";
+          step = 3;
+          progressPct = "50%";
+        } else if (normStatus === "out_for_delivery" || normStatus.includes("out")) {
+          displayStatus = "Out for Doorstep Delivery";
+          step = 4;
+          progressPct = "75%";
+        } else if (normStatus === "delivered") {
+          displayStatus = "Successfully Delivered";
+          step = 5;
+          progressPct = "100%";
+        } else if (normStatus === "cancelled") {
+          displayStatus = "Order Cancelled";
+          step = 0;
+          progressPct = "0%";
+        }
+
+        if (trackStatusText) {
+          trackStatusText.textContent = displayStatus;
+          if (normStatus === "delivered") {
+            trackStatusText.style.color = "#059669";
+          } else if (normStatus === "cancelled") {
+            trackStatusText.style.color = "#dc2626";
+          } else {
+            trackStatusText.style.color = "#2563eb";
+          }
+        }
+
+        // Update 5 timeline steps
+        for (let i = 1; i <= 5; i++) {
+          const stepEl = document.getElementById(`timeline-step-${i}`);
+          if (!stepEl) continue;
+          const circle = stepEl.querySelector(".step-circle");
+          const label = stepEl.querySelector("span");
+
+          if (i <= step) {
+            if (circle) {
+              circle.style.background = "#2563eb";
+              circle.style.color = "#ffffff";
+              circle.style.boxShadow = "0 0 0 4px #eff6ff";
+              circle.innerHTML = "✓";
+            }
+            if (label) {
+              label.style.color = "#0f172a";
+              label.style.fontWeight = "700";
+            }
+          } else {
+            if (circle) {
+              circle.style.background = "#e2e8f0";
+              circle.style.color = "#64748b";
+              circle.style.boxShadow = "none";
+              circle.innerHTML = `${i}`;
+            }
+            if (label) {
+              label.style.color = "#64748b";
+              label.style.fontWeight = "600";
+            }
+          }
+        }
+        if (timelineProgressBar) {
+          timelineProgressBar.style.width = progressPct;
+        }
+
+        // Initial default view while fetching
+        if (trackCourierName) trackCourierName.textContent = "Assigned Fulfillment Partner";
+        if (trackCourierBadge) {
+          trackCourierBadge.textContent = "In Transit";
+          trackCourierBadge.style.background = "#e0e7ff";
+          trackCourierBadge.style.color = "#4338ca";
+        }
+        if (trackAwb) trackAwb.textContent = "AWB will be assigned upon dispatch";
+        if (trackEtaText) trackEtaText.textContent = fallbackEta || "3-5 Business Days";
+        if (trackPortalLink) trackPortalLink.style.display = "none";
+
+        // Instantly display the modal overlay
+        trackingOverlay.classList.add("active");
+        trackingOverlay.style.display = "flex";
+        trackingOverlay.style.opacity = "1";
+        trackingOverlay.style.visibility = "visible";
+        trackingOverlay.style.pointerEvents = "auto";
+        document.body.style.overflow = "hidden";
+
+        // Asynchronously fetch specific courier tracking details from Supabase
+        // Asynchronously fetch specific courier tracking details strictly for this user's order
+        try {
+          const { data: settingsRow } = await client
+            .from("store_settings")
+            .select("value")
+            .eq("key", "order_tracking")
+          let trackingData = null;
+          const { data: ordRow } = await client
+            .from("orders")
+            .select("tracking_data, estimated_delivery")
+            .eq("id", orderId)
+            .eq("user_id", authUser.id)
+            .maybeSingle();
+
+          let trackingData = null;
+          if (settingsRow && settingsRow.value && settingsRow.value[orderId]) {
+            trackingData = settingsRow.value[orderId];
+          if (ordRow && ordRow.tracking_data && typeof ordRow.tracking_data === "object" && Object.keys(ordRow.tracking_data).length > 0) {
+            trackingData = ordRow.tracking_data;
+          }
+
+          if (trackingData && trackingData.tracking_id) {
+            if (trackCourierName) trackCourierName.textContent = trackingData.courier_name || "Express Courier Partner";
+            if (trackCourierBadge) {
+              trackCourierBadge.textContent = "Verified Live Tracking";
+              trackCourierBadge.style.background = "#dcfce7";
+              trackCourierBadge.style.color = "#15803d";
+            }
+            if (trackAwb) trackAwb.textContent = trackingData.tracking_id;
+            if (trackEtaText) trackEtaText.textContent = trackingData.estimated_delivery || "3-5 Business Days";
+
+            if (trackPortalLink) {
+              if (trackingData.tracking_url) {
+                trackPortalLink.href = trackingData.tracking_url;
+                trackPortalLink.style.display = "inline-flex";
+              } else {
+                trackPortalLink.href = `https://www.google.com/search?q=${encodeURIComponent((trackingData.courier_name || 'Courier') + ' ' + trackingData.tracking_id)}`;
+                trackPortalLink.style.display = "inline-flex";
+              }
+            }
+          } else if (fallbackEta && fallbackEta.includes(":")) {
+            const parts = fallbackEta.split(":");
+            if (trackCourierName) trackCourierName.textContent = parts[0].trim();
+            if (trackCourierBadge) {
+              trackCourierBadge.textContent = "Express Carrier";
+              trackCourierBadge.style.background = "#e0e7ff";
+              trackCourierBadge.style.color = "#4338ca";
+            }
+            if (trackAwb) trackAwb.textContent = parts[1].trim();
+            if (trackEtaText) trackEtaText.textContent = "In Transit";
+            if (trackPortalLink) {
+              trackPortalLink.href = `https://www.google.com/search?q=${encodeURIComponent(fallbackEta)}`;
+              trackPortalLink.style.display = "inline-flex";
+            }
+          }
+        } catch (e) {
+          console.warn("Order tracking fetch notice:", e);
+        }
+      }
+
+      function closeTrackingModal() {
+        if (trackingOverlay) {
+          trackingOverlay.classList.remove("active");
+          trackingOverlay.style.display = "none";
+          trackingOverlay.style.opacity = "0";
+          trackingOverlay.style.visibility = "hidden";
+          trackingOverlay.style.pointerEvents = "none";
+          document.body.style.overflow = "";
+        }
+      }
+
+      if (closeTrackingBtn) {
+        closeTrackingBtn.addEventListener("click", closeTrackingModal);
+      }
+
+      if (trackingOverlay) {
+        trackingOverlay.addEventListener("click", (e) => {
+          if (e.target === trackingOverlay) closeTrackingModal();
+        });
+      }
+
+      if (copyAwbBtn) {
+        copyAwbBtn.addEventListener("click", () => {
+          const txt = trackAwb ? trackAwb.textContent : "";
+          if (txt && !txt.includes("assigned")) {
+            navigator.clipboard.writeText(txt);
+            copyAwbBtn.textContent = "✓ Copied!";
+            setTimeout(() => { copyAwbBtn.textContent = "Copy ID"; }, 2000);
+          }
+        });
+      }
+
+      // Universal delegated click for Track Order buttons
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest(".btn-track-order");
+        if (btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const ordId = btn.dataset.orderId;
+          const ordNum = btn.dataset.orderNumber;
+          const ordStatus = btn.dataset.orderStatus;
+          const ordEta = btn.dataset.orderEta;
+          openTrackingModal(ordId, ordNum, ordStatus, ordEta);
+        }
+      });
 
       // Realtime listener for order status changes
       if (typeof client.channel === "function") {
@@ -653,9 +1061,24 @@
         btn.addEventListener("click", () => switchTab(btn.dataset.tab));
       });
 
-      if (window.location.hash === "#orders") {
-        switchTab("orders");
+      function handleTabRouting() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hash = window.location.hash;
+        if (hash === "#orders" || urlParams.get("tab") === "orders") {
+          switchTab("orders");
+          setTimeout(() => {
+            const panel = document.getElementById("panel-orders");
+            if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 200);
+        } else if (hash === "#addresses" || urlParams.get("tab") === "addresses") {
+          switchTab("addresses");
+        } else if (hash === "#profile" || urlParams.get("tab") === "profile") {
+          switchTab("profile");
+        }
       }
+
+      handleTabRouting();
+      window.addEventListener("hashchange", handleTabRouting);
 
       // 8. Sign Out Button
       const logoutBtn = document.getElementById("btn-account-logout");
@@ -670,5 +1093,80 @@
       }
     });
   </script>
+
+  <!-- ========================================================================
+       SLIDE-OVER SHOPPING CART DRAWER
+       ======================================================================== -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay" aria-hidden="true">
+    <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-drawer-header">
+        <h3 id="cart-title" class="cart-drawer-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          Your Shopping Cart
+        </h3>
+        <button id="cart-drawer-close" class="cart-close-btn" aria-label="Close Cart">✕</button>
+      </div>
+
+      <!-- Free Shipping Meter -->
+      <div class="free-shipping-box">
+        <div class="free-shipping-text">
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
+        </div>
+        <div class="free-shipping-progress">
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Cart Items List -->
+      <div id="cart-items-container" class="cart-drawer-items">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Empty Cart State -->
+      <div id="cart-empty-state" class="cart-empty-view" style="display: none;">
+        <div class="cart-empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
+        <h4>Your Cart is Empty</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 8px 0 20px;">Looks like you haven't added any items yet.</p>
+        <button type="button" class="btn-primary" onclick="window.location.href='shop.html';">
+          Start Shopping
+        </button>
+      </div>
+
+      <!-- Cart Footer -->
+      <div class="cart-drawer-footer">
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" style="font-weight: 700; color: var(--text-main);">₹0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Standard Shipping</span>
+          <span style="color: var(--color-success); font-weight: 700;">FREE</span>
+        </div>
+        <div class="cart-summary-row cart-summary-total">
+          <span>Total (Incl. Taxes)</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <div id="cart-advance-breakdown" style="display: none; padding: 8px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+          <div class="cart-summary-row" style="margin-bottom: 2px;">
+            <span style="color: #6366f1; font-weight: 600;">Advance Payable Now:</span>
+            <span id="cart-advance-payable" style="font-weight: 700; color: #6366f1;">₹0</span>
+          </div>
+          <div class="cart-summary-row" style="margin-bottom: 0;">
+            <span style="color: var(--text-muted);">Remaining by COD:</span>
+            <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
+          </div>
+        </div>
+        <button type="button" id="checkout-btn" class="btn-checkout">
+          <span>Proceed to Checkout</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>

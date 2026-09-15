@@ -51,8 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (cartEmptyState) cartEmptyState.style.display = "block";
       if (cartSubtotalElem) cartSubtotalElem.textContent = formatPrice(0);
       if (cartTotalElem) cartTotalElem.textContent = formatPrice(0);
-      if (freeShippingFill) freeShippingFill.style.width = "0%";
-      if (freeShippingMsg) freeShippingMsg.innerHTML = `Add <strong>${formatPrice(999)}</strong> more for Free Delivery!`;
+      if (freeShippingFill) freeShippingFill.style.width = "100%";
+      if (freeShippingMsg) freeShippingMsg.innerHTML = `🎉 <strong>100% FREE Delivery Across India</strong> on all orders!`;
       return;
     }
 
@@ -85,29 +85,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cartSubtotalElem) cartSubtotalElem.textContent = formatPrice(subtotal);
     if (cartTotalElem) cartTotalElem.textContent = formatPrice(subtotal);
 
-    // Free shipping calculation threshold ₹999
-    const threshold = 999;
+    // 100% Free delivery across India on every order
     if (freeShippingFill && freeShippingMsg) {
-      if (subtotal >= threshold) {
-        freeShippingFill.style.width = "100%";
-        freeShippingMsg.innerHTML = "🎉 Congratulations! You have unlocked <strong>Free Express Delivery!</strong>";
-      } else {
-        const remaining = Math.max(0, threshold - subtotal);
-        const pct = Math.min(100, (subtotal / threshold) * 100);
-        freeShippingFill.style.width = `${pct}%`;
-        freeShippingMsg.innerHTML = `Add <strong>${formatPrice(remaining)}</strong> more for Free Delivery!`;
-      }
+      freeShippingFill.style.width = "100%";
+      freeShippingMsg.innerHTML = "🎉 <strong>100% FREE Delivery Across India</strong> on this order!";
     }
   }
 
   function openCartDrawer() {
+    if (window.VeloraCart && typeof window.VeloraCart.open === "function") {
+      window.VeloraCart.open();
+      return;
+    }
     renderCartDrawer();
-    if (cartDrawerOverlay) cartDrawerOverlay.classList.add("active");
+    if (cartDrawerOverlay) {
+      cartDrawerOverlay.classList.add("active");
+      cartDrawerOverlay.classList.add("open");
+    }
     document.body.style.overflow = "hidden";
   }
 
   function closeCartDrawer() {
-    if (cartDrawerOverlay) cartDrawerOverlay.classList.remove("active");
+    if (window.VeloraCart && typeof window.VeloraCart.close === "function") {
+      window.VeloraCart.close();
+      return;
+    }
+    if (cartDrawerOverlay) {
+      cartDrawerOverlay.classList.remove("active");
+      cartDrawerOverlay.classList.remove("open");
+    }
     document.body.style.overflow = "";
   }
 
@@ -370,7 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (hasError) return;
 
-      // Simulated Demo Submission
+      // Support Ticket Submission
       const ticketId = "VEL-TKT-" + Math.floor(10000 + Math.random() * 90000);
       const ticket = {
         id: ticketId,

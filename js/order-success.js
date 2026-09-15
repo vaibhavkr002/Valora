@@ -19,48 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Error loading order data:", err);
   }
 
-  // Fallback realistic demo order if user navigates directly without a recent checkout
   if (!orderData) {
-    const now = new Date();
-    const dateOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    const dateFormatted = now.toLocaleDateString('en-IN', { ...dateOptions, hour: '2-digit', minute: '2-digit' });
-    const etaDate = new Date(now);
-    etaDate.setDate(now.getDate() + 4);
-
-    orderData = {
-      orderId: "#VEL-84920",
-      orderDate: dateFormatted,
-      estimatedDelivery: etaDate.toLocaleDateString('en-IN', dateOptions),
-      customer: {
-        fullName: "Rohan Sharma",
-        phone: "+91 98765 43210",
-        email: "rohan.sharma@example.in",
-        house: "Flat 402, Building 3, Oberoi Splendor",
-        street: "JVLR, Andheri East",
-        city: "Mumbai",
-        state: "Maharashtra",
-        zip: "400072",
-        country: "India",
-        addressType: "Home"
-      },
-      paymentMethod: "Cash on Delivery",
-      items: [
-        {
-          id: "prod-01",
-          name: "AeroGlide Runner Pro V2",
-          price: 3499,
-          image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80",
-          size: "UK 9",
-          color: "Obsidian Black",
-          quantity: 1
-        }
-      ],
-      subtotal: 3499,
-      discount: 349.90,
-      discountCode: "VELORA10",
-      shipping: 0,
-      total: 3149.10
-    };
+    window.location.href = "account.html#orders";
+    return;
   }
 
   // --- 2. DOM Elements ---
@@ -87,6 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
     advanceCard: document.getElementById("receipt-advance-card"),
     advanceHighlight: document.getElementById("receipt-advance-highlight"),
     codHighlight: document.getElementById("receipt-cod-highlight"),
+    deliveryPreference: document.getElementById("receipt-delivery-preference"),
+    giftsRow: document.getElementById("receipt-gifts-row"),
+    giftsCard: document.getElementById("receipt-gifts-card"),
 
     // Buttons
     btnPrintReceipt: document.getElementById("btn-print-receipt"),
@@ -202,10 +166,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (elements.shipping) {
-      elements.shipping.textContent = orderData.shipping === 0 ? "FREE (₹0)" : formatPrice(orderData.shipping);
+      elements.shipping.textContent = (!orderData.shipping || orderData.shipping === 0) ? "FREE (₹0)" : formatPrice(orderData.shipping);
+      elements.shipping.style.color = "var(--color-success)";
+      elements.shipping.style.fontWeight = "700";
     }
 
     if (elements.total) elements.total.textContent = formatPrice(orderData.total || 0);
+
+    // Delivery Preference Rendering
+    const deliveryPref = orderData.delivery_preference || "Simple Delivery";
+    if (elements.deliveryPreference) {
+      elements.deliveryPreference.textContent = deliveryPref;
+      if (deliveryPref === "Open Box Delivery") {
+        elements.deliveryPreference.style.color = "#0284c7";
+      }
+    }
+
+    // Full Online Payment Free Gifts Rendering
+    const giftsList = Array.isArray(orderData.free_gifts_items) ? orderData.free_gifts_items : [];
+    const hasGifts = Boolean(orderData.free_gifts_eligible && giftsList.length > 0);
+
+    if (hasGifts) {
+      if (elements.giftsRow) {
+        elements.giftsRow.style.display = "flex";
+        const label = elements.giftsRow.querySelector("span:first-child");
+        if (label) label.textContent = `${giftsList.length} Complimentary Gifts (${giftsList.map(g => g.name).join(", ")})`;
+      }
+      if (elements.giftsCard) {
+        elements.giftsCard.style.display = "block";
+        const titleEl = document.getElementById("receipt-gifts-title");
+        const descEl = document.getElementById("receipt-gifts-desc");
+        if (titleEl) titleEl.textContent = `${giftsList.length} Complimentary Gifts Included`;
+        if (descEl) {
+          descEl.innerHTML = `Thank you for completing 100% full online payment! Your parcel includes <strong>${giftsList.map(g => g.name).join("</strong>, <strong>")}</strong>.`;
+        }
+      }
+    } else {
+      if (elements.giftsRow) elements.giftsRow.style.display = "none";
+      if (elements.giftsCard) elements.giftsCard.style.display = "none";
+    }
 
     // Advance Payment & COD Balance Rendering
     const advancePaidVal = Number(orderData.advance_paid || orderData.advance_amount || 0);

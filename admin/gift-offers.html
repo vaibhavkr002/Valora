@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Gifts & Payment Offers | VELORA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+  <style>
+    .gift-offer-card {
+      background: var(--admin-card-bg);
+      border: 1px solid var(--admin-card-border);
+      border-radius: var(--admin-radius);
+      padding: 22px;
+      transition: var(--admin-transition);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .gift-offer-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    }
+    .gift-offer-card.inactive {
+      opacity: 0.65;
+      filter: grayscale(0.2);
+    }
+    .gift-item-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+    .gift-repeater-row {
+      display: grid;
+      grid-template-columns: 60px 1.5fr 2fr 100px 40px;
+      gap: 10px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--admin-card-border);
+      margin-bottom: 10px;
+    }
+    .preview-box {
+      background: linear-gradient(145deg, #131722, #0d1017);
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+      border-radius: 12px;
+      padding: 16px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VELORA</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        
+        <a href="dashboard.html" class="sidebar-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="products.html" class="sidebar-link">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+
+        <a href="add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+
+        <a href="categories.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+
+        <a href="gift-offers.html" class="sidebar-link active">
+          <i class="fas fa-gift"></i>
+          <span>Gift Offers</span>
+        </a>
+
+        <a href="orders.html" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+
+        <a href="customers.html" class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+
+        <a href="coupons.html" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+
+        <a href="reviews.html" class="sidebar-link">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+
+        <a href="analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+
+        <a href="banners.html" class="sidebar-link">
+          <i class="fas fa-images"></i>
+          <span>Hero Banners</span>
+        </a>
+
+        <a href="delivery-partners.html" class="sidebar-link">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+
+        <a href="settings.html" class="sidebar-link">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="dashboard.html">Velora Admin</a>
+            <span>/</span>
+            <span class="current">Gift Offers & Promotions</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+            </div>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+              <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-heading"><i class="fas fa-gift" style="color: #f59e0b; margin-right: 10px;"></i> Free Gifts & Online Payment Offers</h1>
+            <p class="page-subheading">Configure complimentary gift bundles awarded exclusively on 100% Full Online Payment orders.</p>
+          </div>
+          <div style="display:flex; gap: 10px;">
+            <button type="button" id="btn-refresh-offers" class="btn-admin-secondary">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button type="button" id="btn-open-create-modal" class="btn-admin-primary">
+              <i class="fas fa-plus"></i> Create Gift Offer
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Active Offers</span>
+              <span class="metric-value" id="stat-active-offers">0</span>
+              <span class="metric-sub">Live on storefront</span>
+            </div>
+            <div class="metric-icon-box emerald"><i class="fas fa-check-circle"></i></div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Category Rules</span>
+              <span class="metric-value" id="stat-category-rules">0</span>
+              <span class="metric-sub">Category-wide gifts</span>
+            </div>
+            <div class="metric-icon-box indigo"><i class="fas fa-tags"></i></div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Product Overrides</span>
+              <span class="metric-value" id="stat-product-overrides">0</span>
+              <span class="metric-sub">Single item rules</span>
+            </div>
+            <div class="metric-icon-box amber"><i class="fas fa-box-open"></i></div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Complimentary Gifts</span>
+              <span class="metric-value" id="stat-total-gifts">0</span>
+              <span class="metric-sub">Items configured</span>
+            </div>
+            <div class="metric-icon-box cyan"><i class="fas fa-gift"></i></div>
+          </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="admin-card" style="padding: 16px 20px; margin-bottom: 20px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; flex: 1;">
+              <div style="position: relative; min-width: 240px; flex: 1;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-muted);"></i>
+                <input type="text" id="gift-search" class="admin-input" placeholder="Search offers, categories, products..." style="padding-left: 36px; width: 100%;">
+              </div>
+              <select id="filter-target" class="admin-select" style="min-width: 170px;">
+                <option value="all">All Targets</option>
+                <option value="category">Category Rules</option>
+                <option value="product">Product Overrides</option>
+              </select>
+              <select id="filter-status" class="admin-select" style="min-width: 140px;">
+                <option value="all">All Status</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Disabled Only</option>
+              </select>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--admin-text-muted);" id="offers-count-label">
+              Showing 0 offers
+            </div>
+          </div>
+        </div>
+
+        <!-- Offers Container -->
+        <div id="gift-offers-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; color: var(--admin-text-muted);">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 12px; color: var(--admin-accent);"></i>
+            <p>Loading gift offers...</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create / Edit Gift Offer Modal -->
+  <div class="admin-modal-backdrop" id="gift-modal-backdrop" style="display: none;">
+    <div class="admin-modal" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="modal-title">Create Free Gift Offer</h3>
+        <button class="admin-modal-close" id="btn-close-gift-modal">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <form id="gift-offer-form">
+          <input type="hidden" id="offer-id">
+
+          <!-- Section 1: Offer Identity -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+            <div class="form-group">
+              <label class="admin-label">Offer Title *</label>
+              <input type="text" id="offer-title" class="admin-input" placeholder="e.g. Shoes Full Online 3 Free Gifts" required style="width: 100%;">
+            </div>
+            <div class="form-group">
+              <label class="admin-label">Priority (Higher wins) *</label>
+              <input type="number" id="offer-priority" class="admin-input" value="10" min="1" max="100" required style="width: 100%;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label class="admin-label">Offer Description (Internal / Storefront)</label>
+            <input type="text" id="offer-description" class="admin-input" placeholder="e.g. Complimentary Luxury Socks, Waxed Laces and Zinc Keychain" style="width: 100%;">
+          </div>
+
+          <!-- Section 2: Targeting Rule -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--admin-card-border); border-radius: 8px; padding: 14px; margin-top: 14px;">
+            <label class="admin-label" style="font-size: 0.9rem; font-weight: 700; color: #818cf8; margin-bottom: 8px;">Targeting Rule</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div class="form-group">
+                <label class="admin-label">Target Level *</label>
+                <select id="target-type" class="admin-select" style="width: 100%;">
+                  <option value="category">Entire Category Rule</option>
+                  <option value="product">Specific Product Override</option>
+                </select>
+              </div>
+
+              <!-- Category Dropdown -->
+              <div class="form-group" id="group-target-category">
+                <label class="admin-label">Select Category *</label>
+                <select id="target-category-id" class="admin-select" style="width: 100%;">
+                  <option value="">Loading categories...</option>
+                </select>
+              </div>
+
+              <!-- Product Dropdown -->
+              <div class="form-group" id="group-target-product" style="display: none;">
+                <label class="admin-label">Select Specific Product *</label>
+                <select id="target-product-id" class="admin-select" style="width: 100%;">
+                  <option value="">Loading products...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Activation & Dates -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 14px;">
+            <div class="form-group">
+              <label class="admin-label">Offer Status</label>
+              <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="offer-is-active" checked style="width: 18px; height: 18px; accent-color: #10b981;">
+                <span style="font-weight: 600;">Active Immediately</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="admin-label">Start Date (Optional)</label>
+              <input type="date" id="offer-start-date" class="admin-input" style="width: 100%;">
+            </div>
+            <div class="form-group">
+              <label class="admin-label">End Date (Optional)</label>
+              <input type="date" id="offer-end-date" class="admin-input" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- Section 4: Complimentary Gift Items -->
+          <div style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div>
+                <label class="admin-label" style="font-size: 0.9rem; font-weight: 700; color: #f59e0b; margin: 0;">
+                  Complimentary Gift Items (1 to 5 items)
+                </label>
+                <span style="font-size: 0.78rem; color: var(--admin-text-muted);">These items will be promised to the customer when Full Online Payment is selected.</span>
+              </div>
+              <button type="button" id="btn-add-gift-item" class="btn-admin-secondary" style="font-size: 0.8rem; padding: 5px 10px;">
+                <i class="fas fa-plus"></i> Add Item
+              </button>
+            </div>
+
+            <!-- Items Repeater List -->
+            <div id="gift-items-list">
+              <!-- Dynamically populated rows -->
+            </div>
+          </div>
+
+          <!-- Section 5: Live 3D Storefront Preview -->
+          <div style="margin-top: 20px;">
+            <label class="admin-label" style="font-size: 0.85rem; font-weight: 700; color: #34d399;">
+              <i class="fas fa-eye"></i> Live Storefront Preview (What Customer Sees)
+            </label>
+            <div class="preview-box" id="modal-preview-box">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="background: rgba(16, 185, 129, 0.18); color: #34d399; font-weight: 800; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.35);">
+                  🎁 <span id="prev-badge-text">PAY FULL ONLINE • 3 FREE GIFTS</span>
+                </span>
+                <span style="color: #34d399; font-weight: 800; font-size: 0.82rem;">100% FREE</span>
+              </div>
+              <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 10px;" id="prev-offer-title">
+                Complete online payment via UPI, Card or Net Banking to receive complimentary items:
+              </div>
+              <div id="prev-items-chips" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <!-- dynamic chips -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Buttons -->
+          <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--admin-card-border);">
+            <button type="button" id="btn-cancel-modal" class="btn-admin-secondary">Cancel</button>
+            <button type="submit" id="btn-submit-offer" class="btn-admin-primary">
+              <i class="fas fa-save"></i> Save Gift Offer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="../js/gift-engine.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/admin-gift-offers.js"></script>
+</body>
+</html>
+

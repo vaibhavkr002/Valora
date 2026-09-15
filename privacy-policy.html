@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,18 +13,26 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/auth.css">
   <link rel="stylesheet" href="css/info-pages.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
   <!-- Top Announcement Bar -->
-  <div class="top-announcement-bar">
+    <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Exclusive</span>
-        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="homepage.html#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
         <a href="account.html#orders">Track Order</a>
         <span>•</span>
@@ -180,12 +188,6 @@
 
         <!-- Main Articles -->
         <div class="info-main-content">
-          <!-- Educational Notice Box -->
-          <div class="legal-notice-box">
-            <strong>Educational Showcase Notice:</strong> This Privacy Policy outlines the general data handling philosophies of the VELORA e-commerce website. Because this platform currently functions as a frontend college project, user accounts, shopping cart items, saved wishlists, and demo orders are managed locally within your browser's localStorage or in simulated runtime memory. We do not sell, trade, or distribute your information to external advertising brokers.
-          </div>
-
-          
           <article id="intro" class="policy-block">
             <div class="policy-block-header">
               <div class="policy-block-icon">
@@ -194,7 +196,7 @@
               <h2 class="policy-block-title">1. Introduction & Scope</h2>
             </div>
             <p class="policy-paragraph">
-              VELORA ("we", "our", or "us") is dedicated to providing a secure, transparent, and respectful digital shopping experience. This Privacy Policy outlines how information is gathered, utilized, stored, and safeguarded when you explore our digital storefront, browse footwear, timepieces, caps, and apparel, create an account, save wishlist items, or simulate an order.
+              VELORA ("we", "our", or "us") is dedicated to providing a secure, transparent, and respectful digital shopping experience. This Privacy Policy outlines how information is gathered, utilized, stored, and safeguarded when you explore our digital storefront, browse footwear, timepieces, caps, and apparel, create an account, save wishlist items, or place an order.
             </p>
             <p class="policy-paragraph">
               By accessing or using the VELORA website, you acknowledge the informational and data handling practices described herein. If you do not agree with these principles, we advise discontinuing use of the website.
@@ -221,7 +223,7 @@
               <h2 class="policy-block-title">3. Account Information</h2>
             </div>
             <p class="policy-paragraph">
-              When you register for a VELORA member account, we collect your full name, email address, and chosen password credential. Within this demo architecture, accounts (including preconfigured demo accounts such as Alex Morgan) are stored in client-side storage (<code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">velora_users_db</code>) to simulate session persistence, order history tracking, and profile customization without transmitting credentials to an external server.
+              When you register for a VELORA member account, we collect your full name, email address, and secure authentication credentials. Account credentials and authentication states are protected and encrypted through our secure backend infrastructure, enabling seamless profile management, order history tracking, and saved preferences.
             </p>
           </article>
 
@@ -233,7 +235,7 @@
               <h2 class="policy-block-title">4. Contact & Support Data</h2>
             </div>
             <p class="policy-paragraph">
-              When you submit an inquiry through our Contact Support form, careers application, or affiliate request, we collect your name, email address, optional telephone number, order reference number, and message text. In our current implementation, support tickets are assigned a unique reference code (e.g. <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">#VEL-TKT-XXXXX</code>) and stored in browser memory to facilitate demonstration feedback.
+              When you submit an inquiry through our Contact Support form, careers application, or affiliate request, we collect your name, email address, optional telephone number, order reference number, and message text. Support tickets are assigned a unique reference code (e.g. <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">#VEL-TKT-XXXXX</code>) for rapid assistance and customer service communication.
             </p>
           </article>
 
@@ -245,7 +247,7 @@
               <h2 class="policy-block-title">5. Order & Transaction Data</h2>
             </div>
             <p class="policy-paragraph">
-              When simulating an order through Checkout, we gather recipient delivery information (shipping name, delivery address, apartment or suite, city, state, postal code, and contact phone number). Completed demo orders are recorded locally so that they can be viewed immediately in your My Account &rarr; Orders dashboard.
+              When placing an order through Checkout, we collect necessary recipient delivery information (shipping name, delivery address, apartment or suite, city, state, postal code, and contact phone number). Completed orders and tracking records are securely linked to your account and accessible in real-time in your My Account &rarr; Orders dashboard.
             </p>
           </article>
 
@@ -257,7 +259,7 @@
               <h2 class="policy-block-title">6. Payment Information</h2>
             </div>
             <p class="policy-paragraph">
-              <strong>Zero Card Data Stored:</strong> In this educational frontend project, credit card numbers, expiration dates, and CVV security codes entered into checkout inputs are processed solely for client-side form validation and demonstration display. No raw credit card data is transmitted, captured, or retained on external payment processor servers.
+              <strong>Zero Raw Card Data Stored:</strong> Payment processing is handled through industry-standard tokenization protocols and certified payment gateways. VELORA never stores raw credit card numbers, CVVs, or full payment credentials on its servers.
             </p>
           </article>
 
@@ -302,10 +304,10 @@
               Information collected within VELORA is used strictly to fulfill core e-commerce interactions:
             </p>
             <ul class="policy-list">
-              <li class="policy-list-item">Processing and rendering your simulated orders, receipts, and shipping timelines.</li>
+              <li class="policy-list-item">Processing and fulfilling your orders, invoices, receipts, and live tracking timelines.</li>
               <li class="policy-list-item">Maintaining persistent cart item counts and wishlist badges in the header navigation.</li>
               <li class="policy-list-item">Filtering and sorting catalog items according to category parameters and deals queries.</li>
-              <li class="policy-list-item">Providing realistic customer support ticket confirmations and simulated career submissions.</li>
+              <li class="policy-list-item">Providing responsive customer support ticket confirmations and processing inquiries.</li>
             </ul>
           </article>
 
@@ -317,7 +319,7 @@
               <h2 class="policy-block-title">10. How We Protect Information</h2>
             </div>
             <p class="policy-paragraph">
-              We employ structured client-side form validation, sanitized text rendering, and secure coding practices to prevent cross-site scripting (XSS) and injection errors. In production deployment, e-commerce architectures require end-to-end SSL/TLS encryption, secure tokenized payment gateways, and hashed database storage. Within this demo showcase, sensitive personal data is avoided entirely.
+              We employ structured client-side form validation, sanitized text rendering, and secure coding practices to prevent cross-site scripting (XSS) and injection errors. All transactions and data transfers are protected with end-to-end SSL/TLS encryption and strict access controls.
             </p>
           </article>
 
@@ -353,7 +355,7 @@
               <h2 class="policy-block-title">13. Analytics & Product Metrics</h2>
             </div>
             <p class="policy-paragraph">
-              Product popularity counters, review counts, and bestseller badges displayed on catalog cards are driven by local JavaScript arrays in <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">js/products.js</code> to deliver realistic browsing dynamics without deploying invasive third-party telemetry.
+              Product popularity metrics, review counts, and badges displayed across our catalog are calculated from store activity without deploying invasive third-party telemetry or cross-site tracking.
             </p>
           </article>
 
@@ -382,7 +384,7 @@
             <ul class="policy-list">
               <li class="policy-list-item"><strong>Access & Review:</strong> View all saved order histories and shipping addresses inside your My Account panel.</li>
               <li class="policy-list-item"><strong>Cart & Wishlist Clear:</strong> Remove individual saved items or clear the entire bag using the in-drawer controls.</li>
-              <li class="policy-list-item"><strong>Sign Out:</strong> Terminate your authenticated demo session with one click in the header account menu.</li>
+              <li class="policy-list-item"><strong>Sign Out:</strong> Terminate your active session securely with one click in the header account menu.</li>
             </ul>
           </article>
 
@@ -391,10 +393,10 @@
               <div class="policy-block-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               </div>
-              <h2 class="policy-block-title">16. Account Deletion & Local Data Reset</h2>
+              <h2 class="policy-block-title">16. Account Deletion & Data Privacy Rights</h2>
             </div>
             <p class="policy-paragraph">
-              To delete all locally saved credentials, orders, wishlists, and cart items created during your exploration of VELORA, simply clear your browser's site data for this domain or execute <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">localStorage.clear()</code> in the developer console.
+              To request permanent deletion of your account or data associated with your profile, contact our support team at <a href="mailto:support@velorastudio.com" style="color: #6366f1; font-weight: 600;">support@velorastudio.com</a> or manage your saved preferences directly within My Account.
             </p>
           </article>
 
@@ -551,7 +553,10 @@
   </footer>
 
   <!-- Slide-Over Shopping Cart Drawer -->
-  <div id="cart-drawer-overlay" class="cart-drawer-overlay">
+  <!-- ========================================================================
+       SLIDE-OVER SHOPPING CART DRAWER
+       ======================================================================== -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay" aria-hidden="true">
     <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
       <div class="cart-drawer-header">
         <h3 id="cart-title" class="cart-drawer-title">
@@ -564,37 +569,57 @@
       <!-- Free Shipping Meter -->
       <div class="free-shipping-box">
         <div class="free-shipping-text">
-          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Delivery!</span>
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
         </div>
         <div class="free-shipping-progress">
-          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 80%;"></div>
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
         </div>
       </div>
 
-      <!-- Cart Items List Container -->
-      <div id="cart-items-container" class="cart-items-list">
-        <!-- Injected via JS -->
+      <!-- Cart Items List -->
+      <div id="cart-items-container" class="cart-drawer-items">
+        <!-- Injected via JavaScript -->
       </div>
 
       <!-- Empty Cart State -->
-      <div id="cart-empty-state" class="cart-empty" style="display: none;">
+      <div id="cart-empty-state" class="cart-empty-view" style="display: none;">
         <div class="cart-empty-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         </div>
-        <p class="cart-empty-msg">Your shopping cart is currently empty.</p>
-        <a href="shop.html" class="btn-primary" style="display: inline-flex; margin-top: 12px;">Browse Products</a>
+        <h4>Your Cart is Empty</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 8px 0 20px;">Looks like you haven't added any items yet.</p>
+        <button type="button" class="btn-primary" onclick="window.location.href='shop.html';">
+          Start Shopping
+        </button>
       </div>
 
-      <!-- Cart Drawer Footer -->
+      <!-- Cart Footer -->
       <div class="cart-drawer-footer">
         <div class="cart-summary-row">
-          <span class="cart-subtotal-label">Estimated Total</span>
-          <span id="cart-total" class="cart-subtotal-val">₹0</span>
+          <span>Subtotal</span>
+          <span id="cart-subtotal" style="font-weight: 700; color: var(--text-main);">₹0</span>
         </div>
-        <p class="cart-tax-notice">Taxes, discounts and express shipping calculated at checkout.</p>
-        <button id="checkout-btn" class="checkout-btn">
+        <div class="cart-summary-row">
+          <span>Standard Shipping</span>
+          <span style="color: var(--color-success); font-weight: 700;">FREE</span>
+        </div>
+        <div class="cart-summary-row cart-summary-total">
+          <span>Total (Incl. Taxes)</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <div id="cart-advance-breakdown" style="display: none; padding: 8px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+          <div class="cart-summary-row" style="margin-bottom: 2px;">
+            <span style="color: #6366f1; font-weight: 600;">Advance Payable Now:</span>
+            <span id="cart-advance-payable" style="font-weight: 700; color: #6366f1;">₹0</span>
+          </div>
+          <div class="cart-summary-row" style="margin-bottom: 0;">
+            <span style="color: var(--text-muted);">Remaining by COD:</span>
+            <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
+          </div>
+        </div>
+        <button type="button" id="checkout-btn" class="btn-checkout">
           <span>Proceed to Checkout</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </div>
     </div>
@@ -610,5 +635,7 @@
   <script src="js/auth.js"></script>
   <script src="js/info-pages.js"></script>
 
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>

@@ -833,11 +833,26 @@
 @media (max-width: 900px) {
   .info-layout-grid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
+  }
+
+  .info-layout-grid > * {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .info-sidebar-nav {
     position: static;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 14px 12px;
+  }
+
+  .info-main-content {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .job-card {
@@ -855,6 +870,78 @@
   }
 }
 
+@media (max-width: 768px) {
+  .info-page-hero {
+    padding: 24px 0 28px !important;
+  }
+
+  .info-hero-title {
+    font-size: clamp(1.6rem, 6vw, 2.1rem) !important;
+    line-height: 1.2;
+  }
+
+  .info-hero-subtitle {
+    font-size: 0.88rem !important;
+  }
+
+  .info-sidebar-menu {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding-bottom: 8px !important;
+    scrollbar-width: none !important;
+  }
+
+  .info-sidebar-menu::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .info-sidebar-menu li {
+    flex-shrink: 0;
+  }
+
+  .info-sidebar-menu li a {
+    white-space: nowrap;
+    padding: 8px 14px !important;
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    display: block;
+  }
+
+  .policy-block {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    display: block !important;
+    contain: paint;
+  }
+
+  .velora-table {
+    min-width: 480px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+  }
+}
+
 @media (max-width: 640px) {
   .form-grid-2 {
     grid-template-columns: 1fr;
@@ -862,11 +949,27 @@
   }
 
   .form-card {
-    padding: 24px 20px;
+    padding: 20px 16px;
   }
 
-  .info-hero-title {
-    font-size: 1.85rem;
+  .policy-block {
+    padding: 20px 16px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-content-section {
+    padding: 20px 0 36px;
+  }
+
+  .form-card {
+    padding: 16px 12px;
+  }
+
+  .faq-question-btn {
+    padding: 14px 12px;
+    font-size: 0.92rem;
   }
 }
 

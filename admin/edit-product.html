@@ -239,6 +239,31 @@
                   <input type="text" id="product-colors" class="admin-input" style="width:100%;">
                 </div>
               </div>
+
+              <!-- Product Specifications Card -->
+              <div class="admin-card" id="card-specifications">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                  <div>
+                    <h3 class="card-title" style="margin: 0;">
+                      <i class="fas fa-list-check" style="color: var(--admin-accent); margin-right: 6px;"></i>
+                      Product Specifications
+                    </h3>
+                    <p style="font-size: 0.82rem; color: var(--admin-text-muted); margin: 4px 0 0 0;">
+                      Technical specifications (Material, Dimensions, Weight, Fit, Origin, Warranty) shown to customers on the product details page.
+                    </p>
+                  </div>
+                  <button type="button" id="btn-add-spec-row" class="btn-admin-secondary" style="padding: 7px 14px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-plus"></i> Add Specification
+                  </button>
+                </div>
+
+                <div id="specs-rows-container" style="display: flex; flex-direction: column; gap: 10px;">
+                  <!-- Dynamic Specification Rows Injected by JS -->
+                </div>
+                <div id="specs-empty-state" style="padding: 24px; text-align: center; border: 1px dashed var(--admin-card-border); border-radius: 8px; color: var(--admin-text-muted); font-size: 0.85rem;">
+                  No specifications added yet. Click "+ Add Specification" to specify custom details.
+                </div>
+              </div>
             </div>
 
             <div>
@@ -256,6 +281,9 @@
                   </label>
                   <label style="display:flex; align-items:center; gap: 8px; color: #fff; cursor: pointer;">
                     <input type="checkbox" id="check-deal"> <span>Deal of the Week</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap: 8px; color: #10b981; cursor: pointer; font-weight: 600;">
+                    <input type="checkbox" id="check-bogo"> <span>🎁 Buy 1 Get 1 Free (BOGO)</span>
                   </label>
                 </div>
               </div>

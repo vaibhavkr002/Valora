@@ -93,6 +93,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           const { error } = await client.from("categories").delete().eq("id", id);
           if (error) alert("Error deleting category: " + error.message);
           else {
+            try {
+              localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+              if (window.VeloraCache) window.VeloraCache.invalidate('categories');
+            } catch (_) {}
             window.showToast("Category deleted.", "success");
             loadCategories();
           }
@@ -139,6 +143,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         is_active: isActive,
         updated_at: new Date().toISOString()
       };
+
+      try {
+        localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+        if (window.VeloraCache) window.VeloraCache.invalidate('categories');
+      } catch (_) {}
 
       if (editingCatId) {
         const { error } = await client.from("categories").update(payload).eq("id", editingCatId);

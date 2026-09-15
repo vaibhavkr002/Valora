@@ -1,0 +1,2645 @@
+/* ==========================================================================
+   VELORA PREMIUM 3D VISUAL UPGRADE
+   Purely additive stylesheet — enhances visual depth without changing
+   any functionality, layout structure, or data connections.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* --------------------------------------------------------------------------
+   ENHANCED CSS DESIGN TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* 3D Shadow System — layered for depth */
+  --shadow-3d-xs:  0 1px 2px rgba(15,23,42,0.06), 0 1px 1px rgba(0,0,0,0.04);
+  --shadow-3d-sm:  0 2px 4px rgba(15,23,42,0.07), 0 4px 12px rgba(15,23,42,0.05);
+  --shadow-3d-md:  0 4px 8px rgba(15,23,42,0.08), 0 8px 24px rgba(15,23,42,0.06), 0 16px 32px rgba(15,23,42,0.04);
+  --shadow-3d-lg:  0 8px 16px rgba(15,23,42,0.10), 0 16px 36px rgba(15,23,42,0.08), 0 32px 56px rgba(15,23,42,0.06);
+  --shadow-3d-xl:  0 16px 32px rgba(15,23,42,0.12), 0 24px 48px rgba(15,23,42,0.09), 0 48px 80px rgba(15,23,42,0.06);
+  --shadow-accent: 0 8px 24px rgba(37,99,235,0.22), 0 2px 8px rgba(37,99,235,0.12);
+  --shadow-accent-hover: 0 12px 32px rgba(37,99,235,0.32), 0 4px 12px rgba(37,99,235,0.18);
+  --shadow-dark-hover: 0 20px 48px rgba(15,23,42,0.22), 0 8px 20px rgba(15,23,42,0.14);
+
+  /* Glass Morphism */
+  --glass-bg: rgba(255,255,255,0.72);
+  --glass-bg-dark: rgba(15,23,42,0.65);
+  --glass-border: rgba(255,255,255,0.65);
+  --glass-border-dark: rgba(255,255,255,0.1);
+  --glass-blur: blur(18px);
+  --glass-blur-md: blur(12px);
+
+  /* Premium Gradients */
+  --grad-brand: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #2563eb 100%);
+  --grad-accent: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  --grad-gold:   linear-gradient(135deg, #b45309 0%, #d97706 50%, #f59e0b 100%);
+  --grad-sale:   linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+  --grad-surface: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  --grad-dark-surface: linear-gradient(160deg, #0f172a 0%, #111827 100%);
+
+  /* Enhanced Transitions */
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --trans-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --trans-smooth: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --trans-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Premium border radii */
+  --radius-card: 16px;
+  --radius-button: 50px;
+  --radius-input: 12px;
+
+  /* Perspective for 3D */
+  --perspective-card: 1200px;
+  --perspective-hero: 1600px;
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL BODY ENHANCEMENT
+   -------------------------------------------------------------------------- */
+body {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth page-level transitions */
+*,
+*::before,
+*::after {
+  will-change: auto;
+}
+
+/* --------------------------------------------------------------------------
+   SCROLL REVEAL — base state (JS adds .p3d-visible)
+   -------------------------------------------------------------------------- */
+.p3d-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+.p3d-reveal.p3d-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.p3d-reveal-left {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+.p3d-reveal-left.p3d-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.p3d-reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.55s var(--ease-out-expo), transform 0.55s var(--ease-out-expo);
+}
+
+.p3d-reveal-scale.p3d-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger delay helpers */
+.p3d-delay-1 { transition-delay: 0.08s; }
+.p3d-delay-2 { transition-delay: 0.16s; }
+.p3d-delay-3 { transition-delay: 0.24s; }
+.p3d-delay-4 { transition-delay: 0.32s; }
+.p3d-delay-5 { transition-delay: 0.40s; }
+
+/* --------------------------------------------------------------------------
+   TOP ANNOUNCEMENT BAR & 3D CAROUSEL
+   -------------------------------------------------------------------------- */
+.top-announcement-bar {
+  background: linear-gradient(90deg, #070a13 0%, #0d1627 35%, #151d38 65%, #080c18 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  position: relative;
+  z-index: 101;
+  overflow: hidden;
+  min-height: 38px;
+}
+
+.top-announcement-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(37, 99, 235, 0.08) 50%, transparent 100%);
+  animation: announcementShimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes announcementShimmer {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.top-announcement-bar .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 4px 16px;
+  position: relative;
+  z-index: 2;
+  min-height: 38px;
+}
+
+.announcement-carousel {
+  position: relative;
+  overflow: hidden;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  user-select: none;
+}
+
+.announcement-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1), transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  visibility: hidden;
+  will-change: transform, opacity;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.announcement-slide.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.announcement-slide.leaving {
+  opacity: 0;
+  transform: translateY(-14px);
+  pointer-events: none;
+}
+
+.announcement-badge {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: #ffffff !important;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.announcement-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.announcement-text-label {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+.announcement-sep {
+  color: rgba(148, 163, 184, 0.4);
+  margin: 0 2px;
+}
+
+.announcement-code-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.announcement-code {
+  background: rgba(37, 99, 235, 0.22);
+  border: 1px dashed rgba(147, 197, 253, 0.6);
+  color: #93c5fd !important;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.announcement-code:hover {
+  background: rgba(37, 99, 235, 0.45);
+  color: #ffffff !important;
+  border-color: #60a5fa;
+  transform: scale(1.05);
+}
+
+.announcement-action-link {
+  color: #60a5fa;
+  text-decoration: none;
+  font-size: 0.74rem;
+  font-weight: 700;
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.2s ease;
+}
+
+.announcement-action-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
+.top-bar-right-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-left: 20px;
+  z-index: 3;
+}
+
+.top-bar-right-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.top-bar-right-links a:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.top-bar-right-links a.active {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.top-bar-right-links span {
+  color: rgba(148, 163, 184, 0.35);
+  font-size: 0.65rem;
+}
+
+@media (max-width: 768px) {
+  .top-announcement-bar {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 0 8px !important;
+    overflow: hidden !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+  .top-announcement-bar .inner {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+  }
+  .announcement-carousel {
+    width: 100% !important;
+    height: 28px !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+  }
+  .announcement-slide {
+    gap: 6px !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+  }
+  .announcement-badge {
+    padding: 2px 6px !important;
+    font-size: 0.62rem !important;
+    flex-shrink: 0 !important;
+  }
+  .announcement-content {
+    font-size: 0.72rem !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+  .announcement-text-label {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  .announcement-code-wrap {
+    display: inline-flex !important;
+    flex-shrink: 0 !important;
+  }
+  .announcement-action-link {
+    display: none !important;
+  }
+  .top-bar-right-links {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-announcement-bar {
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 0 6px !important;
+  }
+  .announcement-content {
+    font-size: 0.68rem !important;
+  }
+  .announcement-badge {
+    font-size: 0.58rem !important;
+    padding: 1px 4px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   PREMIUM NAVIGATION
+   -------------------------------------------------------------------------- */
+.header-nav-wrapper {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid rgba(226,232,240,0.6);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 20px rgba(15,23,42,0.04);
+  transition: background var(--trans-smooth), box-shadow var(--trans-smooth);
+}
+
+.header-nav-wrapper.scrolled {
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, var(--shadow-3d-md);
+  border-bottom-color: rgba(226,232,240,0.8);
+}
+
+/* Brand logo — 3D depth */
+.brand-icon {
+  background: var(--grad-brand);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35), 0 1px 4px rgba(15,23,42,0.2),
+              inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: transform var(--trans-spring), box-shadow var(--trans-smooth);
+}
+
+.brand-logo:hover .brand-icon {
+  transform: rotate(-5deg) scale(1.06);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.45), 0 2px 6px rgba(15,23,42,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* Nav link — gradient underline */
+.nav-link::after {
+  background: var(--grad-accent);
+  height: 2px;
+  border-radius: 2px;
+}
+
+/* Action buttons — elevated feel */
+.action-btn {
+  border-radius: 50%;
+  transition: all var(--trans-smooth);
+}
+
+.action-btn:hover {
+  background: var(--bg-subtle);
+  box-shadow: var(--shadow-3d-sm);
+  transform: translateY(-1px);
+}
+
+.action-btn:active {
+  transform: translateY(0) scale(0.96);
+  box-shadow: none;
+}
+
+/* Badge count — premium ring */
+.badge-count {
+  background: var(--grad-accent);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+}
+
+/* Search bar — premium glass */
+.search-input-wrapper input {
+  background: rgba(241,245,249,0.9);
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: 50px;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.05) inset, 0 1px 0 rgba(255,255,255,0.9);
+  transition: all var(--trans-smooth);
+}
+
+.search-input-wrapper input:focus {
+  background: #ffffff;
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.1), 0 1px 3px rgba(15,23,42,0.05) inset,
+              0 4px 12px rgba(37,99,235,0.08);
+}
+
+/* Search results dropdown — glass */
+.search-results-dropdown {
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(226,232,240,0.8);
+  box-shadow: var(--shadow-3d-xl);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.search-result-item:hover {
+  background: rgba(241,245,249,0.8);
+}
+
+/* --------------------------------------------------------------------------
+   PREMIUM BUTTONS — Tactile 3D press
+   -------------------------------------------------------------------------- */
+.btn-primary {
+  background: var(--grad-brand);
+  border: none;
+  box-shadow: var(--shadow-3d-md), 0 1px 0 rgba(255,255,255,0.1) inset;
+  border-radius: 50px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--trans-smooth), box-shadow var(--trans-smooth);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-dark-hover), 0 1px 0 rgba(255,255,255,0.1) inset;
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(15,23,42,0.15), 0 1px 0 rgba(255,255,255,0.05) inset;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  box-shadow: var(--shadow-3d-sm), 0 1px 0 rgba(255,255,255,1) inset;
+  border: 1px solid rgba(226,232,240,0.9);
+  border-radius: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-secondary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 60%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-3d-md), 0 1px 0 rgba(255,255,255,1) inset;
+  border-color: rgba(203,213,225,0.9);
+}
+
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--shadow-3d-xs);
+}
+
+/* --------------------------------------------------------------------------
+   HERO SECTION — 3D Virtual Showroom Stage
+   -------------------------------------------------------------------------- */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  perspective: var(--perspective-hero);
+  transform-style: preserve-3d;
+  background:
+    radial-gradient(ellipse 90% 55% at 75% 25%, rgba(37,99,235,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 45% at 15% 80%, rgba(245,158,11,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.9) 0%, rgba(241,245,249,0.96) 100%);
+}
+
+/* Showroom Stage Grid Floor */
+.hero-stage-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(15,23,42,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Showroom Stage Volumetric Light Beams */
+.hero-stage-light-beam {
+  position: absolute;
+  top: -25%;
+  right: 12%;
+  width: 520px;
+  height: 700px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.18) 0%, rgba(99,102,241,0.05) 45%, transparent 75%);
+  transform: rotate(-14deg);
+  filter: blur(45px);
+  pointer-events: none;
+  z-index: 1;
+  animation: heroLightPulse 7.5s ease-in-out infinite alternate;
+}
+
+.hero-stage-light-beam.left {
+  top: 10%;
+  left: -10%;
+  width: 440px;
+  height: 560px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.12) 0%, rgba(251,191,36,0.04) 50%, transparent 75%);
+  transform: rotate(20deg);
+  filter: blur(50px);
+  animation-duration: 9s;
+  animation-delay: 1.5s;
+}
+
+@keyframes heroLightPulse {
+  0%   { opacity: 0.65; transform: rotate(-14deg) scale(0.96); }
+  100% { opacity: 1;    transform: rotate(-11deg) scale(1.05); }
+}
+
+/* Hero Right Visual Presentation — 3D Floating Showcase */
+.hero-visual-container {
+  position: relative;
+  perspective: 1600px;
+  transform-style: preserve-3d;
+  z-index: 2;
+}
+
+/* Hero image card — 3D Frame with beveled edges and glass highlights */
+.hero-image-card {
+  position: relative;
+  border-radius: 26px;
+  border: 1.5px solid rgba(255,255,255,0.95);
+  box-shadow:
+    0 24px 48px -12px rgba(15,23,42,0.18),
+    0 48px 96px -24px rgba(15,23,42,0.12),
+    0 0 0 1px rgba(226,232,240,0.5),
+    inset 0 1px 2px rgba(255,255,255,1),
+    inset 0 -1px 2px rgba(15,23,42,0.04);
+  transition: transform 0.8s var(--ease-out-expo), box-shadow 0.8s var(--ease-out-expo);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.hero-image-card:hover {
+  box-shadow:
+    0 36px 72px -16px rgba(15,23,42,0.22),
+    0 60px 120px -30px rgba(37,99,235,0.15),
+    0 0 0 1px rgba(226,232,240,0.6),
+    inset 0 1px 2px rgba(255,255,255,1);
+}
+
+.hero-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1s var(--ease-out-expo), filter 0.6s ease;
+  transform: translateZ(0);
+}
+
+.hero-image-card:hover img {
+  transform: scale(1.06) translateZ(12px);
+  filter: brightness(1.04) saturate(1.06);
+}
+
+/* Hero floating shadow plate on the showroom floor */
+.hero-card-shadow-plate {
+  position: absolute;
+  bottom: -28px;
+  left: 12%;
+  width: 76%;
+  height: 24px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(15,23,42,0.25) 0%, rgba(15,23,42,0.08) 50%, transparent 80%);
+  filter: blur(10px);
+  transform: rotateX(75deg);
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.8s var(--ease-out-expo), opacity 0.8s ease;
+}
+
+/* Hero tag — glass pill with luminous ring */
+.hero-tag {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 4px 12px rgba(15,23,42,0.06),
+    inset 0 1px 0 rgba(255,255,255,1);
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: 50px;
+  padding: 6px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Floating glass badges — stereoscopic 3D depth */
+.floating-glass-card {
+  position: absolute;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255,255,255,0.95);
+  box-shadow:
+    0 16px 36px -8px rgba(15,23,42,0.14),
+    0 4px 12px rgba(15,23,42,0.06),
+    inset 0 1px 1px rgba(255,255,255,1);
+  border-radius: 18px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  z-index: 5;
+}
+
+.floating-glass-card.top-right {
+  top: 14%;
+  right: -24px;
+  animation: floatGentle1 6s ease-in-out infinite alternate;
+}
+
+.floating-glass-card.bottom-left {
+  bottom: 12%;
+  left: -24px;
+  animation: floatGentle2 7s ease-in-out infinite alternate;
+}
+
+@keyframes floatGentle1 {
+  0%   { transform: translateY(0px) translateZ(35px); }
+  100% { transform: translateY(-10px) translateZ(42px); }
+}
+
+@keyframes floatGentle2 {
+  0%   { transform: translateY(0px) translateZ(30px); }
+  100% { transform: translateY(8px) translateZ(36px); }
+}
+
+.floating-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  box-shadow: 0 4px 10px rgba(37,99,235,0.18);
+  flex-shrink: 0;
+}
+
+.floating-card-content h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+  line-height: 1.2;
+}
+
+.floating-card-content p {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Hero stat items */
+.hero-stat-number {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero headline gradient text */
+.hero-headline span.gradient-text {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --------------------------------------------------------------------------
+   CINEMATIC SCENE DIVIDERS & PERSPECTIVE BRIDGES
+   -------------------------------------------------------------------------- */
+.p3d-scene-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px 0 12px;
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.p3d-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(203,213,225,0.65) 50%, transparent 100%);
+}
+
+.p3d-divider-gem {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  box-shadow: 0 0 12px rgba(37,99,235,0.45);
+}
+
+/* --------------------------------------------------------------------------
+   CATEGORY CARDS — 3D Luxury Pedestals
+   -------------------------------------------------------------------------- */
+.category-card {
+  position: relative;
+  border-radius: 22px;
+  box-shadow:
+    0 10px 24px -6px rgba(15,23,42,0.07),
+    0 4px 8px -2px rgba(15,23,42,0.04),
+    inset 0 1px 1px rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.85);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.category-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.24) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
+}
+
+.category-card:hover::after {
+  opacity: 1;
+}
+
+.category-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow:
+    0 28px 56px -12px rgba(15,23,42,0.18),
+    0 10px 20px -4px rgba(37,99,235,0.12),
+    inset 0 1px 2px rgba(255,255,255,1);
+}
+
+.category-gradient-overlay {
+  background: linear-gradient(to top,
+    rgba(9,13,22,0.94) 0%,
+    rgba(9,13,22,0.52) 42%,
+    rgba(9,13,22,0.14) 72%,
+    rgba(0,0,0,0) 100%);
+}
+
+.category-bg-img {
+  transition: transform 0.8s var(--ease-out-expo), opacity 0.45s ease;
+}
+
+.category-card:hover .category-bg-img {
+  transform: scale(1.12);
+  opacity: 0.78;
+}
+
+.category-card-badge {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.3);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.category-arrow-btn {
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  transition: all var(--trans-spring);
+}
+
+.category-card:hover .category-arrow-btn {
+  background: var(--grad-accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-accent);
+  transform: translateX(6px) scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   PRODUCT CARDS — Premium 3D Elevation & Specular Showroom Engine
+   -------------------------------------------------------------------------- */
+.product-card {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 4px 12px -2px rgba(15,23,42,0.06),
+    0 2px 4px -1px rgba(15,23,42,0.03),
+    inset 0 1px 1px rgba(255,255,255,0.9);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  will-change: transform;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Card top highlight edge */
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.95) 50%, transparent 100%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Real-Time Specular Glare Tracking Overlay */
+.product-card .p3d-card-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle 280px at var(--glare-x, 50%) var(--glare-y, 50%), rgba(255,255,255,0.4) 0%, transparent 70%);
+  opacity: var(--glare-opacity, 0);
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 7;
+}
+
+.product-card:hover {
+  transform: translateY(-10px) scale(1.015);
+  box-shadow:
+    0 24px 48px -10px rgba(15,23,42,0.16),
+    0 8px 16px -4px rgba(37,99,235,0.1),
+    inset 0 1px 1px rgba(255,255,255,1);
+  border-color: rgba(203,213,225,0.9);
+}
+
+.product-card:active {
+  transform: translateY(-2px) scale(0.995);
+  box-shadow: var(--shadow-3d-md);
+}
+
+/* Product image media container */
+.product-card-media {
+  background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%);
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Shimmer overlay on image hover */
+.product-card-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity var(--trans-smooth);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.product-card:hover .product-card-media::after {
+  opacity: 1;
+}
+
+.product-card-img {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+  transform: translateZ(0);
+}
+
+.product-card:hover .product-card-img {
+  transform: scale(1.09) translateZ(24px);
+  filter: brightness(1.03) saturate(1.06);
+}
+
+/* Section-Specific Signature 3D Card Styling */
+/* 1. Flash Deals — Ruby Neon Glow & Metallic Accent */
+#deals-grid .product-card:hover {
+  border-color: rgba(225,29,72,0.45);
+  box-shadow:
+    0 24px 52px -10px rgba(225,29,72,0.18),
+    0 8px 18px -4px rgba(225,29,72,0.12),
+    inset 0 1px 1px rgba(255,255,255,1);
+}
+
+/* 2. BOGO Showcase — Emerald Crystal Glow & Depth Badge */
+#bogo-grid .product-card:hover {
+  border-color: rgba(16,185,129,0.45);
+  box-shadow:
+    0 24px 52px -10px rgba(16,185,129,0.18),
+    0 8px 18px -4px rgba(16,185,129,0.12),
+    inset 0 1px 1px rgba(255,255,255,1);
+}
+
+/* 3. New Arrivals — Sapphire & Frost Modern Elevation */
+#new-arrivals-grid .product-card:hover {
+  border-color: rgba(37,99,235,0.45);
+  box-shadow:
+    0 24px 52px -10px rgba(37,99,235,0.18),
+    0 8px 18px -4px rgba(37,99,235,0.1),
+    inset 0 1px 1px rgba(255,255,255,1);
+}
+
+/* Product Badges — glass style */
+.product-badge {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.product-badge.badge-hot {
+  background: var(--grad-sale);
+  box-shadow: 0 2px 8px rgba(225,29,72,0.3);
+}
+
+.product-badge.badge-luxury {
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);
+  box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+}
+
+.product-badge.badge-trending {
+  background: var(--grad-accent);
+  box-shadow: var(--shadow-accent);
+}
+
+.product-badge.badge-new {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+}
+
+.product-badge.badge-deal {
+  background: var(--grad-sale);
+  box-shadow: 0 3px 12px rgba(220,38,38,0.35);
+}
+
+/* Wishlist button — premium glass */
+.wishlist-btn {
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1);
+  transition: all var(--trans-spring);
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.15);
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(225,29,72,0.2), 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.wishlist-btn.active {
+  background: #fff0f3;
+  box-shadow: 0 4px 16px rgba(225,29,72,0.25), 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Quick view overlay — premium */
+.quick-view-overlay-btn {
+  background: rgba(9,13,22,0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  border-radius: 50px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: all var(--trans-smooth);
+}
+
+.product-card:hover .quick-view-overlay-btn {
+  transform: translateX(-50%) translateY(0);
+}
+
+.quick-view-overlay-btn:hover {
+  background: rgba(37,99,235,0.9);
+  border-color: rgba(37,99,235,0.3);
+}
+
+/* Product card body */
+.product-card-body {
+  padding: 16px 18px 18px;
+  background: #ffffff;
+}
+
+.product-category-label {
+  color: var(--accent, #2563eb);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+}
+
+.product-card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.product-card-name:hover {
+  color: var(--accent);
+}
+
+/* Stars */
+.stars-list {
+  color: #f59e0b;
+  filter: drop-shadow(0 1px 2px rgba(245,158,11,0.3));
+}
+
+/* Price */
+.price-current {
+  font-size: 1.18rem;
+  font-weight: 800;
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.price-discount-pill {
+  background: linear-gradient(135deg, #fee2e6 0%, #ffe4e6 100%);
+  color: #be123c;
+  font-weight: 800;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(190,18,60,0.1);
+}
+
+/* Add to cart button — 3D tactile luxury */
+.btn-add-to-cart {
+  width: 100%;
+  min-height: 42px;
+  height: 42px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
+  padding: 0 16px;
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid rgba(203, 213, 225, 0.9);
+  border-radius: 12px;
+  color: #0f172a !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.btn-add-to-cart:hover {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%) !important;
+  border-color: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px -2px rgba(15, 23, 42, 0.25), 0 2px 6px rgba(37, 99, 235, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-add-to-cart:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+}
+
+/* Guarantee icon and text inside are ALWAYS visible and above any backgrounds */
+.btn-add-to-cart svg,
+.btn-add-to-cart span,
+.btn-add-to-cart .btn-cart-icon,
+.btn-add-to-cart .btn-cart-text {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative;
+  z-index: 2;
+  color: inherit !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.btn-add-to-cart svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+}
+
+.btn-add-to-cart:hover svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Added to cart state (In Cart) */
+.btn-add-to-cart.added {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-add-to-cart.added:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+  border-color: #047857 !important;
+  color: #ffffff !important;
+}
+
+.btn-add-to-cart.added svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* BOGO Offer button */
+.btn-add-to-cart.btn-claim-bogo {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.btn-add-to-cart.btn-claim-bogo:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+  border-color: #047857 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.45);
+}
+
+/* --------------------------------------------------------------------------
+   FILTER TABS — Premium pill style
+   -------------------------------------------------------------------------- */
+.filter-tab-btn {
+  background: rgba(241,245,249,0.9);
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 50px;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+  font-weight: 600;
+  transition: all var(--trans-smooth);
+}
+
+.filter-tab-btn:hover {
+  background: rgba(226,232,240,0.9);
+  border-color: rgba(203,213,225,0.8);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-3d-sm);
+}
+
+.filter-tab-btn.active {
+  background: var(--grad-brand);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: var(--shadow-3d-md);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   PROMOTIONAL BANNER — Enhanced dark glass
+   -------------------------------------------------------------------------- */
+.promo-banner-card {
+  border-radius: 24px;
+  box-shadow: var(--shadow-3d-xl);
+  background: linear-gradient(135deg, #060a12 0%, #0f172a 50%, #111827 100%);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.promo-banner-card::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.promo-banner-card::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  right: 100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.promo-content {
+  position: relative;
+  z-index: 5;
+}
+
+.promo-tag {
+  background: rgba(245,158,11,0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245,158,11,0.3);
+  color: #fbbf24;
+}
+
+.promo-headline {
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+.btn-promo-cta {
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 50px;
+  box-shadow: 0 6px 24px rgba(255,255,255,0.25), 0 2px 8px rgba(255,255,255,0.1);
+  transition: all var(--trans-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-promo-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+.btn-promo-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(255,255,255,0.3), 0 4px 12px rgba(255,255,255,0.15);
+}
+
+.promo-code-box {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: 1px dashed rgba(255,255,255,0.3);
+  border-radius: 50px;
+  transition: all var(--trans-smooth);
+}
+
+.promo-code-box:hover {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.5);
+  transform: scale(1.02);
+}
+
+/* --------------------------------------------------------------------------
+   DEALS SECTION — Flash & Urgency
+   -------------------------------------------------------------------------- */
+.deals-section {
+  background: linear-gradient(160deg, #fff1f2 0%, #fef2f2 50%, #fff5f5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.deals-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(225,29,72,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.flash-timer-box {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  box-shadow: var(--shadow-3d-sm), 0 0 0 3px rgba(254,202,202,0.4);
+  border-radius: 14px;
+}
+
+.timer-block {
+  background: var(--grad-brand);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  letter-spacing: 0.02em;
+  font-size: 1rem;
+}
+
+.stock-progress-fill {
+  background: linear-gradient(90deg, #f87171 0%, #ef4444 50%, #dc2626 100%);
+  box-shadow: 0 0 8px rgba(220,38,38,0.3);
+  border-radius: 9999px;
+  animation: stockPulse 2s ease-in-out infinite;
+}
+
+@keyframes stockPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(220,38,38,0.3); }
+  50% { box-shadow: 0 0 16px rgba(220,38,38,0.5); }
+}
+
+/* --------------------------------------------------------------------------
+   TRUST / WHY US CARDS — 3D Elevation
+   -------------------------------------------------------------------------- */
+.trust-cards-grid {
+  gap: 24px;
+}
+
+.trust-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid rgba(226,232,240,0.7);
+  border-radius: 20px;
+  box-shadow: var(--shadow-3d-sm), inset 0 1px 0 rgba(255,255,255,1);
+  transition: all var(--trans-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.trust-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--grad-accent);
+  opacity: 0;
+  transition: opacity var(--trans-smooth);
+}
+
+.trust-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: var(--shadow-3d-xl);
+  border-color: rgba(203,213,225,0.5);
+}
+
+.trust-card:hover::before {
+  opacity: 1;
+}
+
+.trust-icon-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  box-shadow: 0 2px 12px rgba(37,99,235,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
+  border-radius: 16px;
+  width: 58px;
+  height: 58px;
+}
+
+.trust-card:hover .trust-icon-box {
+  background: var(--grad-accent);
+  box-shadow: var(--shadow-accent);
+  transform: scale(1.08) rotate(-5deg);
+}
+
+/* --------------------------------------------------------------------------
+   NEWSLETTER SECTION — Deep Space Feel
+   -------------------------------------------------------------------------- */
+.newsletter-card {
+  background: linear-gradient(160deg, #060a12 0%, #0f172a 40%, #1a1f3a 70%, #0f1729 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 28px;
+  box-shadow: var(--shadow-3d-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.newsletter-card::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  left: -80px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.newsletter-card::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  right: -60px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.newsletter-badge {
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.25);
+  color: #fbbf24;
+}
+
+.newsletter-form {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.newsletter-form button {
+  background: var(--grad-accent);
+  border-radius: 50px;
+  box-shadow: var(--shadow-accent);
+  transition: all var(--trans-smooth);
+}
+
+.newsletter-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent-hover);
+}
+
+/* --------------------------------------------------------------------------
+   FOOTER — Premium Dark Glass
+   -------------------------------------------------------------------------- */
+.main-footer,
+.site-footer {
+  background: linear-gradient(160deg, #060a12 0%, #0f172a 40%, #111827 100%);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.main-footer::before,
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(37,99,235,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.footer-social-icon {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all var(--trans-spring);
+}
+
+.footer-social-icon:hover {
+  background: var(--grad-accent);
+  border-color: transparent;
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: var(--shadow-accent);
+}
+
+.payment-badge {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all var(--trans-fast);
+}
+
+.payment-badge:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.footer-col-title,
+.footer-heading {
+  color: rgba(255,255,255,0.95);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.footer-link-item a:hover,
+.footer-links a:hover {
+  color: #ffffff;
+  padding-left: 6px;
+  color: rgba(255,255,255,0.95);
+}
+
+/* --------------------------------------------------------------------------
+   CART DRAWER — Glass Morphism
+   -------------------------------------------------------------------------- */
+.cart-drawer-overlay {
+  background: rgba(9,13,22,0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.cart-drawer {
+  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+  border-left: 1px solid rgba(226,232,240,0.5);
+  box-shadow: var(--shadow-3d-xl), -8px 0 40px rgba(0,0,0,0.08);
+}
+
+.cart-drawer-header {
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  border-bottom: 1px solid rgba(226,232,240,0.7);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset;
+}
+
+.cart-close-btn {
+  border-radius: 50%;
+  background: rgba(241,245,249,0.6);
+  border: 1px solid rgba(226,232,240,0.5);
+  transition: all var(--trans-spring);
+}
+
+.cart-close-btn:hover {
+  background: rgba(226,232,240,0.9);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.free-shipping-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-bottom: 1px solid rgba(219,234,254,0.8);
+}
+
+/* Cart item cards */
+.cart-item {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.5);
+  border-radius: 14px;
+  margin: 0 16px 12px;
+  padding: 12px;
+  box-shadow: var(--shadow-3d-xs);
+  transition: box-shadow var(--trans-smooth), transform var(--trans-smooth);
+}
+
+.cart-item:hover {
+  box-shadow: var(--shadow-3d-sm);
+  transform: translateX(-2px);
+}
+
+.cart-item-img {
+  border-radius: 10px;
+  border: 1px solid rgba(226,232,240,0.5);
+}
+
+/* Checkout button in drawer */
+.cart-checkout-btn,
+.btn-checkout {
+  background: var(--grad-brand);
+  border-radius: 50px;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: var(--shadow-3d-md);
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--trans-smooth);
+}
+
+.cart-checkout-btn::after,
+.btn-checkout::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+.cart-checkout-btn:hover,
+.btn-checkout:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-dark-hover);
+}
+
+/* --------------------------------------------------------------------------
+   MODAL / OVERLAY SYSTEM
+   -------------------------------------------------------------------------- */
+.modal-overlay,
+.quick-view-modal,
+.tracking-modal-overlay {
+  background: rgba(9,13,22,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content,
+.quick-view-modal > div,
+.tracking-modal-content {
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 24px;
+  box-shadow: var(--shadow-3d-xl);
+}
+
+/* --------------------------------------------------------------------------
+   SECTION HEADERS — Premium typography
+   -------------------------------------------------------------------------- */
+.section-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.section-eyebrow {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.view-all-link {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.8);
+  box-shadow: var(--shadow-3d-xs), inset 0 1px 0 rgba(255,255,255,1);
+  border-radius: 50px;
+  font-weight: 700;
+  transition: all var(--trans-smooth);
+}
+
+.view-all-link:hover {
+  background: var(--grad-brand);
+  color: #ffffff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3d-md);
+}
+
+/* --------------------------------------------------------------------------
+   TOASTS / NOTIFICATIONS
+   -------------------------------------------------------------------------- */
+.toast,
+#toast-container > div {
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-3d-xl);
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(9,13,22,0.9);
+}
+
+/* --------------------------------------------------------------------------
+   SECTION BACKGROUNDS — Alternating premium
+   -------------------------------------------------------------------------- */
+.trending-section {
+  background: linear-gradient(160deg, #ffffff 0%, #fafbff 100%);
+}
+
+.new-arrivals-section {
+  background: linear-gradient(160deg, #fafbff 0%, #ffffff 100%);
+}
+
+.categories-section {
+  background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.why-us-section {
+  background: linear-gradient(160deg, #f0f4ff 0%, #f8fafc 80%, #f0f4ff 100%);
+}
+
+/* --------------------------------------------------------------------------
+   BOGO / DEALS / TRENDING / NEW-ARRIVALS LISTING PAGES
+   -------------------------------------------------------------------------- */
+.bogo-card,
+.deal-card {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-3d-sm);
+  border: 1px solid rgba(226,232,240,0.7);
+  transition: all var(--trans-smooth);
+  overflow: hidden;
+}
+
+.bogo-card:hover,
+.deal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-3d-xl);
+}
+
+/* --------------------------------------------------------------------------
+   ADVERTISEMENT BANNER (Homepage compact card)
+   -------------------------------------------------------------------------- */
+.ad-banner-card,
+.advertisement-section .ad-card,
+.advertisement-section > div {
+  border-radius: 20px;
+  box-shadow: var(--shadow-3d-lg);
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   SHOP PAGE — Filter Sidebar
+   -------------------------------------------------------------------------- */
+.filter-sidebar,
+.shop-filters,
+.filters-panel {
+  background: linear-gradient(160deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 20px;
+  box-shadow: var(--shadow-3d-sm);
+}
+
+.price-range-slider,
+input[type="range"] {
+  accent-color: #2563eb;
+}
+
+/* Shop sort/filter controls */
+.sort-select,
+.filter-select,
+select.shop-sort {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: 12px;
+  box-shadow: var(--shadow-3d-xs), inset 0 1px 0 rgba(255,255,255,0.9);
+  padding: 8px 16px;
+  font-weight: 600;
+  transition: all var(--trans-smooth);
+}
+
+.sort-select:focus,
+.filter-select:focus {
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.1), var(--shadow-3d-sm);
+}
+
+/* --------------------------------------------------------------------------
+   PRODUCT DETAILS PAGE
+   -------------------------------------------------------------------------- */
+/* Main image container */
+.product-main-image-wrapper,
+.product-gallery-main,
+.product-image-main {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow-3d-xl);
+  border: 1px solid rgba(226,232,240,0.5);
+  background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%);
+  transition: box-shadow var(--trans-smooth);
+}
+
+.product-main-image-wrapper:hover,
+.product-gallery-main:hover {
+  box-shadow: var(--shadow-3d-xl), 0 0 0 2px rgba(37,99,235,0.1);
+}
+
+/* Thumbnail strip */
+.product-thumbnail,
+.product-thumb-btn,
+.gallery-thumb {
+  border-radius: 12px;
+  border: 2px solid rgba(226,232,240,0.6);
+  overflow: hidden;
+  transition: all var(--trans-smooth);
+  box-shadow: var(--shadow-3d-xs);
+}
+
+.product-thumbnail:hover,
+.product-thumb-btn:hover,
+.gallery-thumb:hover {
+  border-color: rgba(37,99,235,0.4);
+  box-shadow: var(--shadow-3d-sm), 0 0 0 3px rgba(37,99,235,0.1);
+  transform: scale(1.05);
+}
+
+.product-thumbnail.active,
+.product-thumb-btn.active,
+.gallery-thumb.active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+}
+
+/* Size selectors */
+.size-btn,
+.size-option,
+[class*="size-"] button {
+  border: 1.5px solid rgba(226,232,240,0.8);
+  border-radius: 10px;
+  font-weight: 700;
+  transition: all var(--trans-spring);
+  box-shadow: var(--shadow-3d-xs);
+  background: #ffffff;
+}
+
+.size-btn:hover,
+.size-option:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: var(--shadow-3d-sm), 0 0 0 3px rgba(37,99,235,0.12);
+  color: #2563eb;
+}
+
+.size-btn.active,
+.size-btn.selected,
+.size-option.active {
+  background: var(--grad-brand);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: var(--shadow-3d-md);
+}
+
+/* Product detail CTAs */
+.btn-add-to-cart-detail,
+.product-detail .btn-add-to-cart,
+.product-actions .btn-add-to-cart {
+  border-radius: 50px;
+  padding: 16px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: var(--grad-brand);
+  color: #ffffff;
+  border: none;
+  box-shadow: var(--shadow-3d-md);
+  transition: all var(--trans-smooth);
+}
+
+.btn-add-to-cart-detail:hover,
+.product-detail .btn-add-to-cart:hover,
+.product-actions .btn-add-to-cart:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-dark-hover);
+}
+
+.btn-buy-now,
+.product-buy-now {
+  border-radius: 50px;
+  padding: 16px 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: var(--shadow-accent);
+  transition: all var(--trans-smooth);
+}
+
+.btn-buy-now:hover,
+.product-buy-now:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-accent-hover);
+}
+
+/* --------------------------------------------------------------------------
+   CHECKOUT PAGE
+   -------------------------------------------------------------------------- */
+.checkout-section,
+.checkout-form-section,
+.checkout-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 20px;
+  box-shadow: var(--shadow-3d-sm);
+}
+
+.checkout-section-title,
+.checkout-card-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Checkout inputs */
+.checkout-input,
+.form-control,
+input[type="text"].checkout,
+input[type="email"].checkout,
+input[type="tel"].checkout {
+  border: 1.5px solid rgba(226,232,240,0.8);
+  border-radius: var(--radius-input);
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04) inset;
+  transition: all var(--trans-smooth);
+  background: rgba(248,250,252,0.6);
+}
+
+.checkout-input:focus,
+.form-control:focus {
+  background: #ffffff;
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.1), 0 1px 3px rgba(15,23,42,0.04) inset;
+}
+
+/* Order summary */
+.order-summary-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 20px;
+  box-shadow: var(--shadow-3d-md);
+}
+
+/* Checkout submit button */
+.btn-place-order,
+.checkout-submit-btn,
+button[type="submit"].checkout-btn {
+  background: var(--grad-brand);
+  border-radius: 50px;
+  border: none;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  box-shadow: var(--shadow-3d-md);
+  transition: all var(--trans-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-place-order::after,
+.checkout-submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+.btn-place-order:hover,
+.checkout-submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-dark-hover);
+}
+
+/* --------------------------------------------------------------------------
+   AUTH PAGES — Glass Morphism Cards
+   -------------------------------------------------------------------------- */
+.auth-card,
+.auth-form-card,
+.login-card,
+.signup-card {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 28px;
+  box-shadow: var(--shadow-3d-xl), inset 0 1px 0 rgba(255,255,255,1);
+}
+
+/* Auth input fields */
+.auth-input,
+.auth-group input {
+  background: rgba(248,250,252,0.8);
+  border: 1.5px solid rgba(226,232,240,0.8);
+  border-radius: var(--radius-input);
+  transition: all var(--trans-smooth);
+  box-shadow: 0 1px 3px rgba(15,23,42,0.04) inset;
+}
+
+.auth-input:focus,
+.auth-group input:focus {
+  background: #ffffff;
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.1), 0 1px 3px rgba(15,23,42,0.04) inset;
+}
+
+/* Auth submit button */
+.auth-submit-btn,
+.btn-auth-submit,
+#btn-login-submit,
+#btn-signup-submit {
+  background: var(--grad-brand);
+  border-radius: 50px;
+  border: none;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: var(--shadow-3d-md);
+  transition: all var(--trans-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-submit-btn::after,
+.btn-auth-submit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+.auth-submit-btn:hover,
+.btn-auth-submit:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-dark-hover);
+}
+
+/* Google sign-in button */
+.btn-google,
+.google-signin-btn {
+  background: #ffffff;
+  border: 1.5px solid rgba(226,232,240,0.9);
+  border-radius: 50px;
+  box-shadow: var(--shadow-3d-sm), inset 0 1px 0 rgba(255,255,255,1);
+  font-weight: 700;
+  transition: all var(--trans-smooth);
+}
+
+.btn-google:hover,
+.google-signin-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3d-md);
+  border-color: rgba(203,213,225,0.9);
+}
+
+/* --------------------------------------------------------------------------
+   ACCOUNT / WISHLIST / ORDER PAGES
+   -------------------------------------------------------------------------- */
+/* Order cards */
+.order-card,
+.account-order-item {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 18px;
+  box-shadow: var(--shadow-3d-xs);
+  transition: all var(--trans-smooth);
+  overflow: hidden;
+}
+
+.order-card:hover,
+.account-order-item:hover {
+  box-shadow: var(--shadow-3d-sm);
+  transform: translateX(3px);
+  border-color: rgba(203,213,225,0.7);
+}
+
+/* Track order button */
+.btn-track-order {
+  background: var(--grad-accent);
+  border-radius: 50px;
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: var(--shadow-accent);
+  transition: all var(--trans-smooth);
+}
+
+.btn-track-order:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent-hover);
+}
+
+/* Wishlist cards */
+.wishlist-item,
+.wishlist-card {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 18px;
+  box-shadow: var(--shadow-3d-xs);
+  transition: all var(--trans-smooth);
+  overflow: hidden;
+}
+
+.wishlist-item:hover,
+.wishlist-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-3d-md);
+}
+
+/* Status badges */
+.order-status,
+.status-badge,
+[class*="status-"] {
+  border-radius: 50px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   INFO PAGES (FAQ, Policy, Careers, etc.)
+   -------------------------------------------------------------------------- */
+.policy-block,
+.faq-item,
+.info-card,
+.legal-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fafbff 100%);
+  border: 1px solid rgba(226,232,240,0.6);
+  border-radius: 18px;
+  box-shadow: var(--shadow-3d-xs);
+  transition: all var(--trans-smooth);
+}
+
+.policy-block:hover,
+.faq-item:hover {
+  box-shadow: var(--shadow-3d-sm);
+  transform: translateY(-2px);
+}
+
+.faq-question,
+.faq-toggle {
+  font-weight: 700;
+  border-radius: 14px;
+  transition: all var(--trans-smooth);
+}
+
+/* --------------------------------------------------------------------------
+   BREADCRUMBS & PAGE HEADERS
+   -------------------------------------------------------------------------- */
+.page-header,
+.breadcrumb-section {
+  background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid rgba(226,232,240,0.6);
+}
+
+/* --------------------------------------------------------------------------
+   ROTATING ADVERTISEMENTS / PROMOTIONAL CARD (3D Floating Glass Slab)
+   -------------------------------------------------------------------------- */
+.advertisements-carousel-section {
+  position: relative;
+  perspective: 1800px;
+  transform-style: preserve-3d;
+  padding: 30px 0;
+}
+
+.ads-carousel-card-container {
+  position: relative;
+  border-radius: 24px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 24px 60px -12px rgba(15, 23, 42, 0.2),
+    0 10px 24px -6px rgba(15, 23, 42, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+  will-change: transform;
+}
+
+.ads-carousel-card-container:hover {
+  transform: translateY(-6px) scale(1.008);
+  box-shadow:
+    0 36px 80px -15px rgba(15, 23, 42, 0.28),
+    0 16px 32px -8px rgba(37, 99, 235, 0.16),
+    inset 0 1px 2px rgba(255, 255, 255, 1);
+}
+
+.ads-carousel-btn {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ads-carousel-btn:hover {
+  background: #ffffff;
+  transform: scale(1.12);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+  color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   SHOP BY BRANDS (3D Runway & Metallic Chips)
+   -------------------------------------------------------------------------- */
+.brands-section {
+  position: relative;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  overflow: hidden;
+}
+
+.brand-card-chip {
+  position: relative;
+  transform-style: preserve-3d;
+  background: #ffffff;
+  border: 1.5px solid rgba(226, 232, 240, 0.9);
+  border-radius: 14px;
+  box-shadow:
+    0 3px 8px -2px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.3s ease;
+  will-change: transform;
+}
+
+.brand-card-chip:hover {
+  transform: translateY(-5px) scale(1.03);
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow:
+    0 12px 24px -6px rgba(15, 23, 42, 0.12),
+    0 4px 10px -2px rgba(37, 99, 235, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.brand-chip-badge {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s ease;
+}
+
+.brand-card-chip:hover .brand-chip-badge {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.brands-nav-btn {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brands-nav-btn:hover {
+  background: var(--grad-brand);
+  color: #ffffff;
+  border-color: transparent;
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   TODAY'S DEALS FLASH COUNTDOWN TIMER (3D Digital Vault)
+   -------------------------------------------------------------------------- */
+.flash-timer-box {
+  background: rgba(254, 242, 242, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(254, 202, 202, 0.9);
+  border-radius: 14px;
+  padding: 6px 14px;
+  box-shadow:
+    0 4px 14px rgba(220, 38, 38, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timer-block {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  min-width: 28px;
+  text-align: center;
+}
+
+.timer-colon {
+  font-weight: 800;
+  color: #dc2626;
+}
+
+/* --------------------------------------------------------------------------
+   TRUST CARDS — 3D Acrylic Pedestals (#why-us)
+   -------------------------------------------------------------------------- */
+.why-us-section {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 60%), #ffffff;
+}
+
+.trust-card {
+  position: relative;
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid rgba(226, 232, 240, 0.85);
+  border-radius: 22px;
+  padding: 32px 24px;
+  box-shadow:
+    0 6px 16px -3px rgba(15, 23, 42, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  will-change: transform;
+}
+
+.trust-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow:
+    0 24px 48px -10px rgba(15, 23, 42, 0.14),
+    0 6px 16px -3px rgba(37, 99, 235, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 1);
+}
+
+.trust-icon-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.16);
+  margin-bottom: 20px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.trust-card:hover .trust-icon-box {
+  transform: scale(1.12) rotate(4deg);
+  background: var(--grad-accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-accent);
+}
+
+.trust-card-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+.trust-card-desc {
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   DELIVERY PARTNERS — Embossed 3D Metallic Badges
+   -------------------------------------------------------------------------- */
+.delivery-partners-section {
+  position: relative;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  overflow: hidden;
+}
+
+.delivery-partner-card {
+  position: relative;
+  background: #ffffff;
+  border: 1.5px solid rgba(226, 232, 240, 0.85);
+  border-radius: 18px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow:
+    0 4px 12px -2px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.3s ease;
+  will-change: transform;
+}
+
+.delivery-partner-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow:
+    0 18px 36px -8px rgba(15, 23, 42, 0.12),
+    0 4px 12px -2px rgba(37, 99, 235, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.partner-logo-box {
+  width: 72px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  transition: transform 0.3s ease;
+}
+
+.delivery-partner-card:hover .partner-logo-box {
+  transform: scale(1.1);
+}
+
+.partner-badge {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 50px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.partner-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  display: inline-block;
+  box-shadow: 0 0 6px #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   VIP NEWSLETTER CARD — Obsidian & Gold Metallic Depth
+   -------------------------------------------------------------------------- */
+.newsletter-card {
+  position: relative;
+  background: linear-gradient(135deg, #090e1a 0%, #111a2e 50%, #0d1527 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 56px 40px;
+  box-shadow:
+    0 30px 70px -15px rgba(0, 0, 0, 0.35),
+    0 12px 28px -5px rgba(37, 99, 235, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+  will-change: transform;
+}
+
+.newsletter-card::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.newsletter-card::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: 20%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.newsletter-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 40px 90px -15px rgba(0, 0, 0, 0.45),
+    0 16px 36px -5px rgba(37, 99, 235, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.newsletter-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE OPTIMIZATIONS
+   -------------------------------------------------------------------------- */
+.mobile-drawer-content {
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+  box-shadow: var(--shadow-3d-xl);
+  border-right: 1px solid rgba(226,232,240,0.5);
+}
+
+.mobile-drawer-backdrop {
+  background: rgba(9,13,22,0.6);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* --------------------------------------------------------------------------
+
+
+/* --------------------------------------------------------------------------
+   REDUCED MOTION SUPPORT
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .p3d-reveal,
+  .p3d-reveal-left,
+  .p3d-reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .hero-image-card,
+  .product-card,
+  .category-card,
+  .trust-card,
+  .floating-glass-card {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  @keyframes floatBounce { 0%, 100% { transform: none; } }
+  @keyframes announcementShimmer { 0%, 100% { opacity: 0; } }
+  @keyframes stockPulse { 0%, 100% { box-shadow: none; } }
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .trust-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-image-card {
+    border-radius: 20px;
+  }
+  .product-card:hover {
+    transform: translateY(-4px);
+  }
+  .category-card:hover {
+    transform: translateY(-6px);
+  }
+  .trust-card:hover {
+    transform: translateY(-4px);
+  }
+  .newsletter-card {
+    border-radius: 20px;
+    padding: 40px 24px;
+  }
+  .promo-banner-card {
+    border-radius: 20px;
+  }
+  /* Disable 3D tilt on mobile for performance */
+  .product-card,
+  .trust-card,
+  .category-card {
+    will-change: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --radius-card: 14px;
+  }
+  .section-title {
+    font-size: 1.75rem;
+  }
+  .trust-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* High-Traffic Mobile & Reduced-Motion Lightweight Optimization */
+@media (max-width: 640px), (prefers-reduced-motion: reduce) {
+  :root {
+    --glass-blur: blur(6px);
+    --glass-blur-md: blur(4px);
+    --shadow-3d-lg: 0 4px 12px rgba(15,23,42,0.08);
+    --shadow-3d-xl: 0 8px 20px rgba(15,23,42,0.1);
+  }
+  .product-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 380px;
+  }
+}
+

@@ -30,10 +30,10 @@
           return { isAdmin: false, reason: "unauthenticated" };
         }
 
-        // Query public.profiles for role
+        // Query public.profiles for role (strictly database-authoritative)
         const { data: profile, error: profErr } = await client
           .from("profiles")
-          .select("*")
+          .select("id, role, full_name")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -86,10 +86,10 @@
           return { success: false, error: error.message };
         }
 
-        // Verify role
+        // Verify role strictly from database profile or metadata
         const { data: profile } = await client
           .from("profiles")
-          .select("role, full_name")
+          .select("id, role, full_name")
           .eq("id", data.user.id)
           .maybeSingle();
 

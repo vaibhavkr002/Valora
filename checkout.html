@@ -13,22 +13,32 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/checkout.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
   <!-- ========================================================================
        TOP ANNOUNCEMENT BAR
        ======================================================================== -->
-  <div class="top-announcement-bar">
+    <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Secure Checkout</span>
-        <span>Free Express Delivery Across India on orders over ₹999 • 30-Day Guaranteed Returns</span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="homepage.html#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
-        <a href="contact-support.html">Need Help? 24/7 Support</a>
+        <a href="account.html#orders">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
       </div>
     </div>
   </div>
@@ -326,7 +336,7 @@
                         Cash on Delivery (COD)
                         <span class="pm-badge">Popular & Safe</span>
                       </div>
-                      <div class="pm-desc">Pay with cash or mobile scan upon courier arrival. Zero advance charge.</div>
+                      <div class="pm-desc" id="pm-cod-desc">Pay with cash or mobile scan upon courier arrival. Advance deposit required on select items.</div>
                     </div>
                   </div>
                   <div class="pm-icons">
@@ -348,8 +358,11 @@
                       <div class="pm-radio-dot"></div>
                     </div>
                     <div class="pm-info">
-                      <div class="pm-title">Credit or Debit Card</div>
-                      <div class="pm-desc">Instant confirmation via Visa, MasterCard, American Express, or RuPay.</div>
+                      <div class="pm-title">
+                        Credit or Debit Card
+                        <span class="pm-badge pm-gift-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.3);">FREE Gifts</span>
+                      </div>
+                      <div class="pm-desc pm-online-desc">Instant confirmation • No advance required • Complimentary luxury gifts included.</div>
                     </div>
                   </div>
                   <div class="pm-icons">
@@ -359,11 +372,6 @@
                   </div>
                 </div>
                 <div class="payment-details-body">
-                  <!-- Demo autofill banner -->
-                  <div class="card-helper-banner">
-                    <span>Test Card: <strong>4242 •••• •••• 4242</strong></span>
-                    <button type="button" id="btn-fill-demo-card" class="card-helper-fill-btn">Autofill Demo Card</button>
-                  </div>
 
                   <div class="form-group" id="group-card-num">
                     <label class="form-label">Card Number <span class="req">*</span></label>
@@ -400,8 +408,11 @@
                       <div class="pm-radio-dot"></div>
                     </div>
                     <div class="pm-info">
-                      <div class="pm-title">UPI / Instant Payment</div>
-                      <div class="pm-desc">Google Pay, PhonePe, Paytm, or any Virtual Payment Address (VPA).</div>
+                      <div class="pm-title">
+                        UPI / Instant Payment
+                        <span class="pm-badge pm-gift-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.3);">FREE Gifts</span>
+                      </div>
+                      <div class="pm-desc pm-online-desc">Google Pay, PhonePe, Paytm • No advance required • Complimentary luxury gifts included.</div>
                     </div>
                   </div>
                   <div class="pm-icons">
@@ -428,8 +439,11 @@
                       <div class="pm-radio-dot"></div>
                     </div>
                     <div class="pm-info">
-                      <div class="pm-title">Net Banking</div>
-                      <div class="pm-desc">Direct bank transfer via leading retail financial institutions.</div>
+                      <div class="pm-title">
+                        Net Banking
+                        <span class="pm-badge pm-gift-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.3);">FREE Gifts</span>
+                      </div>
+                      <div class="pm-desc pm-online-desc">Direct bank transfer • No advance required • Complimentary luxury gifts included.</div>
                     </div>
                   </div>
                   <div class="pm-icons">
@@ -454,6 +468,136 @@
             </div>
           </div>
 
+          <!-- Card 3: Pay Online 3 Free Gifts (Dynamic State) -->
+          <div class="checkout-card online-gifts-card" id="card-online-gifts">
+            <div class="checkout-card-header" style="margin-bottom: 14px; padding-bottom: 14px;">
+              <div class="card-step-badge" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);">🎁</div>
+              <div class="card-header-titles">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                  <h2 class="card-title" style="margin-bottom: 0;">PAY ONLINE & GET 3 FREE GIFTS</h2>
+                  <span id="gifts-status-badge" class="pm-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.3); font-weight: 700;">
+                    ✓ UNLOCKED (₹0)
+                  </span>
+                </div>
+                <p class="card-desc" id="gifts-status-desc" style="margin-top: 4px;">
+                  Exclusive full online payment reward! 3 complimentary luxury accessories automatically included at zero extra cost.
+                </p>
+              </div>
+            </div>
+
+            <!-- 3 Visual Gifts Grid -->
+            <div class="online-gifts-grid" id="online-gifts-grid">
+              <!-- Gift 1: Socks -->
+              <div class="online-gift-item">
+                <div class="gift-thumb-box">
+                  <span class="gift-emoji-icon">🧦</span>
+                </div>
+                <div class="gift-info-box">
+                  <div class="gift-title">Luxury Cotton Crew Socks</div>
+                  <div class="gift-detail">Cushioned ergonomic knit • Free Pair</div>
+                  <div class="gift-price-tag">
+                    <span class="gift-free-pill">FREE</span>
+                    <span class="gift-mrp">₹499</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Gift 2: Extra Laces -->
+              <div class="online-gift-item">
+                <div class="gift-thumb-box">
+                  <span class="gift-emoji-icon">🧵</span>
+                </div>
+                <div class="gift-info-box">
+                  <div class="gift-title">Premium Extra Laces</div>
+                  <div class="gift-detail">Waxed high-durability laces • 1 Pair</div>
+                  <div class="gift-price-tag">
+                    <span class="gift-free-pill">FREE</span>
+                    <span class="gift-mrp">₹299</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Gift 3: Key Chain -->
+              <div class="online-gift-item">
+                <div class="gift-thumb-box">
+                  <span class="gift-emoji-icon">🔑</span>
+                </div>
+                <div class="gift-info-box">
+                  <div class="gift-title">Signature Metal Keychain</div>
+                  <div class="gift-detail">Brushed matte zinc alloy with emblem</div>
+                  <div class="gift-price-tag">
+                    <span class="gift-free-pill">FREE</span>
+                    <span class="gift-mrp">₹399</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Locked notice when COD / Advance is selected -->
+            <div id="online-gifts-locked-notice" style="display: none; padding: 14px 16px; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4); border-radius: 10px; margin-top: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #b45309; font-size: 0.88rem;">
+                <span>⚡ Pay Online to Unlock 3 FREE Gifts</span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 6px 0 0 0; line-height: 1.45;">
+                These 3 complimentary gifts (Socks + Extra Laces + Key Chain) and Open Box Delivery are reserved exclusively for orders paid 100% online via UPI, Credit/Debit Card, or Net Banking.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 4: Delivery Preference (Open Box Delivery vs Simple Delivery) -->
+          <div class="checkout-card delivery-preference-card" id="card-delivery-preference">
+            <div class="checkout-card-header" style="margin-bottom: 16px; padding-bottom: 14px;">
+              <div class="card-step-badge" style="background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);">🚚</div>
+              <div class="card-header-titles">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                  <h2 class="card-title" style="margin-bottom: 0;">Delivery Preference</h2>
+                  <span id="badge-pref-lock" class="pm-badge" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; border-color: rgba(2, 132, 199, 0.3); font-weight: 700;">
+                    Online Paid Exclusive
+                  </span>
+                </div>
+                <p class="card-desc" style="margin-top: 4px;">
+                  Choose how you want your package handled at doorstep handover:
+                </p>
+              </div>
+            </div>
+
+            <div class="delivery-pref-options" id="delivery-pref-options">
+              <!-- Option 1: Simple Delivery (Default) -->
+              <label class="delivery-pref-card selected" data-pref="Simple Delivery" id="pref-card-simple">
+                <input type="radio" name="delivery_preference" value="Simple Delivery" checked class="pref-radio-input">
+                <div class="pref-radio-custom">
+                  <div class="pref-radio-dot"></div>
+                </div>
+                <div class="pref-content">
+                  <div class="pref-header-row">
+                    <span class="pref-title">Simple Delivery</span>
+                    <span class="pref-badge standard">Default</span>
+                  </div>
+                  <p class="pref-desc">
+                    Follows the normal delivery process with sealed, tamper-proof packaging.
+                  </p>
+                </div>
+              </label>
+
+              <!-- Option 2: Open Box Delivery -->
+              <label class="delivery-pref-card" data-pref="Open Box Delivery" id="pref-card-openbox">
+                <input type="radio" name="delivery_preference" value="Open Box Delivery" class="pref-radio-input">
+                <div class="pref-radio-custom">
+                  <div class="pref-radio-dot"></div>
+                </div>
+                <div class="pref-content">
+                  <div class="pref-header-row">
+                    <span class="pref-title">Open Box Delivery</span>
+                    <span class="pref-badge openbox">Inspect Before Accept</span>
+                  </div>
+                  <p class="pref-desc">
+                    Allows you to inspect the package at delivery before accepting it from the courier.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+
         </div>
 
         <!-- Right Column: Sticky Order Summary -->
@@ -471,12 +615,12 @@
 
             <!-- Free Shipping Progress Meter -->
             <div id="shipping-progress-box" class="shipping-progress-box">
-              <div id="shipping-progress-text" class="shipping-progress-text">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                <span>Calculating free shipping threshold...</span>
+              <div id="shipping-progress-text" class="shipping-progress-text unlocked">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><strong>100% FREE Delivery Across India</strong> on your order!</span>
               </div>
               <div class="shipping-progress-bar-bg">
-                <div id="shipping-progress-bar-fill" class="shipping-progress-bar-fill" style="width: 0%;"></div>
+                <div id="shipping-progress-bar-fill" class="shipping-progress-bar-fill unlocked" style="width: 100%;"></div>
               </div>
             </div>
 
@@ -513,7 +657,22 @@
               </div>
               <div class="cost-row">
                 <span>Standard Delivery</span>
-                <span id="cost-shipping">₹0</span>
+                <span id="cost-shipping" style="color: var(--color-success); font-weight: 700;">FREE (₹0)</span>
+              </div>
+              <div class="cost-row" id="row-online-gifts" style="display: none; color: #059669; font-weight: 600; padding: 6px 0;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                  <span>🎁</span>
+                  <span>3 Free Gifts (Socks, Laces, Keychain)</span>
+                </span>
+                <span id="cost-online-gifts" style="font-weight: 700; color: var(--color-success);">FREE (₹0)</span>
+              </div>
+              <div class="cost-row" id="row-delivery-preference" style="display: none; font-size: 0.82rem; padding: 6px 0; border-top: 1px dashed var(--border-light);">
+                <span>Delivery Preference</span>
+                <span id="cost-delivery-preference" style="font-weight: 700; color: #0284c7;">Simple Delivery</span>
+              </div>
+              <div class="cost-row" id="row-payment-method" style="font-size: 0.82rem; padding: 6px 0; color: var(--text-secondary);">
+                <span>Payment Mode</span>
+                <span id="cost-payment-method" style="font-weight: 600; color: var(--text-main);">Cash on Delivery</span>
               </div>
               <div class="cost-row">
                 <span>Estimated Taxes</span>
@@ -653,8 +812,11 @@
     <!-- Supabase JS Client & Global Client Initializer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/analytics.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/gift-engine.js"></script>
   <script src="js/checkout.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>
 

@@ -64,6 +64,112 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================================================
+  // DYNAMIC PRODUCT SPECIFICATIONS MANAGEMENT
+  // ==========================================================================
+  const specsContainer = document.getElementById("specs-rows-container");
+  const btnAddSpecRow = document.getElementById("btn-add-spec-row");
+  const specsEmptyState = document.getElementById("specs-empty-state");
+
+  function updateSpecsEmptyState() {
+    if (!specsContainer || !specsEmptyState) return;
+    const count = specsContainer.querySelectorAll(".spec-row-item").length;
+    specsEmptyState.style.display = count === 0 ? "block" : "none";
+  }
+
+  function addSpecificationRow(data = {}) {
+    if (!specsContainer) return;
+    const row = document.createElement("div");
+    row.className = "spec-row-item";
+    row.style.cssText = "display: grid; grid-template-columns: 2fr 2fr 1.5fr 75px 60px 36px; gap: 8px; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--admin-card-border); padding: 8px 10px; border-radius: 8px;";
+
+    const name = data.name || "";
+    const value = data.value || "";
+    const groupName = data.group_name || "General";
+    const order = data.display_order !== undefined ? data.display_order : specsContainer.children.length;
+    const isActive = data.is_active !== false;
+
+    row.innerHTML = `
+      <input type="text" class="admin-input spec-name-input" placeholder="Name (e.g. Material)" value="${name.replace(/"/g, '&quot;')}" style="font-size: 0.82rem; padding: 6px 10px;">
+      <input type="text" class="admin-input spec-value-input" placeholder="Value (e.g. 100% Wool)" value="${value.replace(/"/g, '&quot;')}" style="font-size: 0.82rem; padding: 6px 10px;">
+      <input type="text" class="admin-input spec-group-input" placeholder="Group (e.g. General)" value="${groupName.replace(/"/g, '&quot;')}" style="font-size: 0.82rem; padding: 6px 10px;">
+      <input type="number" class="admin-input spec-order-input" placeholder="0" min="0" value="${order}" style="font-size: 0.82rem; padding: 6px 4px; text-align: center;" title="Display Order">
+      <label style="display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem; color: #fff; cursor: pointer;" title="Visible to customers">
+        <input type="checkbox" class="spec-active-toggle" ${isActive ? 'checked' : ''}>
+        <span>Live</span>
+      </label>
+      <button type="button" class="btn-admin-danger btn-remove-spec-row" style="padding: 6px; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" title="Remove specification">✕</button>
+    `;
+
+    row.querySelector(".btn-remove-spec-row").addEventListener("click", () => {
+      row.remove();
+      updateSpecsEmptyState();
+    });
+
+    specsContainer.appendChild(row);
+    updateSpecsEmptyState();
+  }
+
+  if (btnAddSpecRow) {
+    btnAddSpecRow.addEventListener("click", () => {
+      addSpecificationRow();
+    });
+  }
+
+  function getSerializedSpecifications() {
+    if (!specsContainer) return [];
+    const rows = Array.from(specsContainer.querySelectorAll(".spec-row-item"));
+    const specs = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const name = (row.querySelector(".spec-name-input")?.value || "").trim();
+      const value = (row.querySelector(".spec-value-input")?.value || "").trim();
+      const groupName = (row.querySelector(".spec-group-input")?.value || "").trim() || "General";
+      const displayOrder = parseInt(row.querySelector(".spec-order-input")?.value, 10) || i;
+      const isActive = Boolean(row.querySelector(".spec-active-toggle")?.checked);
+
+      // Clean pruning: if both are empty, ignore row
+      if (!name && !value) continue;
+
+      if (!name || !value) {
+        throw new Error(`Specification row #${i + 1} is missing a Name or Value. Please fill both or remove the row.`);
+      }
+
+      specs.push({
+        name,
+        value,
+        group_name: groupName,
+        display_order: displayOrder,
+        is_active: isActive
+      });
+    }
+
+    return specs;
+  }
+
+  async function loadProductSpecifications(prodId) {
+    if (!specsContainer) return;
+    try {
+      const { data, error } = await client
+        .from("product_specifications")
+        .select("name, value, group_name, display_order, is_active")
+        .eq("product_id", prodId)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      specsContainer.innerHTML = "";
+      if (!error && Array.isArray(data) && data.length > 0) {
+        data.forEach(s => addSpecificationRow(s));
+      } else {
+        updateSpecsEmptyState();
+      }
+    } catch (err) {
+      console.warn("Error loading specifications:", err);
+      updateSpecsEmptyState();
+    }
+  }
+
+  // ==========================================================================
   // ADVANCE PAYMENT CONFIGURATION & DYNAMIC LIVE PREVIEW
   // ==========================================================================
   const advEnabledCheckbox = document.getElementById("advance-payment-enabled");
@@ -183,6 +289,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("check-deal").checked = Boolean(p.is_deal);
     document.getElementById("check-active").checked = Boolean(p.is_active);
 
+    // Load BOGO status
+    try {
+      const { data: bogoSetting } = await client.from("store_settings").select("value").eq("key", "bogo_config").maybeSingle();
+      const bogoIds = (bogoSetting && bogoSetting.value && Array.isArray(bogoSetting.value.product_ids)) ? bogoSetting.value.product_ids : [];
+      const isBogoEligible = Boolean(p.is_bogo || bogoIds.includes(productId));
+      if (document.getElementById("check-bogo")) {
+        document.getElementById("check-bogo").checked = isBogoEligible;
+      }
+    } catch (bErr) {
+      console.warn("BOGO load notice:", bErr);
+    }
+
     // Populate advance payment settings
     if (advEnabledCheckbox) {
       advEnabledCheckbox.checked = Boolean(p.advance_payment_enabled);
@@ -213,6 +331,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
     refreshImagePreviews();
+
+    // Load Product Specifications
+    await loadProductSpecifications(productId);
   }
 
   if (form) {
@@ -232,6 +353,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const isFeatured = document.getElementById("check-featured").checked;
       const isNew = document.getElementById("check-new").checked;
       const isDeal = document.getElementById("check-deal").checked;
+      const isBogo = document.getElementById("check-bogo") ? document.getElementById("check-bogo").checked : false;
       const isActive = document.getElementById("check-active").checked;
 
       const sizes = (document.getElementById("product-sizes").value || "")
@@ -269,6 +391,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         discountPct = Math.round(((originalPrice - price) / originalPrice) * 100);
       }
 
+      // Validate specifications rows before submitting
+      let serializedSpecs = [];
+      try {
+        serializedSpecs = getSerializedSpecifications();
+      } catch (specErr) {
+        alert(specErr.message);
+        return;
+      }
+
       const submitBtn = form.querySelector("button[type='submit']");
       submitBtn.disabled = true;
       submitBtn.textContent = "Updating Product...";
@@ -300,6 +431,47 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { error } = await client.from("products").update(updates).eq("id", productId);
         if (error) throw error;
+
+        // Sync product specifications (delete old specs and insert current ones)
+        try {
+          await client.from("product_specifications").delete().eq("product_id", productId);
+          if (serializedSpecs.length > 0) {
+            const specPayload = serializedSpecs.map(s => ({
+              product_id: productId,
+              name: s.name,
+              value: s.value,
+              group_name: s.group_name,
+              display_order: s.display_order,
+              is_active: s.is_active
+            }));
+            await client.from("product_specifications").insert(specPayload);
+          }
+        } catch (specErr) {
+          console.warn("Specifications sync notice:", specErr);
+        }
+
+        // Sync BOGO configuration to store_settings
+        try {
+          const { data: bogoSetting } = await client.from("store_settings").select("value").eq("key", "bogo_config").maybeSingle();
+          let currentIds = (bogoSetting && bogoSetting.value && Array.isArray(bogoSetting.value.product_ids)) ? bogoSetting.value.product_ids : [];
+          if (isBogo) {
+            if (!currentIds.includes(productId)) currentIds.push(productId);
+          } else {
+            currentIds = currentIds.filter(id => id !== productId);
+          }
+          await client.from("store_settings").upsert({
+            key: "bogo_config",
+            value: { product_ids: currentIds, updated_at: new Date().toISOString() },
+            updated_at: new Date().toISOString()
+          });
+        } catch (bogoErr) {
+          console.warn("BOGO config save notice:", bogoErr);
+        }
+
+        try {
+          localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+          if (window.VeloraCache) window.VeloraCache.invalidate();
+        } catch (_) {}
 
         window.showToast("Product updated successfully! Changes live across VELORA.", "success");
         setTimeout(() => {

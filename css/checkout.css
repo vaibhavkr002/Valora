@@ -1564,13 +1564,52 @@
 }
 
 @media (max-width: 768px) {
-  .checkout-stepper .step-label {
-    display: none;
+  .checkout-nav-inner {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .checkout-nav-inner .brand-logo {
+    font-size: 1.2rem;
+    gap: 6px;
+  }
+
+  .checkout-nav-inner .brand-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
   }
 
   .checkout-trust-badge {
     padding: 4px 8px;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
+    gap: 4px;
+  }
+
+  .checkout-stepper {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    gap: 6px;
+    margin: 4px 0 0 0;
+  }
+
+  .checkout-stepper .step-label {
+    display: none;
+  }
+
+  .step-divider {
+    flex: 1;
+    min-width: 8px;
+  }
+
+  .checkout-section {
+    padding: 16px 0 36px !important;
   }
 
   .form-row,
@@ -1579,26 +1618,342 @@
     gap: 12px;
   }
 
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+    min-height: 44px;
+  }
+
   .checkout-card {
-    padding: 22px 18px;
+    padding: 20px 16px;
+    border-radius: 14px;
   }
 
   .bank-chips-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .payment-method-card {
+    padding: 14px 12px;
   }
 
   .order-meta-banner {
     grid-template-columns: 1fr;
-    padding: 18px;
+    padding: 16px;
+    gap: 14px;
   }
 
   .order-success-actions {
     flex-direction: column;
     width: 100%;
+    gap: 10px;
   }
 
   .btn-receipt-action {
     width: 100%;
     justify-content: center;
+    height: 46px;
+  }
+
+  .coupon-input-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .coupon-input-group input {
+    width: 100%;
+    height: 44px;
+    font-size: 16px !important;
+  }
+
+  .coupon-input-group button {
+    width: 100%;
+    height: 44px;
+  }
+
+  .btn-place-order {
+    width: 100%;
+    min-height: 50px;
+    font-size: 1rem;
+    font-weight: 800;
   }
 }
+
+@media (max-width: 480px) {
+  .checkout-card {
+    padding: 16px 12px;
+  }
+
+  .checkout-header {
+    margin-bottom: 18px;
+  }
+
+  .checkout-title {
+    font-size: 1.5rem;
+  }
+
+  .bank-chips-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-item-row {
+    gap: 8px;
+  }
+
+  .summary-item-img {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 360px) {
+  .checkout-card {
+    padding: 14px 10px;
+  }
+
+  .checkout-title {
+    font-size: 1.35rem;
+  }
+
+  .cost-summary-table td {
+    padding: 6px 0;
+    font-size: 0.85rem;
+  }
+}
+
+/* ==========================================================================
+   ONLINE GIFTS CARD & DELIVERY PREFERENCE (CHECKOUT)
+   ========================================================================== */
+.online-gifts-card {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, #ffffff 0%, rgba(245, 158, 11, 0.02) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.online-gifts-card.unlocked {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+}
+
+.online-gifts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.online-gift-item {
+  background: #ffffff;
+  border: 1.5px solid rgba(245, 158, 11, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.online-gift-item:hover {
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.12);
+}
+
+.gift-thumb-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.gift-info-box {
+  width: 100%;
+}
+
+.gift-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.gift-detail {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.gift-price-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gift-free-pill {
+  background: #10b981;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.gift-mrp {
+  font-size: 0.72rem;
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Delivery Preference Card */
+.delivery-preference-card {
+  border-color: rgba(2, 132, 199, 0.3);
+}
+
+.delivery-pref-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.delivery-pref-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-color);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.delivery-pref-card:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.delivery-pref-card.selected {
+  border-color: #0284c7;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.04) 0%, rgba(14, 165, 233, 0.02) 100%);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+}
+
+.pref-radio-input {
+  display: none;
+}
+
+.pref-radio-custom {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 3px;
+  transition: border-color 0.2s;
+}
+
+.delivery-pref-card.selected .pref-radio-custom {
+  border-color: #0284c7;
+}
+
+.pref-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0284c7;
+  transform: scale(0);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.delivery-pref-card.selected .pref-radio-dot {
+  transform: scale(1);
+}
+
+.pref-content {
+  flex: 1;
+}
+
+.pref-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.pref-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.pref-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pref-badge.standard {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+}
+
+.pref-badge.openbox {
+  background: rgba(2, 132, 199, 0.15);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.3);
+}
+
+.pref-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .online-gifts-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .online-gift-item {
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+  }
+
+  .gift-price-tag {
+    justify-content: flex-start;
+  }
+
+  .delivery-pref-options {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+

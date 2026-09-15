@@ -13,22 +13,32 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/checkout.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
   <!-- ========================================================================
        TOP ANNOUNCEMENT BAR
        ======================================================================== -->
-  <div class="top-announcement-bar">
+    <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Order Confirmed</span>
-        <span>Your order has been safely placed and prioritized for express fulfillment.</span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="homepage.html#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
-        <a href="#footer">Need Assistance? 24/7 Support</a>
+        <a href="account.html#orders">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
       </div>
     </div>
   </div>
@@ -132,6 +142,11 @@
             <span class="meta-label">Payment Method</span>
             <span class="meta-value" id="receipt-payment-method">Cash on Delivery</span>
           </div>
+
+          <div class="meta-col">
+            <span class="meta-label">Delivery Preference</span>
+            <span class="meta-value" id="receipt-delivery-preference" style="color: #0284c7; font-weight: 700;">Simple Delivery</span>
+          </div>
         </div>
 
         <!-- Two Column Grid: Items on Left, Address & Cost on Right -->
@@ -190,8 +205,12 @@
                   <span id="receipt-discount">-₹0</span>
                 </div>
                 <div class="cost-row">
-                  <span>Shipping Fee</span>
-                  <span id="receipt-shipping">₹0</span>
+                  <span>Shipping & Delivery</span>
+                  <span id="receipt-shipping" style="color: var(--color-success); font-weight: 700;">FREE (₹0)</span>
+                </div>
+                <div class="cost-row" id="receipt-gifts-row" style="display: none; color: #059669; font-weight: 600;">
+                  <span>3 Complimentary Gifts (Socks, Laces, Keychain)</span>
+                  <span style="color: var(--color-success); font-weight: 700;">FREE (₹0)</span>
                 </div>
                 <div class="cost-row">
                   <span>Estimated Tax</span>
@@ -208,6 +227,19 @@
                 <div class="cost-row total-row" style="margin-top: 8px; padding-top: 12px; border-top: 1.5px dashed var(--border-color);">
                   <span>Total Order Value</span>
                   <span id="receipt-total" class="total-amount">₹0</span>
+                </div>
+              </div>
+
+              <!-- Full Online Payment Free Gifts Card -->
+              <div id="receipt-gifts-card" style="display: none; margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%); border: 1.5px solid rgba(245, 158, 11, 0.35);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <div style="font-weight: 800; font-size: 0.9rem; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                    <span>🎁</span> <span id="receipt-gifts-title">Complimentary Gifts Included</span>
+                  </div>
+                  <span class="pm-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.3); font-weight: 700;">₹0 FREE</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #475569; line-height: 1.45;" id="receipt-gifts-desc">
+                  Thank you for completing 100% full online payment!
                 </div>
               </div>
 
@@ -251,7 +283,7 @@
   </main>
 
   <!-- ========================================================================
-       INTERACTIVE TRACKING DEMO MODAL
+       SHIPMENT TRACKING MODAL
        ======================================================================== -->
   <div id="track-modal" class="track-modal-overlay" aria-hidden="true">
     <div class="track-modal-card">
@@ -376,6 +408,7 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/order-success.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>
 

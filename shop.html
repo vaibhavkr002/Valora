@@ -13,22 +13,30 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/shop.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
   <!-- ========================================================================
        TOP ANNOUNCEMENT BAR
        ======================================================================== -->
-  <div class="top-announcement-bar">
+    <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Exclusive</span>
-        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="homepage.html#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
-        <a href="homepage.html#why-us">Track Order</a>
+        <a href="account.html#orders">Track Order</a>
         <span>•</span>
         <a href="contact-support.html">Support 24/7</a>
       </div>
@@ -312,15 +320,14 @@
               <!-- Skeletons and products injected dynamically -->
             </div>
 
-            <!-- Pagination / Load More -->
-            <div id="pagination-wrapper" class="pagination-wrapper">
-              <div class="pagination-progress-text" id="pagination-progress-text">Showing 8 of 24 products</div>
-              <div class="pagination-progress-bar">
-                <div id="pagination-progress-fill" class="pagination-progress-fill" style="width: 33%;"></div>
+            <!-- Automatic Catalog 3D Loader -->
+            <div id="catalog-auto-loader" class="catalog-auto-loader" aria-live="polite" style="display: none;">
+              <div class="orbit-3d-spinner">
+                <div class="orbit-ring orbit-ring-1"></div>
+                <div class="orbit-ring orbit-ring-2"></div>
+                <div class="orbit-ring orbit-ring-3"></div>
+                <div class="orbit-core"></div>
               </div>
-              <button id="btn-load-more" class="btn-load-more">
-                <span>Load More Products</span>
-              </button>
             </div>
 
           </section>
@@ -390,10 +397,10 @@
 
       <div class="free-shipping-box">
         <div class="free-shipping-text">
-          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Express Delivery!</span>
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
         </div>
         <div class="free-shipping-progress">
-          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 70%;"></div>
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
         </div>
       </div>
 
@@ -584,13 +591,60 @@
     </div>
   </footer>
 
+  <!-- ========================================================================
+       CHOOSE YOUR FREE PRODUCT (BOGO) MODAL
+       ======================================================================== -->
+  <div id="bogo-modal-overlay" class="modal-overlay">
+    <div class="bogo-selection-modal" role="dialog" aria-modal="true" aria-labelledby="bogo-modal-title">
+      <button id="bogo-modal-close-btn" class="modal-close-btn" aria-label="Close BOGO Modal">✕</button>
+      
+      <div class="bogo-modal-header">
+        <div class="bogo-badge-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12V22H4V12H20ZM20 6H16.83C17.57 5.15 18 4.14 18 3C18 1.34 16.66 0 15 0C13.5 0 12.24 1.1 12.03 2.54L12 2.76L11.97 2.54C11.76 1.1 10.5 0 9 0C7.34 0 6 1.34 6 3C6 4.14 6.43 5.15 7.17 6H4C2.9 6 2 6.9 2 8V10H22V8C22 6.9 21.1 6 20 6ZM9 2C9.55 2 10 2.45 10 3C10 3.55 9.55 4 9 4C8.45 4 8 3.55 8 3C8 2.45 8.45 2 9 2ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2Z"/></svg>
+          Buy 1 Get 1 Free Offer
+        </div>
+        <h3 id="bogo-modal-title" class="bogo-modal-title">Choose Your Free Gift</h3>
+        <p class="bogo-modal-subtitle" id="bogo-modal-subtitle">
+          Eligible free gifts whose selling price is within ₹20–₹40 of your selected item. Select 1 complimentary product to proceed.
+        </p>
+      </div>
+
+      <!-- Paid item summary banner -->
+      <div class="bogo-paid-item-banner" id="bogo-paid-item-banner">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Free Gift Options Grid -->
+      <div class="bogo-eligible-grid-wrap">
+        <h4 class="bogo-step-label">Select Exactly 1 Free Product:</h4>
+        <div id="bogo-eligible-items-grid" class="bogo-eligible-items-grid">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- BOGO Modal Footer -->
+      <div class="bogo-modal-footer">
+        <div class="bogo-selection-summary" id="bogo-selection-summary">
+          <span>Selected Free Item: <strong id="bogo-selected-free-name">None chosen</strong></span>
+        </div>
+        <button type="button" id="bogo-confirm-add-btn" class="btn-primary" disabled>
+          <span>Claim Free Gift & Continue</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/products.js"></script>
     <!-- Supabase JS Client & Global Client Initializer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/analytics.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/shop.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>
 

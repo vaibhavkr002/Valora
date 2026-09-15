@@ -43,6 +43,12 @@
           <i class="fas fa-tags"></i>
           <span>Categories</span>
         </a>
+
+        <a href="gift-offers.html" class="sidebar-link ">
+          <i class="fas fa-gift"></i>
+          <span>Gift Offers</span>
+        </a>
+
   
 
         <a href="orders.html" class="sidebar-link active">
@@ -200,6 +206,23 @@
                 <p><strong id="detail-customer-name" style="color:#fff; font-size:1rem;">-</strong></p>
                 <p style="color: var(--admin-text-muted);"><i class="fas fa-phone"></i> <span id="detail-customer-phone">-</span></p>
                 <div id="detail-customer-address" style="color: var(--admin-text-muted); margin-top: 8px;">-</div>
+                <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--admin-card-border); font-size: 0.85rem;">
+                  <strong>Customer Delivery Preference:</strong><br>
+                  <span id="detail-delivery-preference" class="badge badge-info" style="margin-top: 4px; display: inline-block;">Simple Delivery</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Full Online Payment Free Gifts Admin Card -->
+            <div class="admin-card" id="detail-gifts-card" style="display: none; border: 1.5px solid rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.04);">
+              <h3 class="card-title" style="margin-bottom: 8px; color: #f59e0b; display:flex; align-items:center; justify-content:space-between;">
+                <span id="detail-gifts-title">🎁 Free Gifts Included</span>
+                <span class="badge badge-success" style="font-size:0.7rem;">ONLINE PAID</span>
+              </h3>
+              <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin-bottom: 10px; line-height: 1.4;">
+                Customer completed 100% online payment. Include these complimentary accessories in fulfillment parcel:
+              </p>
+              <div id="detail-gifts-list" style="display:flex; flex-direction:column; gap:6px; font-size:0.82rem; color:#fff;">
               </div>
             </div>
 
@@ -222,6 +245,36 @@
                     <i class="fas fa-check-circle" style="color: #10b981;"></i> Mark COD Balance Collected
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Courier & Shipment Tracking Card -->
+            <div class="admin-card">
+              <h3 class="card-title" style="margin-bottom: 16px;"><i class="fas fa-truck" style="color: var(--admin-accent); margin-right: 6px;"></i> Courier & Shipment Tracking</h3>
+              <div style="font-size: 0.88rem; display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                  <label style="display:block; font-size: 0.78rem; font-weight: 600; color: var(--admin-text-muted); margin-bottom: 5px;">Delivery Partner / Courier</label>
+                  <select id="select-delivery-courier" class="admin-select" style="width: 100%;">
+                    <option value="">-- Select Courier Partner --</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block; font-size: 0.78rem; font-weight: 600; color: var(--admin-text-muted); margin-bottom: 5px;">AWB / Tracking ID</label>
+                  <input type="text" id="input-tracking-id" class="admin-input" placeholder="e.g. EK984729182IN" style="width: 100%;">
+                </div>
+                <div>
+                  <label style="display:block; font-size: 0.78rem; font-weight: 600; color: var(--admin-text-muted); margin-bottom: 5px;">Estimated Delivery / ETA Note</label>
+                  <input type="text" id="input-tracking-eta" class="admin-input" placeholder="e.g. 3-5 Business Days or 15 Oct 2026" style="width: 100%;">
+                </div>
+                <div id="tracking-preview-wrap" style="display: none; padding: 10px; background: rgba(37, 99, 235, 0.08); border-radius: 6px; border: 1px dashed rgba(37, 99, 235, 0.3);">
+                  <span style="display:block; font-size: 0.75rem; color: var(--admin-text-muted); margin-bottom: 4px;">Direct Courier Tracking Link:</span>
+                  <a id="link-preview-tracking" href="#" target="_blank" style="font-size: 0.82rem; color: #60a5fa; word-break: break-all; text-decoration: underline;">
+                    Open Tracking Page <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i>
+                  </a>
+                </div>
+                <button type="button" id="btn-save-tracking" class="btn-admin-primary" style="width: 100%; margin-top: 4px;">
+                  <i class="fas fa-save"></i> Save Tracking Information
+                </button>
               </div>
             </div>
           </div>

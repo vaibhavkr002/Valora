@@ -131,6 +131,7 @@
         const { data, error } = await client
           .from('profiles')
           .select('*')
+          .select('id, full_name, email, phone, avatar_url, role')
           .eq('id', userId)
           .single();
 
@@ -147,7 +148,7 @@
             full_name: meta.full_name || meta.name || '',
             email: cachedUser.email || '',
             phone: meta.phone || '',
-            role: meta.role || 'customer'
+            role: 'customer'
           };
           // Attempt insertion
           await client.from('profiles').upsert([cachedProfile], { onConflict: 'id' });

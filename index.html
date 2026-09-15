@@ -12,6 +12,7 @@
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
@@ -20,14 +21,21 @@
        ======================================================================== -->
   <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Exclusive</span>
-        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
-        <a href="#why-us">Track Order</a>
+        <a href="account.html#orders">Track Order</a>
         <span>•</span>
         <a href="contact-support.html">Support 24/7</a>
       </div>
@@ -53,7 +61,7 @@
           <li><a href="shop.html?category=shoes" class="nav-link">Shoes</a></li>
           <li><a href="shop.html?category=watches" class="nav-link">Watches</a></li>
           <li><a href="#deals-section" class="nav-link">Deals <span class="nav-badge-deal">Hot</span></a></li>
-          <li><a href="#about" class="nav-link">About</a></li>
+          <li><a href="about.html" class="nav-link">About</a></li>
         </ul>
 
         <!-- Large Search Bar with Real-Time Preview -->
@@ -128,7 +136,9 @@
         <a href="shop.html?category=shoes">Shoes & Footwear <span>→</span></a>
         <a href="shop.html?category=watches">Luxury Watches <span>→</span></a>
         <a href="#deals-section">Today's Deals <span class="nav-badge-deal">Hot</span></a>
-        <a href="#about">About VELORA <span>→</span></a>
+        <a href="about.html">About VELORA <span>→</span></a>
+        <a href="account.html#orders">Track Order <span>→</span></a>
+        <a href="contact-support.html">Contact Support <span>→</span></a>
       </div>
 
       <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);">
@@ -145,27 +155,32 @@
          HERO SECTION ("Style That Speaks For You")
          ======================================================================== -->
     <section class="hero-section">
-      <div class="container">
+      <!-- Showroom 3D Atmospheric Stage Layers -->
+      <div class="hero-stage-grid" aria-hidden="true"></div>
+      <div class="hero-stage-light-beam" aria-hidden="true"></div>
+      <div class="hero-stage-light-beam left" aria-hidden="true"></div>
+
+      <div class="container" style="position: relative; z-index: 2;">
         <div class="hero-grid">
           <!-- Left Hero Content -->
           <div class="hero-content">
             <div class="hero-tag">
               <span class="hero-tag-pulse"></span>
-              <span>New Autumn / Winter Collection 2026</span>
+              <span id="hero-tag-text">New Autumn / Winter Collection 2026</span>
             </div>
 
-            <h1 class="hero-headline">
+            <h1 class="hero-headline" id="hero-headline">
               Style That <br>
               <span class="gradient-text">Speaks For You</span>
             </h1>
 
-            <p class="hero-subtitle">
+            <p class="hero-subtitle" id="hero-subtitle">
               Discover curated luxury across shoes, watches, caps, clothing, bags, and modern accessories designed to elevate your everyday presence with effortless sophistication.
             </p>
 
             <div class="hero-cta-group">
-              <a href="shop.html" class="btn-primary">
-                <span>Shop Now</span>
+              <a href="shop.html" class="btn-primary" id="hero-cta-primary">
+                <span id="hero-cta-text">Shop Now</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </a>
               <a href="shop.html" class="btn-secondary">
@@ -193,8 +208,10 @@
           <!-- Right Hero Visual Showcase -->
           <div class="hero-visual-container">
             <div class="hero-image-card">
-              <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80" alt="VELORA Contemporary High Fashion Lookbook" priority="high">
+              <img id="hero-image" src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80" alt="VELORA Contemporary High Fashion Lookbook" priority="high">
             </div>
+            <!-- Showroom Pedestal Floor Shadow Plate -->
+            <div class="hero-card-shadow-plate" aria-hidden="true"></div>
 
             <!-- Floating Glassmorphism Badges -->
             <div class="floating-glass-card top-right">
@@ -221,6 +238,13 @@
       </div>
     </section>
 
+    <!-- 3D Scene Divider: Hero -> Categories -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+
     <!-- ========================================================================
          SHOP BY CATEGORY SECTION
          ======================================================================== -->
@@ -246,6 +270,552 @@
       </div>
     </section>
 
+    <!-- 3D Scene Divider: Categories -> Brands -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+    
+    <!-- ========================================================================
+         SHOP BY BRANDS SECTION (Compact 3D Continuous Carousel)
+         ======================================================================== -->
+    <section id="brands-section" class="brands-section">
+      <div class="container">
+        <div class="brands-section-header">
+          <div class="brands-header-left">
+            <span class="section-eyebrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Curated Labels
+            </span>
+            <h2 class="brands-section-title">Shop by Brands</h2>
+          </div>
+          <div class="brands-carousel-controls">
+            <button class="brands-nav-btn" id="brands-prev-btn" aria-label="Previous Brands" title="Scroll Left">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button class="brands-nav-btn" id="brands-next-btn" aria-label="Next Brands" title="Scroll Right">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="brands-carousel-wrapper" id="brands-carousel-wrapper">
+          <div class="brands-marquee-viewport" id="brands-marquee-viewport">
+            <div class="brands-marquee-track" id="brands-marquee-track">
+            <a href="shop.html?brand=Nike" class="brand-card-chip" data-brand="Nike" title="Shop Nike">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #18181b, #3f3f46);">NK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Nike</span>
+                <span class="brand-chip-sub">Footwear & Sports</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Jordan" class="brand-card-chip" data-brand="Jordan" title="Shop Jordan">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #991b1b, #dc2626);">JD</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Jordan</span>
+                <span class="brand-chip-sub">Iconic Streetwear</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Adidas" class="brand-card-chip" data-brand="Adidas" title="Shop Adidas">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #09090b, #27272a);">AD</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Adidas</span>
+                <span class="brand-chip-sub">Originals & Speed</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Puma" class="brand-card-chip" data-brand="Puma" title="Shop Puma">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e293b, #0284c7);">PM</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Puma</span>
+                <span class="brand-chip-sub">Sportstyle Athletics</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=New%20Balance" class="brand-card-chip" data-brand="New Balance" title="Shop New Balance">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #831843, #be123c);">NB</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">New Balance</span>
+                <span class="brand-chip-sub">Heritage Runners</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Reebok" class="brand-card-chip" data-brand="Reebok" title="Shop Reebok">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e3a8a, #dc2626);">RB</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Reebok</span>
+                <span class="brand-chip-sub">Classic Training</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Converse" class="brand-card-chip" data-brand="Converse" title="Shop Converse">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #111827, #374151);">CV</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Converse</span>
+                <span class="brand-chip-sub">All-Star Canvas</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Vans" class="brand-card-chip" data-brand="Vans" title="Shop Vans">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #991b1b, #18181b);">VN</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Vans</span>
+                <span class="brand-chip-sub">Skate & Street</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Skechers" class="brand-card-chip" data-brand="Skechers" title="Shop Skechers">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0369a1, #0284c7);">SK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Skechers</span>
+                <span class="brand-chip-sub">Comfort Cushioned</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=ASICS" class="brand-card-chip" data-brand="ASICS" title="Shop ASICS">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e40af, #2563eb);">AS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">ASICS</span>
+                <span class="brand-chip-sub">Gel Performance</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Fossil" class="brand-card-chip" data-brand="Fossil" title="Shop Fossil">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #78350f, #b45309);">FS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Fossil</span>
+                <span class="brand-chip-sub">Luxury Horology</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Casio" class="brand-card-chip" data-brand="Casio" title="Shop Casio">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e293b, #334155);">CS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Casio</span>
+                <span class="brand-chip-sub">Precision Time</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=G-Shock" class="brand-card-chip" data-brand="G-Shock" title="Shop G-Shock">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #000000, #dc2626);">GS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">G-Shock</span>
+                <span class="brand-chip-sub">Tough Shock-Resist</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Titan" class="brand-card-chip" data-brand="Titan" title="Shop Titan">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e1b4b, #4338ca);">TT</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Titan</span>
+                <span class="brand-chip-sub">Contemporary Luxury</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Timex" class="brand-card-chip" data-brand="Timex" title="Shop Timex">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0f172a, #1e3a8a);">TX</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Timex</span>
+                <span class="brand-chip-sub">Heritage Mechanical</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Seiko" class="brand-card-chip" data-brand="Seiko" title="Shop Seiko">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #064e3b, #059669);">SE</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Seiko</span>
+                <span class="brand-chip-sub">Automatic Japanese</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Citizen" class="brand-card-chip" data-brand="Citizen" title="Shop Citizen">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0f172a, #0369a1);">CT</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Citizen</span>
+                <span class="brand-chip-sub">Eco-Drive Watches</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Coach" class="brand-card-chip" data-brand="Coach" title="Shop Coach">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #451a03, #78350f);">CO</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Coach</span>
+                <span class="brand-chip-sub">New York Leather</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Michael%20Kors" class="brand-card-chip" data-brand="Michael Kors" title="Shop Michael Kors">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #713f12, #eab308);">MK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Michael Kors</span>
+                <span class="brand-chip-sub">Designer Glamour</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Baggit" class="brand-card-chip" data-brand="Baggit" title="Shop Baggit">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #701a75, #a21caf);">BG</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Baggit</span>
+                <span class="brand-chip-sub">Eco Fashion Handbags</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Lavie" class="brand-card-chip" data-brand="Lavie" title="Shop Lavie">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #831843, #db2777);">LV</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Lavie</span>
+                <span class="brand-chip-sub">Chic Totes & Bags</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Hidesign" class="brand-card-chip" data-brand="Hidesign" title="Shop Hidesign">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #431407, #9a3412);">HD</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Hidesign</span>
+                <span class="brand-chip-sub">Handcrafted Luxury</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Tommy%20Hilfiger" class="brand-card-chip" data-brand="Tommy Hilfiger" title="Shop Tommy Hilfiger">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e3a8a, #dc2626);">TH</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Tommy Hilfiger</span>
+                <span class="brand-chip-sub">All-American Classic</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Calvin%20Klein" class="brand-card-chip" data-brand="Calvin Klein" title="Shop Calvin Klein">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #09090b, #27272a);">CK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Calvin Klein</span>
+                <span class="brand-chip-sub">Modern Minimalist</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Emporio%20Armani" class="brand-card-chip" data-brand="Emporio Armani" title="Shop Emporio Armani">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0f172a, #64748b);">EA</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Emporio Armani</span>
+                <span class="brand-chip-sub">Milanese Couture</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Nike" class="brand-card-chip" data-brand="Nike" title="Shop Nike">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #18181b, #3f3f46);">NK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Nike</span>
+                <span class="brand-chip-sub">Footwear & Sports</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Jordan" class="brand-card-chip" data-brand="Jordan" title="Shop Jordan">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #991b1b, #dc2626);">JD</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Jordan</span>
+                <span class="brand-chip-sub">Iconic Streetwear</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Adidas" class="brand-card-chip" data-brand="Adidas" title="Shop Adidas">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #09090b, #27272a);">AD</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Adidas</span>
+                <span class="brand-chip-sub">Originals & Speed</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Puma" class="brand-card-chip" data-brand="Puma" title="Shop Puma">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e293b, #0284c7);">PM</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Puma</span>
+                <span class="brand-chip-sub">Sportstyle Athletics</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=New%20Balance" class="brand-card-chip" data-brand="New Balance" title="Shop New Balance">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #831843, #be123c);">NB</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">New Balance</span>
+                <span class="brand-chip-sub">Heritage Runners</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Reebok" class="brand-card-chip" data-brand="Reebok" title="Shop Reebok">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e3a8a, #dc2626);">RB</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Reebok</span>
+                <span class="brand-chip-sub">Classic Training</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Converse" class="brand-card-chip" data-brand="Converse" title="Shop Converse">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #111827, #374151);">CV</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Converse</span>
+                <span class="brand-chip-sub">All-Star Canvas</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Vans" class="brand-card-chip" data-brand="Vans" title="Shop Vans">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #991b1b, #18181b);">VN</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Vans</span>
+                <span class="brand-chip-sub">Skate & Street</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Skechers" class="brand-card-chip" data-brand="Skechers" title="Shop Skechers">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0369a1, #0284c7);">SK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Skechers</span>
+                <span class="brand-chip-sub">Comfort Cushioned</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=ASICS" class="brand-card-chip" data-brand="ASICS" title="Shop ASICS">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e40af, #2563eb);">AS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">ASICS</span>
+                <span class="brand-chip-sub">Gel Performance</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Fossil" class="brand-card-chip" data-brand="Fossil" title="Shop Fossil">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #78350f, #b45309);">FS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Fossil</span>
+                <span class="brand-chip-sub">Luxury Horology</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Casio" class="brand-card-chip" data-brand="Casio" title="Shop Casio">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e293b, #334155);">CS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Casio</span>
+                <span class="brand-chip-sub">Precision Time</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=G-Shock" class="brand-card-chip" data-brand="G-Shock" title="Shop G-Shock">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #000000, #dc2626);">GS</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">G-Shock</span>
+                <span class="brand-chip-sub">Tough Shock-Resist</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Titan" class="brand-card-chip" data-brand="Titan" title="Shop Titan">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e1b4b, #4338ca);">TT</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Titan</span>
+                <span class="brand-chip-sub">Contemporary Luxury</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Timex" class="brand-card-chip" data-brand="Timex" title="Shop Timex">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0f172a, #1e3a8a);">TX</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Timex</span>
+                <span class="brand-chip-sub">Heritage Mechanical</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Seiko" class="brand-card-chip" data-brand="Seiko" title="Shop Seiko">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #064e3b, #059669);">SE</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Seiko</span>
+                <span class="brand-chip-sub">Automatic Japanese</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Citizen" class="brand-card-chip" data-brand="Citizen" title="Shop Citizen">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0f172a, #0369a1);">CT</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Citizen</span>
+                <span class="brand-chip-sub">Eco-Drive Watches</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Coach" class="brand-card-chip" data-brand="Coach" title="Shop Coach">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #451a03, #78350f);">CO</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Coach</span>
+                <span class="brand-chip-sub">New York Leather</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Michael%20Kors" class="brand-card-chip" data-brand="Michael Kors" title="Shop Michael Kors">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #713f12, #eab308);">MK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Michael Kors</span>
+                <span class="brand-chip-sub">Designer Glamour</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Baggit" class="brand-card-chip" data-brand="Baggit" title="Shop Baggit">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #701a75, #a21caf);">BG</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Baggit</span>
+                <span class="brand-chip-sub">Eco Fashion Handbags</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Lavie" class="brand-card-chip" data-brand="Lavie" title="Shop Lavie">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #831843, #db2777);">LV</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Lavie</span>
+                <span class="brand-chip-sub">Chic Totes & Bags</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Hidesign" class="brand-card-chip" data-brand="Hidesign" title="Shop Hidesign">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #431407, #9a3412);">HD</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Hidesign</span>
+                <span class="brand-chip-sub">Handcrafted Luxury</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Tommy%20Hilfiger" class="brand-card-chip" data-brand="Tommy Hilfiger" title="Shop Tommy Hilfiger">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #1e3a8a, #dc2626);">TH</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Tommy Hilfiger</span>
+                <span class="brand-chip-sub">All-American Classic</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Calvin%20Klein" class="brand-card-chip" data-brand="Calvin Klein" title="Shop Calvin Klein">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #09090b, #27272a);">CK</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Calvin Klein</span>
+                <span class="brand-chip-sub">Modern Minimalist</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            <a href="shop.html?brand=Emporio%20Armani" class="brand-card-chip" data-brand="Emporio Armani" title="Shop Emporio Armani">
+              <span class="brand-chip-badge" style="background: linear-gradient(135deg, #0f172a, #64748b);">EA</span>
+              <div class="brand-chip-info">
+                <span class="brand-chip-name">Emporio Armani</span>
+                <span class="brand-chip-sub">Milanese Couture</span>
+              </div>
+              <span class="brand-chip-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
+            </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3D Scene Divider: Brands -> Trending -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+
     <!-- ========================================================================
          TRENDING NOW SECTION
          ======================================================================== -->
@@ -260,6 +830,10 @@
             <h2 class="section-title">Trending Now</h2>
             <p class="section-subtitle">Handpicked bestsellers crafted for timeless style, all-day comfort, and daily durability.</p>
           </div>
+          <a href="trending.html" class="view-all-link">
+            <span>View All Trending</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
         </div>
 
         <!-- Filter Tabs -->
@@ -274,36 +848,49 @@
           <button class="filter-tab-btn" data-category-filter="electronics">Tech & Audio</button>
         </div>
 
-        <!-- Responsive Products Grid (4 Desktop, 3 Tablet, 2 Mobile) -->
-        <div id="trending-grid" class="products-grid"></div>
+        <!-- Responsive Products Grid (5 Desktop, 4 Laptop, 3 Tablet, 2 Mobile) -->
+        <div id="trending-grid" class="products-grid products-grid-5col"></div>
       </div>
     </section>
 
+    <!-- 3D Scene Divider: Trending -> Promotional Showcase -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+
     <!-- ========================================================================
-         PROMOTIONAL BANNER ("Find Your Perfect Style")
+         ROTATING ADVERTISEMENTS / PROMOTIONAL CARD (Compact 3D Luxury Banner)
          ======================================================================== -->
-    <section class="promo-banner-section">
+    <section class="advertisements-carousel-section" id="offers-carousel-section">
       <div class="container">
-        <div class="promo-banner-card">
-          <img class="promo-bg-image" src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80" alt="Promotional Lifestyle Aesthetic">
-          <div class="promo-content">
-            <span class="promo-tag">Exclusive Season Offer</span>
-            <h2 class="promo-headline">Find Your Perfect Style</h2>
-            <p class="promo-subtitle">
-              Refresh your wardrobe with premium apparel, waterproof travel bags, handcrafted leather boots, and smart timepieces. Unlock 15% off your entire cart with promo code below.
-            </p>
-            <div class="promo-actions">
-              <a href="#trending-section" class="btn-promo-cta">Explore Now</a>
-              <div class="promo-code-box" data-code="VELORA15" title="Click to copy promo code">
-                <span>Code:</span>
-                <span class="promo-code-val">VELORA15</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              </div>
+        <div class="ads-carousel-card-container" id="ads-card-container">
+          <div class="ads-carousel-wrapper" id="ads-carousel-wrapper">
+            <div class="ads-carousel-track" id="ads-carousel-track">
+              <!-- Dynamic 5-6 advertisement slides injected from Supabase -->
             </div>
+            
+            <button class="ads-carousel-btn prev" id="ads-carousel-prev" aria-label="Previous advertisement">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button class="ads-carousel-btn next" id="ads-carousel-next" aria-label="Next advertisement">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
+          
+          <!-- Small pagination dots below the card -->
+          <div class="ads-carousel-dots" id="ads-carousel-dots"></div>
         </div>
       </div>
     </section>
+
+    <!-- 3D Scene Divider: Offers -> Deals -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
 
     <!-- ========================================================================
          TODAY'S FLASH DEALS SECTION
@@ -320,23 +907,69 @@
             <p class="section-subtitle">Deep discounts on high-demand pieces. Quantities are strictly limited!</p>
           </div>
 
-          <!-- Flash Countdown Timer -->
-          <div class="flash-timer-box">
-            <span class="flash-timer-label">Ends In:</span>
-            <div class="timer-units">
-              <div class="timer-block" id="timer-hours">14</div>
-              <span class="timer-colon">:</span>
-              <div class="timer-block" id="timer-minutes">42</div>
-              <span class="timer-colon">:</span>
-              <div class="timer-block" id="timer-seconds">15</div>
+          <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+            <!-- Flash Countdown Timer -->
+            <div class="flash-timer-box">
+              <span class="flash-timer-label">Ends In:</span>
+              <div class="timer-units">
+                <div class="timer-block" id="timer-hours">14</div>
+                <span class="timer-colon">:</span>
+                <div class="timer-block" id="timer-minutes">42</div>
+                <span class="timer-colon">:</span>
+                <div class="timer-block" id="timer-seconds">15</div>
+              </div>
             </div>
+
+            <a href="deals.html" class="view-all-link">
+              <span>View All Deals</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
           </div>
         </div>
 
-        <!-- Deals Products Grid -->
-        <div id="deals-grid" class="products-grid"></div>
+        <!-- Deals Products Grid (5 Desktop, 4 Laptop, 3 Tablet, 2 Mobile) -->
+        <div id="deals-grid" class="products-grid products-grid-5col"></div>
       </div>
     </section>
+
+    <!-- 3D Scene Divider: Deals -> BOGO -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+
+    <!-- ========================================================================
+         BUY 1 GET 1 FREE (BOGO) SECTION
+         ======================================================================== -->
+    <section id="bogo-section" class="bogo-section">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <span class="section-eyebrow" style="color: #059669; display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12V22H4V12H20ZM20 6H16.83C17.57 5.15 18 4.14 18 3C18 1.34 16.66 0 15 0C13.5 0 12.24 1.1 12.03 2.54L12 2.76L11.97 2.54C11.76 1.1 10.5 0 9 0C7.34 0 6 1.34 6 3C6 4.14 6.43 5.15 7.17 6H4C2.9 6 2 6.9 2 8V10H22V8C22 6.9 21.1 6 20 6ZM9 2C9.55 2 10 2.45 10 3C10 3.55 9.55 4 9 4C8.45 4 8 3.55 8 3C8 2.45 8.45 2 9 2ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2Z"/></svg>
+              Special BOGO Event
+            </span>
+            <h2 class="section-title">Buy 1 Get 1 Free</h2>
+            <p class="section-subtitle">Select any qualifying luxury item and unlock an eligible free product on us!</p>
+          </div>
+          <a href="shop.html?section=bogo" class="view-all-link">
+            <span>View All BOGO</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+
+        <!-- BOGO Products Grid (5 Desktop, 4 Laptop, 3 Tablet, 2 Mobile) -->
+        <div id="bogo-grid" class="products-grid products-grid-5col"></div>
+      </div>
+    </section>
+
+    <!-- 3D Scene Divider: BOGO -> New Arrivals -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
 
     <!-- ========================================================================
          NEW ARRIVALS SECTION
@@ -352,16 +985,23 @@
             <h2 class="section-title">New Arrivals</h2>
             <p class="section-subtitle">Just landed in the catalog. Be the first to experience our latest release pieces.</p>
           </div>
-          <a href="#trending-section" class="view-all-link">
+          <a href="new-arrivals.html" class="view-all-link">
             <span>View All New</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </a>
         </div>
 
-        <!-- New Arrivals Grid -->
-        <div id="new-arrivals-grid" class="products-grid"></div>
+        <!-- New Arrivals Grid (5 Desktop, 4 Laptop, 3 Tablet, 2 Mobile) -->
+        <div id="new-arrivals-grid" class="products-grid products-grid-5col"></div>
       </div>
     </section>
+
+    <!-- 3D Scene Divider: New Arrivals -> Why Shop With Us -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
 
     <!-- ========================================================================
          WHY SHOP WITH US? (TRUST & VALUE CARDS)
@@ -386,7 +1026,7 @@
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
             </div>
             <h3 class="trust-card-title">Fast & Free Express Delivery</h3>
-            <p class="trust-card-desc">Enjoy lightning-fast dispatch and complimentary express delivery on all orders over ₹999 across India with live tracking.</p>
+            <p class="trust-card-desc">Enjoy lightning-fast dispatch and complimentary express delivery on all orders across India with live tracking.</p>
           </div>
 
           <!-- Card 2: Secure Shopping -->
@@ -419,6 +1059,13 @@
       </div>
     </section>
 
+    <!-- 3D Scene Divider: Why Shop With Us -> Delivery Partners -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+
     <!-- ========================================================================
          OUR DELIVERY PARTNERS (RELIABLE PAN-INDIA LOGISTICS)
          ======================================================================== -->
@@ -435,7 +1082,7 @@
           </div>
         </div>
 
-        <div class="delivery-partners-grid">
+        <div class="delivery-partners-grid" id="delivery-partners-grid">
           <!-- 1. Ekart -->
           <div class="delivery-partner-card">
             <div class="partner-logo-box">
@@ -498,6 +1145,13 @@
         </div>
       </div>
     </section>
+
+    <!-- 3D Scene Divider: Delivery Partners -> Newsletter VIP -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
 
     <!-- ========================================================================
          NEWSLETTER VIP CLUB
@@ -596,15 +1250,15 @@
           <h4 class="footer-col-title">Contact & Legal</h4>
           <div class="footer-contact-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            <span>12 Connaught Place, New Delhi 110001</span>
+            <span id="footer-studio-address">12 Connaught Place, New Delhi 110001</span>
           </div>
           <div class="footer-contact-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            <span><a href="mailto:support@velorastudio.com">support@velorastudio.com</a></span>
+            <span><a href="mailto:support@velorastudio.com" id="footer-support-email">support@velorastudio.com</a></span>
           </div>
           <div class="footer-contact-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-            <span><a href="tel:+9118001028356">+91 1800 102 8356</a></span>
+            <span><a href="tel:+9118001028356" id="footer-support-phone">+91 1800 102 8356</a></span>
           </div>
           <ul class="footer-links-list" style="margin-top: 14px;">
             <li class="footer-link-item"><a href="privacy-policy.html">Privacy Policy</a></li>
@@ -645,10 +1299,10 @@
       <!-- Free Shipping Meter -->
       <div class="free-shipping-box">
         <div class="free-shipping-text">
-          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Delivery!</span>
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
         </div>
         <div class="free-shipping-progress">
-          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 70%;"></div>
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
         </div>
       </div>
 
@@ -682,6 +1336,16 @@
         <div class="cart-summary-row cart-summary-total">
           <span>Total (Incl. Taxes)</span>
           <span id="cart-total">₹3,499</span>
+        </div>
+        <div id="cart-advance-breakdown" style="display: none; padding: 8px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+          <div class="cart-summary-row" style="margin-bottom: 2px;">
+            <span style="color: #6366f1; font-weight: 600;">Advance Payable Now:</span>
+            <span id="cart-advance-payable" style="font-weight: 700; color: #6366f1;">₹0</span>
+          </div>
+          <div class="cart-summary-row" style="margin-bottom: 0;">
+            <span style="color: var(--text-muted);">Remaining by COD:</span>
+            <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
+          </div>
         </div>
         <button id="checkout-btn" class="btn-checkout">
           <span>Proceed to Checkout</span>
@@ -733,6 +1397,50 @@
   </div>
 
   <!-- ========================================================================
+       CHOOSE YOUR FREE PRODUCT (BOGO) MODAL
+       ======================================================================== -->
+  <div id="bogo-modal-overlay" class="modal-overlay">
+    <div class="bogo-selection-modal" role="dialog" aria-modal="true" aria-labelledby="bogo-modal-title">
+      <button id="bogo-modal-close-btn" class="modal-close-btn" aria-label="Close BOGO Modal">✕</button>
+      
+      <div class="bogo-modal-header">
+        <div class="bogo-badge-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12V22H4V12H20ZM20 6H16.83C17.57 5.15 18 4.14 18 3C18 1.34 16.66 0 15 0C13.5 0 12.24 1.1 12.03 2.54L12 2.76L11.97 2.54C11.76 1.1 10.5 0 9 0C7.34 0 6 1.34 6 3C6 4.14 6.43 5.15 7.17 6H4C2.9 6 2 6.9 2 8V10H22V8C22 6.9 21.1 6 20 6ZM9 2C9.55 2 10 2.45 10 3C10 3.55 9.55 4 9 4C8.45 4 8 3.55 8 3C8 2.45 8.45 2 9 2ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2Z"/></svg>
+          Buy 1 Get 1 Free Offer
+        </div>
+        <h3 id="bogo-modal-title" class="bogo-modal-title">Choose Your Free Gift</h3>
+        <p class="bogo-modal-subtitle" id="bogo-modal-subtitle">
+          Eligible free gifts whose selling price is within ₹20–₹40 of your selected item. Select 1 complimentary product to proceed.
+        </p>
+      </div>
+
+      <!-- Paid item summary banner -->
+      <div class="bogo-paid-item-banner" id="bogo-paid-item-banner">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Free Gift Options Grid -->
+      <div class="bogo-eligible-grid-wrap">
+        <h4 class="bogo-step-label">Select Exactly 1 Free Product:</h4>
+        <div id="bogo-eligible-items-grid" class="bogo-eligible-items-grid">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- BOGO Modal Footer -->
+      <div class="bogo-modal-footer">
+        <div class="bogo-selection-summary" id="bogo-selection-summary">
+          <span>Selected Free Item: <strong id="bogo-selected-free-name">None chosen</strong></span>
+        </div>
+        <button type="button" id="bogo-confirm-add-btn" class="btn-primary" disabled>
+          <span>Claim Free Gift & Continue</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        TOAST NOTIFICATION CONTAINER
        ======================================================================== -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
@@ -744,8 +1452,11 @@
     <!-- Supabase JS Client & Global Client Initializer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/analytics.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>
 

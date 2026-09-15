@@ -13,22 +13,30 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/product.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
 </head>
 <body>
 
   <!-- ========================================================================
        TOP ANNOUNCEMENT BAR
        ======================================================================== -->
-  <div class="top-announcement-bar">
+    <div class="top-announcement-bar">
     <div class="inner">
-      <div class="announcement-text">
-        <span class="announcement-badge">Exclusive</span>
-        <span>Free Express Delivery Across India on Orders Over ₹999 | Use Code: <strong>VELORA10</strong></span>
+      <div class="announcement-carousel" id="announcement-carousel">
+        <div class="announcement-slide active" data-index="0" data-link="shop.html">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-content">
+            <span class="announcement-text-label">Free Express Delivery Across India on All Orders</span>
+            <span class="announcement-sep">|</span>
+            <span class="announcement-code-wrap">Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+            <a href="shop.html" class="announcement-action-link" aria-label="Exclusive: Free express delivery">Shop Now →</a>
+          </span>
+        </div>
       </div>
       <div class="top-bar-right-links">
-        <a href="homepage.html#about">Our Story</a>
+        <a href="about.html">Our Story</a>
         <span>•</span>
-        <a href="homepage.html#why-us">Track Order</a>
+        <a href="account.html#orders">Track Order</a>
         <span>•</span>
         <a href="contact-support.html">Support 24/7</a>
       </div>
@@ -202,8 +210,90 @@
                 </span>
               </div>
 
-              <!-- Advance Payment Notice Banner (Shown dynamically when enabled) -->
-              <div id="detail-advance-box" class="detail-advance-box" style="display: none; margin: 18px 0; padding: 14px 18px; border-radius: 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(99, 102, 241, 0.35);">
+              <!-- 3D Payment Method Selection (Choose Online vs COD) -->
+              <div id="detail-payment-selection-box" class="detail-payment-selection-box">
+                <div class="payment-selection-header">
+                  <span class="payment-selection-label">Choose Payment Method:</span>
+                  <span id="payment-selection-status-badge" class="payment-selection-badge">⚡ Full Online = 3 FREE Gifts</span>
+                </div>
+
+                <div class="payment-cards-grid-3d">
+                  <!-- Option 1: Full Online Payment (Default) -->
+                  <div class="payment-card-3d selected" id="card-pay-online" data-pay-method="online" role="button" tabindex="0">
+                    <div class="pcard-top-row">
+                      <div class="pcard-icon-pill">
+                        <span class="pcard-icon">⚡</span>
+                        <div class="pcard-brands">
+                          <span>UPI</span>
+                          <span>Card</span>
+                          <span>NetBank</span>
+                        </div>
+                      </div>
+                      <div class="pcard-radio">
+                        <div class="pcard-radio-dot"></div>
+                      </div>
+                    </div>
+                    <div class="pcard-title-row">
+                      <strong class="pcard-title">FULL ONLINE PAYMENT</strong>
+                      <span class="pcard-gift-tag" id="pcard-gift-tag">FREE GIFTS</span>
+                    </div>
+                    <div class="pcard-amount-line">
+                      <span class="pcard-online-highlight">100% Online • ₹0 Advance</span>
+                    </div>
+                    <div class="pcard-desc" id="pcard-online-desc">
+                      Pay 100% online • No advance required
+                    </div>
+                  </div>
+
+                  <!-- Option 2: Cash on Delivery (COD) -->
+                  <div class="payment-card-3d" id="card-pay-cod" data-pay-method="cod" role="button" tabindex="0">
+                    <div class="pcard-top-row">
+                      <div class="pcard-icon-pill pcard-cod-pill">
+                        <span class="pcard-icon">💵</span>
+                        <div class="pcard-brands">
+                          <span>COD</span>
+                        </div>
+                      </div>
+                      <div class="pcard-radio">
+                        <div class="pcard-radio-dot"></div>
+                      </div>
+                    </div>
+                    <div class="pcard-title-row">
+                      <strong class="pcard-title">CASH ON DELIVERY</strong>
+                      <span class="pcard-cod-tag" id="pcard-cod-tag">ADVANCE REQ.</span>
+                    </div>
+                    <div class="pcard-amount-line" id="detail-cod-headline">
+                      Pay advance now • Remaining via COD
+                    </div>
+                    <div class="pcard-desc">
+                      Pay configured advance now • Remaining amount via COD
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Doorstep Delivery Preference Selector -->
+                <div id="detail-delivery-pref-wrap" class="detail-delivery-pref-wrap">
+                  <div class="delivery-pref-header-small">
+                    <span>Doorstep Handover Choice:</span>
+                    <span id="delivery-pref-note-badge" class="delivery-pref-badge">Online Exclusive Feature</span>
+                  </div>
+                  <div class="delivery-pref-pills-row">
+                    <button type="button" class="delivery-pref-pill selected" id="detail-pref-simple" data-delivery-pref="Simple Delivery">
+                      <span class="delivery-pref-radio"><span class="delivery-pref-radio-dot"></span></span>
+                      <span class="delivery-pref-pill-title">Simple Delivery</span>
+                      <span class="delivery-pref-pill-desc">(Sealed Box)</span>
+                    </button>
+                    <button type="button" class="delivery-pref-pill" id="detail-pref-openbox" data-delivery-pref="Open Box Delivery">
+                      <span class="delivery-pref-radio"><span class="delivery-pref-radio-dot"></span></span>
+                      <span class="delivery-pref-pill-title">Open Box Delivery</span>
+                      <span class="delivery-pref-pill-desc">(Inspect First)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Advance Payment Notice Banner (Shown dynamically when COD is selected) -->
+              <div id="detail-advance-box" class="detail-advance-box" style="display: none; margin: 18px 0 22px 0; padding: 14px 18px; border-radius: 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); border: 1.5px solid rgba(99, 102, 241, 0.35);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #6366f1; color: #fff; font-size: 0.75rem; font-weight: 700;">₹</span>
@@ -215,6 +305,146 @@
                 </div>
                 <div id="detail-advance-explainer" style="font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-top: 4px; line-height: 1.5;">
                   Pay ₹300 now • Remaining ₹3,199 via COD
+                </div>
+              </div>
+
+              <!-- Full Online Payment & Open Box Benefits Card -->
+              <div id="full-online-benefits-box" class="full-online-benefits-box">
+                <div class="benefits-box-header">
+                  <div class="benefits-badge-wrap">
+                    <span class="benefits-gift-icon">🎁</span>
+                    <strong class="benefits-title" id="benefits-box-title">Pay Full Online & Get 3 FREE Gifts</strong>
+                  </div>
+                  <span class="benefits-free-tag" id="benefits-box-tag">₹0 FREE</span>
+                </div>
+                <p class="benefits-subtitle" id="benefits-box-subtitle">
+                  Pay 100% online via UPI, Card, or Net Banking to automatically unlock 3 complimentary luxury accessories:
+                </p>
+                <div class="benefits-gifts-pills" id="benefits-gifts-pills">
+                  <span class="gift-pill"><span class="gift-pill-icon">🧦</span> Socks</span>
+                  <span class="gift-pill"><span class="gift-pill-icon">🧵</span> Extra Laces</span>
+                  <span class="gift-pill"><span class="gift-pill-icon">🔑</span> Key Chain</span>
+                </div>
+                <div class="benefits-openbox-note" id="benefits-openbox-note">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0; margin-top:2px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                  <span><strong>Doorstep Delivery Choice:</strong> Choose <strong>Open Box Delivery</strong> (inspect contents before accepting) or <strong>Simple Delivery</strong> above.</span>
+                </div>
+              </div>
+
+              <!-- 3D Pincode Delivery Availability Checker Card -->
+              <div id="pincode-checker-card" class="pincode-checker-card" aria-label="Check Delivery Availability">
+                <div class="pincode-card-header">
+                  <div class="pincode-header-left">
+                    <div class="pincode-icon-badge">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                    </div>
+                    <div>
+                      <span class="pincode-title">Check Delivery Availability</span>
+                      <span class="pincode-subtitle">Enter your 6-digit Indian PIN code to check serviceability & ETA</span>
+                    </div>
+                  </div>
+                  <span class="pincode-free-pill">FREE DELIVERY ₹0</span>
+                </div>
+
+                <!-- Input Form Row -->
+                <form id="pincode-checker-form" class="pincode-checker-form" onsubmit="return false;" novalidate>
+                  <div class="pincode-input-wrapper">
+                    <span class="pincode-input-prefix">🇮🇳</span>
+                    <input 
+                      type="text" 
+                      id="pincode-input" 
+                      class="pincode-input" 
+                      placeholder="Enter 6-digit PIN code (e.g. 110001)" 
+                      maxlength="6" 
+                      inputmode="numeric" 
+                      pattern="[0-9]*" 
+                      autocomplete="postal-code"
+                      aria-label="6-digit Indian PIN code"
+                    >
+                    <button type="button" id="pincode-clear-btn" class="pincode-clear-btn" aria-label="Clear PIN code" style="display:none;">✕</button>
+                  </div>
+                  <button type="button" id="pincode-check-btn" class="btn-pincode-check">
+                    <span class="btn-check-text">Check</span>
+                    <span class="btn-check-spinner" style="display: none;">
+                      <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)"></circle>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="#ffffff" stroke-linecap="round"></path>
+                      </svg>
+                    </span>
+                  </button>
+                </form>
+
+                <!-- Validation Error Prompt -->
+                <div id="pincode-validation-msg" class="pincode-validation-msg" style="display: none;"></div>
+
+                <!-- Success Result State -->
+                <div id="pincode-success-box" class="pincode-result-box pincode-success-box" style="display: none;">
+                  <div class="pincode-result-top">
+                    <div class="pincode-result-badge success">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>✓ Delivery Available to <strong id="pincode-res-pin">110001</strong></span>
+                    </div>
+                    <button type="button" id="pincode-change-btn" class="pincode-change-btn">Change PIN</button>
+                  </div>
+                  <div class="pincode-result-details">
+                    <div class="pincode-detail-row">
+                      <span class="pincode-detail-icon">📍</span>
+                      <span id="pincode-res-location">New Delhi, Delhi</span>
+                    </div>
+                    <div class="pincode-detail-row">
+                      <span class="pincode-detail-icon">⚡</span>
+                      <span>Estimated Delivery: <strong id="pincode-res-date" class="pincode-eta-highlight">Friday, 18 Sep</strong></span>
+                    </div>
+                    <div class="pincode-detail-row">
+                      <span class="pincode-detail-icon">🚚</span>
+                      <span class="pincode-free-delivery-badge">✓ FREE DELIVERY (₹0)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Unserviceable / Error State -->
+                <div id="pincode-error-box" class="pincode-result-box pincode-error-box" style="display: none;">
+                  <div class="pincode-result-top">
+                    <div class="pincode-result-badge error">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                      <span>Delivery is currently unavailable to this pincode.</span>
+                    </div>
+                    <button type="button" id="pincode-retry-btn" class="pincode-change-btn">Try Another</button>
+                  </div>
+                  <p class="pincode-unserviceable-note">We are actively expanding our courier network to this destination. Please check with an alternate PIN code or address.</p>
+                </div>
+              </div>
+
+              <!-- Honest Product Offers & Transparent Guarantees -->
+              <div id="honest-offers-block" class="honest-offers-block" style="margin: 16px 0; padding: 14px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  Transparent Purchasing Benefits
+                </div>
+                <div class="honest-offers-list" style="display: flex; flex-direction: column; gap: 7px; font-size: 0.84rem; color: #334155;">
+                  <div class="honest-offer-item" id="honest-offer-advance" style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #6366f1; font-weight: 700;">⚡</span>
+                    <span id="honest-offer-advance-text">Calculating verified payment terms...</span>
+                  </div>
+                  <div class="honest-offer-item" id="honest-offer-stock" style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #059669; font-weight: 700;">📦</span>
+                    <span id="honest-offer-stock-text">In stock • Handled via verified express fulfillment</span>
+                  </div>
+                  <div class="honest-offer-item" id="honest-offer-shipping" style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #2563eb; font-weight: 700;">🚚</span>
+                    <span id="honest-offer-shipping-text">100% Free Delivery Across India on Every Order</span>
+                  </div>
+                  <div class="honest-offer-item" id="honest-offer-bogo" style="display: none; align-items: flex-start; gap: 8px;">
+                    <span style="color: #059669; font-weight: 700;">🎁</span>
+                    <span id="honest-offer-bogo-text"><strong>Buy 1 Get 1 Free Eligible:</strong> Unlock a complimentary companion gift upon checkout</span>
+                  </div>
+                  <div class="honest-offer-item" style="display: flex; align-items: flex-start; gap: 8px;">
+                    <span style="color: #0d9488; font-weight: 700;">🛡️</span>
+                    <span><strong>Doorstep Verification:</strong> Sealed tamper-proof packaging with 30-day return policy</span>
+                  </div>
                 </div>
               </div>
 
@@ -331,9 +561,9 @@
           <!-- Tab 3: Shipping & Delivery -->
           <div id="tab-shipping" class="tab-content-panel">
             <div class="info-card-box">
-              <h4>Complimentary Express Delivery Over ₹999</h4>
+              <h4>100% Complimentary Express Delivery Across India</h4>
               <p>
-                All orders are dispatched from our climate-controlled fulfillment hub within 24 hours. Standard delivery arrives in 3–5 business days, while Priority Express arrives in 1–2 business days. Real-time GPS tracking is provided via email upon dispatch.
+                All orders are dispatched from our climate-controlled fulfillment hub within 24 hours with absolutely zero shipping fees. Standard delivery arrives in 3–5 business days, while Priority Express arrives in 1–2 business days. Real-time GPS tracking is provided via email upon dispatch.
               </p>
             </div>
           </div>
@@ -440,6 +670,23 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
       </a>
     </div>
+
+    <!-- Mobile Sticky Bottom Purchase Bar (Visible on phone screens <= 768px) -->
+    <div class="mobile-sticky-purchase-bar" id="mobile-sticky-purchase-bar">
+      <div class="sticky-price-info">
+        <span class="sticky-price-label">Total Price</span>
+        <span class="sticky-price-val" id="sticky-price-val">₹0</span>
+      </div>
+      <div class="sticky-actions-wrap">
+        <button type="button" class="sticky-btn-add" id="btn-sticky-add-cart" aria-label="Add to cart">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span>Add to Cart</span>
+        </button>
+        <button type="button" class="sticky-btn-buy" id="btn-sticky-buy-now">
+          <span>Buy Now</span>
+        </button>
+      </div>
+    </div>
   </main>
 
   <!-- ========================================================================
@@ -457,10 +704,10 @@
 
       <div class="free-shipping-box">
         <div class="free-shipping-text">
-          <span id="free-shipping-msg">Add <strong>₹999</strong> more for Free Delivery!</span>
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
         </div>
         <div class="free-shipping-progress">
-          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 70%;"></div>
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
         </div>
       </div>
 
@@ -615,8 +862,13 @@
     <!-- Supabase JS Client & Global Client Initializer -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/analytics.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/gift-engine.js"></script>
+  <script src="js/pincode-engine.js"></script>
   <script src="js/product-details.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/premium-3d.js" defer></script>
 </body>
 </html>
 

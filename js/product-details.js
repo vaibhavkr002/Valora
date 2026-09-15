@@ -12,10 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Global State ---
   const state = {
     cart: JSON.parse(localStorage.getItem("velora_cart")) || [],
-    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || ["prod-02", "prod-07"]),
+    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || []),
     currentProduct: null,
     selectedSize: null,
     selectedColor: null,
+    selectedPaymentMethod: localStorage.getItem("velora_preferred_payment") || "online",
+    selectedDeliveryPreference: localStorage.getItem("velora_preferred_delivery") || "Simple Delivery",
     quantity: 1,
     currentImageIndex: 0,
     galleryImages: []
@@ -56,9 +58,54 @@ document.addEventListener("DOMContentLoaded", () => {
     discountPill: document.getElementById("detail-discount-pill"),
     stockBadge: document.getElementById("detail-stock-badge"),
     descParagraph: document.getElementById("detail-desc-paragraph"),
+
+    // 3D Payment Selection & Delivery Preference
+    paymentSelectionBox: document.getElementById("detail-payment-selection-box"),
+    cardPayOnline: document.getElementById("card-pay-online"),
+    cardPayCod: document.getElementById("card-pay-cod"),
+    pcardCodTag: document.getElementById("pcard-cod-tag"),
+    pcardGiftTag: document.getElementById("pcard-gift-tag"),
+    pcardOnlineDesc: document.getElementById("pcard-online-desc"),
+    detailCodHeadline: document.getElementById("detail-cod-headline"),
+    prefPills: document.querySelectorAll(".delivery-pref-pill"),
+    prefPillSimple: document.getElementById("detail-pref-simple"),
+    prefPillOpenbox: document.getElementById("detail-pref-openbox"),
+    detailDeliveryPrefWrap: document.getElementById("detail-delivery-pref-wrap"),
+    deliveryPrefNoteBadge: document.getElementById("delivery-pref-note-badge"),
+    paymentSelectionStatusBadge: document.getElementById("payment-selection-status-badge"),
+
+    // Benefits & Advance Box
     advanceBox: document.getElementById("detail-advance-box"),
     advanceHeadline: document.getElementById("detail-advance-headline"),
     advanceExplainer: document.getElementById("detail-advance-explainer"),
+    benefitsBox: document.getElementById("full-online-benefits-box"),
+    benefitsBoxTitle: document.getElementById("benefits-box-title"),
+    benefitsBoxTag: document.getElementById("benefits-box-tag"),
+    benefitsBoxSubtitle: document.getElementById("benefits-box-subtitle"),
+    benefitsGiftsPills: document.getElementById("benefits-gifts-pills"),
+    benefitsOpenboxNote: document.getElementById("benefits-openbox-note"),
+
+    honestOffersBlock: document.getElementById("honest-offers-block"),
+    honestOfferAdvanceText: document.getElementById("honest-offer-advance-text"),
+    honestOfferStockText: document.getElementById("honest-offer-stock-text"),
+    honestOfferShippingText: document.getElementById("honest-offer-shipping-text"),
+    honestOfferBogo: document.getElementById("honest-offer-bogo"),
+    honestOfferBogoText: document.getElementById("honest-offer-bogo-text"),
+
+    // 3D Pincode Delivery Availability Checker
+    pincodeCard: document.getElementById("pincode-checker-card"),
+    pincodeForm: document.getElementById("pincode-checker-form"),
+    pincodeInput: document.getElementById("pincode-input"),
+    pincodeCheckBtn: document.getElementById("pincode-check-btn"),
+    pincodeClearBtn: document.getElementById("pincode-clear-btn"),
+    pincodeValidationMsg: document.getElementById("pincode-validation-msg"),
+    pincodeSuccessBox: document.getElementById("pincode-success-box"),
+    pincodeErrorBox: document.getElementById("pincode-error-box"),
+    pincodeResPin: document.getElementById("pincode-res-pin"),
+    pincodeResLocation: document.getElementById("pincode-res-location"),
+    pincodeResDate: document.getElementById("pincode-res-date"),
+    pincodeChangeBtn: document.getElementById("pincode-change-btn"),
+    pincodeRetryBtn: document.getElementById("pincode-retry-btn"),
 
     // Selectors
     sizesContainer: document.getElementById("detail-sizes-container"),
@@ -73,6 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
     addCartBtn: document.getElementById("btn-detail-add-cart"),
     buyNowBtn: document.getElementById("btn-detail-buy-now"),
     wishlistBtn: document.getElementById("btn-detail-wishlist"),
+    stickyBar: document.getElementById("mobile-sticky-purchase-bar"),
+    stickyPriceVal: document.getElementById("sticky-price-val"),
+    stickyAddCartBtn: document.getElementById("btn-sticky-add-cart"),
+    stickyBuyNowBtn: document.getElementById("btn-sticky-buy-now"),
 
     // Tabs
     tabNavBtns: document.querySelectorAll(".tab-nav-btn"),
@@ -117,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateBadges();
     renderCartDrawer();
     bindCommonEvents();
+    window.addEventListener("velora:gift-offers-updated", () => updatePaymentSelectionUI());
 
     // 1. Parse Product ID from URL (?id=...)
     const urlParams = new URLSearchParams(window.location.search);
@@ -149,8 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let dbP = null;
 
     if (client) {
+      const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,categories(id,name,slug)";
       try {
-        let query = client.from("products").select("*, categories(id, name, slug)");
+        let query = client.from("products").select(detailCols);
         if (isUUID) {
           query = query.eq("id", productId);
         } else if (fallbackStatic && fallbackStatic.name) {
@@ -173,13 +226,14 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
+        const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,categories(id,name,slug)";
         let restUrl = '';
         if (isUUID) {
-          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*,categories(id,name,slug)&id=eq.${productId}`;
+          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&id=eq.${productId}`;
         } else if (fallbackStatic && fallbackStatic.name) {
-          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*,categories(id,name,slug)&name=ilike.${encodeURIComponent(fallbackStatic.name)}`;
+          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&name=ilike.${encodeURIComponent(fallbackStatic.name)}`;
         } else {
-          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*,categories(id,name,slug)&slug=eq.${encodeURIComponent(productId)}`;
+          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&slug=eq.${encodeURIComponent(productId)}`;
         }
 
         const r = await fetch(restUrl, {
@@ -251,47 +305,251 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProductPage(product);
   }
 
-  function updateAdvanceNotice() {
-    if (!elements.advanceBox) return;
+  async function updatePaymentSelectionUI() {
     const p = state.currentProduct;
-    const isAdv = Boolean(p && p.advance_payment_enabled);
-    const advVal = Number(p ? p.advance_payment_value : 0);
+    if (!p) return;
 
-    // If disabled or missing or zero or negative -> do NOT show advance block
-    if (!isAdv || isNaN(advVal) || advVal <= 0) {
-      elements.advanceBox.style.display = "none";
-      return;
-    }
-
+    const isAdv = Boolean(p.advance_payment_enabled);
+    const advVal = Number(p.advance_payment_value) || 0;
     const qty = state.quantity || 1;
     const unitPrice = Number(p.price) || 0;
     const totalPrice = unitPrice * qty;
 
     let unitAdvance = 0;
-    if (p.advance_payment_type === "percentage") {
-      unitAdvance = Math.round(unitPrice * (advVal / 100));
-    } else {
-      unitAdvance = Math.min(unitPrice, advVal);
-    }
-
-    if (unitAdvance <= 0) {
-      elements.advanceBox.style.display = "none";
-      return;
+    if (isAdv && advVal > 0) {
+      if (p.advance_payment_type === "percentage") {
+        unitAdvance = Math.round(unitPrice * (advVal / 100));
+      } else {
+        unitAdvance = Math.min(unitPrice, advVal);
+      }
     }
 
     const totalAdvance = unitAdvance * qty;
-    const totalCod = Math.max(0, totalPrice - totalAdvance);
+    const totalCodRem = Math.max(0, totalPrice - totalAdvance);
 
-    // Exact user requirement format:
-    // e.g. "₹300 Advance Payment Required"
-    // and "Pay ₹300 now • Remaining ₹4,700 via COD"
-    if (elements.advanceHeadline) {
-      elements.advanceHeadline.textContent = `${formatPrice(totalAdvance)} Advance Payment Required`;
+    // Update COD headline & tag dynamically (NEVER hardcoded)
+    if (elements.detailCodHeadline) {
+      if (isAdv && totalAdvance > 0) {
+        elements.detailCodHeadline.textContent = `Pay ${formatPrice(totalAdvance)} Now • ${formatPrice(totalCodRem)} via COD`;
+      } else {
+        elements.detailCodHeadline.textContent = `100% Pay on Delivery • Zero Advance`;
+      }
     }
-    if (elements.advanceExplainer) {
-      elements.advanceExplainer.textContent = `Pay ${formatPrice(totalAdvance)} now • Remaining ${formatPrice(totalCod)} via COD`;
+    if (elements.pcardCodTag) {
+      if (isAdv && totalAdvance > 0) {
+        elements.pcardCodTag.textContent = "ADVANCE REQ.";
+        elements.pcardCodTag.style.background = "rgba(99, 102, 241, 0.15)";
+        elements.pcardCodTag.style.color = "#4f46e5";
+      } else {
+        elements.pcardCodTag.textContent = "ZERO ADVANCE";
+        elements.pcardCodTag.style.background = "rgba(16, 185, 129, 0.15)";
+        elements.pcardCodTag.style.color = "#059669";
+      }
     }
-    elements.advanceBox.style.display = "block";
+
+    // Check currently selected payment method
+    const isOnline = state.selectedPaymentMethod === "online";
+
+    // 1. Toggle 3D card selected states
+    if (elements.cardPayOnline) elements.cardPayOnline.classList.toggle("selected", isOnline);
+    if (elements.cardPayCod) elements.cardPayCod.classList.toggle("selected", !isOnline);
+
+    // Resolve dynamic gift configuration for this specific product
+    let giftRes = { eligible: false, gifts: [] };
+    if (window.GiftEngine && typeof window.GiftEngine.resolveProductGifts === "function") {
+      giftRes = await window.GiftEngine.resolveProductGifts(p);
+    }
+    state.currentProductGifts = giftRes.eligible ? giftRes.gifts : [];
+    state.currentProductGiftOffer = giftRes.offer || null;
+    const hasGifts = Boolean(giftRes.eligible && giftRes.gifts && giftRes.gifts.length > 0);
+    const giftsCount = hasGifts ? giftRes.gifts.length : 0;
+    const giftNamesList = hasGifts ? giftRes.gifts.map(g => g.name).join(", ") : "";
+
+    // 2. Status Badge in header & Payment Card Labels
+    if (elements.paymentSelectionStatusBadge) {
+      if (isOnline) {
+        elements.paymentSelectionStatusBadge.textContent = hasGifts 
+          ? `⚡ Full Online = ${giftsCount} FREE Gifts`
+          : `⚡ 100% Online • Instant Dispatch`;
+        elements.paymentSelectionStatusBadge.style.color = "#059669";
+        elements.paymentSelectionStatusBadge.style.background = "rgba(16, 185, 129, 0.14)";
+        elements.paymentSelectionStatusBadge.style.borderColor = "rgba(16, 185, 129, 0.35)";
+      } else {
+        elements.paymentSelectionStatusBadge.textContent = (isAdv && totalAdvance > 0)
+          ? "💵 COD: Advance Deposit Required"
+          : "💵 100% Cash on Delivery";
+        elements.paymentSelectionStatusBadge.style.color = "#4338ca";
+        elements.paymentSelectionStatusBadge.style.background = "rgba(99, 102, 241, 0.12)";
+        elements.paymentSelectionStatusBadge.style.borderColor = "rgba(99, 102, 241, 0.3)";
+      }
+    }
+
+    // Dynamic Online Card Tag & Description
+    if (elements.pcardGiftTag) {
+      if (hasGifts) {
+        elements.pcardGiftTag.textContent = `${giftsCount} FREE GIFTS`;
+        elements.pcardGiftTag.style.display = "inline-block";
+      } else {
+        elements.pcardGiftTag.style.display = "none";
+      }
+    }
+    if (elements.pcardOnlineDesc) {
+      elements.pcardOnlineDesc.textContent = hasGifts
+        ? `Pay 100% online • No advance required • ${giftsCount} FREE gifts`
+        : `Pay 100% online • No advance required • Instant confirmation`;
+    }
+
+    // 3. Advance Box visibility
+    if (elements.advanceBox) {
+      if (!isOnline && isAdv && totalAdvance > 0) {
+        if (elements.advanceHeadline) {
+          elements.advanceHeadline.textContent = `${formatPrice(totalAdvance)} Advance Payment Required`;
+        }
+        if (elements.advanceExplainer) {
+          elements.advanceExplainer.textContent = `Pay ${formatPrice(totalAdvance)} now • Remaining ${formatPrice(totalCodRem)} via COD`;
+        }
+        elements.advanceBox.style.display = "block";
+      } else {
+        elements.advanceBox.style.display = "none";
+      }
+    }
+
+    // 4. Free Gifts Box State (Show ONLY if product is eligible according to backend config)
+    if (elements.benefitsBox) {
+      if (!hasGifts) {
+        // Completely hide free gift benefit if product has no active offer
+        elements.benefitsBox.style.display = "none";
+      } else {
+        elements.benefitsBox.style.display = "block";
+        if (elements.benefitsBoxTitle) {
+          elements.benefitsBoxTitle.textContent = isOnline
+            ? `Pay Full Online & Get ${giftsCount} FREE Gifts`
+            : `Pay Online to Unlock ${giftsCount} FREE Gifts`;
+        }
+        if (elements.benefitsBoxTag) {
+          elements.benefitsBoxTag.textContent = isOnline ? "✓ UNLOCKED (₹0)" : "LOCKED FOR COD";
+          elements.benefitsBoxTag.style.background = isOnline ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "#94a3b8";
+        }
+        if (elements.benefitsBoxSubtitle) {
+          elements.benefitsBoxSubtitle.innerHTML = isOnline
+            ? `Pay 100% online via UPI, Card, or Net Banking to automatically unlock ${giftsCount} complimentary accessories:`
+            : `<em>Free gifts (${giftNamesList}) & Open Box Delivery apply exclusively to Full Online Payment. Switch to Full Online above to unlock.</em>`;
+        }
+        if (elements.benefitsGiftsPills) {
+          elements.benefitsGiftsPills.innerHTML = giftRes.gifts.map(g => {
+            const isImg = g.icon_or_image && (g.icon_or_image.startsWith("http://") || g.icon_or_image.startsWith("https://") || g.icon_or_image.startsWith("data:"));
+            const iconHtml = isImg
+              ? `<img src="${g.icon_or_image}" alt="${g.name}" style="width:16px; height:16px; object-fit:cover; border-radius:3px; margin-right:4px;">`
+              : `<span class="gift-pill-icon">${g.icon_or_image || '🎁'}</span> `;
+            const qtyTag = g.quantity > 1 ? ` <strong style="color:#059669;">(${g.quantity}x)</strong>` : '';
+            return `<span class="gift-pill" title="${g.description || g.name}">${iconHtml}${g.name}${qtyTag}</span>`;
+          }).join("");
+          elements.benefitsGiftsPills.style.opacity = isOnline ? "1" : "0.45";
+        }
+        if (elements.benefitsOpenboxNote) {
+          elements.benefitsOpenboxNote.style.display = isOnline ? "flex" : "none";
+        }
+      }
+    }
+
+    // 5. Delivery Preference Section
+    if (elements.detailDeliveryPrefWrap) {
+      if (isOnline) {
+        elements.detailDeliveryPrefWrap.style.opacity = "1";
+        elements.detailDeliveryPrefWrap.style.pointerEvents = "auto";
+        if (elements.deliveryPrefNoteBadge) {
+          elements.deliveryPrefNoteBadge.textContent = "Online Exclusive Feature";
+          elements.deliveryPrefNoteBadge.style.background = "rgba(2, 132, 199, 0.12)";
+          elements.deliveryPrefNoteBadge.style.color = "#0284c7";
+        }
+      } else {
+        elements.detailDeliveryPrefWrap.style.opacity = "0.7";
+        elements.detailDeliveryPrefWrap.style.pointerEvents = "none";
+        if (elements.deliveryPrefNoteBadge) {
+          elements.deliveryPrefNoteBadge.textContent = "Simple Delivery only for COD";
+          elements.deliveryPrefNoteBadge.style.background = "rgba(100, 116, 139, 0.15)";
+          elements.deliveryPrefNoteBadge.style.color = "#64748b";
+        }
+        // Reset to Simple Delivery when COD is chosen
+        state.selectedDeliveryPreference = "Simple Delivery";
+      }
+    }
+
+    // Update delivery pref pills UI
+    if (elements.prefPills) {
+      elements.prefPills.forEach(pill => {
+        const isSel = pill.dataset.deliveryPref === state.selectedDeliveryPreference;
+        pill.classList.toggle("selected", isSel);
+      });
+    }
+
+    // 6. Update Honest Offers text dynamically
+    if (elements.honestOfferAdvanceText) {
+      if (isOnline) {
+        elements.honestOfferAdvanceText.innerHTML = `<strong>100% Online Payment:</strong> No advance deposit required • All 3 complimentary accessories included`;
+      } else if (isAdv && totalAdvance > 0) {
+        elements.honestOfferAdvanceText.innerHTML = `<strong>Genuine Advance Terms:</strong> Pay ${formatPrice(unitAdvance)} deposit to dispatch • Pay ${formatPrice(Math.max(0, unitPrice - unitAdvance))} on doorstep delivery`;
+      } else {
+        elements.honestOfferAdvanceText.innerHTML = `<strong>100% Zero-Advance COD:</strong> No advance deposit required • Pay complete amount upon delivery`;
+      }
+    }
+  }
+
+  function updateAdvanceNotice() {
+    updatePaymentSelectionUI();
+  }
+
+  function updateHonestOffers(product) {
+    if (!elements.honestOffersBlock || !product) return;
+
+    // 1. Genuine Advance Terms
+    if (elements.honestOfferAdvanceText) {
+      const isAdv = Boolean(product.advance_payment_enabled);
+      const advVal = Number(product.advance_payment_value) || 0;
+      if (isAdv && advVal > 0) {
+        const unitPrice = Number(product.price) || 0;
+        const unitAdv = product.advance_payment_type === "percentage"
+          ? Math.round(unitPrice * (advVal / 100))
+          : Math.min(unitPrice, advVal);
+        const remCod = Math.max(0, unitPrice - unitAdv);
+        elements.honestOfferAdvanceText.innerHTML = `<strong>Genuine Advance Terms:</strong> Pay ${formatPrice(unitAdv)} deposit to dispatch • Pay ${formatPrice(remCod)} on doorstep delivery`;
+      } else {
+        elements.honestOfferAdvanceText.innerHTML = `<strong>100% Zero-Advance COD:</strong> No advance deposit required. Pay complete amount upon delivery`;
+      }
+    }
+
+    // 2. Real Warehouse Stock
+    if (elements.honestOfferStockText) {
+      const stock = product.stockCount !== undefined ? product.stockCount : 10;
+      if (stock > 0 && stock <= 5) {
+        elements.honestOfferStockText.innerHTML = `<strong>Verified Regional Stock:</strong> Only <strong>${stock} units</strong> remaining in fulfillment hub • Same-day dispatch`;
+      } else if (stock > 5) {
+        elements.honestOfferStockText.innerHTML = `<strong>In Warehouse:</strong> ${stock} units ready in hub • Dispatched within 24 hours`;
+      } else {
+        elements.honestOfferStockText.innerHTML = `<strong>Inventory Status:</strong> Restock currently underway from brand atelier`;
+      }
+    }
+
+    // 3. Transparent Shipping Terms
+    if (elements.honestOfferShippingText) {
+      elements.honestOfferShippingText.innerHTML = `<strong>100% Free Delivery Across India:</strong> Zero shipping fee on this item • Dispatched within 24 hours with live tracking`;
+    }
+
+    // 4. BOGO Eligibility
+    if (elements.honestOfferBogo) {
+      const bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+        ? window.VELORA_SETTINGS.bogo_config.product_ids
+        : [];
+      const isBogoEligible = Boolean(product.isBogo || product.is_bogo || bogoConfigIds.includes(product.id));
+      if (isBogoEligible) {
+        elements.honestOfferBogo.style.display = "flex";
+        if (elements.honestOfferBogoText) {
+          elements.honestOfferBogoText.innerHTML = `<strong>Buy 1 Get 1 Free Eligible:</strong> Qualifies for a complimentary companion gift (matched within ₹20–₹40) at checkout!`;
+        }
+      } else {
+        elements.honestOfferBogo.style.display = "none";
+      }
+    }
   }
 
   // ==========================================================================
@@ -330,6 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.ratingScore) elements.ratingScore.textContent = product.rating;
     if (elements.reviewsCount) elements.reviewsCount.textContent = `(${product.reviewsCount} customer reviews)`;
     if (elements.currentPrice) elements.currentPrice.textContent = formatPrice(product.price);
+    if (elements.stickyPriceVal) elements.stickyPriceVal.textContent = formatPrice(product.price);
 
     if (product.originalPrice) {
       if (elements.originalPrice) {
@@ -362,6 +621,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Advance Payment Banner
     updateAdvanceNotice();
+
+    // Honest Product Offers & Transparent Guarantees
+    updateHonestOffers(product);
 
     // 3. Image Gallery Setup
     state.galleryImages = window.getProductGallery(product);
@@ -507,29 +769,116 @@ document.addEventListener("DOMContentLoaded", () => {
       `).join("");
     }
 
-    // Specifications Table
-    if (elements.specsTableBody) {
-      const specs = [
-        { key: "SKU / Model", val: `VEL-${product.id.toUpperCase()}` },
-        { key: "Brand & Studio", val: product.brand || "VELORA Atelier" },
-        { key: "Category", val: product.categoryLabel || product.category },
-        { key: "Primary Material", val: "100% Verified Full-Grain / Technical Composite" },
-        { key: "Fit & Sizing", val: "True to Standard Ergonomic Specifications" },
-        { key: "Country of Origin", val: "Designed in NYC • Artisan Handcrafted in Portugal" },
-        { key: "Warranty Protection", val: "2-Year Comprehensive Limited Warranty" },
-        { key: "Care Instructions", val: "Wipe with soft damp cloth. Keep away from direct excessive heat." }
-      ];
-
-      elements.specsTableBody.innerHTML = specs.map(s => `
-        <tr>
-          <th>${s.key}</th>
-          <td>${s.val}</td>
-        </tr>
-      `).join("");
-    }
+    // Dynamic Specifications from Supabase
+    loadProductSpecifications(product.id);
 
     // Load live approved customer reviews from Supabase
     loadProductReviews(product.id);
+  }
+
+  async function loadProductSpecifications(productId) {
+    if (!elements.specsTableBody) return;
+    const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
+
+    elements.specsTableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 18px;">Loading specifications...</td></tr>`;
+
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str == null ? '' : String(str);
+      return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    try {
+      let specs = [];
+      if (window.supabaseClient) {
+        const { data, error } = await window.supabaseClient
+          .from("product_specifications")
+          .select("name, value, group_name, display_order")
+          .eq("product_id", productId)
+          .eq("is_active", true)
+          .order("display_order", { ascending: true })
+          .order("created_at", { ascending: true });
+        if (!error && Array.isArray(data)) {
+          specs = data;
+        }
+      }
+
+      if (specs.length === 0 && typeof fetch !== "undefined") {
+        const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/product_specifications?product_id=eq.${productId}&is_active=eq.true&select=name,value,group_name,display_order&order=display_order.asc,created_at.asc`, {
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+        if (res.ok) {
+          const fetched = await res.json();
+          if (Array.isArray(fetched) && fetched.length > 0) {
+            specs = fetched;
+          }
+        }
+      }
+
+      if (specs.length === 0) {
+        elements.specsTableBody.innerHTML = `
+          <tr>
+            <td colspan="2" style="text-align: center; padding: 36px 16px; color: var(--text-muted);">
+              <div style="font-size: 1.8rem; margin-bottom: 8px;">📋</div>
+              <p style="margin: 0; font-weight: 500; font-size: 0.95rem;">Specifications not available for this product</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = "";
+      const grouped = {};
+      specs.forEach(s => {
+        const grp = s.group_name && s.group_name.trim() ? s.group_name.trim() : "General";
+        if (!grouped[grp]) grouped[grp] = [];
+        grouped[grp].push(s);
+      });
+
+      const groupKeys = Object.keys(grouped);
+      const hasMultipleGroups = groupKeys.length > 1 || (groupKeys.length === 1 && groupKeys[0] !== "General");
+
+      groupKeys.forEach(grp => {
+        if (hasMultipleGroups) {
+          html += `
+            <tr class="spec-group-header-row" style="background: rgba(0,0,0,0.03);">
+              <th colspan="2" style="padding: 10px 16px; font-weight: 700; color: var(--text-main); text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.6px; border-bottom: 1px solid var(--border-color);">
+                ${escapeHTML(grp)}
+              </th>
+            </tr>
+          `;
+        }
+        grouped[grp].forEach(s => {
+          html += `
+            <tr>
+              <th style="width: 35%; padding: 12px 16px; font-weight: 600; color: var(--text-main); border-bottom: 1px solid var(--border-color);">${escapeHTML(s.name)}</th>
+              <td style="width: 65%; padding: 12px 16px; color: var(--text-secondary); border-bottom: 1px solid var(--border-color);">${escapeHTML(s.value)}</td>
+            </tr>
+          `;
+        });
+      });
+
+      elements.specsTableBody.innerHTML = html;
+    } catch (e) {
+      console.warn("Specifications load notice:", e);
+      elements.specsTableBody.innerHTML = `
+        <tr>
+          <td colspan="2" style="text-align: center; padding: 36px 16px; color: var(--text-muted);">
+            <div style="font-size: 1.8rem; margin-bottom: 8px;">📋</div>
+            <p style="margin: 0; font-weight: 500; font-size: 0.95rem;">Specifications not available for this product</p>
+          </td>
+        </tr>
+      `;
+    }
   }
 
   // ==========================================================================
@@ -543,8 +892,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
 
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str == null ? '' : String(str);
+      return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag));
+    }
+
     try {
-      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/reviews?product_id=eq.${productId}&status=eq.approved&order=created_at.desc`, {
+      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/reviews?product_id=eq.${productId}&status=eq.approved&select=id,user_name,rating,comment,created_at&order=created_at.desc`, {
         headers: {
           "apikey": SUPABASE_ANON_KEY,
           "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
@@ -578,12 +938,14 @@ document.addEventListener("DOMContentLoaded", () => {
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <strong style="font-size: 0.95rem; color: var(--text-main);">${r.user_name}</strong>
+                  <strong style="font-size: 0.95rem; color: var(--text-main);">${escapeHTML(r.user_name)}</strong>
                   <span style="font-size: 0.72rem; color: var(--color-success); background: rgba(34, 197, 94, 0.1); padding: 1px 6px; border-radius: 4px; font-weight: 600;">✓ Verified Buyer</span>
                 </div>
                 <span style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
               </div>
               <div style="color: #f59e0b; font-size: 0.95rem; margin-bottom: 6px;">${stars}</div>
               <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0;">${r.comment}</p>
+              <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0;">${escapeHTML(r.comment)}</p>
             </div>
           `;
         }).join("");
@@ -603,13 +965,6 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleBtn.addEventListener("click", () => {
         const isHidden = box.style.display === "none";
         box.style.display = isHidden ? "block" : "none";
-        if (isHidden) {
-          const nameInput = document.getElementById("review-user-name");
-          const user = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
-          if (nameInput && user && (user.user_metadata?.full_name || user.email)) {
-            nameInput.value = user.user_metadata?.full_name || user.email.split('@')[0];
-          }
-        }
       });
     }
 
@@ -622,34 +977,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!state.currentProduct) return;
+        const nameInput = document.getElementById("review-author");
+        const ratingInput = document.getElementById("review-rating");
+        const commentInput = document.getElementById("review-comment");
+        const submitBtn = document.getElementById("btn-submit-review");
 
-        const name = document.getElementById("review-user-name").value.trim();
-        const rating = parseInt(document.getElementById("review-rating").value, 10);
-        const comment = document.getElementById("review-comment").value.trim();
-
-        if (!name || !comment) {
-          showToast("Please fill in your name and comments.", "info");
+        if (!nameInput.value.trim() || !commentInput.value.trim()) {
+          showToast("Please fill out all required fields.", "error");
           return;
         }
 
-        const submitBtn = document.getElementById("btn-submit-review");
         if (submitBtn) {
           submitBtn.disabled = true;
-          submitBtn.textContent = "Publishing...";
+          submitBtn.textContent = "Submitting...";
         }
 
-        const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
-        const user = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
-
         try {
+          const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
           if (client) {
             const { error } = await client.from("reviews").insert([{
               product_id: state.currentProduct.id,
-              user_id: user ? user.id : null,
-              user_name: name,
-              rating: rating,
-              comment: comment,
+              user_name: nameInput.value.trim(),
+              rating: parseInt(ratingInput.value, 10),
+              comment: commentInput.value.trim(),
               status: "approved"
             }]);
 
@@ -671,6 +1021,189 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       });
+    }
+  }
+
+  // ==========================================================================
+  // 6c. 3D PINCODE DELIVERY AVAILABILITY CHECKER
+  // ==========================================================================
+  function setupPincodeChecker() {
+    if (!elements.pincodeCard || !elements.pincodeInput || !elements.pincodeCheckBtn) return;
+
+    const input = elements.pincodeInput;
+    const checkBtn = elements.pincodeCheckBtn;
+    const clearBtn = elements.pincodeClearBtn;
+    const form = elements.pincodeForm;
+    const validationMsg = elements.pincodeValidationMsg;
+    const successBox = elements.pincodeSuccessBox;
+    const errorBox = elements.pincodeErrorBox;
+    const resPin = elements.pincodeResPin;
+    const resLocation = elements.pincodeResLocation;
+    const resDate = elements.pincodeResDate;
+    const changeBtn = elements.pincodeChangeBtn;
+    const retryBtn = elements.pincodeRetryBtn;
+    const btnText = checkBtn.querySelector(".btn-check-text");
+    const btnSpinner = checkBtn.querySelector(".btn-check-spinner");
+
+    function showValidation(msg) {
+      if (validationMsg) {
+        validationMsg.textContent = msg;
+        validationMsg.style.display = "flex";
+      }
+      input.classList.add("has-error");
+      if (successBox) successBox.style.display = "none";
+      if (errorBox) errorBox.style.display = "none";
+    }
+
+    function clearValidation() {
+      if (validationMsg) {
+        validationMsg.textContent = "";
+        validationMsg.style.display = "none";
+      }
+      input.classList.remove("has-error");
+    }
+
+    function applySuccessState(res) {
+      clearValidation();
+      if (errorBox) errorBox.style.display = "none";
+      if (successBox) {
+        successBox.style.display = "block";
+      }
+      if (resPin) resPin.textContent = res.pincode;
+      const locationLabel = (res.city && res.state) ? `${res.city}, ${res.state}` : (res.city || res.state || 'India');
+      if (resLocation) resLocation.textContent = locationLabel;
+      if (resDate) resDate.textContent = res.estimatedDate || '2-4 Business Days';
+      
+      // Dynamic Honest Offers shipping update
+      if (elements.honestOfferShippingText) {
+        elements.honestOfferShippingText.innerHTML = `<strong>100% Free Delivery to ${res.pincode} (${locationLabel}):</strong> Estimated arrival by <strong>${res.estimatedDate || '2-4 Days'}</strong> • Zero shipping fee`;
+      }
+    }
+
+    function applyErrorState() {
+      clearValidation();
+      if (successBox) successBox.style.display = "none";
+      if (errorBox) errorBox.style.display = "block";
+
+      if (elements.honestOfferShippingText) {
+        elements.honestOfferShippingText.innerHTML = `<strong>Delivery Status:</strong> Currently unavailable to this destination. Try an alternate PIN code.`;
+      }
+    }
+
+    function resetChecker() {
+      clearValidation();
+      if (successBox) successBox.style.display = "none";
+      if (errorBox) errorBox.style.display = "none";
+      if (window.VeloraPincodeEngine) {
+        window.VeloraPincodeEngine.clear();
+      }
+      if (elements.honestOfferShippingText) {
+        elements.honestOfferShippingText.innerHTML = `<strong>100% Free Delivery Across India:</strong> Zero shipping fee on this item • Dispatched within 24 hours with live tracking`;
+      }
+      input.value = "";
+      if (clearBtn) clearBtn.style.display = "none";
+      input.focus();
+    }
+
+    async function runCheck() {
+      const raw = input.value.trim();
+      
+      if (!window.VeloraPincodeEngine) {
+        console.warn("VeloraPincodeEngine not loaded");
+        return;
+      }
+
+      const val = window.VeloraPincodeEngine.validate(raw);
+      if (!val.valid) {
+        showValidation(val.error);
+        input.focus();
+        return;
+      }
+
+      clearValidation();
+      
+      // Loading State
+      checkBtn.disabled = true;
+      if (btnText) btnText.style.display = "none";
+      if (btnSpinner) btnSpinner.style.display = "inline-flex";
+
+      try {
+        const result = await window.VeloraPincodeEngine.check(val.pincode);
+        if (result.serviceable) {
+          applySuccessState(result);
+        } else {
+          applyErrorState();
+        }
+      } catch (err) {
+        console.error("Pincode check error:", err);
+        showValidation("Unable to verify delivery availability right now. Please try again.");
+      } finally {
+        checkBtn.disabled = false;
+        if (btnText) btnText.style.display = "inline";
+        if (btnSpinner) btnSpinner.style.display = "none";
+      }
+    }
+
+    // Input sanitization: only digits, max 6
+    input.addEventListener("input", () => {
+      clearValidation();
+      const cleaned = input.value.replace(/\D/g, "").slice(0, 6);
+      if (input.value !== cleaned) {
+        input.value = cleaned;
+      }
+      if (clearBtn) {
+        clearBtn.style.display = input.value.length > 0 ? "inline-flex" : "none";
+      }
+    });
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        input.value = "";
+        clearBtn.style.display = "none";
+        clearValidation();
+        input.focus();
+      });
+    }
+
+    checkBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      runCheck();
+    });
+
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        runCheck();
+      });
+    }
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runCheck();
+      }
+    });
+
+    if (changeBtn) {
+      changeBtn.addEventListener("click", () => {
+        resetChecker();
+      });
+    }
+
+    if (retryBtn) {
+      retryBtn.addEventListener("click", () => {
+        resetChecker();
+      });
+    }
+
+    // Restore saved session pincode on startup
+    if (window.VeloraPincodeEngine) {
+      const saved = window.VeloraPincodeEngine.getSaved();
+      if (saved && saved.pincode && saved.serviceable) {
+        input.value = saved.pincode;
+        if (clearBtn) clearBtn.style.display = "inline-flex";
+        applySuccessState(saved);
+      }
     }
   }
 
@@ -719,8 +1252,9 @@ document.addEventListener("DOMContentLoaded", () => {
               ${item.discount ? `<span class="price-discount-pill">-${item.discount}%</span>` : ""}
             </div>
 
-            <button class="btn-add-to-cart ${isInCart ? 'added' : ''}" data-cart-id="${item.id}">
-              ${isInCart ? `${icons.check} In Cart` : `${icons.cart} Add to Cart`}
+            <button type="button" class="btn-add-to-cart ${isInCart ? 'added' : ''}" data-cart-id="${item.id}">
+              <span class="btn-cart-icon">${isInCart ? icons.check : icons.cart}</span>
+              <span class="btn-cart-text">${isInCart ? 'In Cart' : 'Add to Cart'}</span>
             </button>
           </div>
         </div>
@@ -754,13 +1288,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    const isOnline = state.selectedPaymentMethod === "online";
+    const selectedDelivery = isOnline ? (state.selectedDeliveryPreference || "Simple Delivery") : "Simple Delivery";
+    const effectiveUnitAdv = isOnline ? 0 : unitAdv;
+    const effectiveCodPerUnit = isOnline ? 0 : Math.max(0, product.price - unitAdv);
+
     if (existingIndex > -1) {
       state.cart[existingIndex].quantity += qty;
+      state.cart[existingIndex].selected_payment_method = state.selectedPaymentMethod;
+      state.cart[existingIndex].delivery_preference = selectedDelivery;
       state.cart[existingIndex].advance_payment_enabled = isAdv;
       state.cart[existingIndex].advance_payment_type = advType;
       state.cart[existingIndex].advance_payment_value = advVal;
-      state.cart[existingIndex].advance_per_unit = unitAdv;
-      state.cart[existingIndex].cod_per_unit = Math.max(0, product.price - unitAdv);
+      state.cart[existingIndex].advance_per_unit = effectiveUnitAdv;
+      state.cart[existingIndex].cod_per_unit = effectiveCodPerUnit;
+      state.cart[existingIndex].category_id = product.category_id || state.cart[existingIndex].category_id || null;
+      state.cart[existingIndex].category = product.category || state.cart[existingIndex].category || null;
+      state.cart[existingIndex].categoryLabel = product.categoryLabel || state.cart[existingIndex].categoryLabel || null;
+      state.cart[existingIndex].gift_bundle = (isOnline && state.currentProductGifts) ? state.currentProductGifts : [];
+      state.cart[existingIndex].gift_offer_id = (isOnline && state.currentProductGiftOffer) ? state.currentProductGiftOffer.id : null;
     } else {
       state.cart.push({
         id: product.id,
@@ -770,19 +1316,33 @@ document.addEventListener("DOMContentLoaded", () => {
         size: size || "Standard",
         color: color || "Default",
         quantity: qty,
+        selected_payment_method: state.selectedPaymentMethod,
+        delivery_preference: selectedDelivery,
         advance_payment_enabled: isAdv,
         advance_payment_type: advType,
         advance_payment_value: advVal,
-        advance_per_unit: unitAdv,
-        cod_per_unit: Math.max(0, product.price - unitAdv)
+        advance_per_unit: effectiveUnitAdv,
+        cod_per_unit: effectiveCodPerUnit,
+        category_id: product.category_id || null,
+        category: product.category || null,
+        categoryLabel: product.categoryLabel || null,
+        gift_bundle: (isOnline && state.currentProductGifts) ? state.currentProductGifts : [],
+        gift_offer_id: (isOnline && state.currentProductGiftOffer) ? state.currentProductGiftOffer.id : null
       });
     }
+
+    localStorage.setItem("velora_preferred_payment", state.selectedPaymentMethod);
+    localStorage.setItem("velora_preferred_delivery", selectedDelivery);
 
     saveCart();
     updateBadges();
     renderCartDrawer();
     openCartDrawer();
     showToast(`Added ${qty}x "${product.name}" to cart!`, "success");
+
+    if (window.VeloraAnalytics) {
+      window.VeloraAnalytics.trackAddToCart(product.id, product.category);
+    }
 
     // Animate Add to Cart button
     if (elements.addCartBtn) {
@@ -830,8 +1390,8 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.cartEmptyState.style.display = "flex";
       elements.cartSubtotalElem.textContent = formatPrice(0);
       elements.cartTotalElem.textContent = formatPrice(0);
-      elements.freeShippingFill.style.width = "0%";
-      elements.freeShippingMsg.innerHTML = `Add <strong>${formatPrice(999)}</strong> more for Free Delivery!`;
+      elements.freeShippingFill.style.width = "100%";
+      elements.freeShippingMsg.innerHTML = `🎉 <strong>100% FREE Delivery Across India</strong> on all orders!`;
       const advanceBreakdownBox = document.getElementById("cart-advance-breakdown");
       if (advanceBreakdownBox) advanceBreakdownBox.style.display = "none";
       return;
@@ -841,15 +1401,14 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.cartEmptyState.style.display = "none";
 
     const subtotal = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const freeShippingThreshold = 999;
-    const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+    elements.freeShippingFill.style.width = "100%";
 
-    elements.freeShippingFill.style.width = `${progress}%`;
-    if (subtotal >= freeShippingThreshold) {
-      elements.freeShippingMsg.innerHTML = `🎉 You unlocked <strong>FREE Express Delivery</strong>!`;
+    // Check if cart has online items
+    const hasOnlineItems = state.cart.some(item => item.selected_payment_method === "online");
+    if (hasOnlineItems) {
+      elements.freeShippingMsg.innerHTML = `🎉 <strong>100% FREE Delivery</strong> • 🎁 <strong>3 FREE Gifts Unlocked!</strong>`;
     } else {
-      const rem = Math.max(0, freeShippingThreshold - subtotal);
-      elements.freeShippingMsg.innerHTML = `Add <strong>${formatPrice(rem)}</strong> more for Free Delivery!`;
+      elements.freeShippingMsg.innerHTML = `🎉 <strong>100% FREE Delivery Across India</strong> on this order!`;
     }
 
     elements.cartSubtotalElem.textContent = formatPrice(subtotal);
@@ -858,7 +1417,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Calculate advance & COD totals
     let totalAdvance = 0;
     state.cart.forEach(item => {
-      if (item.advance_payment_enabled) {
+      if (item.selected_payment_method !== "online" && item.advance_payment_enabled) {
         let unitAdv = 0;
         if (item.advance_payment_type === "percentage") {
           unitAdv = Math.round((item.price || 0) * ((item.advance_payment_value || 0) / 100));
@@ -885,16 +1444,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     elements.cartItemsContainer.innerHTML = state.cart.map((item, index) => {
-      const advBadge = item.advance_payment_enabled 
-        ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#6366f1; background:rgba(99,102,241,0.12); padding:1px 5px; border-radius:4px; margin-left:6px;">⚡ Advance Req.</span>` 
-        : '';
+      const isItemOnline = item.selected_payment_method === "online";
+      const payBadge = isItemOnline
+        ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">⚡ Online (3 Gifts)</span>`
+        : (item.advance_payment_enabled
+            ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#6366f1; background:rgba(99,102,241,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">💵 COD Adv. Req.</span>`
+            : `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#d97706; background:rgba(217,119,6,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">💵 100% COD</span>`);
 
       return `
       <div class="cart-item-card">
         <img class="cart-item-img" src="${item.image}" alt="${item.name}">
         <div class="cart-item-details">
           <h4 class="cart-item-title">${item.name}</h4>
-          <span class="cart-item-meta">${item.size} • ${item.color} ${advBadge}</span>
+          <span class="cart-item-meta">${item.size} • ${item.color} ${payBadge}</span>
           <div class="cart-item-bottom">
             <div class="cart-qty-control">
               <button class="cart-qty-btn" data-cart-delta="-1" data-cart-idx="${index}">-</button>
@@ -913,12 +1475,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openCartDrawer() {
-    elements.cartDrawerOverlay.classList.add("active");
+    if (window.VeloraCart && typeof window.VeloraCart.open === "function") {
+      window.VeloraCart.open();
+      return;
+    }
+    renderCartDrawer();
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.add("active");
+      elements.cartDrawerOverlay.classList.add("open");
+    }
     document.body.style.overflow = "hidden";
   }
 
   function closeCartDrawer() {
-    elements.cartDrawerOverlay.classList.remove("active");
+    if (window.VeloraCart && typeof window.VeloraCart.close === "function") {
+      window.VeloraCart.close();
+      return;
+    }
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.remove("active");
+      elements.cartDrawerOverlay.classList.remove("open");
+    }
     document.body.style.overflow = "";
   }
 
@@ -940,6 +1517,10 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("velora_wishlist", JSON.stringify(Array.from(state.wishlist)));
     updateBadges();
     updateWishlistButton();
+
+    if (window.VeloraAnalytics) {
+      window.VeloraAnalytics.trackWishlist(product.id, state.wishlist.has(product.id) ? 'add' : 'remove');
+    }
 
     document.querySelectorAll(`.wishlist-btn[data-wishlist-id="${product.id}"]`).forEach(btn => {
       btn.classList.toggle("active", state.wishlist.has(product.id));
@@ -1097,6 +1678,38 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // 2b. 3D Payment Method Selection
+    if (elements.cardPayOnline) {
+      elements.cardPayOnline.addEventListener("click", () => {
+        state.selectedPaymentMethod = "online";
+        localStorage.setItem("velora_preferred_payment", "online");
+        updatePaymentSelectionUI();
+      });
+    }
+
+    if (elements.cardPayCod) {
+      elements.cardPayCod.addEventListener("click", () => {
+        state.selectedPaymentMethod = "cod";
+        localStorage.setItem("velora_preferred_payment", "cod");
+        updatePaymentSelectionUI();
+      });
+    }
+
+    // 2c. Delivery Preference Pills
+    if (elements.prefPills) {
+      elements.prefPills.forEach(pill => {
+        pill.addEventListener("click", () => {
+          if (state.selectedPaymentMethod !== "online") {
+            showToast("Open Box Delivery is available exclusively for Full Online Payment", "info");
+            return;
+          }
+          state.selectedDeliveryPreference = pill.dataset.deliveryPref || "Simple Delivery";
+          localStorage.setItem("velora_preferred_delivery", state.selectedDeliveryPreference);
+          updatePaymentSelectionUI();
+        });
+      });
+    }
+
     // 3. Add to Cart Main Button
     if (elements.addCartBtn) {
       elements.addCartBtn.addEventListener("click", () => {
@@ -1154,6 +1767,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 6b. Reviews Form & Submission Handlers
     setupReviewsHandlers();
 
+    // 6c. 3D Delivery Availability Pincode Checker
+    setupPincodeChecker();
+
     // 7. Cart Drawer Triggers
     elements.cartDrawerOpenBtns.forEach(btn => {
       btn.addEventListener("click", e => {
@@ -1176,6 +1792,18 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         window.location.href = "checkout.html";
+      });
+    }
+
+    // 7b. Mobile Sticky Purchase Bar Triggers
+    if (elements.stickyAddCartBtn && elements.addCartBtn) {
+      elements.stickyAddCartBtn.addEventListener("click", () => {
+        elements.addCartBtn.click();
+      });
+    }
+    if (elements.stickyBuyNowBtn && elements.buyNowBtn) {
+      elements.stickyBuyNowBtn.addEventListener("click", () => {
+        elements.buyNowBtn.click();
       });
     }
 

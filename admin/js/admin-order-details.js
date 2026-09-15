@@ -44,11 +44,108 @@ document.addEventListener("DOMContentLoaded", async () => {
       ${order.delivery_city}, ${order.delivery_state} ${order.delivery_pincode}, ${order.delivery_country}
     `;
 
+    // Fetch store_settings order_metadata fallback if needed
+    let meta = {};
+    try {
+      const { data: metaRow } = await client.from("store_settings").select("value").eq("key", "order_metadata").maybeSingle();
+      if (metaRow && metaRow.value && metaRow.value[orderId]) {
+        meta = metaRow.value[orderId];
+      }
+    } catch (_) {}
+
+    // Delivery Preference Display
+    const deliveryPref = order.delivery_preference || meta.delivery_preference || (order.payment_method && order.payment_method.includes("Open Box") ? "Open Box Delivery" : "Simple Delivery");
+    const elDeliveryPref = document.getElementById("detail-delivery-preference");
+    if (elDeliveryPref) {
+      elDeliveryPref.textContent = deliveryPref;
+      if (deliveryPref === "Open Box Delivery") {
+        elDeliveryPref.className = "badge badge-indigo";
+        elDeliveryPref.style.background = "rgba(2, 132, 199, 0.2)";
+        elDeliveryPref.style.color = "#38bdf8";
+        elDeliveryPref.style.border = "1px solid rgba(2, 132, 199, 0.4)";
+      } else {
+        elDeliveryPref.className = "badge badge-muted";
+      }
+    }
+
+    // Full Online Payment Free Gifts Display
+    const hasAdvanceCheck = Number(order.advance_paid || order.advance_amount || 0) > 0;
+    const isOnlinePaid = Boolean(
+      order.is_full_online_payment || 
+      meta.is_full_online_payment ||
+      (order.payment_status === "paid" && !hasAdvanceCheck && !order.payment_method?.toLowerCase().includes("cash on delivery")) ||
+      order.payment_method?.includes("Full Online")
+    );
+
+    let orderGiftItems = [];
+    try {
+      if (Array.isArray(order.free_gifts_items)) {
+        orderGiftItems = order.free_gifts_items;
+      } else if (typeof order.free_gifts_items === "string") {
+        orderGiftItems = JSON.parse(order.free_gifts_items);
+      } else if (Array.isArray(meta.free_gifts_items)) {
+        orderGiftItems = meta.free_gifts_items;
+      } else if (typeof meta.free_gifts_items === "string") {
+        orderGiftItems = JSON.parse(meta.free_gifts_items);
+      }
+    } catch (e) {
+      orderGiftItems = [];
+    }
+
+    const hasGifts = Boolean(
+      (order.free_gifts_eligible || meta.free_gifts_eligible || (isOnlinePaid && !hasAdvanceCheck && !order.payment_method?.toLowerCase().includes("cash on delivery"))) &&
+      (orderGiftItems.length > 0 || order.free_gifts_eligible)
+    );
+
+    const elGiftsCard = document.getElementById("detail-gifts-card");
+    const elGiftsTitle = document.getElementById("detail-gifts-title");
+    const elGiftsList = document.getElementById("detail-gifts-list");
+
+    if (elGiftsCard) {
+      elGiftsCard.style.display = hasGifts ? "block" : "none";
+      if (hasGifts) {
+        if (elGiftsTitle) {
+          elGiftsTitle.textContent = `🎁 ${orderGiftItems.length > 0 ? orderGiftItems.length : 3} Free Gifts Included`;
+        }
+        if (elGiftsList) {
+          if (orderGiftItems.length > 0) {
+            elGiftsList.innerHTML = orderGiftItems.map(g => `
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.1rem;">${g.icon || '🎁'}</span>
+                  <div>
+                    <strong style="color:#fff;">${g.name || g.gift_name}</strong>
+                    ${g.description ? `<div style="font-size:0.72rem; color:var(--admin-text-muted);">${g.description}</div>` : ''}
+                  </div>
+                </div>
+                <span style="color:#10b981; font-weight:700;">FREE (₹0) ${g.quantity > 1 ? `x${g.quantity}` : ''}</span>
+              </div>
+            `).join("");
+          } else {
+            elGiftsList.innerHTML = `
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:6px;">
+                <span>🧦 <strong>Luxury Cotton Crew Socks</strong></span>
+                <span style="color:#10b981; font-weight:700;">FREE (₹0)</span>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:6px;">
+                <span>🧵 <strong>Premium Extra Laces</strong></span>
+                <span style="color:#10b981; font-weight:700;">FREE (₹0)</span>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:6px;">
+                <span>🔑 <strong>Signature VELORA Keychain</strong></span>
+                <span style="color:#10b981; font-weight:700;">FREE (₹0)</span>
+              </div>
+            `;
+          }
+        }
+      }
+    }
+
     document.getElementById("detail-payment-method").textContent = order.payment_method;
     document.getElementById("detail-payment-status").textContent = order.payment_status;
     document.getElementById("detail-subtotal").textContent = window.formatINR(order.subtotal);
     document.getElementById("detail-discount").textContent = `-${window.formatINR(order.discount)}`;
-    document.getElementById("detail-shipping").textContent = window.formatINR(order.shipping_charge);
+    document.getElementById("detail-shipping").textContent = (!order.shipping_charge || order.shipping_charge === 0) ? "FREE (₹0)" : window.formatINR(order.shipping_charge);
     document.getElementById("detail-total").textContent = window.formatINR(order.total);
 
     // Advance Payment Details
@@ -166,5 +263,169 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // ==========================================================================
+  // COURIER & SHIPMENT TRACKING SYNC
+  // ==========================================================================
+  const selectCourier = document.getElementById("select-delivery-courier");
+  const inputTrackingId = document.getElementById("input-tracking-id");
+  const inputTrackingEta = document.getElementById("input-tracking-eta");
+  const previewWrap = document.getElementById("tracking-preview-wrap");
+  const linkPreview = document.getElementById("link-preview-tracking");
+  const btnSaveTracking = document.getElementById("btn-save-tracking");
+
+  let deliveryPartners = [];
+
+  async function loadDeliveryPartners() {
+    const { data, error } = await client.from("delivery_partners").select("*").order("display_order", { ascending: true });
+    if (!error && data) {
+      deliveryPartners = data;
+      if (selectCourier) {
+        selectCourier.innerHTML = '<option value="">-- Select Courier Partner --</option>' +
+          deliveryPartners.map(p => `<option value="${p.id}">${p.name} (${p.badge_text || 'Standard'})</option>`).join("");
+      }
+    }
+  }
+
+  function getTrackingUrl(partner, trackingId) {
+    if (!partner || !trackingId) return "";
+    const template = partner.tracking_url_template || "";
+    if (template.includes("{TRACK_ID}")) {
+      return template.replace("{TRACK_ID}", encodeURIComponent(trackingId));
+    } else if (template.includes("{tracking_id}")) {
+      return template.replace("{tracking_id}", encodeURIComponent(trackingId));
+    } else if (template.includes("{tracking_number}")) {
+      return template.replace("{tracking_number}", encodeURIComponent(trackingId));
+    } else if (template.startsWith("http")) {
+      return template + encodeURIComponent(trackingId);
+    }
+    return `https://www.google.com/search?q=${encodeURIComponent(partner.name + " tracking " + trackingId)}`;
+  }
+
+  function updateTrackingPreview() {
+    if (!previewWrap || !linkPreview || !selectCourier || !inputTrackingId) return;
+    const partnerId = selectCourier.value;
+    const partner = deliveryPartners.find(p => p.id === partnerId);
+    const trackingId = inputTrackingId.value.trim();
+
+    if (partner && trackingId) {
+      const url = getTrackingUrl(partner, trackingId);
+      linkPreview.href = url;
+      linkPreview.innerHTML = `Track package with ${partner.name} (${trackingId}) <i class="fas fa-external-link-alt"></i>`;
+      previewWrap.style.display = "block";
+    } else {
+      previewWrap.style.display = "none";
+    }
+  }
+
+  async function initTracking(order) {
+    await loadDeliveryPartners();
+
+    let existingTracking = null;
+    try {
+      const { data: settingsRow } = await client
+        .from("store_settings")
+        .select("value")
+        .eq("key", "order_tracking")
+        .maybeSingle();
+
+      if (settingsRow && settingsRow.value && settingsRow.value[orderId]) {
+        existingTracking = settingsRow.value[orderId];
+      }
+    } catch (e) {
+      console.warn("Tracking fetch notice:", e);
+    }
+
+    if (existingTracking) {
+      if (selectCourier && existingTracking.courier_id) {
+        selectCourier.value = existingTracking.courier_id;
+      }
+      if (inputTrackingId && existingTracking.tracking_id) {
+        inputTrackingId.value = existingTracking.tracking_id;
+      }
+      if (inputTrackingEta && existingTracking.estimated_delivery) {
+        inputTrackingEta.value = existingTracking.estimated_delivery;
+      }
+    } else if (order.estimated_delivery) {
+      if (inputTrackingEta) {
+        inputTrackingEta.value = order.estimated_delivery;
+      }
+    }
+
+    updateTrackingPreview();
+
+    if (selectCourier) selectCourier.addEventListener("change", updateTrackingPreview);
+    if (inputTrackingId) inputTrackingId.addEventListener("input", updateTrackingPreview);
+  }
+
+  if (btnSaveTracking) {
+    btnSaveTracking.addEventListener("click", async () => {
+      const partnerId = selectCourier ? selectCourier.value : "";
+      const partner = deliveryPartners.find(p => p.id === partnerId);
+      const trackingId = inputTrackingId ? inputTrackingId.value.trim() : "";
+      const eta = inputTrackingEta ? inputTrackingEta.value.trim() : "";
+
+      if (!partnerId) {
+        alert("Please select a delivery courier partner.");
+        return;
+      }
+      if (!trackingId) {
+        alert("Please enter the AWB / Tracking ID.");
+        return;
+      }
+
+      btnSaveTracking.disabled = true;
+      btnSaveTracking.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+
+      try {
+        const trackingUrl = getTrackingUrl(partner, trackingId);
+        const trackingPayload = {
+          courier_id: partner.id,
+          courier_name: partner.name,
+          tracking_id: trackingId,
+          tracking_url: trackingUrl,
+          estimated_delivery: eta || "3-5 Business Days",
+          updated_at: new Date().toISOString()
+        };
+
+        // 1. Dual-write into store_settings (order_tracking)
+        const { data: existingSettings } = await client
+          .from("store_settings")
+          .select("value")
+          .eq("key", "order_tracking")
+          .maybeSingle();
+
+        const currentMap = (existingSettings && existingSettings.value) ? existingSettings.value : {};
+        currentMap[orderId] = trackingPayload;
+
+        await client.from("store_settings").upsert({
+          key: "order_tracking",
+          value: currentMap,
+          updated_at: new Date().toISOString()
+        });
+
+        // 2. Dual-write into orders (estimated_delivery)
+        // Write tracking directly to the target order row (isolated to order owner)
+        const displayEta = eta ? `${partner.name}: ${trackingId} (ETA: ${eta})` : `${partner.name}: ${trackingId}`;
+        await client.from("orders").update({
+          tracking_data: trackingPayload,
+          estimated_delivery: displayEta,
+          updated_at: new Date().toISOString()
+        }).eq("id", orderId);
+
+        window.showToast("Courier & Tracking information saved! Live on customer account.", "success");
+        updateTrackingPreview();
+      } catch (err) {
+        alert("Error saving tracking: " + err.message);
+      } finally {
+        btnSaveTracking.disabled = false;
+        btnSaveTracking.innerHTML = `<i class="fas fa-save"></i> Save Tracking Information`;
+      }
+    });
+  }
+
   await loadOrder();
+  const { data: currentOrder } = await client.from("orders").select("*").eq("id", orderId).maybeSingle();
+  if (currentOrder) {
+    await initTracking(currentOrder);
+  }
 });

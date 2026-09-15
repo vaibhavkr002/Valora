@@ -7,11 +7,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Currency Formatter helper
   const formatPrice = (amount) => (window.formatINR ? window.formatINR(amount) : ('₹' + Math.round(amount).toLocaleString('en-IN')));
 
+  const initialCart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+  const storedPrefPay = localStorage.getItem("velora_preferred_payment") || (initialCart[0] && initialCart[0].selected_payment_method) || "online";
+  const storedPrefDel = localStorage.getItem("velora_preferred_delivery") || (initialCart[0] && initialCart[0].delivery_preference) || "Simple Delivery";
+  const initialMethod = (storedPrefPay === "online") ? "UPI / QR Payment" : "Cash on Delivery";
+
   // --- 1. State Management ---
   const state = {
-    cart: JSON.parse(localStorage.getItem("velora_cart")) || [],
+    cart: initialCart,
     appliedCoupon: null, // { code: 'VELORA10', discountPercent: 10 }
-    selectedPaymentMethod: "Cash on Delivery",
+    selectedPaymentMethod: initialMethod,
+    selectedDeliveryPreference: storedPrefDel, // "Simple Delivery" or "Open Box Delivery"
     selectedAddressType: "Home",
     selectedBank: "State Bank of India",
     subtotal: 0,
@@ -21,31 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
     advancePayableNow: 0,
     remainingCodAmount: 0,
     advanceRequired: false,
-    totalProductAdvance: 0
+    totalProductAdvance: 0,
+    isFullOnlinePayment: (storedPrefPay === "online")
   };
-
-  // Pre-fill sample cart if totally fresh visit and no cart exists
-  if (!localStorage.getItem("velora_cart_initialized")) {
-    if (state.cart.length === 0) {
-      state.cart = [
-        {
-          id: "prod-01",
-          name: "AeroGlide Runner Pro V2",
-          price: 3499,
-          image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80",
-          size: "US 10",
-          color: "Obsidian Black",
-          quantity: 1,
-          advance_payment_enabled: true,
-          advance_payment_type: "fixed",
-          advance_payment_value: 300,
-          advance_per_unit: 300
-        }
-      ];
-      localStorage.setItem("velora_cart", JSON.stringify(state.cart));
-    }
-    localStorage.setItem("velora_cart_initialized", "true");
-  }
 
   // Supported discount codes
   const COUPONS = {
@@ -75,13 +59,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Payment Cards
     paymentCards: document.querySelectorAll(".payment-method-card"),
-    btnFillDemoCard: document.getElementById("btn-fill-demo-card"),
     inputCardNum: document.getElementById("input-card-num"),
     inputCardExp: document.getElementById("input-card-exp"),
     inputCardCvv: document.getElementById("input-card-cvv"),
     inputCardName: document.getElementById("input-card-name"),
     inputUpiId: document.getElementById("input-upi-id"),
     bankChips: document.querySelectorAll(".bank-chip"),
+
+    // Online Gifts Card Elements
+    cardOnlineGifts: document.getElementById("card-online-gifts"),
+    giftsStatusBadge: document.getElementById("gifts-status-badge"),
+    giftsStatusDesc: document.getElementById("gifts-status-desc"),
+    onlineGiftsGrid: document.getElementById("online-gifts-grid"),
+    onlineGiftsLockedNotice: document.getElementById("online-gifts-locked-notice"),
+
+    // Delivery Preference Elements
+    cardDeliveryPreference: document.getElementById("card-delivery-preference"),
+    deliveryPrefCards: document.querySelectorAll(".delivery-pref-card"),
+    deliveryPrefInputs: document.querySelectorAll('input[name="delivery_preference"]'),
+    badgePrefLock: document.getElementById("badge-pref-lock"),
 
     // Summary Sidebar
     summaryItemsCount: document.getElementById("summary-items-count"),
@@ -103,6 +99,12 @@ document.addEventListener("DOMContentLoaded", () => {
     rowDiscount: document.getElementById("row-discount"),
     costDiscount: document.getElementById("cost-discount"),
     costShipping: document.getElementById("cost-shipping"),
+    rowOnlineGifts: document.getElementById("row-online-gifts"),
+    costOnlineGifts: document.getElementById("cost-online-gifts"),
+    rowDeliveryPreference: document.getElementById("row-delivery-preference"),
+    costDeliveryPreference: document.getElementById("cost-delivery-preference"),
+    rowPaymentMethod: document.getElementById("row-payment-method"),
+    costPaymentMethod: document.getElementById("cost-payment-method"),
     rowAdvance: document.getElementById("row-advance"),
     costAdvance: document.getElementById("cost-advance"),
     rowCodBalance: document.getElementById("row-cod-balance"),
@@ -153,8 +155,33 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(removeToast, 4000);
   }
 
+  // --- 3B. Dynamic Cart Gifts Resolver ---
+  async function resolveCartGifts() {
+    if (window.GiftEngine && typeof window.GiftEngine.resolveCartGifts === "function") {
+      try {
+        const res = await window.GiftEngine.resolveCartGifts(state.cart);
+        state.cartGiftsEligible = Boolean(res.eligible && res.gifts && res.gifts.length > 0);
+        state.resolvedCartGifts = res.gifts || [];
+        return;
+      } catch (_) {}
+    }
+    // Fallback: extract gifts saved on cart items
+    const giftMap = new Map();
+    state.cart.forEach(item => {
+      if (Array.isArray(item.gift_bundle)) {
+        item.gift_bundle.forEach(g => {
+          const k = g.name.toLowerCase().trim();
+          if (!giftMap.has(k)) giftMap.set(k, g);
+        });
+      }
+    });
+    state.resolvedCartGifts = Array.from(giftMap.values());
+    state.cartGiftsEligible = state.resolvedCartGifts.length > 0;
+  }
+
   // --- 4. Render Cart & Calculate Totals ---
-  function renderOrderSummary() {
+  async function renderOrderSummary() {
+    await resolveCartGifts();
     if (!state.cart || state.cart.length === 0) {
       if (elements.emptyState) elements.emptyState.style.display = "block";
       if (elements.mainGrid) elements.mainGrid.style.display = "none";
@@ -168,25 +195,41 @@ document.addEventListener("DOMContentLoaded", () => {
     let totalItems = 0;
     let totalProductAdvance = 0;
 
+    // Validate BOGO pairs: ensure no orphaned free BOGO items exist without a paid partner
+    const validCart = state.cart.filter(item => {
+      if (item.is_free_bogo && item.bogo_pair_id) {
+        return state.cart.some(p => p.bogo_pair_id === item.bogo_pair_id && !p.is_free_bogo);
+      }
+      return true;
+    });
+    if (validCart.length !== state.cart.length) {
+      state.cart = validCart;
+      try { localStorage.setItem("velora_cart", JSON.stringify(validCart)); } catch (_) {}
+    }
+
     elements.summaryItemsContainer.innerHTML = state.cart.map(item => {
-      const itemSub = (item.price || 0) * (item.quantity || 1);
+      const isFreeBogo = Boolean(item.is_free_bogo);
+      const itemSub = isFreeBogo ? 0 : (item.price || 0) * (item.quantity || 1);
       subtotal += itemSub;
       totalItems += (item.quantity || 1);
 
       const sizeTag = item.size ? `<span class="summary-variant-pill">${item.size}</span>` : "";
       const colorTag = item.color ? `<span class="summary-variant-pill">${item.color}</span>` : "";
+      const bogoTag = isFreeBogo ? `<span class="summary-variant-pill" style="color: #059669; background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3);">🎁 Free BOGO Gift</span>` : "";
 
       let advanceTag = "";
       let itemUnitAdvance = 0;
-      if (item.advance_payment_enabled) {
-        if (item.advance_payment_type === "percentage") {
-          const pct = Number(item.advance_payment_value) || 0;
-          itemUnitAdvance = Math.round((item.price || 0) * (pct / 100));
-        } else {
-          itemUnitAdvance = Math.min(item.price || 0, Math.max(0, Number(item.advance_payment_value) || 0));
+      if (!isFreeBogo) {
+        if (item.advance_payment_enabled) {
+          if (item.advance_payment_type === "percentage") {
+            const pct = Number(item.advance_payment_value) || 0;
+            itemUnitAdvance = Math.round((item.price || 0) * (pct / 100));
+          } else {
+            itemUnitAdvance = Math.min(item.price || 0, Math.max(0, Number(item.advance_payment_value) || 0));
+          }
+        } else if (item.advance_per_unit) {
+          itemUnitAdvance = Number(item.advance_per_unit) || 0;
         }
-      } else if (item.advance_per_unit) {
-        itemUnitAdvance = Number(item.advance_per_unit) || 0;
       }
 
       if (itemUnitAdvance > 0) {
@@ -194,6 +237,10 @@ document.addEventListener("DOMContentLoaded", () => {
         totalProductAdvance += itemTotalAdvance;
         advanceTag = `<span class="summary-variant-pill" style="color: #6366f1; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.3);">⚡ Advance: ${formatPrice(itemTotalAdvance)}</span>`;
       }
+
+      const priceDisplay = isFreeBogo 
+        ? `<span style="color: #059669; font-weight: 700;">₹0 FREE</span> <span style="font-size: 0.75rem; text-decoration: line-through; color: var(--text-muted); margin-left: 4px;">${formatPrice(item.originalPrice || 0)}</span>`
+        : formatPrice(itemSub);
 
       return `
         <div class="summary-item">
@@ -203,12 +250,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="summary-item-variants">
               ${sizeTag}
               ${colorTag}
+              ${bogoTag}
               ${advanceTag}
               <span class="summary-item-qty">Qty: <strong>${item.quantity}</strong></span>
             </div>
           </div>
           <div class="summary-item-price">
-            ${formatPrice(itemSub)}
+            ${priceDisplay}
           </div>
         </div>
       `;
@@ -219,38 +267,23 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.summaryItemsCount.textContent = `${totalItems} ${totalItems === 1 ? 'Item' : 'Items'}`;
     }
 
-    // Shipping calculation: Free for >= free_shipping_threshold, else standard_shipping_fee
-    const shippingSettings = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.shipping) || {};
-    const FREE_SHIPPING_THRESHOLD = Number(shippingSettings.free_shipping_threshold) || 999;
-    const STANDARD_SHIPPING_FEE = Number(shippingSettings.standard_shipping_fee) || 99;
-
-    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
-      state.shippingFee = 0;
+    // Universal Free Delivery Across VELORA (Always ₹0 shipping on every product and order)
+    state.shippingFee = 0;
+    if (elements.shippingProgressText) {
       elements.shippingProgressText.className = "shipping-progress-text unlocked";
       elements.shippingProgressText.innerHTML = `
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span><strong>You unlocked FREE Standard Shipping!</strong></span>
+        <span><strong>100% FREE Delivery Across India</strong> on your order!</span>
       `;
+    }
+    if (elements.shippingProgressBarFill) {
       elements.shippingProgressBarFill.className = "shipping-progress-bar-fill unlocked";
       elements.shippingProgressBarFill.style.width = "100%";
+    }
+    if (elements.costShipping) {
       elements.costShipping.textContent = "FREE (₹0)";
       elements.costShipping.style.color = "var(--color-success)";
       elements.costShipping.style.fontWeight = "700";
-    } else {
-      state.shippingFee = STANDARD_SHIPPING_FEE;
-      const needed = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-      const percentage = Math.min(Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100), 100);
-
-      elements.shippingProgressText.className = "shipping-progress-text";
-      elements.shippingProgressText.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-        <span>Add <strong>${formatPrice(needed)}</strong> more to get <strong>FREE Express Delivery</strong></span>
-      `;
-      elements.shippingProgressBarFill.className = "shipping-progress-bar-fill";
-      elements.shippingProgressBarFill.style.width = `${percentage}%`;
-      elements.costShipping.textContent = formatPrice(STANDARD_SHIPPING_FEE);
-      elements.costShipping.style.color = "var(--text-main)";
-      elements.costShipping.style.fontWeight = "500";
     }
 
     // Discount calculation
@@ -275,13 +308,198 @@ document.addEventListener("DOMContentLoaded", () => {
     // Total Calculation
     state.total = Math.max(0, subtotal - state.discountAmount + state.shippingFee);
     state.totalProductAdvance = totalProductAdvance;
-    state.advancePayableNow = Math.min(totalProductAdvance, state.total);
-    state.remainingCodAmount = Math.max(0, state.total - state.advancePayableNow);
-    state.advanceRequired = state.advancePayableNow > 0;
+
+    // Evaluate Full Online Payment Eligibility
+    const isOnlineMethod = (state.selectedPaymentMethod === "Credit / Debit Card" || state.selectedPaymentMethod === "UPI / QR Payment" || state.selectedPaymentMethod === "Net Banking");
+
+    if (isOnlineMethod) {
+      // FULL ONLINE PAYMENT: 100% online payable • ₹0 advance required • 3 FREE gifts • Open Box eligible
+      state.advancePayableNow = 0;
+      state.remainingCodAmount = 0;
+      state.advanceRequired = false;
+      state.isFullOnlinePayment = true;
+    } else {
+      // CASH ON DELIVERY (COD): Follows admin-configured advance requirement
+      state.isFullOnlinePayment = false;
+      if (totalProductAdvance > 0) {
+        state.advancePayableNow = Math.min(totalProductAdvance, state.total);
+        state.remainingCodAmount = Math.max(0, state.total - state.advancePayableNow);
+        state.advanceRequired = true;
+      } else {
+        state.advancePayableNow = 0;
+        state.remainingCodAmount = state.total;
+        state.advanceRequired = false;
+      }
+      // For COD, delivery preference resets to Simple Delivery
+      state.selectedDeliveryPreference = "Simple Delivery";
+    }
+
+    const isFullOnline = state.isFullOnlinePayment;
+    const hasCartGifts = Boolean(state.cartGiftsEligible && state.resolvedCartGifts && state.resolvedCartGifts.length > 0);
+    const resolvedGifts = hasCartGifts ? state.resolvedCartGifts : [];
+    const giftsCount = resolvedGifts.length;
+    const giftNamesStr = resolvedGifts.map(g => g.name).join(" • ");
+
+    // Sync payment cards selection in DOM
+    if (elements.paymentCards) {
+      elements.paymentCards.forEach(card => {
+        card.classList.toggle("selected", card.dataset.method === state.selectedPaymentMethod);
+      });
+    }
+
+    // Sync delivery pref cards in DOM
+    if (elements.deliveryPrefCards) {
+      elements.deliveryPrefCards.forEach(card => {
+        const isSelected = card.dataset.pref === state.selectedDeliveryPreference;
+        card.classList.toggle("selected", isSelected);
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio) radio.checked = isSelected;
+      });
+    }
+
+    // Update dynamic COD helper text
+    const codDescEl = document.getElementById("pm-cod-desc");
+    if (codDescEl) {
+      if (totalProductAdvance > 0) {
+        codDescEl.textContent = `Requires ${formatPrice(totalProductAdvance)} advance online now • Remaining balance collected via COD upon delivery.`;
+      } else {
+        codDescEl.textContent = `Pay with cash or mobile scan upon courier arrival. Zero advance deposit required.`;
+      }
+    }
+
+    // Update online payment card badges with dynamic gift count
+    document.querySelectorAll(".pm-gift-badge").forEach(badge => {
+      if (hasCartGifts) {
+        badge.textContent = `${giftsCount} FREE Gifts`;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    });
+
+    document.querySelectorAll(".pm-online-desc").forEach(desc => {
+      desc.textContent = hasCartGifts
+        ? `Instant confirmation • No advance required • ${giftsCount} complimentary luxury accessories included.`
+        : `Instant confirmation • No advance required • 100% secure payment.`;
+    });
 
     // DOM updates
     elements.costSubtotal.textContent = formatPrice(subtotal);
     elements.costTotal.textContent = formatPrice(state.total);
+
+    // Append complimentary gifts item to summary container when full online paid and gifts exist
+    if (isFullOnline && hasCartGifts && elements.summaryItemsContainer) {
+      elements.summaryItemsContainer.innerHTML += `
+        <div class="summary-item gift-summary-item" style="background: rgba(245, 158, 11, 0.05); border-radius: 8px; padding: 10px 12px; margin-top: 8px; border: 1.5px dashed rgba(245, 158, 11, 0.35); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 1.4rem;">🎁</div>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #92400e;">${giftsCount} Free Gifts (Pay Online Reward)</div>
+              <div style="font-size: 0.74rem; color: #475569; margin-top: 2px;">${giftNamesStr}</div>
+            </div>
+          </div>
+          <div style="font-size: 0.82rem; font-weight: 800; color: var(--color-success); background: rgba(16, 185, 129, 0.12); padding: 3px 8px; border-radius: 12px;">
+            FREE (₹0)
+          </div>
+        </div>
+      `;
+    }
+
+    // Update Online Gifts Card in UI
+    if (elements.cardOnlineGifts) {
+      if (!hasCartGifts) {
+        // No gifts configured for items in cart: hide card completely
+        elements.cardOnlineGifts.style.display = "none";
+      } else if (isFullOnline) {
+        elements.cardOnlineGifts.style.display = "block";
+        elements.cardOnlineGifts.classList.add("unlocked");
+        if (elements.giftsStatusBadge) {
+          elements.giftsStatusBadge.textContent = "✓ UNLOCKED (₹0)";
+          elements.giftsStatusBadge.style.background = "rgba(16, 185, 129, 0.15)";
+          elements.giftsStatusBadge.style.color = "#059669";
+          elements.giftsStatusBadge.style.borderColor = "rgba(16, 185, 129, 0.3)";
+        }
+        if (elements.giftsStatusDesc) {
+          elements.giftsStatusDesc.textContent = `Exclusive full online payment reward! ${giftsCount} complimentary luxury accessories automatically included at zero extra cost.`;
+        }
+        if (elements.onlineGiftsGrid) {
+          elements.onlineGiftsGrid.style.display = "grid";
+          elements.onlineGiftsGrid.innerHTML = resolvedGifts.map(g => {
+            const isImg = g.icon_or_image && (g.icon_or_image.startsWith("http://") || g.icon_or_image.startsWith("https://") || g.icon_or_image.startsWith("data:"));
+            const iconHtml = isImg
+              ? `<img src="${g.icon_or_image}" alt="${g.name}" style="width:36px; height:36px; object-fit:cover; border-radius:6px;">`
+              : `<span style="font-size:1.5rem;">${g.icon_or_image || '🎁'}</span>`;
+            const qtyStr = (g.quantity && g.quantity > 1) ? ` (${g.quantity}x)` : '';
+            return `
+              <div class="online-gift-item" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.25); background:#fff;">
+                ${iconHtml}
+                <div style="flex:1;">
+                  <strong style="font-size:0.85rem; color:var(--text-main); display:block;">${g.name}${qtyStr}</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted);">${g.description || 'Complimentary Gift'}</span>
+                </div>
+                <span style="font-size:0.75rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:2px 6px; border-radius:4px;">₹0 FREE</span>
+              </div>
+            `;
+          }).join("");
+        }
+        if (elements.onlineGiftsLockedNotice) elements.onlineGiftsLockedNotice.style.display = "none";
+      } else {
+        elements.cardOnlineGifts.style.display = "block";
+        elements.cardOnlineGifts.classList.remove("unlocked");
+        if (elements.giftsStatusBadge) {
+          elements.giftsStatusBadge.textContent = "Locked";
+          elements.giftsStatusBadge.style.background = "rgba(245, 158, 11, 0.15)";
+          elements.giftsStatusBadge.style.color = "#b45309";
+          elements.giftsStatusBadge.style.borderColor = "rgba(245, 158, 11, 0.3)";
+        }
+        if (elements.giftsStatusDesc) {
+          elements.giftsStatusDesc.textContent = `Pay 100% online via UPI, Card, or Net Banking to unlock ${giftsCount} complimentary luxury accessories (${giftNamesStr}).`;
+        }
+        if (elements.onlineGiftsGrid) elements.onlineGiftsGrid.style.display = "none";
+        if (elements.onlineGiftsLockedNotice) elements.onlineGiftsLockedNotice.style.display = "block";
+      }
+    }
+
+    // Update Delivery Preference Card in UI
+    if (elements.cardDeliveryPreference) {
+      if (isFullOnline) {
+        elements.cardDeliveryPreference.style.display = "block";
+        if (elements.badgePrefLock) {
+          elements.badgePrefLock.textContent = "Unlocked";
+          elements.badgePrefLock.style.background = "rgba(16, 185, 129, 0.15)";
+          elements.badgePrefLock.style.color = "#059669";
+          elements.badgePrefLock.style.borderColor = "rgba(16, 185, 129, 0.3)";
+        }
+      } else {
+        elements.cardDeliveryPreference.style.display = "none";
+      }
+    }
+
+    // Update Order Summary Rows for Gifts, Delivery Preference, and Payment Method
+    if (elements.rowOnlineGifts) {
+      if (isFullOnline) {
+        elements.rowOnlineGifts.style.display = "flex";
+        if (elements.costOnlineGifts) elements.costOnlineGifts.textContent = "FREE (₹0)";
+      } else {
+        elements.rowOnlineGifts.style.display = "none";
+      }
+    }
+
+    if (elements.rowDeliveryPreference) {
+      if (isFullOnline) {
+        elements.rowDeliveryPreference.style.display = "flex";
+        if (elements.costDeliveryPreference) {
+          elements.costDeliveryPreference.textContent = state.selectedDeliveryPreference || "Simple Delivery";
+          elements.costDeliveryPreference.style.color = (state.selectedDeliveryPreference === "Open Box Delivery") ? "#0284c7" : "var(--text-main)";
+        }
+      } else {
+        elements.rowDeliveryPreference.style.display = "none";
+      }
+    }
+
+    if (elements.costPaymentMethod) {
+      elements.costPaymentMethod.textContent = state.selectedPaymentMethod;
+    }
 
     // Update Advance Payment Rows & Notices
     const codNoteEl = document.querySelector(".cod-note");
@@ -297,14 +515,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.advanceSummaryNotice) {
         elements.advanceSummaryNotice.style.display = "block";
         if (elements.advanceNoticeText) {
-          elements.advanceNoticeText.textContent = `Pay ${formatPrice(state.advancePayableNow)} online now to confirm this order. The remaining ${formatPrice(state.remainingCodAmount)} will be collected via Cash on Delivery upon delivery.`;
+          elements.advanceNoticeText.textContent = `Pay ${formatPrice(state.advancePayableNow)} online deposit now to dispatch this order. The remaining ${formatPrice(state.remainingCodAmount)} balance will be collected via Cash on Delivery upon shipment handover.`;
         }
       }
       if (codNoteEl) {
         codNoteEl.innerHTML = `<strong>⚡ Partial COD Requirement:</strong> An advance of <strong>${formatPrice(state.advancePayableNow)}</strong> must be paid online via Card, UPI, or Net Banking before order confirmation. The remaining <strong>${formatPrice(state.remainingCodAmount)}</strong> balance will be collected upon courier delivery.`;
       }
       if (elements.btnPlaceOrderText) {
-        elements.btnPlaceOrderText.textContent = `Pay Advance ${formatPrice(state.advancePayableNow)} & Confirm Order`;
+        elements.btnPlaceOrderText.textContent = `Pay Advance ${formatPrice(state.advancePayableNow)} & Confirm COD Order`;
       }
     } else {
       if (elements.rowAdvance) elements.rowAdvance.style.display = "none";
@@ -314,7 +532,9 @@ document.addEventListener("DOMContentLoaded", () => {
         codNoteEl.innerHTML = `<strong>✓ Guaranteed Handover:</strong> You can inspect the outer packaging and seal before handing over cash or scanning the courier UPI QR. Zero COD surcharge.`;
       }
       if (elements.btnPlaceOrderText) {
-        elements.btnPlaceOrderText.textContent = `Complete Order • ${formatPrice(state.total)}`;
+        elements.btnPlaceOrderText.textContent = isFullOnline
+          ? `Complete Order • ${formatPrice(state.total)}`
+          : `Complete COD Order • ${formatPrice(state.total)} on Delivery`;
       }
     }
   }
@@ -333,15 +553,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (client) {
       try {
-        const { data, error } = await client
-          .from("coupons")
-          .select("*")
-          .eq("code", code)
-          .eq("is_active", true)
-          .maybeSingle();
+        // 1. Try server-side authoritative RPC first
+        const { data: rpcCoupon, error: rpcErr } = await client.rpc("validate_coupon", {
+          p_code: code,
+          p_cart_subtotal: state.subtotal
+        });
 
-        if (!error && data) {
-          dbCoupon = data;
+        if (!rpcErr && rpcCoupon && rpcCoupon.valid) {
+          dbCoupon = {
+            id: rpcCoupon.id,
+            code: rpcCoupon.code,
+            discount_type: rpcCoupon.discount_type,
+            discount_value: Number(rpcCoupon.discount_value),
+            min_order_amount: Number(rpcCoupon.min_order_amount || 0),
+            max_discount: rpcCoupon.max_discount ? Number(rpcCoupon.max_discount) : null
+          };
+        } else if (!rpcErr && rpcCoupon && !rpcCoupon.valid) {
+          showToast(rpcCoupon.message || `Invalid coupon code "${rawCode}".`, "error");
+          return;
+        } else {
+          // 2. Direct allowlisted column fallback (never select * or expose usage counts)
+          const couponCols = "id, code, discount_type, discount_value, min_order_amount, max_discount, expiry_date";
+          const { data, error } = await client
+            .from("coupons")
+            .select(couponCols)
+            .eq("code", code)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          if (!error && data) {
+            dbCoupon = data;
+          }
         }
       } catch (err) {
         console.warn("Coupon lookup notice:", err);
@@ -460,20 +702,27 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.paymentCards.forEach(c => c.classList.remove("selected"));
       card.classList.add("selected");
       state.selectedPaymentMethod = card.dataset.method;
+      renderOrderSummary(); // Recalculate full online eligibility, update gifts card and delivery pref
     });
   });
 
-  // Demo Card Quick Fill
-  if (elements.btnFillDemoCard) {
-    elements.btnFillDemoCard.addEventListener("click", (e) => {
-      e.stopPropagation();
-      elements.inputCardNum.value = "4242 4242 4242 4242";
-      elements.inputCardExp.value = "12/28";
-      elements.inputCardCvv.value = "888";
-      elements.inputCardName.value = elements.inputFullName.value.trim() || "Rohan Sharma";
-      showToast("Test card details filled automatically!", "success");
+  // --- 7B. Delivery Preference Selector ---
+  if (elements.deliveryPrefCards) {
+    elements.deliveryPrefCards.forEach(card => {
+      card.addEventListener("click", () => {
+        elements.deliveryPrefCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+        state.selectedDeliveryPreference = card.dataset.pref || "Simple Delivery";
+        if (elements.costDeliveryPreference) {
+          elements.costDeliveryPreference.textContent = state.selectedDeliveryPreference;
+          elements.costDeliveryPreference.style.color = (state.selectedDeliveryPreference === "Open Box Delivery") ? "#0284c7" : "var(--text-main)";
+        }
+      });
     });
   }
+
 
   // Card Number Formatting Helper
   if (elements.inputCardNum) {
@@ -651,18 +900,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return isValid;
   }
 
-  // --- 9. Place Order Handler ---
+  // --- 9. Place Order Handler (Concurrency Protected with Price Integrity Validation) ---
+  let isSubmittingOrder = false;
+
   async function handlePlaceOrder() {
-    if (state.cart.length === 0) {
-      showToast("Your cart is empty. Please add items before checking out.", "error");
+    if (isSubmittingOrder) {
+      console.warn("Order submission already in progress.");
       return;
     }
 
-    // If advance is required, customer cannot choose pure Cash on Delivery without paying advance online
-    if (state.advanceRequired && state.selectedPaymentMethod === "Cash on Delivery") {
-      showToast(`An advance of ${formatPrice(state.advancePayableNow)} must be paid online via UPI or Card to confirm this order. Balance ${formatPrice(state.remainingCodAmount)} is paid on delivery.`, "error");
-      const pmSection = document.getElementById("card-payment-method");
-      if (pmSection) pmSection.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (state.cart.length === 0) {
+      showToast("Your cart is empty. Please add items before checking out.", "error");
       return;
     }
 
@@ -698,12 +946,88 @@ document.addEventListener("DOMContentLoaded", () => {
     const isValid = validateCheckoutForm();
     if (!isValid) return;
 
+    // Acquire submission lock
+    isSubmittingOrder = true;
+    const originalBtnText = elements.btnPlaceOrderText.textContent;
+
+    // Safety timeout to prevent permanent button lock on network stall
+    const submissionTimeout = setTimeout(() => {
+      if (isSubmittingOrder) {
+        isSubmittingOrder = false;
+        elements.btnPlaceOrder.classList.remove("loading");
+        elements.btnPlaceOrder.disabled = false;
+        elements.btnPlaceOrderText.textContent = originalBtnText;
+        showToast("Network request timed out. Please check your connection and try again.", "error");
+      }
+    }, 10000);
+
     // Trigger button loading state
     elements.btnPlaceOrder.classList.add("loading");
     elements.btnPlaceOrder.disabled = true;
     elements.btnPlaceOrderText.textContent = state.advanceRequired
       ? `Processing Advance Payment (${formatPrice(state.advancePayableNow)})...`
       : "Securing & Processing Order...";
+
+    // --- Server-Authoritative Price & Calculation Integrity Check ---
+    let canonicalSubtotal = 0;
+    // Validate BOGO pairing and price difference integrity
+    const invalidBogoIndices = [];
+    state.cart.forEach((item, idx) => {
+      if (item.is_free_bogo) {
+        const partner = state.cart.find(p => p.bogo_pair_id === item.bogo_pair_id && !p.is_free_bogo);
+        if (!partner) {
+          invalidBogoIndices.push(idx);
+        } else {
+          const paidCanonical = (window.PRODUCTS_DATA || []).find(p => p.id === partner.id || p.slug === partner.id || p.legacyId === partner.id);
+          const freeCanonical = (window.PRODUCTS_DATA || []).find(p => p.id === item.id || p.slug === item.id || p.legacyId === item.id);
+          const paidPrice = paidCanonical ? paidCanonical.price : (partner.price || 0);
+          const freePrice = freeCanonical ? freeCanonical.price : (item.originalPrice || item.price || 0);
+          const diff = Math.abs(paidPrice - freePrice);
+          if (diff > 50) {
+            console.warn("BOGO pair price delta check outside permissible limit:", diff);
+          }
+        }
+      }
+    });
+    if (invalidBogoIndices.length > 0) {
+      state.cart = state.cart.filter((_, idx) => !invalidBogoIndices.includes(idx));
+      try { localStorage.setItem("velora_cart", JSON.stringify(state.cart)); } catch (_) {}
+    }
+
+    state.cart.forEach(item => {
+      if (item.is_free_bogo) {
+        // Enforce 100% Free for qualifying BOGO item
+        item.price = 0;
+        item.advance_payment_enabled = false;
+        item.advance_payment_value = 0;
+        item.advance_per_unit = 0;
+        item.cod_per_unit = 0;
+      } else {
+        const canonical = (window.PRODUCTS_DATA || []).find(p => p.id === item.id || p.slug === item.id || p.legacyId === item.id);
+        if (canonical && typeof canonical.price === "number") {
+          item.price = canonical.price; // Lock to authoritative catalog price
+        }
+        const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+        item.quantity = qty;
+        canonicalSubtotal += (item.price * qty);
+      }
+    });
+    state.subtotal = canonicalSubtotal;
+
+    // Re-verify coupon discount
+    let canonicalDiscount = 0;
+    if (state.appliedCoupon) {
+      if (state.appliedCoupon.discountPercent) {
+        canonicalDiscount = Math.round(canonicalSubtotal * (state.appliedCoupon.discountPercent / 100));
+        if (state.appliedCoupon.maxDiscount) {
+          canonicalDiscount = Math.min(canonicalDiscount, state.appliedCoupon.maxDiscount);
+        }
+      } else if (state.appliedCoupon.value) {
+        canonicalDiscount = Math.min(canonicalSubtotal, state.appliedCoupon.value);
+      }
+    }
+    state.discountAmount = canonicalDiscount;
+    state.total = Math.max(0, canonicalSubtotal - canonicalDiscount + (state.shippingFee || 0));
 
     // Calculate dynamic delivery date: 3-5 business days ahead
     const now = new Date();
@@ -720,6 +1044,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const randomNum = Math.floor(10000 + Math.random() * 90000);
     const orderId = `#VEL-${randomNum}`;
 
+    // Evaluate Full Online Payment Eligibility
+    const isOnlineMethod = (state.selectedPaymentMethod === "Credit / Debit Card" || state.selectedPaymentMethod === "UPI / QR Payment" || state.selectedPaymentMethod === "Net Banking");
+    const isFullOnline = isOnlineMethod && !state.advanceRequired;
+    const deliveryPreference = isFullOnline ? (state.selectedDeliveryPreference || "Simple Delivery") : "Simple Delivery";
+    const hasCartGifts = Boolean(state.cartGiftsEligible && state.resolvedCartGifts && state.resolvedCartGifts.length > 0);
+    const freeGiftsEligible = isFullOnline && hasCartGifts;
+    const freeGiftsItems = freeGiftsEligible ? state.resolvedCartGifts : [];
+
     // Format payment detail label
     let paymentDetail = state.selectedPaymentMethod;
     if (state.selectedPaymentMethod === "Credit / Debit Card") {
@@ -733,6 +1065,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (state.advanceRequired) {
       paymentDetail += ` • Advance Paid (${formatPrice(state.advancePayableNow)}) + COD Balance (${formatPrice(state.remainingCodAmount)})`;
+    } else if (isFullOnline) {
+      if (freeGiftsEligible && freeGiftsItems.length > 0) {
+        paymentDetail += ` • Full Online Paid [${freeGiftsItems.length} Free Gifts Included] [Delivery: ${deliveryPreference}]`;
+      } else {
+        paymentDetail += ` • Full Online Paid [Delivery: ${deliveryPreference}]`;
+      }
     }
 
     const advanceAmount = state.advanceRequired ? state.advancePayableNow : 0;
@@ -758,7 +1096,19 @@ document.addEventListener("DOMContentLoaded", () => {
         addressType: state.selectedAddressType
       },
       paymentMethod: paymentDetail,
-      items: [...state.cart],
+      items: (isFullOnline && freeGiftsEligible) ? [...state.cart, ...freeGiftsItems.map(g => ({
+        name: g.name,
+        image: g.icon_or_image || g.image || "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
+        price: 0,
+        quantity: g.quantity || 1,
+        size: "Standard",
+        color: "Complimentary Gift",
+        is_free_gift: true
+      }))] : [...state.cart],
+      free_gifts_eligible: freeGiftsEligible,
+      free_gifts_items: freeGiftsItems,
+      delivery_preference: deliveryPreference,
+      is_full_online_payment: isFullOnline,
       subtotal: state.subtotal,
       discount: state.discountAmount,
       discountCode: state.appliedCoupon ? state.appliedCoupon.code : null,
@@ -784,7 +1134,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
     if (client) {
       try {
-        const { data: dbOrder } = await client.from("orders").insert([{
+        let dbOrder = null;
+        const baseOrderPayload = {
           user_id: currentUser ? currentUser.id : null,
           order_number: orderId,
           subtotal: state.subtotal,
@@ -808,22 +1159,100 @@ document.addEventListener("DOMContentLoaded", () => {
           delivery_country: elements.selectCountry.value || "India",
           delivery_pincode: elements.inputZip.value.trim(),
           estimated_delivery: etaFormatted
-        }]).select().single();
+        };
 
-        if (dbOrder && state.cart && state.cart.length > 0) {
+        const idempotencyKey = "ord_idem_" + orderId + "_" + (currentUser?.id || "guest") + "_" + state.cart.length;
+        let rpcCreated = false;
+        const isUuid = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+        // 1. Attempt server-authoritative order creation via RPC
+        try {
+          const rpcPayload = {
+            p_items: state.cart.map(item => ({
+              product_id: isUuid(item.id) ? item.id : null,
+              slug: item.slug || item.id,
+              quantity: item.quantity || 1,
+              selected_size: item.selected_size || item.size || null,
+              selected_color: item.selected_color || item.color || null,
+              name: item.name,
+              is_free_bogo: Boolean(item.is_free_bogo),
+              bogo_pair_id: item.bogo_pair_id || null
+            })),
+            p_payment_method: state.selectedPaymentMethod,
+            p_coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+            p_delivery_details: {
+              full_name: elements.inputFullName.value.trim(),
+              phone: elements.inputPhone.value.trim(),
+              address: elements.inputHouse.value.trim() + ", " + elements.inputStreet.value.trim(),
+              city: elements.inputCity.value.trim(),
+              state: elements.inputState.value.trim(),
+              country: elements.selectCountry.value || "India",
+              pincode: elements.inputZip.value.trim()
+            },
+            p_delivery_preference: deliveryPreference,
+            p_idempotency_key: idempotencyKey
+          };
+
+          const { data: rpcRes, error: rpcErr } = await client.rpc("create_customer_order", rpcPayload);
+          if (!rpcErr && rpcRes && rpcRes.success) {
+            dbOrder = {
+              id: rpcRes.order_id,
+              order_number: rpcRes.order_number,
+              total: rpcRes.total,
+              subtotal: rpcRes.subtotal,
+              discount: rpcRes.discount,
+              advance_amount: rpcRes.advance_amount,
+              cod_balance: rpcRes.cod_balance
+            };
+            rpcCreated = true;
+          }
+        } catch (rpcEx) {
+          // Fallback to client-side insert if RPC is not deployed yet
+        }
+
+        // 2. Fallback to client insert if RPC was not used
+        if (!dbOrder) {
+          const customerOrderCols = "id, order_number, total, subtotal, discount, advance_amount, cod_balance, created_at";
+          try {
+            const extendedPayload = {
+              ...baseOrderPayload,
+              delivery_preference: deliveryPreference,
+              free_gifts_eligible: freeGiftsEligible,
+              free_gifts_items: freeGiftsItems,
+              is_full_online_payment: isFullOnline,
+              idempotency_key: idempotencyKey
+            };
+            const { data: extOrder, error: extErr } = await client.from("orders").insert([extendedPayload]).select(customerOrderCols).single();
+            if (!extErr && extOrder) {
+              dbOrder = extOrder;
+            }
+          } catch (e) {
+            // Schema cache notice
+          }
+
+          if (!dbOrder) {
+            const { data: stdOrder } = await client.from("orders").insert([baseOrderPayload]).select(customerOrderCols).single();
+            dbOrder = stdOrder;
+          }
+        }
+
+        // 3. Insert order items if order was created via client fallback
+        if (!rpcCreated && dbOrder && state.cart && state.cart.length > 0) {
           const isUuid = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
           const itemsPayload = state.cart.map(item => {
             const qty = item.quantity || 1;
-            const price = item.price || 0;
+            const price = item.is_free_bogo ? 0 : (item.price || 0);
             let itemUnitAdvance = 0;
-            if (item.advance_payment_enabled) {
-              if (item.advance_payment_type === "percentage") {
-                itemUnitAdvance = Math.round(price * ((Number(item.advance_payment_value) || 0) / 100));
-              } else {
-                itemUnitAdvance = Math.min(price, Math.max(0, Number(item.advance_payment_value) || 0));
+            if (!item.is_free_bogo) {
+              if (item.advance_payment_enabled) {
+                if (item.advance_payment_type === "percentage") {
+                  itemUnitAdvance = Math.round(price * ((Number(item.advance_payment_value) || 0) / 100));
+                } else {
+                  itemUnitAdvance = Math.min(price, Math.max(0, Number(item.advance_payment_value) || 0));
+                }
+              } else if (item.advance_per_unit) {
+                itemUnitAdvance = Number(item.advance_per_unit) || 0;
               }
-            } else if (item.advance_per_unit) {
-              itemUnitAdvance = Number(item.advance_per_unit) || 0;
             }
             const itemTotalAdvance = itemUnitAdvance * qty;
             const itemTotal = price * qty;
@@ -840,13 +1269,38 @@ document.addEventListener("DOMContentLoaded", () => {
               selected_size: item.size || null,
               selected_color: item.color || null,
               subtotal: itemTotal,
-              advance_amount: itemTotalAdvance,
-              cod_balance: itemCodBalance,
-              advance_payment_enabled: Boolean(item.advance_payment_enabled),
-              advance_payment_type: item.advance_payment_type || null,
-              advance_payment_value: item.advance_payment_value ? Number(item.advance_payment_value) : null
+              advance_amount: isFullOnline ? 0 : itemTotalAdvance,
+              cod_balance: isFullOnline ? 0 : itemCodBalance,
+              advance_payment_enabled: item.is_free_bogo ? false : Boolean(item.advance_payment_enabled),
+              advance_payment_type: item.is_free_bogo ? null : (item.advance_payment_type || null),
+              advance_payment_value: item.is_free_bogo ? 0 : (item.advance_payment_value ? Number(item.advance_payment_value) : null),
+              is_free_bogo: Boolean(item.is_free_bogo),
+              bogo_pair_id: item.bogo_pair_id || null
             };
           });
+
+          // If eligible for full online payment gifts, record the complimentary gifts at ₹0 in order_items
+          if (freeGiftsEligible && freeGiftsItems.length > 0) {
+            freeGiftsItems.forEach(gift => {
+              itemsPayload.push({
+                order_id: dbOrder.id,
+                product_id: null,
+                product_name: gift.name,
+                product_image: gift.icon_or_image || gift.image || "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
+                price: 0,
+                quantity: gift.quantity || 1,
+                selected_size: "Standard",
+                selected_color: "Complimentary Gift",
+                subtotal: 0,
+                advance_amount: 0,
+                cod_balance: 0,
+                advance_payment_enabled: false,
+                advance_payment_type: null,
+                advance_payment_value: null
+              });
+            });
+          }
+
           await client.from("order_items").insert(itemsPayload);
 
           // Update coupon usage count if coupon was used
@@ -887,6 +1341,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // First-party Analytics: Track Completed Order
+    if (window.VeloraAnalytics) {
+      window.VeloraAnalytics.trackOrderCompleted(dbOrder ? dbOrder.id : ('ord_' + Date.now()), state.total, {
+        items_count: state.cart.length,
+        payment_method: state.selectedPaymentMethod
+      });
+    }
+
+    // Clear safety timeout upon successful processing
+    clearTimeout(submissionTimeout);
+
     // Realistic processing delay before redirect
     setTimeout(() => {
       window.location.href = "order-success.html";
@@ -917,6 +1382,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   } catch (err) {}
+
+  // Auto-fill delivery pincode & location from the product page session check if not already filled
+  try {
+    const rawPincode = localStorage.getItem("velora_checked_pincode");
+    if (rawPincode) {
+      const pinData = JSON.parse(rawPincode);
+      if (pinData && pinData.pincode && pinData.serviceable) {
+        if (elements.inputZip && !elements.inputZip.value) {
+          elements.inputZip.value = pinData.pincode;
+        }
+        if (elements.inputCity && !elements.inputCity.value && pinData.city) {
+          elements.inputCity.value = pinData.city;
+        }
+        if (elements.inputState && !elements.inputState.value && pinData.state) {
+          elements.inputState.value = pinData.state;
+        }
+      }
+    }
+  } catch (e) {}
 
   // --- Sync Advance Data for Stale Cart Items ---
   async function syncCartAdvanceData() {
@@ -959,6 +1443,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Initial Render ---
   renderOrderSummary();
   syncCartAdvanceData();
+
+  if (state.cart && state.cart.length > 0 && window.VeloraAnalytics) {
+    window.VeloraAnalytics.trackCheckoutStarted(state.cart.length, state.total);
+  }
 
   if (window.syncStoreSettings) {
     window.syncStoreSettings().then(() => {

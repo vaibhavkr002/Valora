@@ -12,15 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 1. State Management ---
   const state = {
-    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || ["prod-02", "prod-07", "prod-01", "prod-04"]),
+    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || []),
     cart: JSON.parse(localStorage.getItem("velora_cart")) || [],
     currentSort: "recent"
   };
-
-  // Sync back initial demo items if none was saved
-  if (!localStorage.getItem("velora_wishlist")) {
-    localStorage.setItem("velora_wishlist", JSON.stringify(Array.from(state.wishlist)));
-  }
 
   // --- 2. DOM Elements ---
   const elements = {
@@ -228,19 +223,23 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Single Add to Cart
+    // Single Add to Cart (Rapid-Click Protected)
     elements.grid.querySelectorAll(".btn-wishlist-add-cart").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
+        if (btn.disabled) return;
         const pid = btn.dataset.cartId;
         const product = window.getProductById ? window.getProductById(pid) : null;
         if (!product) return;
 
+        btn.disabled = true;
         addToCart(product);
+        openCartDrawer();
         btn.classList.add("added");
         btn.innerHTML = `<span>✓ Added to Bag</span>`;
         setTimeout(() => {
           btn.classList.remove("added");
+          btn.disabled = false;
           btn.innerHTML = `
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             <span>Add to Cart</span>
@@ -255,18 +254,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 8. Cart Operations ---
   function addToCart(product, quantity = 1) {
     const existingIndex = state.cart.findIndex(item => item.id === product.id);
+    const isAdv = Boolean(product.advance_payment_enabled);
+    const advType = product.advance_payment_type || 'fixed';
+    const advVal = Number(product.advance_payment_value) || 0;
+    let unitAdv = 0;
+    if (isAdv) {
+      unitAdv = advType === "percentage" ? Math.round(product.price * (advVal / 100)) : Math.min(product.price, advVal);
+    }
+    const size = (product.sizes && product.sizes.length > 0) ? product.sizes[0] : "Standard";
+    const color = (product.colors && product.colors.length > 0) ? product.colors[0] : "Default";
 
     if (existingIndex > -1) {
       state.cart[existingIndex].quantity = (state.cart[existingIndex].quantity || 1) + quantity;
+      state.cart[existingIndex].advance_payment_enabled = isAdv;
+      state.cart[existingIndex].advance_payment_type = advType;
+      state.cart[existingIndex].advance_payment_value = advVal;
+      state.cart[existingIndex].advance_per_unit = unitAdv;
+      state.cart[existingIndex].cod_per_unit = Math.max(0, product.price - unitAdv);
     } else {
       state.cart.push({
         id: product.id,
         name: product.name,
         price: product.price,
         image: product.image,
-        size: "US 10",
-        color: "Obsidian Black",
-        quantity: quantity
+        size: size,
+        color: color,
+        quantity: quantity,
+        advance_payment_enabled: isAdv,
+        advance_payment_type: advType,
+        advance_payment_value: advVal,
+        advance_per_unit: unitAdv,
+        cod_per_unit: Math.max(0, product.price - unitAdv)
       });
     }
 
@@ -309,13 +327,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 9. Cart Drawer Controller ---
   function openCartDrawer() {
+    if (window.VeloraCart && typeof window.VeloraCart.open === "function") {
+      window.VeloraCart.open();
+      return;
+    }
     renderCartDrawerItems();
-    if (elements.cartDrawerOverlay) elements.cartDrawerOverlay.classList.add("open");
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.add("active");
+      elements.cartDrawerOverlay.classList.add("open");
+    }
     document.body.style.overflow = "hidden";
   }
 
   function closeCartDrawer() {
-    if (elements.cartDrawerOverlay) elements.cartDrawerOverlay.classList.remove("open");
+    if (window.VeloraCart && typeof window.VeloraCart.close === "function") {
+      window.VeloraCart.close();
+      return;
+    }
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.remove("active");
+      elements.cartDrawerOverlay.classList.remove("open");
+    }
     document.body.style.overflow = "";
   }
 

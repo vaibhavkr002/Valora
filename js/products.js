@@ -2,7 +2,98 @@
  * VELORA - E-Commerce Mock Product & Category Data Catalog
  * Prepared for clean, scalable dynamic rendering and easy API / Supabase database migration.
  */
+// Ensure VeloraCache is initialized
+if (!window.VeloraCache) {
+  (function () {
+    const CACHE_PREFIX = 'velora_cache_';
+    const memoryCache = new Map();
+    const inFlightRequests = new Map();
+    const DEFAULT_TTL = { products: 180000, categories: 300000, banners: 300000, delivery_partners: 300000, store_settings: 300000 };
 
+    function getCached(key) {
+      const now = Date.now();
+      if (memoryCache.has(key)) {
+        const e = memoryCache.get(key);
+        if (e && e.expiresAt > now) return e.data;
+        memoryCache.delete(key);
+      }
+      try {
+        const raw = sessionStorage.getItem(CACHE_PREFIX + key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.expiresAt > now) {
+            memoryCache.set(key, parsed);
+            return parsed.data;
+          } else {
+            sessionStorage.removeItem(CACHE_PREFIX + key);
+          }
+        }
+      } catch (_) {}
+      return null;
+    }
+
+    function setCached(key, data, customTtl) {
+      const ttl = customTtl || DEFAULT_TTL[key] || 180000;
+      const entry = { data, expiresAt: Date.now() + ttl, cachedAt: Date.now() };
+      memoryCache.set(key, entry);
+      try { sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry)); } catch (_) {}
+    }
+
+    function invalidate(key) {
+      if (!key) {
+        memoryCache.clear();
+        try {
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const k = sessionStorage.key(i);
+            if (k && k.startsWith(CACHE_PREFIX)) sessionStorage.removeItem(k);
+          }
+        } catch (_) {}
+      } else {
+        memoryCache.delete(key);
+        try { sessionStorage.removeItem(CACHE_PREFIX + key); } catch (_) {}
+      }
+      window.dispatchEvent(new CustomEvent('velora:cache-invalidated', { detail: { key } }));
+    }
+
+    async function getOrFetch(key, fetchFn, options = {}) {
+      const { ttl, forceRefresh = false, swr = true } = options;
+      if (!forceRefresh) {
+        const cached = getCached(key);
+        if (cached !== null) {
+          if (swr && !inFlightRequests.has(key)) {
+            const entry = memoryCache.get(key);
+            const age = entry ? Date.now() - entry.cachedAt : 0;
+            const nominalTtl = ttl || DEFAULT_TTL[key] || 180000;
+            if (age > nominalTtl * 0.7) {
+              (async () => {
+                try {
+                  const fresh = await fetchFn();
+                  if (fresh) setCached(key, fresh, ttl);
+                } catch (_) {}
+              })();
+            }
+          }
+          return cached;
+        }
+      }
+      if (inFlightRequests.has(key)) return inFlightRequests.get(key);
+
+      const p = (async () => {
+        try {
+          const data = await fetchFn();
+          if (data !== undefined && data !== null) setCached(key, data, ttl);
+          return data;
+        } finally {
+          inFlightRequests.delete(key);
+        }
+      })();
+      inFlightRequests.set(key, p);
+      return p;
+    }
+
+    window.VeloraCache = { get: getCached, set: setCached, invalidate, getOrFetch, clearAll: () => invalidate() };
+  })();
+}
 
 /**
  * Format numeric amount to Indian Rupee (INR) currency representation.
@@ -800,27 +891,31 @@ if (typeof window !== "undefined") {
   window.getProductById = getProductById;
   window.getRelatedProducts = getRelatedProducts;
 
+  const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
+
   // Authoritative Live Supabase Product & Category Sync
   window.syncProductsFromSupabase = async function() {
     try {
-      const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
-      
       const reqHeaders = {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
       };
 
-      // 1. Fetch Categories from Supabase
+      // 1. Fetch Categories from Supabase (Projected, Cached & Deduplicated)
+      const catCols = "id,name,slug,description,image_url,is_active,created_at";
       let dbCategories = null;
       try {
-        const catRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/categories?select=*&is_active=eq.true&order=created_at.asc`, {
-          headers: reqHeaders
-        });
-        if (catRes.ok) {
-          dbCategories = await catRes.json();
-        }
-      } catch(e) {
+        dbCategories = await (window.VeloraCache
+          ? window.VeloraCache.getOrFetch('categories', async () => {
+              const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/categories?select=${catCols}&is_active=eq.true&order=created_at.asc`, { headers: reqHeaders });
+              return res.ok ? await res.json() : null;
+            }, { ttl: 300000 })
+          : (async () => {
+              const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/categories?select=${catCols}&is_active=eq.true&order=created_at.asc`, { headers: reqHeaders });
+              return res.ok ? await res.json() : null;
+            })());
+      } catch (e) {
         console.warn("Category sync notice:", e);
       }
 
@@ -850,14 +945,70 @@ if (typeof window !== "undefined") {
         });
       }
 
-      // 2. Fetch Active Products with Categories Join
+      // 2. Fetch Active Products with Categories Join (Projected, Cached & Deduplicated)
+      const prodCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,is_featured,is_new,is_deal,advance_payment_enabled,advance_payment_type,advance_payment_value,is_active,created_at,categories(id,name,slug)";
       let dbProducts = null;
-      const prodRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/products?select=*,categories(*)&is_active=eq.true&order=created_at.desc`, {
-        headers: reqHeaders
-      });
-      if (prodRes.ok) {
-        dbProducts = await prodRes.json();
+      try {
+        dbProducts = await (window.VeloraCache
+          ? window.VeloraCache.getOrFetch('products', async () => {
+              const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/products?select=${prodCols}&is_active=eq.true&order=created_at.desc`, { headers: reqHeaders });
+              return res.ok ? await res.json() : null;
+            }, { ttl: 180000 })
+          : (async () => {
+              const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/products?select=${prodCols}&is_active=eq.true&order=created_at.desc`, { headers: reqHeaders });
+              return res.ok ? await res.json() : null;
+            })());
+      } catch (e) {
+        console.warn("Products sync notice:", e);
       }
+
+      // Fetch BOGO config if not yet loaded in window.VELORA_SETTINGS
+      let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+        ? window.VELORA_SETTINGS.bogo_config.product_ids
+        : null;
+
+      if (!bogoConfigIds) {
+        try {
+          const bogoRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?key=eq.bogo_config&select=key,value`, {
+            headers: reqHeaders
+          });
+          if (bogoRes.ok) {
+            const bogoRows = await bogoRes.json();
+            if (bogoRows && bogoRows[0] && bogoRows[0].value && Array.isArray(bogoRows[0].value.product_ids)) {
+              window.VELORA_SETTINGS = window.VELORA_SETTINGS || {};
+              window.VELORA_SETTINGS.bogo_config = bogoRows[0].value;
+              bogoConfigIds = bogoRows[0].value.product_ids;
+            }
+          }
+        } catch (bErr) {
+          console.warn("BOGO config sync notice:", bErr);
+        }
+      }
+
+      // Fallback check: localStorage or active deals if bogoConfigIds is empty
+      if (!bogoConfigIds || bogoConfigIds.length === 0) {
+        try {
+          const cachedBogo = localStorage.getItem("velora_bogo_config");
+          if (cachedBogo) {
+            const parsed = JSON.parse(cachedBogo);
+            if (parsed && Array.isArray(parsed.product_ids) && parsed.product_ids.length > 0) {
+              bogoConfigIds = parsed.product_ids;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Resilient fallback to active deal products in dbProducts if still empty
+      if ((!bogoConfigIds || bogoConfigIds.length === 0) && Array.isArray(dbProducts)) {
+        const dealIds = dbProducts.filter(p => Boolean(p.is_deal)).map(p => p.id);
+        if (dealIds.length > 0) {
+          bogoConfigIds = dealIds;
+        }
+      }
+
+      bogoConfigIds = bogoConfigIds || [];
+      window.VELORA_SETTINGS = window.VELORA_SETTINGS || {};
+      window.VELORA_SETTINGS.bogo_config = { product_ids: bogoConfigIds };
 
       if (dbProducts && Array.isArray(dbProducts) && dbProducts.length > 0) {
         // Build map of existing legacy IDs
@@ -912,6 +1063,8 @@ if (typeof window !== "undefined") {
             badgeType = "popular";
           }
 
+          const isBogoMatch = Boolean(dbP.is_bogo) || bogoConfigIds.includes(dbP.id) || (legacyId && bogoConfigIds.includes(legacyId));
+
           return {
             id: dbP.id,
             legacyId: legacyId,
@@ -942,6 +1095,8 @@ if (typeof window !== "undefined") {
             isTrending: Boolean(dbP.is_featured),
             isNew: Boolean(dbP.is_new),
             isDeal: Boolean(dbP.is_deal),
+            isBogo: isBogoMatch,
+            is_bogo: isBogoMatch,
             dateAdded: dbP.created_at || new Date().toISOString(),
             advance_payment_enabled: Boolean(dbP.advance_payment_enabled),
             advance_payment_type: dbP.advance_payment_type || "fixed",
@@ -977,21 +1132,47 @@ if (typeof window !== "undefined") {
 
   window.syncStoreSettings = async function () {
     try {
-      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?select=*`, {
-        headers: {
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await (window.VeloraCache
+        ? window.VeloraCache.getOrFetch('store_settings', async () => {
+            const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?select=key,value`, {
+              headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            return res.ok ? await res.json() : null;
+          }, { ttl: 300000 })
+        : (async () => {
+            const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?select=key,value`, {
+              headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            return res.ok ? await res.json() : null;
+          })());
+
+      if (data && Array.isArray(data)) {
         window.VELORA_SETTINGS = window.VELORA_SETTINGS || {};
         data.forEach(item => {
           window.VELORA_SETTINGS[item.key] = item.value;
         });
+
+        // Update existing PRODUCTS_DATA items with fresh BOGO settings
+        const bogoIds = (window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+          ? window.VELORA_SETTINGS.bogo_config.product_ids
+          : [];
+
+        PRODUCTS_DATA.forEach(p => {
+          const isBogoMatch = Boolean(p.is_bogo) || bogoIds.includes(p.id) || bogoIds.includes(p.supabase_id) || (p.legacyId && bogoIds.includes(p.legacyId));
+          p.isBogo = isBogoMatch;
+          p.is_bogo = isBogoMatch;
+        });
+
         const settingsEvent = new CustomEvent("velora:settings-synced", { detail: window.VELORA_SETTINGS });
         window.dispatchEvent(settingsEvent);
         document.dispatchEvent(settingsEvent);
+
+        const prodEvent = new CustomEvent("velora:products-synced", {
+          detail: { products: PRODUCTS_DATA, categories: CATEGORIES_DATA }
+        });
+        window.dispatchEvent(prodEvent);
+        document.dispatchEvent(prodEvent);
+
         return window.VELORA_SETTINGS;
       }
     } catch (e) {
@@ -1027,8 +1208,11 @@ if (typeof window !== "undefined") {
 
   // Immediate background sync trigger
   if (typeof window !== "undefined") {
-    window.syncProductsFromSupabase();
-    window.syncStoreSettings();
+    window.syncStoreSettings().then(() => {
+      return window.syncProductsFromSupabase();
+    }).catch(() => {
+      window.syncProductsFromSupabase();
+    });
     setTimeout(() => {
       if (window.initStorefrontRealtime) window.initStorefrontRealtime();
     }, 1000);

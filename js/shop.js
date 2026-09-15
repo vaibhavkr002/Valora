@@ -11,12 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Global Application State ---
   const state = {
     cart: JSON.parse(localStorage.getItem("velora_cart")) || [],
-    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || ["prod-02", "prod-07"]),
+    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || []),
     
     // Filter State
     filters: {
       category: "all",
+      trendingOnly: false,
       dealsOnly: false,
+      newOnly: false,
+      bogoOnly: false,
       minPrice: 0,
       maxPrice: 20000,
       brands: new Set(),
@@ -27,9 +30,15 @@ document.addEventListener("DOMContentLoaded", () => {
     
     sortBy: "featured",
     page: 1,
-    itemsPerPage: 8,
-    totalFilteredProducts: []
+    itemsPerPage: 12,
+    totalFilteredProducts: [],
+    streamId: 0,
+    isStreaming: false,
+    renderedProductIds: new Set()
   };
+
+  let streamBatchTimer = null;
+  let pipelineTimer = null;
 
   // --- SVG Icons Helpers ---
   const icons = {
@@ -88,11 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sortDropdown: document.getElementById("sort-dropdown"),
     productsGrid: document.getElementById("shop-products-grid"),
 
-    // Pagination
-    paginationWrapper: document.getElementById("pagination-wrapper"),
-    btnLoadMore: document.getElementById("btn-load-more"),
-    paginationProgressFill: document.getElementById("pagination-progress-fill"),
-    paginationProgressText: document.getElementById("pagination-progress-text"),
+    // Automatic Catalog 3D Streaming Loader
+    catalogAutoLoader: document.getElementById("catalog-auto-loader"),
 
     // Cart Drawer
     cartDrawerOverlay: document.getElementById("cart-drawer-overlay"),
@@ -120,6 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
     modalSizesContainer: document.getElementById("modal-sizes-container"),
     modalAddToCartBtn: document.getElementById("modal-add-to-cart-btn"),
 
+    // BOGO Selection Modal
+    bogoModalOverlay: document.getElementById("bogo-modal-overlay"),
+    bogoModalCloseBtn: document.getElementById("bogo-modal-close-btn"),
+    bogoPaidBanner: document.getElementById("bogo-paid-item-banner"),
+    bogoEligibleGrid: document.getElementById("bogo-eligible-items-grid"),
+    bogoSelectedFreeName: document.getElementById("bogo-selected-free-name"),
+    bogoConfirmAddBtn: document.getElementById("bogo-confirm-add-btn"),
+
     // Toast Container
     toastContainer: document.getElementById("toast-container")
   };
@@ -134,25 +148,24 @@ document.addEventListener("DOMContentLoaded", () => {
     updateBadges();
     renderCartDrawer();
     bindEvents();
+    initInfiniteScroll();
     
     // Initial fetch and render
     executeFilterPipeline();
 
-    // Re-render and filter with live Supabase products
-    if (window.syncProductsFromSupabase) {
-      try {
-        await window.syncProductsFromSupabase();
-        renderCategoryFilters();
-        renderBrandCheckboxes();
-        executeFilterPipeline();
-        updateBadges();
-      } catch (err) {
-        console.warn("Live shop catalog sync note:", err);
-      }
-    }
-
-    if (window.syncStoreSettings) {
-      window.syncStoreSettings().then(() => applyStoreSettings());
+    // Re-render and filter with live Supabase products & store settings
+    try {
+      await Promise.allSettled([
+        window.syncStoreSettings ? window.syncStoreSettings() : Promise.resolve(),
+        window.syncProductsFromSupabase ? window.syncProductsFromSupabase() : Promise.resolve()
+      ]);
+      applyStoreSettings();
+      renderCategoryFilters();
+      renderBrandCheckboxes();
+      executeFilterPipeline();
+      updateBadges();
+    } catch (err) {
+      console.warn("Live shop catalog sync note:", err);
     }
   }
 
@@ -166,6 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("velora:settings-synced", () => {
     applyStoreSettings();
+    executeFilterPipeline();
+    updateBadges();
   });
 
   function applyStoreSettings() {
@@ -199,6 +214,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const categoryParam = urlParams.get("category");
     const searchParam = urlParams.get("search");
     const dealsParam = urlParams.get("deals") || urlParams.get("discount");
+    const sectionParam = (urlParams.get("section") || "").toLowerCase();
+    const path = window.location.pathname.toLowerCase();
+
+    if (path.includes("trending") || sectionParam === "trending") {
+      state.filters.trendingOnly = true;
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Trending Now";
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Trending Now";
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Handpicked bestsellers crafted for timeless style, all-day comfort, and daily durability.";
+      document.title = "Trending Now | VELORA - Style That Speaks For You";
+    }
+    if (path.includes("deals") || sectionParam === "deals" || dealsParam === "true" || dealsParam === "1") {
+      state.filters.dealsOnly = true;
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Today's Flash Deals";
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Today's Deals";
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Deep discounts on high-demand pieces. Quantities are strictly limited!";
+      document.title = "Today's Deals | VELORA - Style That Speaks For You";
+    }
+    if (path.includes("new-arrivals") || path.includes("new_arrivals") || sectionParam === "new" || sectionParam === "new-arrivals") {
+      state.filters.newOnly = true;
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "New Arrivals";
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = "New Arrivals";
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Just landed in the catalog. Be the first to experience our latest release pieces.";
+      document.title = "New Arrivals | VELORA - Style That Speaks For You";
+    }
+    const bogoParam = (urlParams.get("bogo") || urlParams.get("is_bogo") || "").toLowerCase();
+    if (path.includes("bogo") || sectionParam === "bogo" || bogoParam === "true" || bogoParam === "1") {
+      state.filters.bogoOnly = true;
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Buy 1 Get 1 Free";
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Buy 1 Get 1 Free";
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Select any qualifying luxury item and unlock an eligible free companion product!";
+      document.title = "Buy 1 Get 1 Free | VELORA - Style That Speaks For You";
+    }
 
     if (categoryParam) {
       const lower = categoryParam.toLowerCase();
@@ -208,13 +255,20 @@ document.addEventListener("DOMContentLoaded", () => {
         state.filters.category = lower;
       }
     }
-    if (dealsParam === "true" || dealsParam === "1") {
-      state.filters.dealsOnly = true;
-    }
     if (searchParam) {
       state.filters.searchQuery = searchParam.trim();
       if (elements.toolbarSearchInput) elements.toolbarSearchInput.value = searchParam;
       if (elements.navSearchInput) elements.navSearchInput.value = searchParam;
+    }
+
+    const brandParam = urlParams.get("brand") || urlParams.get("brands");
+    if (brandParam) {
+      const decodedBrand = decodeURIComponent(brandParam).trim();
+      state.filters.brands.add(decodedBrand);
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = decodedBrand;
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = decodedBrand;
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = `Explore authentic premium footwear, timepieces, and apparel by ${decodedBrand}.`;
+      document.title = `${decodedBrand} | VELORA - Style That Speaks For You`;
     }
   }
 
@@ -263,10 +317,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updatePageHeaderAndBreadcrumb() {
+    if (state.filters.bogoOnly) {
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Buy 1 Get 1 Free";
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Buy 1 Get 1 Free";
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Select any qualifying luxury item and unlock an eligible free companion product!";
+      return;
+    }
+
     if (state.filters.dealsOnly) {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Flash Deals";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Flash Deals & Promotions";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Exclusive limited-time promotional pricing and curated seasonal discounts.";
+      return;
+    }
+
+    if (state.filters.brands && state.filters.brands.size === 1) {
+      const singleBrand = Array.from(state.filters.brands)[0];
+      if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = singleBrand;
+      if (elements.shopPageTitle) elements.shopPageTitle.textContent = singleBrand;
+      if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = `Explore authentic curated collections by ${singleBrand}.`;
       return;
     }
 
@@ -287,7 +356,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderBrandCheckboxes() {
     if (!window.getAvailableBrands || !window.PRODUCTS_DATA) return;
 
-    const brands = window.getAvailableBrands();
+    const available = window.getAvailableBrands();
+    const brandSet = new Set(available);
+    if (state.filters.brands) {
+      state.filters.brands.forEach(b => brandSet.add(b));
+    }
+    const brands = Array.from(brandSet).sort();
+
     const brandCounts = {};
     window.PRODUCTS_DATA.forEach(p => {
       if (p.brand) brandCounts[p.brand] = (brandCounts[p.brand] || 0) + 1;
@@ -340,12 +415,26 @@ document.addEventListener("DOMContentLoaded", () => {
   // Ready to replace with `await supabase.from('products').select(...)`
   // ==========================================================================
   function executeFilterPipeline(isLoadMore = false) {
-    if (!isLoadMore) {
-      renderSkeletons();
+    if (streamBatchTimer) {
+      clearTimeout(streamBatchTimer);
+      streamBatchTimer = null;
+    }
+    state.streamId += 1;
+    state.page = 1;
+    state.isStreaming = false;
+    state.renderedProductIds = new Set();
+
+    const loader = elements.catalogAutoLoader || document.getElementById("catalog-auto-loader");
+    if (loader) loader.style.display = "none";
+
+    renderSkeletons();
+
+    if (pipelineTimer) {
+      clearTimeout(pipelineTimer);
     }
 
     // Simulate fast async fetch
-    setTimeout(() => {
+    pipelineTimer = setTimeout(() => {
       let filtered = [...window.PRODUCTS_DATA];
 
       // 1. Category Filter
@@ -353,9 +442,34 @@ document.addEventListener("DOMContentLoaded", () => {
         filtered = filtered.filter(p => p.category === state.filters.category || p.category_id === state.filters.category);
       }
 
-      // 1b. Flash Deals Filter
+      // 1b. Section Filters (Trending, Deals, New Arrivals, BOGO)
+      if (state.filters.trendingOnly) {
+        filtered = filtered.filter(p => p.isTrending === true);
+      }
       if (state.filters.dealsOnly) {
         filtered = filtered.filter(p => p.isDeal === true);
+      }
+      if (state.filters.newOnly) {
+        filtered = filtered.filter(p => p.isNew === true);
+      }
+      if (state.filters.bogoOnly) {
+        let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+          ? window.VELORA_SETTINGS.bogo_config.product_ids
+          : [];
+        if (!bogoConfigIds || bogoConfigIds.length === 0) {
+          try {
+            const cached = localStorage.getItem("velora_bogo_config");
+            if (cached) {
+              const p = JSON.parse(cached);
+              if (p && Array.isArray(p.product_ids) && p.product_ids.length > 0) bogoConfigIds = p.product_ids;
+            }
+          } catch (_) {}
+        }
+        if (!bogoConfigIds || bogoConfigIds.length === 0) {
+          const dealIds = (window.PRODUCTS_DATA || []).filter(p => Boolean(p.is_deal)).map(p => p.id);
+          if (dealIds.length > 0) bogoConfigIds = dealIds;
+        }
+        filtered = filtered.filter(p => Boolean(p.isBogo) || Boolean(p.is_bogo) || bogoConfigIds.includes(p.id) || bogoConfigIds.includes(p.supabase_id) || (p.legacyId && bogoConfigIds.includes(p.legacyId)));
       }
 
       // 2. Price Range Filter
@@ -363,9 +477,17 @@ document.addEventListener("DOMContentLoaded", () => {
         p.price >= state.filters.minPrice && p.price <= state.filters.maxPrice
       );
 
-      // 3. Brands Filter
+      // 3. Brands Filter (exact or case-insensitive / substring match)
       if (state.filters.brands.size > 0) {
-        filtered = filtered.filter(p => state.filters.brands.has(p.brand));
+        filtered = filtered.filter(p => {
+          if (state.filters.brands.has(p.brand)) return true;
+          for (const b of state.filters.brands) {
+            const bLower = b.toLowerCase();
+            if (p.brand && (p.brand.toLowerCase() === bLower || p.brand.toLowerCase().includes(bLower))) return true;
+            if (p.name && p.name.toLowerCase().includes(bLower)) return true;
+          }
+          return false;
+        });
       }
 
       // 4. Rating Filter
@@ -421,10 +543,106 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================================
-  // RENDER PRODUCTS VIEW
+  // RENDER PRODUCTS VIEW & INFINITE SCROLL
   // ==========================================================================
-  function renderProductsView() {
+  function createProductCardSingleHTML(product) {
+    const isWishlisted = state.wishlist.has(product.id);
+    const isInCart = state.cart.some(item => item.id === product.id);
+    const bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+      ? window.VELORA_SETTINGS.bogo_config.product_ids
+      : [];
+    const isBogo = state.filters.bogoOnly || Boolean(product.isBogo) || Boolean(product.is_bogo) || bogoConfigIds.includes(product.id) || bogoConfigIds.includes(product.supabase_id) || (product.legacyId && bogoConfigIds.includes(product.legacyId));
+    const badgeClass = isBogo ? 'badge-deal' : `badge-${product.badgeType || 'popular'}`;
+
+    let badgeHtml = "";
+    if (isBogo) {
+      badgeHtml = `<span class="product-badge" style="background:#059669; color:#fff; font-weight:700; box-shadow: 0 2px 8px rgba(5,150,105,0.3);">🎁 BOGO FREE</span>`;
+    } else if (product.badge) {
+      badgeHtml = `<span class="product-badge ${badgeClass}">${product.badge}</span>`;
+    }
+
+    let actionBtnHtml = "";
+    if (isBogo) {
+      actionBtnHtml = `
+        <button type="button" class="btn-add-to-cart btn-claim-bogo" data-bogo-id="${product.id}">
+          <span class="btn-cart-icon">🎁</span>
+          <span class="btn-cart-text">Claim BOGO Offer</span>
+        </button>
+      `;
+    } else {
+      actionBtnHtml = `
+        <button type="button" class="btn-add-to-cart ${isInCart ? 'added' : ''}" data-cart-id="${product.id}">
+          <span class="btn-cart-icon">${isInCart ? icons.check : icons.cart}</span>
+          <span class="btn-cart-text">${isInCart ? 'In Cart' : 'Add to Cart'}</span>
+        </button>
+      `;
+    }
+
+    return `
+      <div class="product-card" data-product-id="${product.id}">
+        <div class="product-card-media">
+          ${badgeHtml}
+          <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-wishlist-id="${product.id}" aria-label="Add to Wishlist">
+            ${icons.heart}
+          </button>
+          <img class="product-card-img" src="${product.image}" alt="${product.name}" loading="lazy" decoding="async">
+          ${product.secondaryImage ? `<img class="product-secondary-img" src="${product.secondaryImage}" alt="${product.name} alternate view" loading="lazy" decoding="async">` : ""}
+          <button class="quick-view-overlay-btn" data-quickview-id="${product.id}">
+            ${icons.eye} Quick View
+          </button>
+        </div>
+
+        <div class="product-card-body">
+          <div class="product-card-brand">${product.brand || 'VELORA'}</div>
+          <h4 class="product-card-name" title="${product.name}">
+            <a href="product.html?id=${product.id}">${product.name}</a>
+          </h4>
+
+          <div class="product-card-rating">
+            <span class="stars-list">
+              ${icons.star}
+            </span>
+            <span class="stars-score">${product.rating}</span>
+            <span class="reviews-count">(${product.reviewsCount})</span>
+          </div>
+
+          <div class="product-card-price-row">
+            <span class="price-current">${formatPrice(product.price)}</span>
+            ${product.originalPrice ? `<span class="price-original">${formatPrice(product.originalPrice)}</span>` : ""}
+            ${product.discount ? `<span class="price-discount-pill">-${product.discount}%</span>` : ""}
+          </div>
+
+          <div class="product-card-shipping-tag" style="font-size: 0.73rem; color: #059669; font-weight: 700; margin: 4px 0 8px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.2px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            FREE DELIVERY
+          </div>
+
+          ${actionBtnHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  // ==========================================================================
+  // AUTOMATIC 3D STREAMING CATALOG LOADER
+  // Streams all matching products in fluid batches (12 -> 24 -> 36 -> ... -> ALL)
+  // Displays the premium 3D orbit loader between batches, hides upon completion
+  // ==========================================================================
+
+  function startCatalogStream() {
     if (!elements.productsGrid) return;
+
+    if (streamBatchTimer) {
+      clearTimeout(streamBatchTimer);
+      streamBatchTimer = null;
+    }
+
+    const currentStreamId = ++state.streamId;
+    state.page = 1;
+    state.renderedProductIds = new Set();
+    state.isStreaming = false;
+
+    const loader = elements.catalogAutoLoader || document.getElementById("catalog-auto-loader");
 
     if (state.totalFilteredProducts.length === 0) {
       elements.productsGrid.innerHTML = `
@@ -441,73 +659,98 @@ document.addEventListener("DOMContentLoaded", () => {
           </button>
         </div>
       `;
-      if (elements.paginationWrapper) elements.paginationWrapper.style.display = "none";
+      if (loader) loader.style.display = "none";
+      updateToolbarCounters();
       return;
     }
 
-    const visibleItemsCount = state.page * state.itemsPerPage;
-    const paginatedItems = state.totalFilteredProducts.slice(0, visibleItemsCount);
-
-    elements.productsGrid.innerHTML = paginatedItems.map(product => {
-      const isWishlisted = state.wishlist.has(product.id);
-      const isInCart = state.cart.some(item => item.id === product.id);
-      const badgeClass = `badge-${product.badgeType || 'popular'}`;
-
-      return `
-        <div class="product-card" data-product-id="${product.id}">
-          <div class="product-card-media">
-            ${product.badge ? `<span class="product-badge ${badgeClass}">${product.badge}</span>` : ""}
-            <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-wishlist-id="${product.id}" aria-label="Add to Wishlist">
-              ${icons.heart}
-            </button>
-            <img class="product-card-img" src="${product.image}" alt="${product.name}" loading="lazy">
-            ${product.secondaryImage ? `<img class="product-secondary-img" src="${product.secondaryImage}" alt="${product.name} alternate view" loading="lazy">` : ""}
-            <button class="quick-view-overlay-btn" data-quickview-id="${product.id}">
-              ${icons.eye} Quick View
-            </button>
-          </div>
-
-          <div class="product-card-body">
-            <div class="product-card-brand">${product.brand || 'VELORA'}</div>
-            <h4 class="product-card-name" title="${product.name}">
-              <a href="product.html?id=${product.id}">${product.name}</a>
-            </h4>
-
-            <div class="product-card-rating">
-              <span class="stars-list">
-                ${icons.star}
-              </span>
-              <span class="stars-score">${product.rating}</span>
-              <span class="reviews-count">(${product.reviewsCount})</span>
-            </div>
-
-            <div class="product-card-price-row">
-              <span class="price-current">${formatPrice(product.price)}</span>
-              ${product.originalPrice ? `<span class="price-original">${formatPrice(product.originalPrice)}</span>` : ""}
-              ${product.discount ? `<span class="price-discount-pill">-${product.discount}%</span>` : ""}
-            </div>
-
-            <button class="btn-add-to-cart ${isInCart ? 'added' : ''}" data-cart-id="${product.id}">
-              ${isInCart ? `${icons.check} In Cart` : `${icons.cart} Add to Cart`}
-            </button>
-          </div>
-        </div>
-      `;
+    // Render first batch of products immediately
+    const firstBatch = state.totalFilteredProducts.slice(0, state.itemsPerPage);
+    const fragment = document.createDocumentFragment();
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = firstBatch.map(product => {
+      state.renderedProductIds.add(product.id);
+      return createProductCardSingleHTML(product);
     }).join("");
-
-    // Update Pagination / Load More
-    if (elements.paginationWrapper) {
-      if (visibleItemsCount >= state.totalFilteredProducts.length) {
-        elements.paginationWrapper.style.display = "none";
-      } else {
-        elements.paginationWrapper.style.display = "flex";
-        const pct = Math.min(100, (visibleItemsCount / state.totalFilteredProducts.length) * 100);
-        if (elements.paginationProgressFill) elements.paginationProgressFill.style.width = `${pct}%`;
-        if (elements.paginationProgressText) {
-          elements.paginationProgressText.textContent = `Showing ${visibleItemsCount} of ${state.totalFilteredProducts.length} products`;
-        }
-      }
+    while (tempDiv.firstChild) {
+      fragment.appendChild(tempDiv.firstChild);
     }
+    elements.productsGrid.innerHTML = "";
+    elements.productsGrid.appendChild(fragment);
+    updateToolbarCounters();
+
+    const total = state.totalFilteredProducts.length;
+    if (state.itemsPerPage >= total) {
+      // All products fit in initial batch
+      if (loader) loader.style.display = "none";
+      return;
+    }
+
+    // More products to stream: display premium 3D orbit loader and stream next batch automatically
+    if (loader) loader.style.display = "flex";
+    state.isStreaming = true;
+
+    scheduleNextStreamBatch(currentStreamId);
+  }
+
+  function scheduleNextStreamBatch(currentStreamId) {
+    if (streamBatchTimer) {
+      clearTimeout(streamBatchTimer);
+    }
+
+    // Micro-cadence interval between batches for smooth streaming & visible 3D orbit animation
+    streamBatchTimer = setTimeout(() => {
+      // Abort if another filter/search stream has started
+      if (currentStreamId !== state.streamId) return;
+
+      const loader = elements.catalogAutoLoader || document.getElementById("catalog-auto-loader");
+      const total = state.totalFilteredProducts.length;
+      const startIdx = state.page * state.itemsPerPage;
+
+      if (startIdx >= total) {
+        state.isStreaming = false;
+        if (loader) loader.style.display = "none";
+        return;
+      }
+
+      const nextBatch = state.totalFilteredProducts.slice(startIdx, startIdx + state.itemsPerPage);
+      // Guarantee zero duplicates by filtering against rendered IDs set
+      const unrenderedItems = nextBatch.filter(p => !state.renderedProductIds.has(p.id));
+
+      if (unrenderedItems.length > 0 && elements.productsGrid) {
+        const fragment = document.createDocumentFragment();
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = unrenderedItems.map(product => {
+          state.renderedProductIds.add(product.id);
+          return createProductCardSingleHTML(product);
+        }).join("");
+        while (tempDiv.firstChild) {
+          fragment.appendChild(tempDiv.firstChild);
+        }
+        elements.productsGrid.appendChild(fragment);
+      }
+
+      state.page += 1;
+      const nextStartIdx = state.page * state.itemsPerPage;
+
+      if (nextStartIdx >= total) {
+        // Complete! Every matching product has been rendered
+        state.isStreaming = false;
+        if (loader) loader.style.display = "none";
+      } else {
+        // Continue streaming next batch
+        if (loader) loader.style.display = "flex";
+        scheduleNextStreamBatch(currentStreamId);
+      }
+    }, 180);
+  }
+
+  function renderProductsView() {
+    startCatalogStream();
+  }
+
+  function initInfiniteScroll() {
+    // Kept for backward compatibility; streaming is driven automatically by startCatalogStream()
   }
 
   // ==========================================================================
@@ -518,12 +761,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const chips = [];
 
+    // Section chips
+    if (state.filters.trendingOnly) {
+      chips.push({
+        label: "Trending Now",
+        onRemove: () => {
+          state.filters.trendingOnly = false;
+          executeFilterPipeline();
+        }
+      });
+    }
+
     // Deals chip
     if (state.filters.dealsOnly) {
       chips.push({
         label: "Flash Deals",
         onRemove: () => {
           state.filters.dealsOnly = false;
+          executeFilterPipeline();
+        }
+      });
+    }
+
+    if (state.filters.newOnly) {
+      chips.push({
+        label: "New Arrivals",
+        onRemove: () => {
+          state.filters.newOnly = false;
+          executeFilterPipeline();
+        }
+      });
+    }
+
+    if (state.filters.bogoOnly) {
+      chips.push({
+        label: "Buy 1 Get 1 Free",
+        onRemove: () => {
+          state.filters.bogoOnly = false;
+          try {
+            const url = new URL(window.location);
+            if (url.searchParams.has("bogo") || url.searchParams.has("is_bogo") || url.searchParams.get("section") === "bogo") {
+              url.searchParams.delete("bogo");
+              url.searchParams.delete("is_bogo");
+              if (url.searchParams.get("section") === "bogo") url.searchParams.delete("section");
+              window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+            }
+          } catch (_) {}
+          updatePageHeaderAndBreadcrumb();
           executeFilterPipeline();
         }
       });
@@ -629,7 +913,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================================
   function clearAllFilters() {
     state.filters.category = "all";
+    state.filters.trendingOnly = false;
     state.filters.dealsOnly = false;
+    state.filters.newOnly = false;
+    state.filters.bogoOnly = false;
     state.filters.minPrice = 0;
     state.filters.maxPrice = 20000;
     state.filters.brands.clear();
@@ -719,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update button states
     document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${productId}"]`).forEach(btn => {
       btn.classList.add("added");
-      btn.innerHTML = `${icons.check} In Cart`;
+      btn.innerHTML = `<span class="btn-cart-icon">${icons.check}</span><span class="btn-cart-text">In Cart</span>`;
     });
   }
 
@@ -732,7 +1019,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast(`Removed "${removed.name}" from cart`, "info");
       document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${removed.id}"]`).forEach(btn => {
         btn.classList.remove("added");
-        btn.innerHTML = `${icons.cart} Add to Cart`;
+        btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
       });
     }
 
@@ -751,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${removed.id}"]`).forEach(btn => {
       btn.classList.remove("added");
-      btn.innerHTML = `${icons.cart} Add to Cart`;
+      btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
     });
   }
 
@@ -767,9 +1054,8 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.cartEmptyState.style.display = "flex";
       elements.cartSubtotalElem.textContent = formatPrice(0);
       elements.cartTotalElem.textContent = formatPrice(0);
-      const freeShippingThreshold = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.shipping && Number(window.VELORA_SETTINGS.shipping.free_shipping_threshold)) || 999;
-      elements.freeShippingFill.style.width = "0%";
-      elements.freeShippingMsg.innerHTML = `Add <strong>${formatPrice(freeShippingThreshold)}</strong> more for Free Delivery!`;
+      if (elements.freeShippingFill) elements.freeShippingFill.style.width = "100%";
+      if (elements.freeShippingMsg) elements.freeShippingMsg.innerHTML = `✨ <strong>100% FREE Delivery Across India</strong> on all orders!`;
       const advanceBreakdownBox = document.getElementById("cart-advance-breakdown");
       if (advanceBreakdownBox) advanceBreakdownBox.style.display = "none";
       return;
@@ -779,16 +1065,9 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.cartEmptyState.style.display = "none";
 
     const subtotal = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const freeShippingThreshold = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.shipping && Number(window.VELORA_SETTINGS.shipping.free_shipping_threshold)) || 999;
-    const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
-
-    elements.freeShippingFill.style.width = `${progress}%`;
-    if (subtotal >= freeShippingThreshold) {
-      elements.freeShippingMsg.innerHTML = `🎉 You unlocked <strong>FREE Express Delivery</strong>!`;
-    } else {
-      const rem = Math.max(0, freeShippingThreshold - subtotal);
-      elements.freeShippingMsg.innerHTML = `Add <strong>${formatPrice(rem)}</strong> more for Free Delivery!`;
-    }
+    
+    if (elements.freeShippingFill) elements.freeShippingFill.style.width = "100%";
+    if (elements.freeShippingMsg) elements.freeShippingMsg.innerHTML = `🎉 <strong>100% FREE Delivery Across India</strong> on this order!`;
 
     elements.cartSubtotalElem.textContent = formatPrice(subtotal);
     elements.cartTotalElem.textContent = formatPrice(subtotal);
@@ -845,12 +1124,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openCartDrawer() {
-    elements.cartDrawerOverlay.classList.add("active");
+    if (window.VeloraCart && typeof window.VeloraCart.open === "function") {
+      window.VeloraCart.open();
+      return;
+    }
+    renderCartDrawer();
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.add("active");
+      elements.cartDrawerOverlay.classList.add("open");
+    }
     document.body.style.overflow = "hidden";
   }
 
   function closeCartDrawer() {
-    elements.cartDrawerOverlay.classList.remove("active");
+    if (window.VeloraCart && typeof window.VeloraCart.close === "function") {
+      window.VeloraCart.close();
+      return;
+    }
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.remove("active");
+      elements.cartDrawerOverlay.classList.remove("open");
+    }
     document.body.style.overflow = "";
   }
 
@@ -965,6 +1259,135 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================================
+  // BUY 1 GET 1 FREE (BOGO) MODAL CONTROLLER
+  // ==========================================================================
+  let selectedBogoPaidProduct = null;
+  let selectedBogoFreeProduct = null;
+
+  function openBogoModal(productId) {
+    const paidProduct = (window.PRODUCTS_DATA && window.PRODUCTS_DATA.find(p => p.id === productId)) || 
+                        (window.getProductById ? window.getProductById(productId) : null);
+    if (!paidProduct) return;
+
+    selectedBogoPaidProduct = paidProduct;
+    selectedBogoFreeProduct = null;
+
+    if (elements.bogoPaidBanner) {
+      elements.bogoPaidBanner.innerHTML = `
+        <div style="display:flex; align-items:center; gap: 14px;">
+          <img src="${paidProduct.image}" alt="${paidProduct.name}" style="width: 58px; height: 58px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+          <div>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px;">Purchasing Qualifying Item:</span>
+            <h4 style="font-size: 0.98rem; font-weight: 700; color: var(--text-main); margin: 2px 0;">${paidProduct.name}</h4>
+            <span style="font-size: 0.92rem; font-weight: 700; color: var(--accent);">${formatPrice(paidProduct.price)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Filter eligible free items: selling price within ₹20–₹40 of purchased product price
+    const paidPrice = Number(paidProduct.price) || 0;
+    let eligible = (window.PRODUCTS_DATA || []).filter(p => {
+      if (p.id === paidProduct.id || (paidProduct.supabase_id && p.id === paidProduct.supabase_id) || (p.supabase_id && p.supabase_id === paidProduct.id)) return false;
+      const diff = Math.abs((Number(p.price) || 0) - paidPrice);
+      return diff >= 20 && diff <= 40;
+    });
+
+    // Fallback: selling price within ₹40 if strict range yields fewer than 2 items
+    if (eligible.length < 2) {
+      eligible = (window.PRODUCTS_DATA || []).filter(p => {
+        if (p.id === paidProduct.id || (paidProduct.supabase_id && p.id === paidProduct.supabase_id) || (p.supabase_id && p.supabase_id === paidProduct.id)) return false;
+        const diff = Math.abs((Number(p.price) || 0) - paidPrice);
+        return diff <= 40;
+      });
+    }
+
+    // Fallback: closest priced items sorted by closest price match
+    if (eligible.length < 2) {
+      eligible = [...(window.PRODUCTS_DATA || [])]
+        .filter(p => p.id !== paidProduct.id && (!paidProduct.supabase_id || p.id !== paidProduct.supabase_id) && (!p.supabase_id || p.supabase_id !== paidProduct.id))
+        .sort((a, b) => Math.abs((Number(a.price) || 0) - paidPrice) - Math.abs((Number(b.price) || 0) - paidPrice))
+        .slice(0, 8);
+    }
+
+    if (elements.bogoEligibleGrid) {
+      elements.bogoEligibleGrid.innerHTML = eligible.map(freeItem => {
+        const diff = Math.abs((freeItem.price || 0) - (paidProduct.price || 0));
+        return `
+          <div class="bogo-card" data-free-id="${freeItem.id}">
+            <div class="bogo-card-thumb">
+              <span class="bogo-free-pill">100% FREE</span>
+              <img src="${freeItem.image}" alt="${freeItem.name}" loading="lazy">
+            </div>
+            <div class="bogo-card-info">
+              <h5 class="bogo-card-title" title="${freeItem.name}">${freeItem.name}</h5>
+              <div class="bogo-card-prices">
+                <span class="bogo-price-free">₹0 FREE</span>
+                <span class="bogo-price-orig">${formatPrice(freeItem.price)}</span>
+              </div>
+              <span style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom: 8px;">Price Match: Δ ₹${diff}</span>
+              <button type="button" class="bogo-select-btn" data-free-select-id="${freeItem.id}">
+                Select This Gift
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Bind card selection
+      elements.bogoEligibleGrid.querySelectorAll(".bogo-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const fid = card.dataset.freeId;
+          const chosen = eligible.find(p => p.id === fid);
+          if (!chosen) return;
+
+          selectedBogoFreeProduct = chosen;
+          elements.bogoEligibleGrid.querySelectorAll(".bogo-card").forEach(c => {
+            c.classList.remove("selected");
+            const btn = c.querySelector(".bogo-select-btn");
+            if (btn) btn.textContent = "Select This Gift";
+          });
+
+          card.classList.add("selected");
+          const selBtn = card.querySelector(".bogo-select-btn");
+          if (selBtn) selBtn.textContent = "✓ Selected Free Gift";
+
+          if (elements.bogoSelectedFreeName) {
+            elements.bogoSelectedFreeName.textContent = `${chosen.name} (${formatPrice(chosen.price)} value — Free)`;
+            elements.bogoSelectedFreeName.style.color = "#059669";
+          }
+
+          if (elements.bogoConfirmAddBtn) {
+            elements.bogoConfirmAddBtn.disabled = false;
+          }
+        });
+      });
+    }
+
+    if (elements.bogoSelectedFreeName) {
+      elements.bogoSelectedFreeName.textContent = "None chosen yet";
+      elements.bogoSelectedFreeName.style.color = "var(--text-muted)";
+    }
+    if (elements.bogoConfirmAddBtn) {
+      elements.bogoConfirmAddBtn.disabled = true;
+    }
+
+    if (elements.bogoModalOverlay) {
+      elements.bogoModalOverlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+  }
+
+  function closeBogoModal() {
+    if (elements.bogoModalOverlay) {
+      elements.bogoModalOverlay.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+    selectedBogoPaidProduct = null;
+    selectedBogoFreeProduct = null;
+  }
+
+  // ==========================================================================
   // BIND ALL EVENT LISTENERS
   // ==========================================================================
   function bindEvents() {
@@ -973,6 +1396,11 @@ document.addEventListener("DOMContentLoaded", () => {
       // Add to Cart
       const addCartBtn = e.target.closest(".btn-add-to-cart");
       if (addCartBtn) {
+        if (addCartBtn.classList.contains("btn-claim-bogo") || addCartBtn.dataset.bogoId) {
+          const bogoId = addCartBtn.dataset.bogoId || addCartBtn.dataset.cartId;
+          openBogoModal(bogoId);
+          return;
+        }
         addToCart(addCartBtn.dataset.cartId);
         return;
       }
@@ -1189,12 +1617,17 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 5. In-Shop Toolbar Search
+    // 5. In-Shop Toolbar Search (Debounced with Request Cancellation)
+    let shopSearchTimer = null;
     if (elements.toolbarSearchInput) {
       elements.toolbarSearchInput.addEventListener("input", e => {
-        state.filters.searchQuery = e.target.value.trim();
-        state.page = 1;
-        executeFilterPipeline();
+        clearTimeout(shopSearchTimer);
+        const query = e.target.value.trim();
+        shopSearchTimer = setTimeout(() => {
+          state.filters.searchQuery = query;
+          state.page = 1;
+          executeFilterPipeline();
+        }, 220);
       });
     }
 
@@ -1202,6 +1635,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.navSearchInput) {
       elements.navSearchInput.addEventListener("keypress", e => {
         if (e.key === "Enter") {
+          clearTimeout(shopSearchTimer);
           state.filters.searchQuery = e.target.value.trim();
           if (elements.toolbarSearchInput) elements.toolbarSearchInput.value = state.filters.searchQuery;
           state.page = 1;
@@ -1210,20 +1644,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 7. Load More Products Button
-    if (elements.btnLoadMore) {
-      elements.btnLoadMore.addEventListener("click", () => {
-        elements.btnLoadMore.classList.add("loading");
-        elements.btnLoadMore.innerHTML = `${icons.spin} Loading...`;
-        setTimeout(() => {
-          state.page += 1;
-          renderProductsView();
-          updateToolbarCounters();
-          elements.btnLoadMore.classList.remove("loading");
-          elements.btnLoadMore.innerHTML = `Load More Products (${state.totalFilteredProducts.length - state.page * state.itemsPerPage} remaining)`;
-        }, 350);
-      });
-    }
+    // 7. Infinite Scroll is initialized via initInfiniteScroll() in initShop()
 
     // 8. Mobile Filter Drawer
     if (elements.mobileFilterBtn) {
@@ -1290,6 +1711,79 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // 10b. BOGO Modal Triggers
+    if (elements.bogoModalCloseBtn) {
+      elements.bogoModalCloseBtn.addEventListener("click", closeBogoModal);
+    }
+    if (elements.bogoModalOverlay) {
+      elements.bogoModalOverlay.addEventListener("click", e => {
+        if (e.target === elements.bogoModalOverlay) closeBogoModal();
+      });
+    }
+
+    if (elements.bogoConfirmAddBtn) {
+      elements.bogoConfirmAddBtn.addEventListener("click", () => {
+        if (!selectedBogoPaidProduct || !selectedBogoFreeProduct) return;
+
+        const paid = selectedBogoPaidProduct;
+        const free = selectedBogoFreeProduct;
+        const bogoPairId = "bogo-" + Date.now();
+
+        // 1. Add Paid Product
+        const paidSize = paid.sizes ? paid.sizes[0] : "Standard";
+        const paidColor = paid.colors ? paid.colors[0] : "Default";
+        const isAdv = Boolean(paid.advance_payment_enabled);
+        const advType = paid.advance_payment_type || 'fixed';
+        const advVal = Number(paid.advance_payment_value) || 0;
+        let unitAdv = 0;
+        if (isAdv) {
+          unitAdv = advType === "percentage" ? Math.round(paid.price * (advVal / 100)) : Math.min(paid.price, advVal);
+        }
+
+        state.cart.push({
+          id: paid.id,
+          name: paid.name,
+          price: paid.price,
+          image: paid.image,
+          size: paidSize,
+          color: paidColor,
+          quantity: 1,
+          advance_payment_enabled: isAdv,
+          advance_payment_type: advType,
+          advance_payment_value: advVal,
+          advance_per_unit: unitAdv,
+          cod_per_unit: Math.max(0, paid.price - unitAdv),
+          bogo_pair_id: bogoPairId
+        });
+
+        // 2. Add Free Product at ₹0
+        state.cart.push({
+          id: free.id,
+          name: `${free.name} (Free BOGO Gift)`,
+          price: 0,
+          originalPrice: free.price,
+          image: free.image,
+          size: free.sizes ? free.sizes[0] : "Standard",
+          color: free.colors ? free.colors[0] : "Default",
+          quantity: 1,
+          advance_payment_enabled: false,
+          advance_payment_type: 'fixed',
+          advance_payment_value: 0,
+          advance_per_unit: 0,
+          cod_per_unit: 0,
+          is_free_bogo: true,
+          bogo_pair_id: bogoPairId
+        });
+
+        saveCart();
+        updateBadges();
+        renderCartDrawer();
+        closeBogoModal();
+        openCartDrawer();
+        showToast(`Added "${paid.name}" and FREE "${free.name}" to cart!`, "success");
+      });
+    }
+
     // 11. Mobile Header Hamburger
     if (elements.mobileToggleBtn) {
       elements.mobileToggleBtn.addEventListener("click", () => {
@@ -1334,6 +1828,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.key === "Escape") {
         closeCartDrawer();
         closeQuickView();
+        closeBogoModal();
         closeMobileDrawer();
         closeMobileFilterDrawer();
       }

@@ -9,19 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Global Application State ---
   const state = {
-    cart: JSON.parse(localStorage.getItem("velora_cart")) || [
-      // Pre-populate with 1 realistic item for instant visual demonstration
-      {
-        id: "prod-01",
-        name: "AeroGlide Runner Pro V2",
-        price: 3499,
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80",
-        size: "US 10",
-        color: "Obsidian Black",
-        quantity: 1
-      }
-    ],
-    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || ["prod-02", "prod-07"]),
+    cart: JSON.parse(localStorage.getItem("velora_cart")) || [],
+    wishlist: new Set(JSON.parse(localStorage.getItem("velora_wishlist")) || []),
     activeTrendingCategory: "all",
     dealTimeLeft: 14 * 3600 + 42 * 60 + 15 // Flash deal timer: 14h 42m 15s
   };
@@ -32,6 +21,21 @@ document.addEventListener("DOMContentLoaded", () => {
     trendingGrid: document.getElementById("trending-grid"),
     newArrivalsGrid: document.getElementById("new-arrivals-grid"),
     dealsGrid: document.getElementById("deals-grid"),
+    bogoGrid: document.getElementById("bogo-grid"),
+
+    // Rotating Advertisements Carousel
+    adsCarouselTrack: document.getElementById("ads-carousel-track"),
+    adsCarouselPrev: document.getElementById("ads-carousel-prev"),
+    adsCarouselNext: document.getElementById("ads-carousel-next"),
+    adsCarouselDots: document.getElementById("ads-carousel-dots"),
+
+    // BOGO Selection Modal
+    bogoModalOverlay: document.getElementById("bogo-modal-overlay"),
+    bogoModalCloseBtn: document.getElementById("bogo-modal-close-btn"),
+    bogoPaidBanner: document.getElementById("bogo-paid-item-banner"),
+    bogoEligibleGrid: document.getElementById("bogo-eligible-items-grid"),
+    bogoSelectedFreeName: document.getElementById("bogo-selected-free-name"),
+    bogoConfirmAddBtn: document.getElementById("bogo-confirm-add-btn"),
     
     // Header & Badges
     cartCountBadges: document.querySelectorAll(".cart-count-badge"),
@@ -101,36 +105,39 @@ document.addEventListener("DOMContentLoaded", () => {
   init();
 
   async function init() {
-    renderCategories();
-    renderTrendingProducts("all");
-    renderNewArrivals();
-    renderFlashDeals();
-    updateBadges();
-    renderCartDrawer();
-    initFlashDealTimer();
-    bindEventListeners();
+    // Bind listeners immediately so navigation and cart triggers work without waiting
+    try { bindEventListeners(); } catch (err) { console.warn("bindEventListeners error:", err); }
 
-    // Re-render seamlessly as soon as live Supabase catalog sync completes
-    if (window.syncProductsFromSupabase) {
-      try {
-        await window.syncProductsFromSupabase();
-        renderCategories();
-        renderTrendingProducts(state.activeTrendingCategory || "all");
-        renderNewArrivals();
-        renderFlashDeals();
-        updateBadges();
-      } catch (err) {
-        console.warn("Live homepage catalog sync:", err);
-      }
-    }
+    try { renderCategories(); } catch (err) { console.warn("renderCategories error:", err); }
+    try { renderTrendingProducts("all"); } catch (err) { console.warn("renderTrendingProducts error:", err); }
+    try { renderNewArrivals(); } catch (err) { console.warn("renderNewArrivals error:", err); }
+    try { renderFlashDeals(); } catch (err) { console.warn("renderFlashDeals error:", err); }
+    try { renderBogoProducts(); } catch (err) { console.warn("renderBogoProducts error:", err); }
+    try { initAdvertisementsCarousel(); } catch (err) { console.warn("initAdvertisementsCarousel error:", err); }
+    try { initBrandsCarousel(); } catch (err) { console.warn("initBrandsCarousel error:", err); }
+    try { updateBadges(); } catch (err) { console.warn("updateBadges error:", err); }
+    try { renderCartDrawer(); } catch (err) { console.warn("renderCartDrawer error:", err); }
+    try { initFlashDealTimer(); } catch (err) { console.warn("initFlashDealTimer error:", err); }
 
-    // Dynamic banners & delivery partners from Supabase
-    await syncBanners();
-    await syncDeliveryPartners();
-    if (window.syncStoreSettings) {
-      await window.syncStoreSettings();
+    // Re-render seamlessly with batched, cached Supabase catalog & config sync
+    try {
+      await Promise.allSettled([
+        window.syncProductsFromSupabase ? window.syncProductsFromSupabase() : Promise.resolve(),
+        syncBanners(),
+        syncDeliveryPartners(),
+        window.syncStoreSettings ? window.syncStoreSettings() : Promise.resolve()
+      ]);
+      renderCategories();
+      renderTrendingProducts(state.activeTrendingCategory || "all");
+      renderNewArrivals();
+      renderFlashDeals();
+      renderBogoProducts();
+      updateBadges();
       applyStoreSettings();
+    } catch (err) {
+      console.warn("Live homepage catalog sync:", err);
     }
+
     initHomepageRealtime();
   }
 
@@ -140,24 +147,36 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTrendingProducts(state.activeTrendingCategory || "all");
     renderNewArrivals();
     renderFlashDeals();
+    renderBogoProducts();
     updateBadges();
   });
 
   window.addEventListener("velora:settings-synced", () => {
     applyStoreSettings();
+    renderBogoProducts();
   });
 
-  // 1b. Render Promotional Hero Banner (Dynamic from Supabase banners table)
+  // 1b. Render Promotional Hero Banner (Projected & Cached from Supabase banners table)
   async function syncBanners() {
     try {
       const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
       const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
-      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/banners?is_active=eq.true&order=display_order.asc`, {
-        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-      });
-      if (!res.ok) return;
-      const banners = await res.json();
-      if (!banners || banners.length === 0) return;
+      const bannerCols = "id,title,subtitle,image_url,link,display_order,is_active,badge_text,cta_text";
+      const banners = await (window.VeloraCache
+        ? window.VeloraCache.getOrFetch('banners', async () => {
+            const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/banners?select=${bannerCols}&is_active=eq.true&order=display_order.asc`, {
+              headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            return res.ok ? await res.json() : null;
+          }, { ttl: 300000 })
+        : (async () => {
+            const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/banners?select=*&is_active=eq.true&order=display_order.asc`, {
+              headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            return res.ok ? await res.json() : null;
+          })());
+
+      if (!banners || !Array.isArray(banners) || banners.length === 0) return;
 
       const activeBanner = banners[0];
       const tagEl = document.getElementById("hero-tag-text");
@@ -165,30 +184,44 @@ document.addEventListener("DOMContentLoaded", () => {
       const subtitleEl = document.getElementById("hero-subtitle");
       const ctaBtn = document.getElementById("hero-cta-primary");
       const ctaText = document.getElementById("hero-cta-text");
-      const heroImg = document.getElementById("hero-image");
 
-      if (tagEl && activeBanner.subtitle) tagEl.textContent = activeBanner.subtitle;
+      if (tagEl && (activeBanner.badge_text || activeBanner.subtitle)) {
+        tagEl.textContent = activeBanner.badge_text || "Featured Collection";
+      }
       if (headlineEl && activeBanner.title) {
         headlineEl.innerHTML = activeBanner.title;
       }
       if (subtitleEl && activeBanner.subtitle) {
         subtitleEl.textContent = activeBanner.subtitle;
       }
-      if (ctaBtn && activeBanner.button_link) {
-        ctaBtn.href = activeBanner.button_link;
+      if (ctaBtn) {
+        ctaBtn.setAttribute("href", activeBanner.link || activeBanner.button_link || "#shop");
       }
-      if (ctaText && activeBanner.button_text) {
-        ctaText.textContent = activeBanner.button_text;
+      if (ctaText) {
+        ctaText.textContent = activeBanner.cta_text || activeBanner.button_text || "Explore Collection";
       }
+      const heroImg = document.getElementById("hero-image");
       if (heroImg && activeBanner.image_url) {
         heroImg.src = activeBanner.image_url;
+      }
+
+      const heroMedia = document.querySelector(".hero-media-wrapper");
+      if (heroMedia && activeBanner.image_url) {
+        let bgEl = heroMedia.querySelector(".hero-dynamic-bg");
+        if (!bgEl) {
+          bgEl = document.createElement("div");
+          bgEl.className = "hero-dynamic-bg";
+          bgEl.style.cssText = "position:absolute; inset:0; background-size:cover; background-position:center; opacity:0.15; pointer-events:none; border-radius:inherit; transition:all 0.5s ease;";
+          heroMedia.insertBefore(bgEl, heroMedia.firstChild);
+        }
+        bgEl.style.backgroundImage = `url('${activeBanner.image_url}')`;
       }
     } catch (err) {
       console.warn("Banner sync notice:", err);
     }
   }
 
-  // 1c. Render Delivery Partners (Dynamic from Supabase delivery_partners table)
+  // 1c. Render Delivery Partners (Projected & Cached from Supabase delivery_partners table)
   async function syncDeliveryPartners() {
     const grid = document.getElementById("delivery-partners-grid");
     if (!grid) return;
@@ -196,19 +229,29 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
       const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
-      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/delivery_partners?is_active=eq.true&order=display_order.asc`, {
-        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-      });
-      if (!res.ok) return;
-      const partners = await res.json();
-      if (!partners || partners.length === 0) return;
+      const partnerCols = "id,name,logo_url,tagline,badge_text,display_order,is_active";
+      const partners = await (window.VeloraCache
+        ? window.VeloraCache.getOrFetch('delivery_partners', async () => {
+            const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/delivery_partners?select=${partnerCols}&is_active=eq.true&order=display_order.asc`, {
+              headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            return res.ok ? await res.json() : null;
+          }, { ttl: 300000 })
+        : (async () => {
+            const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/delivery_partners?is_active=eq.true&order=display_order.asc`, {
+              headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            return res.ok ? await res.json() : null;
+          })());
+
+      if (!partners || !Array.isArray(partners) || partners.length === 0) return;
 
       grid.innerHTML = partners.map(p => {
         const cleanLogo = (p.logo_url || "").replace(/^\.\.\//, "");
         return `
           <div class="delivery-partner-card">
             <div class="partner-logo-box">
-              <img src="${cleanLogo}" alt="${p.name} Logo" class="partner-logo-img" loading="lazy" onerror="this.style.display='none';">
+              <img src="${cleanLogo}" alt="${p.name} Logo" class="partner-logo-img" loading="lazy" decoding="async" onerror="this.style.display='none';">
             </div>
             <h4 class="partner-name">${p.name}</h4>
             <span class="partner-desc">${p.tagline || 'Reliable Logistics'}</span>
@@ -255,7 +298,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const ch = client.channel("public:homepage_sync_channel");
       ch
-        .on("postgres_changes", { event: "*", schema: "public", table: "banners" }, () => syncBanners())
+        .on("postgres_changes", { event: "*", schema: "public", table: "banners" }, () => {
+          syncBanners();
+          initAdvertisementsCarousel();
+        })
         .on("postgres_changes", { event: "*", schema: "public", table: "delivery_partners" }, () => syncDeliveryPartners())
         .subscribe();
     } catch (e) {
@@ -291,15 +337,43 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 2. Render Product Card HTML Template
-  function createProductCardHTML(product) {
+  function createProductCardHTML(product, forceBogo = false) {
     const isWishlisted = state.wishlist.has(product.id);
-    const badgeClass = `badge-${product.badgeType || 'popular'}`;
+    const bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+      ? window.VELORA_SETTINGS.bogo_config.product_ids
+      : [];
+    const isBogo = forceBogo || Boolean(product.isBogo) || Boolean(product.is_bogo) || bogoConfigIds.includes(product.id) || bogoConfigIds.includes(product.supabase_id) || (product.legacyId && bogoConfigIds.includes(product.legacyId));
+    const badgeClass = isBogo ? 'badge-deal' : `badge-${product.badgeType || 'popular'}`;
     const isInCart = state.cart.some(item => item.id === product.id);
+
+    let badgeHtml = "";
+    if (isBogo) {
+      badgeHtml = `<span class="product-badge" style="background:#059669; color:#fff; font-weight:700; box-shadow: 0 2px 8px rgba(5,150,105,0.3);">🎁 BOGO FREE</span>`;
+    } else if (product.badge) {
+      badgeHtml = `<span class="product-badge ${badgeClass}">${product.badge}</span>`;
+    }
+
+    let actionBtnHtml = "";
+    if (isBogo) {
+      actionBtnHtml = `
+        <button type="button" class="btn-add-to-cart btn-claim-bogo" data-bogo-id="${product.id}">
+          <span class="btn-cart-icon">🎁</span>
+          <span class="btn-cart-text">Claim BOGO Offer</span>
+        </button>
+      `;
+    } else {
+      actionBtnHtml = `
+        <button type="button" class="btn-add-to-cart ${isInCart ? 'added' : ''}" data-cart-id="${product.id}">
+          <span class="btn-cart-icon">${isInCart ? icons.check : icons.cart}</span>
+          <span class="btn-cart-text">${isInCart ? 'In Cart' : 'Add to Cart'}</span>
+        </button>
+      `;
+    }
 
     return `
       <div class="product-card" data-product-id="${product.id}">
         <div class="product-card-media">
-          ${product.badge ? `<span class="product-badge ${badgeClass}">${product.badge}</span>` : ""}
+          ${badgeHtml}
           <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-wishlist-id="${product.id}" aria-label="Add to Wishlist">
             ${icons.heart}
           </button>
@@ -341,15 +415,18 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           ` : ""}
 
-          <button class="btn-add-to-cart ${isInCart ? 'added' : ''}" data-cart-id="${product.id}">
-            ${isInCart ? `${icons.check} In Cart` : `${icons.cart} Add to Cart`}
-          </button>
+          <div class="product-card-shipping-tag" style="font-size: 0.73rem; color: #059669; font-weight: 700; margin: 4px 0 8px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.2px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            FREE DELIVERY
+          </div>
+
+          ${actionBtnHtml}
         </div>
       </div>
     `;
   }
 
-  // 3. Render Trending Now Products
+  // 3. Render Trending Now Products (5 cards per row x 3 rows = up to 15)
   function renderTrendingProducts(category = "all") {
     if (!elements.trendingGrid || !window.PRODUCTS_DATA) return;
 
@@ -358,21 +435,501 @@ document.addEventListener("DOMContentLoaded", () => {
       filtered = window.PRODUCTS_DATA.filter(p => p.category === category || p.category_id === category);
     }
 
-    elements.trendingGrid.innerHTML = filtered.map(product => createProductCardHTML(product)).join("");
+    elements.trendingGrid.innerHTML = filtered.slice(0, 15).map(product => createProductCardHTML(product)).join("");
   }
 
-  // 4. Render New Arrivals
+  // 4. Render New Arrivals (5 cards per row x 3 rows = up to 15)
   function renderNewArrivals() {
     if (!elements.newArrivalsGrid || !window.PRODUCTS_DATA) return;
     const newItems = window.PRODUCTS_DATA.filter(p => p.isNew);
-    elements.newArrivalsGrid.innerHTML = newItems.map(product => createProductCardHTML(product)).join("");
+    elements.newArrivalsGrid.innerHTML = newItems.slice(0, 15).map(product => createProductCardHTML(product)).join("");
   }
 
-  // 5. Render Today's Flash Deals
+  // 5. Render Today's Flash Deals (5 cards per row x 3 rows = up to 15)
   function renderFlashDeals() {
     if (!elements.dealsGrid || !window.PRODUCTS_DATA) return;
     const deals = window.PRODUCTS_DATA.filter(p => p.isDeal);
-    elements.dealsGrid.innerHTML = deals.map(product => createProductCardHTML(product)).join("");
+    elements.dealsGrid.innerHTML = deals.slice(0, 15).map(product => createProductCardHTML(product)).join("");
+  }
+
+  // 6. Render Buy 1 Get 1 Free (BOGO) (5 cards per row x 3 rows = up to 15)
+  function renderBogoProducts() {
+    if (!elements.bogoGrid || !window.PRODUCTS_DATA) return;
+
+    let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+      ? window.VELORA_SETTINGS.bogo_config.product_ids
+      : [];
+
+    if (!bogoConfigIds || bogoConfigIds.length === 0) {
+      try {
+        const cached = localStorage.getItem("velora_bogo_config");
+        if (cached) {
+          const p = JSON.parse(cached);
+          if (p && Array.isArray(p.product_ids)) bogoConfigIds = p.product_ids;
+        }
+      } catch (_) {}
+    }
+
+    if (!bogoConfigIds || bogoConfigIds.length === 0) {
+      const dealIds = (window.PRODUCTS_DATA || []).filter(p => Boolean(p.is_deal)).map(p => p.id);
+      if (dealIds.length > 0) bogoConfigIds = dealIds;
+    }
+
+    const bogoItems = window.PRODUCTS_DATA.filter(p => Boolean(p.isBogo) || Boolean(p.is_bogo) || bogoConfigIds.includes(p.id) || bogoConfigIds.includes(p.supabase_id) || (p.legacyId && bogoConfigIds.includes(p.legacyId)));
+
+    const bogoSection = document.getElementById("bogo-section");
+    if (bogoItems.length === 0) {
+      if (bogoSection) bogoSection.style.display = "none";
+      return;
+    }
+    if (bogoSection) bogoSection.style.display = "";
+
+    elements.bogoGrid.innerHTML = bogoItems.slice(0, 15).map(product => createProductCardHTML(product, true)).join("");
+  }
+
+  // ==========================================================================
+  // ROTATING ADVERTISEMENTS / OFFERS CAROUSEL
+  // ==========================================================================
+  let adsCarouselInterval = null;
+  let adsCurrentIndex = 0;
+
+  async function initAdvertisementsCarousel() {
+    if (!elements.adsCarouselTrack) return;
+
+    let ads = [];
+    try {
+      const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
+      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/banners?is_active=eq.true&order=display_order.asc`, {
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+      });
+      if (res.ok) {
+        const fetched = await res.json();
+        if (fetched && fetched.length > 0) ads = fetched;
+      }
+    } catch (e) {
+      console.warn("Ads fetch notice:", e);
+    }
+
+    // Default 5-6 curated luxury offers
+    const defaultAds = [
+      {
+        title: "Exclusive BOGO Gala Event",
+        subtitle: "Buy any luxury piece & choose a matched complimentary gift.",
+        badge: "Limited Event",
+        image_url: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80",
+        button_text: "Shop BOGO",
+        button_link: "bogo.html"
+      },
+      {
+        title: "Winter Luxury Edition",
+        subtitle: "Handcrafted Italian leather & tailored timeless silhouettes.",
+        badge: "New Drops",
+        image_url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80",
+        button_text: "Discover Now",
+        button_link: "new-arrivals.html"
+      },
+      {
+        title: "Precision Chronographs",
+        subtitle: "Sapphire crystal & automatic Swiss precision horology.",
+        badge: "Signature Series",
+        image_url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80",
+        button_text: "Explore Watches",
+        button_link: "shop.html?category=watches"
+      },
+      {
+        title: "Flash Privilege Deals",
+        subtitle: "Up to 50% off curated high-demand footwear & accessories.",
+        badge: "Today Only",
+        image_url: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1200&q=80",
+        button_text: "View Deals",
+        button_link: "deals.html"
+      },
+      {
+        title: "Connoisseur Favorites",
+        subtitle: "Award-winning bestsellers rated 4.9★ across India.",
+        badge: "Trending Now",
+        image_url: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1200&q=80",
+        button_text: "View Trending",
+        button_link: "trending.html"
+      },
+      {
+        title: "Complimentary Express Delivery",
+        subtitle: "Free insured doorstep delivery across India on all orders.",
+        badge: "Zero Shipping",
+        image_url: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=1200&q=80",
+        button_text: "Shop VELORA",
+        button_link: "shop.html"
+      }
+    ];
+
+    if (ads.length < 5) {
+      ads = [...ads, ...defaultAds.slice(ads.length)];
+    }
+
+    elements.adsCarouselTrack.innerHTML = ads.map(ad => `
+      <div class="ad-slide">
+        <img src="${ad.image_url}" alt="${ad.title}" class="ad-slide-bg" loading="lazy">
+        <div class="ad-slide-overlay"></div>
+        <div class="ad-slide-content">
+          <span class="ad-slide-badge">${ad.badge || 'Featured Offer'}</span>
+          <h3 class="ad-slide-title">${ad.title}</h3>
+          <p class="ad-slide-desc">${ad.subtitle || ''}</p>
+          <a href="${ad.button_link || 'shop.html'}" class="ad-slide-btn">
+            <span>${ad.button_text || 'Discover Now'}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    `).join("");
+
+    if (elements.adsCarouselDots) {
+      elements.adsCarouselDots.innerHTML = ads.map((_, i) => `
+        <button class="ads-carousel-dot ${i === 0 ? 'active' : ''}" data-ad-idx="${i}" aria-label="Slide ${i + 1}"></button>
+      `).join("");
+    }
+
+    adsCurrentIndex = 0;
+    updateCarouselPosition();
+
+    function updateCarouselPosition() {
+      if (!elements.adsCarouselTrack) return;
+      elements.adsCarouselTrack.style.transform = `translateX(-${adsCurrentIndex * 100}%)`;
+      if (elements.adsCarouselDots) {
+        elements.adsCarouselDots.querySelectorAll(".ads-carousel-dot").forEach((dot, idx) => {
+          dot.classList.toggle("active", idx === adsCurrentIndex);
+        });
+      }
+    }
+
+    function nextSlide() {
+      adsCurrentIndex = (adsCurrentIndex + 1) % ads.length;
+      updateCarouselPosition();
+    }
+
+    function prevSlide() {
+      adsCurrentIndex = (adsCurrentIndex - 1 + ads.length) % ads.length;
+      updateCarouselPosition();
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      adsCarouselInterval = setInterval(nextSlide, 5000);
+    }
+
+    function stopAutoplay() {
+      if (adsCarouselInterval) clearInterval(adsCarouselInterval);
+    }
+
+    if (elements.adsCarouselNext) {
+      elements.adsCarouselNext.onclick = () => { nextSlide(); startAutoplay(); };
+    }
+    if (elements.adsCarouselPrev) {
+      elements.adsCarouselPrev.onclick = () => { prevSlide(); startAutoplay(); };
+    }
+
+    if (elements.adsCarouselDots) {
+      elements.adsCarouselDots.querySelectorAll(".ads-carousel-dot").forEach(dot => {
+        dot.onclick = () => {
+          adsCurrentIndex = parseInt(dot.dataset.adIdx, 10);
+          updateCarouselPosition();
+          startAutoplay();
+        };
+      });
+    }
+
+    const wrapper = elements.adsCarouselTrack.closest(".ads-carousel-wrapper");
+    if (wrapper) {
+      wrapper.onmouseenter = stopAutoplay;
+      wrapper.onmouseleave = () => {
+        wrapper.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+        startAutoplay();
+      };
+
+      // Subtle 3D tilt movement on mousemove
+      wrapper.addEventListener("mousemove", (e) => {
+        if (window.matchMedia("(hover: hover)").matches) {
+          const rect = wrapper.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -3.5;
+          const rotateY = ((x - centerX) / centerX) * 3.5;
+          wrapper.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+        }
+      });
+
+      // Touch swipe support for mobile/tablet devices
+      let touchStartX = 0;
+      let touchEndX = 0;
+      wrapper.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoplay();
+      }, { passive: true });
+
+      wrapper.addEventListener("touchend", (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 45) {
+          nextSlide();
+        } else if (touchEndX - touchStartX > 45) {
+          prevSlide();
+        }
+        startAutoplay();
+      }, { passive: true });
+    }
+
+    startAutoplay();
+  }
+
+  // ==========================================================================
+  // SHOP BY BRANDS HORIZONTAL CAROUSEL CONTROLLER
+  // ==========================================================================
+  function initBrandsCarousel() {
+    const viewport = document.getElementById("brands-marquee-viewport");
+    const track = document.getElementById("brands-marquee-track");
+    const prevBtn = document.getElementById("brands-prev-btn");
+    const nextBtn = document.getElementById("brands-next-btn");
+
+    if (!viewport || !track) return;
+
+    let isPaused = false;
+    let isDown = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let hasMoved = false;
+    let animId = null;
+    const speed = 0.8; // pixels per frame for continuous smooth luxury glide
+
+    function getHalfWidth() {
+      return (track.scrollWidth || 0) / 2;
+    }
+
+    function autoScroll() {
+      if (!isPaused && !isDown) {
+        viewport.scrollLeft += speed;
+        const half = getHalfWidth();
+        if (half > 100 && viewport.scrollLeft >= half) {
+          viewport.scrollLeft -= half;
+        }
+      }
+      animId = requestAnimationFrame(autoScroll);
+    }
+
+    // Start auto-scroll if user has not set reduced motion preference
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!prefersReduced) {
+      animId = requestAnimationFrame(autoScroll);
+    }
+
+    // Hover pause and resume
+    viewport.addEventListener("mouseenter", () => { isPaused = true; });
+    viewport.addEventListener("mouseleave", () => {
+      isPaused = false;
+      isDown = false;
+    });
+
+    // Arrow navigation: smooth manual step scroll
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        const half = getHalfWidth();
+        if (viewport.scrollLeft <= 10 && half > 0) {
+          viewport.scrollLeft += half;
+        }
+        viewport.scrollBy({ left: -280, behavior: "smooth" });
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const half = getHalfWidth();
+        if (half > 0 && viewport.scrollLeft >= half) {
+          viewport.scrollLeft -= half;
+        }
+        viewport.scrollBy({ left: 280, behavior: "smooth" });
+      });
+    }
+
+    // Mouse Drag-to-Scroll on Desktop
+    viewport.addEventListener("mousedown", (e) => {
+      isDown = true;
+      hasMoved = false;
+      startX = e.pageX - viewport.offsetLeft;
+      startScrollLeft = viewport.scrollLeft;
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (!isDown) return;
+      isDown = false;
+      const half = getHalfWidth();
+      if (half > 0 && viewport.scrollLeft >= half) {
+        viewport.scrollLeft -= half;
+      } else if (viewport.scrollLeft < 0 && half > 0) {
+        viewport.scrollLeft += half;
+      }
+    });
+
+    viewport.addEventListener("mousemove", (e) => {
+      if (!isDown) return;
+      const x = e.pageX - viewport.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      if (Math.abs(walk) > 4) {
+        hasMoved = true;
+        e.preventDefault();
+        viewport.scrollLeft = startScrollLeft - walk;
+      }
+    });
+
+    // Prevent accidental navigation if user was dragging
+    viewport.addEventListener("click", (e) => {
+      if (hasMoved) {
+        e.preventDefault();
+        e.stopPropagation();
+        hasMoved = false;
+      }
+    }, true);
+
+    // Touch swipe pause/resume for mobile devices
+    viewport.addEventListener("touchstart", () => {
+      isPaused = true;
+    }, { passive: true });
+
+    viewport.addEventListener("touchend", () => {
+      isPaused = false;
+      const half = getHalfWidth();
+      if (half > 0 && viewport.scrollLeft >= half) {
+        viewport.scrollLeft -= half;
+      }
+    }, { passive: true });
+  }
+
+  // ==========================================================================
+  // BUY 1 GET 1 FREE (BOGO) MODAL CONTROLLER
+  // ==========================================================================
+  let selectedBogoPaidProduct = null;
+  let selectedBogoFreeProduct = null;
+
+  function openBogoModal(productId) {
+    const paidProduct = (window.PRODUCTS_DATA && window.PRODUCTS_DATA.find(p => p.id === productId)) || 
+                        (window.getProductById ? window.getProductById(productId) : null);
+    if (!paidProduct) return;
+
+    selectedBogoPaidProduct = paidProduct;
+    selectedBogoFreeProduct = null;
+
+    if (elements.bogoPaidBanner) {
+      elements.bogoPaidBanner.innerHTML = `
+        <div style="display:flex; align-items:center; gap: 14px;">
+          <img src="${paidProduct.image}" alt="${paidProduct.name}" style="width: 58px; height: 58px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+          <div>
+            <span style="font-size: 0.72rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px;">Purchasing Qualifying Item:</span>
+            <h4 style="font-size: 0.98rem; font-weight: 700; color: var(--text-main); margin: 2px 0;">${paidProduct.name}</h4>
+            <span style="font-size: 0.92rem; font-weight: 700; color: var(--accent);">${formatPrice(paidProduct.price)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Filter eligible free items: selling price within ₹20–₹40 of purchased product price
+    const paidPrice = Number(paidProduct.price) || 0;
+    let eligible = (window.PRODUCTS_DATA || []).filter(p => {
+      if (p.id === paidProduct.id || (paidProduct.supabase_id && p.id === paidProduct.supabase_id) || (p.supabase_id && p.supabase_id === paidProduct.id)) return false;
+      const diff = Math.abs((Number(p.price) || 0) - paidPrice);
+      return diff >= 20 && diff <= 40;
+    });
+
+    // Fallback: selling price within ₹40 if strict range yields fewer than 2 items
+    if (eligible.length < 2) {
+      eligible = (window.PRODUCTS_DATA || []).filter(p => {
+        if (p.id === paidProduct.id || (paidProduct.supabase_id && p.id === paidProduct.supabase_id) || (p.supabase_id && p.supabase_id === paidProduct.id)) return false;
+        const diff = Math.abs((Number(p.price) || 0) - paidPrice);
+        return diff <= 40;
+      });
+    }
+
+    // Fallback: closest priced items sorted by closest price match
+    if (eligible.length < 2) {
+      eligible = [...(window.PRODUCTS_DATA || [])]
+        .filter(p => p.id !== paidProduct.id && (!paidProduct.supabase_id || p.id !== paidProduct.supabase_id) && (!p.supabase_id || p.supabase_id !== paidProduct.id))
+        .sort((a, b) => Math.abs((Number(a.price) || 0) - paidPrice) - Math.abs((Number(b.price) || 0) - paidPrice))
+        .slice(0, 8);
+    }
+
+    if (elements.bogoEligibleGrid) {
+      elements.bogoEligibleGrid.innerHTML = eligible.map(freeItem => {
+        const diff = Math.abs((freeItem.price || 0) - (paidProduct.price || 0));
+        return `
+          <div class="bogo-card" data-free-id="${freeItem.id}">
+            <div class="bogo-card-thumb">
+              <span class="bogo-free-pill">100% FREE</span>
+              <img src="${freeItem.image}" alt="${freeItem.name}" loading="lazy">
+            </div>
+            <div class="bogo-card-info">
+              <h5 class="bogo-card-title" title="${freeItem.name}">${freeItem.name}</h5>
+              <div class="bogo-card-prices">
+                <span class="bogo-price-free">₹0 FREE</span>
+                <span class="bogo-price-orig">${formatPrice(freeItem.price)}</span>
+              </div>
+              <span style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom: 8px;">Price Match: Δ ₹${diff}</span>
+              <button type="button" class="bogo-select-btn" data-free-select-id="${freeItem.id}">
+                Select This Gift
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Bind card selection
+      elements.bogoEligibleGrid.querySelectorAll(".bogo-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const fid = card.dataset.freeId;
+          const chosen = eligible.find(p => p.id === fid);
+          if (!chosen) return;
+
+          selectedBogoFreeProduct = chosen;
+          elements.bogoEligibleGrid.querySelectorAll(".bogo-card").forEach(c => {
+            c.classList.remove("selected");
+            const btn = c.querySelector(".bogo-select-btn");
+            if (btn) btn.textContent = "Select This Gift";
+          });
+
+          card.classList.add("selected");
+          const selBtn = card.querySelector(".bogo-select-btn");
+          if (selBtn) selBtn.textContent = "✓ Selected Free Gift";
+
+          if (elements.bogoSelectedFreeName) {
+            elements.bogoSelectedFreeName.textContent = `${chosen.name} (${formatPrice(chosen.price)} value — Free)`;
+            elements.bogoSelectedFreeName.style.color = "#059669";
+          }
+
+          if (elements.bogoConfirmAddBtn) {
+            elements.bogoConfirmAddBtn.disabled = false;
+          }
+        });
+      });
+    }
+
+    if (elements.bogoSelectedFreeName) {
+      elements.bogoSelectedFreeName.textContent = "None chosen yet";
+      elements.bogoSelectedFreeName.style.color = "var(--text-muted)";
+    }
+    if (elements.bogoConfirmAddBtn) {
+      elements.bogoConfirmAddBtn.disabled = true;
+    }
+
+    if (elements.bogoModalOverlay) {
+      elements.bogoModalOverlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+  }
+
+  function closeBogoModal() {
+    if (elements.bogoModalOverlay) {
+      elements.bogoModalOverlay.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+    selectedBogoPaidProduct = null;
+    selectedBogoFreeProduct = null;
   }
 
   // ==========================================================================
@@ -438,7 +995,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Refresh buttons state in grid
     document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${productId}"]`).forEach(btn => {
       btn.classList.add("added");
-      btn.innerHTML = `${icons.check} In Cart`;
+      btn.innerHTML = `<span class="btn-cart-icon">${icons.check}</span><span class="btn-cart-text">In Cart</span>`;
     });
   }
 
@@ -453,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Reset button state
       document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${removedItem.id}"]`).forEach(btn => {
         btn.classList.remove("added");
-        btn.innerHTML = `${icons.cart} Add to Cart`;
+        btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
       });
     }
 
@@ -465,6 +1022,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function removeFromCart(index) {
     if (!state.cart[index]) return;
     const removedItem = state.cart.splice(index, 1)[0];
+    
+    // If removed item was paired BOGO, remove other item in pair
+    if (removedItem.bogo_pair_id) {
+      const pairedIdx = state.cart.findIndex(i => i.bogo_pair_id === removedItem.bogo_pair_id);
+      if (pairedIdx > -1) {
+        state.cart.splice(pairedIdx, 1);
+      }
+    }
+
     saveCart();
     updateBadges();
     renderCartDrawer();
@@ -472,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${removedItem.id}"]`).forEach(btn => {
       btn.classList.remove("added");
-      btn.innerHTML = `${icons.cart} Add to Cart`;
+      btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
     });
   }
 
@@ -488,9 +1054,8 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.cartEmptyState.style.display = "flex";
       elements.cartSubtotalElem.textContent = formatPrice(0);
       elements.cartTotalElem.textContent = formatPrice(0);
-      const freeShippingThreshold = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.shipping && Number(window.VELORA_SETTINGS.shipping.free_shipping_threshold)) || 999;
-      elements.freeShippingFill.style.width = "0%";
-      elements.freeShippingMsg.innerHTML = `Add <strong>${formatPrice(freeShippingThreshold)}</strong> more for Free Express Delivery!`;
+      if (elements.freeShippingFill) elements.freeShippingFill.style.width = "100%";
+      if (elements.freeShippingMsg) elements.freeShippingMsg.innerHTML = `✨ <strong>100% FREE Delivery Across India</strong> on all orders!`;
       const advFooter = elements.cartDrawerOverlay ? elements.cartDrawerOverlay.querySelector(".cart-advance-drawer-split") : null;
       if (advFooter) advFooter.style.display = "none";
       const advBox = document.getElementById("cart-advance-breakdown");
@@ -503,15 +1068,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Calculate subtotal
     const subtotal = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const freeShippingThreshold = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.shipping && Number(window.VELORA_SETTINGS.shipping.free_shipping_threshold)) || 999;
-    const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
-
-    elements.freeShippingFill.style.width = `${progress}%`;
-    if (subtotal >= freeShippingThreshold) {
-      elements.freeShippingMsg.innerHTML = `🎉 You unlocked <strong>FREE Express Delivery</strong>!`;
-    } else {
-      const remaining = Math.max(0, freeShippingThreshold - subtotal);
-      elements.freeShippingMsg.innerHTML = `Add <strong>${formatPrice(remaining)}</strong> more for Free Delivery!`;
+    
+    const hasOnlineItems = state.cart.some(item => item.selected_payment_method === "online");
+    const hasOnlineGifts = state.cart.some(item => item.selected_payment_method === "online" && Array.isArray(item.gift_bundle) && item.gift_bundle.length > 0);
+    if (elements.freeShippingFill) elements.freeShippingFill.style.width = "100%";
+    if (elements.freeShippingMsg) {
+      elements.freeShippingMsg.innerHTML = (hasOnlineItems && hasOnlineGifts)
+        ? `🎉 <strong>100% FREE Delivery</strong> • 🎁 <strong>Complimentary Gifts Unlocked!</strong>`
+        : `🎉 <strong>100% FREE Delivery Across India</strong> on this order!`;
     }
 
     elements.cartSubtotalElem.textContent = formatPrice(subtotal);
@@ -520,7 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Calculate advance & COD totals
     let totalAdvance = 0;
     state.cart.forEach(item => {
-      if (item.advance_payment_enabled) {
+      if (item.selected_payment_method !== "online" && item.advance_payment_enabled) {
         let unitAdv = 0;
         if (item.advance_payment_type === "percentage") {
           unitAdv = Math.round((item.price || 0) * ((item.advance_payment_value || 0) / 100));
@@ -574,23 +1138,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Render items list
     elements.cartItemsContainer.innerHTML = state.cart.map((item, index) => {
-      const advBadge = item.advance_payment_enabled 
-        ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#6366f1; background:rgba(99,102,241,0.12); padding:1px 5px; border-radius:4px; margin-left:6px;">⚡ Advance Req.</span>` 
+      const isFreeBogo = Boolean(item.is_free_bogo);
+      const isItemOnline = item.selected_payment_method === "online";
+      const itemGifts = Array.isArray(item.gift_bundle) ? item.gift_bundle : [];
+      const payBadge = isItemOnline
+        ? (itemGifts.length > 0 
+            ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">⚡ Online (${itemGifts.length} Gifts)</span>`
+            : `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">⚡ Online Paid</span>`)
+        : (item.advance_payment_enabled 
+            ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#6366f1; background:rgba(99,102,241,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">💵 COD Adv. Req.</span>`
+            : `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#d97706; background:rgba(217,119,6,0.12); padding:1px 6px; border-radius:4px; margin-left:6px;">💵 100% COD</span>`);
+      const bogoBadge = isFreeBogo
+        ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:1px 5px; border-radius:4px; margin-left:6px;">🎁 FREE BOGO</span>`
         : '';
+
+      const priceDisplay = isFreeBogo
+        ? `<span class="cart-item-price" style="color:#059669; font-weight:800;">FREE (₹0) <span style="font-size:0.75rem; text-decoration:line-through; color:var(--text-muted); margin-left:4px;">${formatPrice(item.originalPrice || 0)}</span></span>`
+        : `<span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>`;
+
+      const qtyControls = isFreeBogo
+        ? `<span style="font-size:0.76rem; font-weight:600; color:#059669; padding:2px 8px; background:rgba(16,185,129,0.08); border-radius:4px;">Qty: 1 (Free Gift)</span>`
+        : `
+          <div class="cart-qty-control">
+            <button class="cart-qty-btn" data-cart-delta="-1" data-cart-idx="${index}">-</button>
+            <span class="cart-qty-val">${item.quantity}</span>
+            <button class="cart-qty-btn" data-cart-delta="1" data-cart-idx="${index}">+</button>
+          </div>
+        `;
 
       return `
       <div class="cart-item-card">
         <img class="cart-item-img" src="${item.image}" alt="${item.name}">
         <div class="cart-item-details">
           <h4 class="cart-item-title">${item.name}</h4>
-          <span class="cart-item-meta">${item.size} • ${item.color} ${advBadge}</span>
+          <span class="cart-item-meta">${item.size ? item.size + ' • ' : ''}${item.color || 'Default'} ${payBadge} ${bogoBadge}</span>
           <div class="cart-item-bottom">
-            <div class="cart-qty-control">
-              <button class="cart-qty-btn" data-cart-delta="-1" data-cart-idx="${index}">-</button>
-              <span class="cart-qty-val">${item.quantity}</span>
-              <button class="cart-qty-btn" data-cart-delta="1" data-cart-idx="${index}">+</button>
-            </div>
-            <span class="cart-item-price">${formatPrice(item.price * item.quantity)}</span>
+            ${qtyControls}
+            ${priceDisplay}
             <button class="cart-item-remove" data-cart-remove="${index}" title="Remove item">
               ${icons.trash}
             </button>
@@ -602,12 +1186,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openCartDrawer() {
-    elements.cartDrawerOverlay.classList.add("active");
+    if (window.VeloraCart && typeof window.VeloraCart.open === "function") {
+      window.VeloraCart.open();
+      return;
+    }
+    renderCartDrawer();
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.add("active");
+      elements.cartDrawerOverlay.classList.add("open");
+    }
     document.body.style.overflow = "hidden";
   }
 
   function closeCartDrawer() {
-    elements.cartDrawerOverlay.classList.remove("active");
+    if (window.VeloraCart && typeof window.VeloraCart.close === "function") {
+      window.VeloraCart.close();
+      return;
+    }
+    if (elements.cartDrawerOverlay) {
+      elements.cartDrawerOverlay.classList.remove("active");
+      elements.cartDrawerOverlay.classList.remove("open");
+    }
     document.body.style.overflow = "";
   }
 
@@ -813,6 +1412,11 @@ document.addEventListener("DOMContentLoaded", () => {
       // Add to Cart
       const addCartBtn = e.target.closest(".btn-add-to-cart");
       if (addCartBtn) {
+        if (addCartBtn.classList.contains("btn-claim-bogo") || addCartBtn.dataset.bogoId) {
+          const bogoId = addCartBtn.dataset.bogoId || addCartBtn.dataset.cartId;
+          openBogoModal(bogoId);
+          return;
+        }
         const id = addCartBtn.dataset.cartId;
         addToCart(id);
         return;
@@ -986,6 +1590,79 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // 5b. BOGO Modal Triggers
+    if (elements.bogoModalCloseBtn) {
+      elements.bogoModalCloseBtn.addEventListener("click", closeBogoModal);
+    }
+    if (elements.bogoModalOverlay) {
+      elements.bogoModalOverlay.addEventListener("click", e => {
+        if (e.target === elements.bogoModalOverlay) closeBogoModal();
+      });
+    }
+
+    if (elements.bogoConfirmAddBtn) {
+      elements.bogoConfirmAddBtn.addEventListener("click", () => {
+        if (!selectedBogoPaidProduct || !selectedBogoFreeProduct) return;
+
+        const paid = selectedBogoPaidProduct;
+        const free = selectedBogoFreeProduct;
+        const bogoPairId = "bogo-" + Date.now();
+
+        // 1. Add Paid Product
+        const paidSize = paid.sizes ? paid.sizes[0] : "Standard";
+        const paidColor = paid.colors ? paid.colors[0] : "Default";
+        const isAdv = Boolean(paid.advance_payment_enabled);
+        const advType = paid.advance_payment_type || 'fixed';
+        const advVal = Number(paid.advance_payment_value) || 0;
+        let unitAdv = 0;
+        if (isAdv) {
+          unitAdv = advType === "percentage" ? Math.round(paid.price * (advVal / 100)) : Math.min(paid.price, advVal);
+        }
+
+        state.cart.push({
+          id: paid.id,
+          name: paid.name,
+          price: paid.price,
+          image: paid.image,
+          size: paidSize,
+          color: paidColor,
+          quantity: 1,
+          advance_payment_enabled: isAdv,
+          advance_payment_type: advType,
+          advance_payment_value: advVal,
+          advance_per_unit: unitAdv,
+          cod_per_unit: Math.max(0, paid.price - unitAdv),
+          bogo_pair_id: bogoPairId
+        });
+
+        // 2. Add Free Product at ₹0
+        state.cart.push({
+          id: free.id,
+          name: `${free.name} (Free BOGO Gift)`,
+          price: 0,
+          originalPrice: free.price,
+          image: free.image,
+          size: free.sizes ? free.sizes[0] : "Standard",
+          color: free.colors ? free.colors[0] : "Default",
+          quantity: 1,
+          advance_payment_enabled: false,
+          advance_payment_type: 'fixed',
+          advance_payment_value: 0,
+          advance_per_unit: 0,
+          cod_per_unit: 0,
+          is_free_bogo: true,
+          bogo_pair_id: bogoPairId
+        });
+
+        saveCart();
+        updateBadges();
+        renderCartDrawer();
+        closeBogoModal();
+        openCartDrawer();
+        showToast(`Added "${paid.name}" and FREE "${free.name}" to cart!`, "success");
+      });
+    }
+
     // 6. Mobile Drawer Triggers
     if (elements.mobileToggleBtn) {
       elements.mobileToggleBtn.addEventListener("click", () => {
@@ -1078,6 +1755,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.key === "Escape") {
         closeCartDrawer();
         closeQuickView();
+        closeBogoModal();
         closeMobileDrawer();
         if (elements.searchResultsDropdown) {
           elements.searchResultsDropdown.classList.remove("active");

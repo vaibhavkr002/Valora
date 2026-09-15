@@ -66,6 +66,90 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // ==========================================================================
+  // DYNAMIC PRODUCT SPECIFICATIONS MANAGEMENT
+  // ==========================================================================
+  const specsContainer = document.getElementById("specs-rows-container");
+  const btnAddSpecRow = document.getElementById("btn-add-spec-row");
+  const specsEmptyState = document.getElementById("specs-empty-state");
+
+  function updateSpecsEmptyState() {
+    if (!specsContainer || !specsEmptyState) return;
+    const count = specsContainer.querySelectorAll(".spec-row-item").length;
+    specsEmptyState.style.display = count === 0 ? "block" : "none";
+  }
+
+  function addSpecificationRow(data = {}) {
+    if (!specsContainer) return;
+    const row = document.createElement("div");
+    row.className = "spec-row-item";
+    row.style.cssText = "display: grid; grid-template-columns: 2fr 2fr 1.5fr 75px 60px 36px; gap: 8px; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--admin-card-border); padding: 8px 10px; border-radius: 8px;";
+
+    const name = data.name || "";
+    const value = data.value || "";
+    const groupName = data.group_name || "General";
+    const order = data.display_order !== undefined ? data.display_order : specsContainer.children.length;
+    const isActive = data.is_active !== false;
+
+    row.innerHTML = `
+      <input type="text" class="admin-input spec-name-input" placeholder="Name (e.g. Material)" value="${name.replace(/"/g, '&quot;')}" style="font-size: 0.82rem; padding: 6px 10px;">
+      <input type="text" class="admin-input spec-value-input" placeholder="Value (e.g. 100% Wool)" value="${value.replace(/"/g, '&quot;')}" style="font-size: 0.82rem; padding: 6px 10px;">
+      <input type="text" class="admin-input spec-group-input" placeholder="Group (e.g. General)" value="${groupName.replace(/"/g, '&quot;')}" style="font-size: 0.82rem; padding: 6px 10px;">
+      <input type="number" class="admin-input spec-order-input" placeholder="0" min="0" value="${order}" style="font-size: 0.82rem; padding: 6px 4px; text-align: center;" title="Display Order">
+      <label style="display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem; color: #fff; cursor: pointer;" title="Visible to customers">
+        <input type="checkbox" class="spec-active-toggle" ${isActive ? 'checked' : ''}>
+        <span>Live</span>
+      </label>
+      <button type="button" class="btn-admin-danger btn-remove-spec-row" style="padding: 6px; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" title="Remove specification">✕</button>
+    `;
+
+    row.querySelector(".btn-remove-spec-row").addEventListener("click", () => {
+      row.remove();
+      updateSpecsEmptyState();
+    });
+
+    specsContainer.appendChild(row);
+    updateSpecsEmptyState();
+  }
+
+  if (btnAddSpecRow) {
+    btnAddSpecRow.addEventListener("click", () => {
+      addSpecificationRow();
+    });
+  }
+
+  function getSerializedSpecifications() {
+    if (!specsContainer) return [];
+    const rows = Array.from(specsContainer.querySelectorAll(".spec-row-item"));
+    const specs = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const name = (row.querySelector(".spec-name-input")?.value || "").trim();
+      const value = (row.querySelector(".spec-value-input")?.value || "").trim();
+      const groupName = (row.querySelector(".spec-group-input")?.value || "").trim() || "General";
+      const displayOrder = parseInt(row.querySelector(".spec-order-input")?.value, 10) || i;
+      const isActive = Boolean(row.querySelector(".spec-active-toggle")?.checked);
+
+      // Clean pruning: if both are empty, ignore row
+      if (!name && !value) continue;
+
+      if (!name || !value) {
+        throw new Error(`Specification row #${i + 1} is missing a Name or Value. Please fill both or remove the row.`);
+      }
+
+      specs.push({
+        name,
+        value,
+        group_name: groupName,
+        display_order: displayOrder,
+        is_active: isActive
+      });
+    }
+
+    return specs;
+  }
+
+  // ==========================================================================
   // ADVANCE PAYMENT CONFIGURATION & DYNAMIC LIVE PREVIEW
   // ==========================================================================
   const advEnabledCheckbox = document.getElementById("advance-payment-enabled");
@@ -183,13 +267,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  if (btnFetchUrl) {
-  btnFetchUrl.addEventListener("click", async () => {
-    const url = (inputImportUrl.value || "").trim();
-    if (!url) {
-      alert("Please paste a valid product link or feed URL.");
-      return;
+  function isSafeImportUrl(targetUrl) {
+    try {
+      const u = new URL(targetUrl);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const host = u.hostname.toLowerCase();
+      if (host === 'localhost' || host.endsWith('.localhost') || host === '127.0.0.1' || host === '0.0.0.0' || host === '169.254.169.254' || host === '::1') return false;
+      const ipParts = host.split('.').map(Number);
+      if (ipParts.length === 4 && ipParts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+        if (ipParts[0] === 10) return false;
+        if (ipParts[0] === 172 && ipParts[1] >= 16 && ipParts[1] <= 31) return false;
+        if (ipParts[0] === 192 && ipParts[1] === 168) return false;
+        if (ipParts[0] === 127) return false;
+        if (ipParts[0] === 169 && ipParts[1] === 254) return false;
+      }
+      return true;
+    } catch (e) {
+      return false;
     }
+  }
+
+  if (btnFetchUrl) {
+    btnFetchUrl.addEventListener("click", async () => {
+      const url = (inputImportUrl.value || "").trim();
+      if (!url) {
+        alert("Please paste a valid product link or feed URL.");
+        return;
+      }
+
+      if (!isSafeImportUrl(url)) {
+        alert("Security Warning: Only public HTTP/HTTPS URLs can be imported. Localhost, loopback, and internal/private network IP addresses are blocked.");
+        return;
+      }
 
     btnFetchUrl.disabled = true;
     btnFetchUrl.textContent = "Fetching product...";
@@ -294,6 +403,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const isFeatured = document.getElementById("check-featured").checked;
       const isNew = document.getElementById("check-new").checked;
       const isDeal = document.getElementById("check-deal").checked;
+      const isBogo = document.getElementById("check-bogo") ? document.getElementById("check-bogo").checked : false;
       const isActive = document.getElementById("check-active").checked;
 
       // Sizes & Colors JSONB arrays
@@ -342,6 +452,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         discountPct = Math.round(((originalPrice - price) / originalPrice) * 100);
       }
 
+      // Validate specifications rows before submitting
+      let serializedSpecs = [];
+      try {
+        serializedSpecs = getSerializedSpecifications();
+      } catch (specErr) {
+        alert(specErr.message);
+        return;
+      }
+
       const submitBtn = form.querySelector("button[type='submit']");
       submitBtn.disabled = true;
       submitBtn.textContent = "Saving to Database...";
@@ -373,6 +492,46 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { data, error } = await client.from("products").insert([productPayload]).select().single();
         if (error) throw error;
+
+        // Insert product specifications if any
+        if (data && data.id && serializedSpecs.length > 0) {
+          try {
+            const specPayload = serializedSpecs.map(s => ({
+              product_id: data.id,
+              name: s.name,
+              value: s.value,
+              group_name: s.group_name,
+              display_order: s.display_order,
+              is_active: s.is_active
+            }));
+            await client.from("product_specifications").insert(specPayload);
+          } catch (specErr) {
+            console.warn("Specifications save notice:", specErr);
+          }
+        }
+
+        // Sync BOGO configuration to store_settings
+        if (isBogo && data && data.id) {
+          try {
+            const { data: bogoSetting } = await client.from("store_settings").select("value").eq("key", "bogo_config").maybeSingle();
+            const currentIds = (bogoSetting && bogoSetting.value && Array.isArray(bogoSetting.value.product_ids)) ? bogoSetting.value.product_ids : [];
+            if (!currentIds.includes(data.id)) {
+              currentIds.push(data.id);
+              await client.from("store_settings").upsert({
+                key: "bogo_config",
+                value: { product_ids: currentIds, updated_at: new Date().toISOString() },
+                updated_at: new Date().toISOString()
+              });
+            }
+          } catch (bogoErr) {
+            console.warn("BOGO config save notice:", bogoErr);
+          }
+        }
+
+        try {
+          localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+          if (window.VeloraCache) window.VeloraCache.invalidate();
+        } catch (_) {}
 
         window.showToast("Product created successfully!", "success");
         setTimeout(() => {

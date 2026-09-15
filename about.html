@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover the story, heritage, craftsmanship, and ethos behind VELORA — modern luxury footwear, precision timepieces, and curated lifestyle essentials.">
+  <title>Our Story | VELORA - Style That Speaks For You</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/info-pages.css">
+  <link rel="stylesheet" href="css/premium-3d.css">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-announcement-bar">
+    <div class="inner">
+      <div class="announcement-carousel" id="announcement-carousel">
+        <!-- Injected via js/premium-3d.js -->
+        <div class="announcement-slide active">
+          <span class="announcement-badge">Exclusive</span>
+          <span class="announcement-text">Free Express Delivery Across India on All Orders | Use Code: <strong class="announcement-code" data-code="VELORA10" title="Click to copy code">VELORA10</strong></span>
+        </div>
+      </div>
+      <div class="top-bar-right-links">
+        <a href="about.html" class="active">Our Story</a>
+        <span>•</span>
+        <a href="account.html#orders">Track Order</a>
+        <span>•</span>
+        <a href="contact-support.html">Support 24/7</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Nav -->
+  <header class="header-nav-wrapper">
+    <div class="container">
+      <nav class="navbar" aria-label="Main Navigation">
+        <!-- Brand Logo -->
+        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+          <div class="brand-icon">V</div>
+          <span>VELORA<span class="dot">.</span></span>
+        </a>
+
+        <!-- Center Nav Menu -->
+        <ul class="nav-menu">
+          <li><a href="homepage.html" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link">Shop</a></li>
+          <li><a href="shop.html?category=shoes" class="nav-link">Shoes</a></li>
+          <li><a href="shop.html?category=watches" class="nav-link">Watches</a></li>
+          <li><a href="shop.html?deals=true" class="nav-link">Deals <span class="nav-badge-deal">Hot</span></a></li>
+          <li><a href="about.html" class="nav-link active">About</a></li>
+        </ul>
+
+        <!-- Large Search Bar with Real-Time Preview -->
+        <div class="nav-search-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" id="nav-search-input" placeholder="Search shoes, watches, caps, clothing..." autocomplete="off">
+            <button id="search-clear-btn" class="search-clear-btn" aria-label="Clear Search">✕</button>
+          </div>
+          <div id="search-results-dropdown" class="search-results-dropdown"></div>
+        </div>
+
+        <!-- Right Action Icons -->
+        <div class="nav-actions">
+          <div class="nav-account-wrapper">
+            <button class="action-btn" aria-label="Account Profile" title="Account / Profile">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+          </div>
+
+          <a href="wishlist.html" class="action-btn wishlist-drawer-trigger" aria-label="Wishlist" title="Saved Wishlist">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span class="badge-count wishlist-count-badge">0</span>
+          </a>
+
+          <button class="action-btn cart-drawer-trigger" aria-label="Shopping Cart" title="View Cart">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="badge-count cart-count-badge">0</span>
+          </button>
+
+          <button id="mobile-toggle-btn" class="mobile-toggle-btn" aria-label="Toggle Mobile Navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="mobile-drawer" class="mobile-drawer">
+    <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop"></div>
+    <div class="mobile-drawer-content">
+      <div class="mobile-drawer-header">
+        <a href="homepage.html" class="brand-logo">
+          <div class="brand-icon">V</div>
+          <span>VELORA</span>
+        </a>
+        <button id="mobile-drawer-close" class="mobile-drawer-close" aria-label="Close Menu">✕</button>
+      </div>
+      <ul class="mobile-nav-menu">
+        <li><a href="homepage.html" class="mobile-nav-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-nav-link">Shop All Products</a></li>
+        <li><a href="shop.html?category=shoes" class="mobile-nav-link">Shoes & Sneakers</a></li>
+        <li><a href="shop.html?category=watches" class="mobile-nav-link">Luxury Watches</a></li>
+        <li><a href="shop.html?deals=true" class="mobile-nav-link">Flash Deals</a></li>
+        <li><a href="about.html" class="mobile-nav-link active">Our Story</a></li>
+        <li><a href="wishlist.html" class="mobile-nav-link">Saved Wishlist</a></li>
+        <li><a href="account.html#orders" class="mobile-nav-link">Track Order</a></li>
+        <li><a href="contact-support.html" class="mobile-nav-link">Contact Support</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Hero Header -->
+  <section class="info-hero">
+    <div class="container">
+      <div class="info-hero-badge">The VELORA Heritage</div>
+      <h1 class="info-hero-title">Our Story & Craftsmanship</h1>
+      <p class="info-hero-subtitle">
+        Born from an uncompromising passion for refined aesthetics, tactile luxury, and durable precision, VELORA bridges timeless heritage with contemporary street luxury.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content Grid -->
+  <main class="info-main-content">
+    <div class="container">
+      <div class="info-layout-grid">
+        <!-- Sidebar Navigation -->
+        <aside class="info-sidebar">
+          <div class="info-nav-card">
+            <h3 class="info-nav-title">About VELORA</h3>
+            <ul class="info-nav-links">
+              <li><a href="#vision" class="info-nav-link active">1. Vision & Origins</a></li>
+              <li><a href="#craftsmanship" class="info-nav-link">2. Artisanal Craftsmanship</a></li>
+              <li><a href="#materials" class="info-nav-link">3. Premium Materials</a></li>
+              <li><a href="#authenticity" class="info-nav-link">4. Authenticity Pledge</a></li>
+              <li><a href="#sustainability" class="info-nav-link">5. Conscious Luxury</a></li>
+            </ul>
+          </div>
+
+          <div class="info-help-card" style="margin-top: 24px;">
+            <h4>Questions About Our Collections?</h4>
+            <p>Our concierge team is available 24/7 to assist with sizing, custom inquiries, or tracking.</p>
+            <a href="contact-support.html" class="btn-sidebar-contact">Speak With Concierge</a>
+          </div>
+        </aside>
+
+        <!-- Main Narrative Section -->
+        <article class="info-content-card">
+          <section id="vision" class="info-section">
+            <h2 class="info-section-heading">1. Vision & Origins</h2>
+            <p class="info-p">
+              Founded with the vision to celebrate personal identity through refined essentials, <strong>VELORA</strong> was conceived in New Delhi to answer a simple question: <em>Why should world-class luxury footwear, timepieces, and accessories be out of reach for thoughtful, style-forward individuals?</em>
+            </p>
+            <p class="info-p">
+              From day one, we set out to bypass wasteful intermediaries, curate authentic heritage brands alongside bespoke capsule releases, and deliver a tactile shopping experience grounded in integrity, fast express delivery, and transparent pricing.
+            </p>
+            <div class="info-highlight-box">
+              <strong>Our Manifesto:</strong> "Style is not about volume—it is the unspoken confidence of curated quality. Every piece we present is engineered to outlast fleeting seasonal trends."
+            </div>
+          </section>
+
+          <section id="craftsmanship" class="info-section">
+            <h2 class="info-section-heading">2. Artisanal Craftsmanship</h2>
+            <p class="info-p">
+              Every sneaker sole, chronograph dial, leather hide, and cotton thread in our collection undergoes strict quality assurance. We work directly with certified global manufacturing partners and premier authorized distributors.
+            </p>
+            <div class="info-cards-grid">
+              <div class="info-sub-card">
+                <div class="sub-card-icon">👟</div>
+                <h4 class="sub-card-title">Footwear Ergonomics</h4>
+                <p class="sub-card-desc">Engineered for lightweight comfort, responsive rebound, and enduring silhouette balance.</p>
+              </div>
+              <div class="info-sub-card">
+                <div class="sub-card-icon">⏱️</div>
+                <h4 class="sub-card-title">Precision Horology</h4>
+                <p class="sub-card-desc">Sapphire-coated crystals, Japanese and Swiss quartz accuracy, and robust stainless steel construction.</p>
+              </div>
+              <div class="info-sub-card">
+                <div class="sub-card-icon">👜</div>
+                <h4 class="sub-card-title">Tailored Leather & Bags</h4>
+                <p class="sub-card-desc">Hand-finished burnished edges, reinforced stress-point stitching, and weather-resistant brass hardware.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="materials" class="info-section">
+            <h2 class="info-section-heading">3. Premium Materials</h2>
+            <p class="info-p">
+              We never compromise on tactile feel. From breathable combed cotton and heavy French terry fleece to full-grain vegetable-tanned leathers, our materials are selected for how they age gracefully through everyday wear.
+            </p>
+          </section>
+
+          <section id="authenticity" class="info-section">
+            <h2 class="info-section-heading">4. Authenticity & Service Pledge</h2>
+            <p class="info-p">
+              Every branded timepiece, shoe, and luxury accessory on VELORA is 100% genuine and verified. We back every order with:
+            </p>
+            <ul class="info-bullet-list">
+              <li><strong>Live Courier Tracking:</strong> Instant shipment updates via our integrated courier network (BlueDart, Delhivery, Shadowfax, DTDC).</li>
+              <li><strong>30-Day Easy Returns:</strong> Doorstep return pickups and hassle-free replacements if the fit is not ideal.</li>
+              <li><strong>Bank-Grade Security:</strong> 256-bit SSL encrypted checkout and reliable Cash on Delivery verification.</li>
+            </ul>
+          </section>
+
+          <section id="sustainability" class="info-section">
+            <h2 class="info-section-heading">5. Conscious Luxury</h2>
+            <p class="info-p">
+              Our packaging is crafted from 100% recyclable, FSC-certified cardboard, eliminating single-use plastics from customer dispatches. Explore our detailed <a href="sustainability.html" style="color: var(--accent); font-weight: 600;">Sustainability Pledge</a> to learn more about our carbon footprint reduction initiatives.
+            </p>
+            <div style="margin-top: 32px; text-align: center;">
+              <a href="shop.html" class="btn-primary" style="display: inline-flex; padding: 12px 32px; font-size: 1rem;">Explore VELORA Collections →</a>
+            </div>
+          </section>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <!-- Multi-Column Footer -->
+  <footer id="footer" class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Summary Column -->
+        <div class="footer-brand-col" id="about">
+          <a href="homepage.html" class="footer-brand-logo">
+            <div class="brand-icon">V</div>
+            <span>VELORA</span>
+          </a>
+          <p class="footer-brand-desc">
+            VELORA is an independent modern lifestyle brand bringing curated footwear, luxury timepieces, tailored apparel, and timeless accessories to discerning customers worldwide.
+          </p>
+        </div>
+
+        <!-- Shop Links Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Shop</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="shop.html?category=shoes">Shoes & Sneakers</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=watches">Luxury Watches</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=caps">Caps & Headwear</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=bags">Bags & Luggage</a></li>
+            <li class="footer-link-item"><a href="shop.html?category=clothing">Modern Clothing</a></li>
+            <li class="footer-link-item"><a href="shop.html?deals=true">Flash Deals</a></li>
+          </ul>
+        </div>
+
+        <!-- Customer Care Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Customer Care</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="account.html#orders">Order Status & Tracking</a></li>
+            <li class="footer-link-item"><a href="shipping-policy.html">Shipping Policy</a></li>
+            <li class="footer-link-item"><a href="returns-exchanges.html">Returns & Exchanges</a></li>
+            <li class="footer-link-item"><a href="size-guide.html">Size & Fit Guide</a></li>
+            <li class="footer-link-item"><a href="faq.html">FAQs</a></li>
+            <li class="footer-link-item"><a href="contact-support.html">Contact Support</a></li>
+          </ul>
+        </div>
+
+        <!-- Company Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Company</h4>
+          <ul class="footer-links-list">
+            <li class="footer-link-item"><a href="about.html">About Our Studio</a></li>
+            <li class="footer-link-item"><a href="sustainability.html">Sustainability Pledge</a></li>
+            <li class="footer-link-item"><a href="careers.html">Careers</a></li>
+            <li class="footer-link-item"><a href="press-media.html">Press & Media</a></li>
+            <li class="footer-link-item"><a href="affiliate-program.html">Affiliate Program</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Column -->
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Contact & Legal</h4>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span id="footer-studio-address">12 Connaught Place, New Delhi 110001</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span id="footer-studio-phone">+91 98765 43210 (Mon-Sat 10am-7pm)</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span id="footer-studio-email">concierge@velora.in</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          © 2026 VELORA Inc. All rights reserved. Designed for modern living.
+        </p>
+        <div class="footer-payments-list">
+          <span class="payment-badge">VISA</span>
+          <span class="payment-badge">MASTERCARD</span>
+          <span class="payment-badge">AMEX</span>
+          <span class="payment-badge">APPLE PAY</span>
+          <span class="payment-badge">UPI</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       SLIDE-OVER SHOPPING CART DRAWER
+       ======================================================================== -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay" aria-hidden="true">
+    <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-drawer-header">
+        <h3 id="cart-title" class="cart-drawer-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          Your Shopping Cart
+        </h3>
+        <button id="cart-drawer-close" class="cart-close-btn" aria-label="Close Cart">✕</button>
+      </div>
+
+      <!-- Free Shipping Meter -->
+      <div class="free-shipping-box">
+        <div class="free-shipping-text">
+          <span id="free-shipping-msg">🎉 <strong>100% FREE Delivery Across India</strong> on all orders!</span>
+        </div>
+        <div class="free-shipping-progress">
+          <div id="free-shipping-fill" class="free-shipping-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Cart Items List -->
+      <div id="cart-items-container" class="cart-drawer-items">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Empty Cart State -->
+      <div id="cart-empty-state" class="cart-empty-view" style="display: none;">
+        <div class="cart-empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
+        <h4>Your Cart is Empty</h4>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin: 8px 0 20px;">Looks like you haven't added any items yet.</p>
+        <button type="button" class="btn-primary" onclick="window.location.href='shop.html';">
+          Start Shopping
+        </button>
+      </div>
+
+      <!-- Cart Footer -->
+      <div class="cart-drawer-footer">
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" style="font-weight: 700; color: var(--text-main);">₹0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Standard Shipping</span>
+          <span style="color: var(--color-success); font-weight: 700;">FREE</span>
+        </div>
+        <div class="cart-summary-row cart-summary-total">
+          <span>Total (Incl. Taxes)</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <div id="cart-advance-breakdown" style="display: none; padding: 8px 0; border-top: 1px dashed var(--border-color); margin-top: 6px;">
+          <div class="cart-summary-row" style="margin-bottom: 2px;">
+            <span style="color: #6366f1; font-weight: 600;">Advance Payable Now:</span>
+            <span id="cart-advance-payable" style="font-weight: 700; color: #6366f1;">₹0</span>
+          </div>
+          <div class="cart-summary-row" style="margin-bottom: 0;">
+            <span style="color: var(--text-muted);">Remaining by COD:</span>
+            <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
+          </div>
+        </div>
+        <button type="button" id="checkout-btn" class="btn-checkout">
+          <span>Proceed to Checkout</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Core Scripts -->
+  <script src="js/products.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/info-pages.js"></script>
+  <script src="js/premium-3d.js" defer></script>
+</body>
+</html>
+
