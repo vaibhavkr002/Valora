@@ -13,6 +13,10 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/auth.css">
   <link rel="stylesheet" href="css/premium-3d.css">
+  <link rel="stylesheet" href="css/mobile-app.css">
+  <link rel="stylesheet" href="css/order-activity.css">
+  <link rel="stylesheet" href="css/promotions.css">
+  <link rel="stylesheet" href="css/customer-stories.css">
 </head>
 <body>
 
@@ -107,6 +111,16 @@
       </nav>
     </div>
   </header>
+
+  <!-- Mobile Quick-Search Row (Visible on Phone Screens Only) -->
+  <div class="mobile-search-bar-row">
+    <div class="search-input-wrapper">
+      <span class="search-icon-left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
+      <input type="text" id="mobile-home-search-input" placeholder="Search shoes, watches, clothing..." autocomplete="off">
+    </div>
+  </div>
 
   <!-- ========================================================================
        MOBILE NAVIGATION DRAWER
@@ -237,6 +251,9 @@
         </div>
       </div>
     </section>
+
+    <!-- Dynamic Below Hero Advertisement Slot -->
+    <div class="velora-ad-slot" data-ad-placement="below_hero"></div>
 
     <!-- 3D Scene Divider: Hero -> Categories -->
     <div class="p3d-scene-divider" aria-hidden="true">
@@ -819,6 +836,7 @@
     <!-- ========================================================================
          TRENDING NOW SECTION
          ======================================================================== -->
+    <div class="velora-ad-slot" data-ad-placement="above_trending"></div>
     <section id="trending-section" class="trending-section">
       <div class="container">
         <div class="section-header">
@@ -853,6 +871,30 @@
       </div>
     </section>
 
+    <!-- ========================================================================
+         PREMIUM 3D TRENDING NOW PROMOTIONAL SHOWCASE
+         ======================================================================== -->
+    <section class="trending-promo-section">
+      <div class="container">
+        <div class="trending-promo-card">
+          <div class="trending-promo-header">
+            <div class="trending-promo-info">
+              <div class="trending-promo-badge-pill">⚡ VELORA CURATED RADAR</div>
+              <h3 class="trending-promo-title">Trending Now &amp; Customer Favorites</h3>
+              <p class="trending-promo-desc">Discover the standout styles captivating nationwide attention this week with uncompromised quality.</p>
+            </div>
+            <a href="trending.html" class="btn-trending-promo">
+              <span>View All Trending</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+          </div>
+          <div class="trending-mini-grid" id="trending-promo-mini-grid">
+            <!-- Dynamically populated with real trending products via promotions.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="velora-ad-slot" data-ad-placement="below_trending"></div>
     <!-- 3D Scene Divider: Trending -> Promotional Showcase -->
     <div class="p3d-scene-divider" aria-hidden="true">
       <span class="p3d-divider-line"></span>
@@ -893,8 +935,42 @@
     </div>
 
     <!-- ========================================================================
+         NEW ARRIVALS SECTION
+         ======================================================================== -->
+    <div class="velora-ad-slot" data-ad-placement="above_new_arrivals"></div>
+    <section id="new-arrivals-section" class="new-arrivals-section">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <span class="section-eyebrow" style="color: var(--color-success);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+              Fresh Drops
+            </span>
+            <h2 class="section-title">New Arrivals</h2>
+            <p class="section-subtitle">Just landed in the catalog. Be the first to experience our latest release pieces.</p>
+          </div>
+          <a href="new-arrivals.html" class="view-all-link">
+            <span>View All New</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+
+        <!-- New Arrivals Grid (5 Desktop, 4 Laptop, 3 Tablet, 2 Mobile) -->
+        <div id="new-arrivals-grid" class="products-grid products-grid-5col"></div>
+      </div>
+    </section>
+
+    <!-- 3D Scene Divider: New Arrivals -> Deals -->
+    <div class="p3d-scene-divider" aria-hidden="true">
+      <span class="p3d-divider-line"></span>
+      <span class="p3d-divider-gem"></span>
+      <span class="p3d-divider-line"></span>
+    </div>
+
+    <!-- ========================================================================
          TODAY'S FLASH DEALS SECTION
          ======================================================================== -->
+    <div class="velora-ad-slot" data-ad-placement="above_deals"></div>
     <section id="deals-section" class="deals-section">
       <div class="container">
         <div class="deals-header-wrap">
@@ -964,7 +1040,25 @@
       </div>
     </section>
 
-    <!-- 3D Scene Divider: BOGO -> New Arrivals -->
+    <!-- ========================================================================
+         BOGO MINI PROMO CARD (Mid-Page Teaser)
+         ======================================================================== -->
+    <section class="bogo-mini-promo-section">
+      <div class="container">
+        <div class="bogo-mini-promo-card">
+          <div class="bogo-mini-text">
+            <h3>Double Your Style — Buy 1, Get 1 Free</h3>
+            <p>Pair qualifying footwear, apparel, and accessories with zero coupon codes required.</p>
+          </div>
+          <a href="bogo.html" class="btn-bogo-mini">
+            <span>Explore BOGO Pairs</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+    <div class="velora-ad-slot" data-ad-placement="below_bogo"></div>
+    <!-- 3D Scene Divider: BOGO -> Customer Stories -->
     <div class="p3d-scene-divider" aria-hidden="true">
       <span class="p3d-divider-line"></span>
       <span class="p3d-divider-gem"></span>
@@ -972,31 +1066,74 @@
     </div>
 
     <!-- ========================================================================
-         NEW ARRIVALS SECTION
+         REAL CUSTOMERS. REAL EXPERIENCES. (3D SOCIAL PROOF WALL)
          ======================================================================== -->
-    <section id="new-arrivals-section" class="new-arrivals-section">
-      <div class="container">
-        <div class="section-header">
-          <div class="section-title-wrap">
-            <span class="section-eyebrow" style="color: var(--color-success);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
-              Fresh Drops
-            </span>
-            <h2 class="section-title">New Arrivals</h2>
-            <p class="section-subtitle">Just landed in the catalog. Be the first to experience our latest release pieces.</p>
+    <section id="customer-stories" class="velora-customer-stories">
+      <div class="velora-cs-container">
+        <!-- Section Header -->
+        <div class="velora-cs-header">
+          <div class="velora-cs-badge">
+            <span class="velora-cs-pulse"></span>
+            <span>Real Customer Stories</span>
           </div>
-          <a href="new-arrivals.html" class="view-all-link">
-            <span>View All New</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </a>
+          <h2 class="velora-cs-title">
+            REAL CUSTOMERS. <span class="velora-cs-highlight">REAL LOVE.</span>
+          </h2>
+          <p class="velora-cs-subtitle">
+            “From a simple DM to a VELORA experience — every order has a story. ❤️”
+          </p>
+          <div class="velora-cs-trust-bar">
+            <span>
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+              Real conversations
+            </span>
+            <span class="dot">•</span>
+            <span>
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              Real feedback
+            </span>
+            <span class="dot">•</span>
+            <span>
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Real VELORA moments
+            </span>
+          </div>
         </div>
 
-        <!-- New Arrivals Grid (5 Desktop, 4 Laptop, 3 Tablet, 2 Mobile) -->
-        <div id="new-arrivals-grid" class="products-grid products-grid-5col"></div>
+        <!-- 3D Carousel Stage Viewport -->
+        <div class="velora-cs-viewport">
+          <div class="velora-cs-stage" id="velora-cs-stage">
+            <!-- 3D Cards rendered dynamically by customer-stories.js -->
+          </div>
+        </div>
+
+        <!-- Controls & Navigation -->
+        <div class="velora-cs-controls">
+          <button type="button" class="velora-cs-btn prev" id="velora-cs-prev" aria-label="Previous story">
+            <svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+
+          <div class="velora-cs-status">
+            <div class="velora-cs-counter">
+              <span id="velora-cs-current-num">01</span> <span class="velora-cs-counter-total">/ <span id="velora-cs-total-num">28</span></span>
+            </div>
+            <div class="velora-cs-dots" id="velora-cs-dots">
+              <!-- Indicators dynamically rendered -->
+            </div>
+          </div>
+
+          <button type="button" class="velora-cs-btn next" id="velora-cs-next" aria-label="Next story">
+            <svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div class="velora-cs-pause-pill">
+          Tap any card to view full screen • Swipe or use arrows to explore
+        </div>
       </div>
     </section>
 
-    <!-- 3D Scene Divider: New Arrivals -> Why Shop With Us -->
+    <!-- 3D Scene Divider: Customer Stories -> Why Shop With Us -->
     <div class="p3d-scene-divider" aria-hidden="true">
       <span class="p3d-divider-line"></span>
       <span class="p3d-divider-gem"></span>
@@ -1457,6 +1594,11 @@
   <script src="js/app.js"></script>
   <script src="js/cart-drawer.js"></script>
   <script src="js/premium-3d.js" defer></script>
+  <script src="js/mobile-app.js" defer></script>
+  <script src="js/order-activity.js" defer></script>
+  <script src="js/promotions.js" defer></script>
+  <script src="js/ads-engine.js" defer></script>
+  <script src="js/customer-stories.js" defer></script>
 </body>
 </html>
 

@@ -289,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     localStorage.setItem("velora_cart", JSON.stringify(state.cart));
+    window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
     updateBadges();
   }
 
@@ -402,11 +403,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const index = parseInt(btn.dataset.index, 10);
 
         if (action === "inc") {
+          if (window.VeloraCart) {
+            window.VeloraCart.updateQty(index, 1);
+            return;
+          }
           state.cart[index].quantity += 1;
         } else if (action === "dec") {
-          state.cart[index].quantity -= 1;
-          if (state.cart[index].quantity <= 0) state.cart.splice(index, 1);
+          if (window.VeloraCart) {
+            window.VeloraCart.updateQty(index, -1);
+            return;
+          }
+          if (state.cart[index].quantity > 1) {
+            state.cart[index].quantity -= 1;
+          } else {
+            state.cart.splice(index, 1);
+          }
         } else if (action === "del") {
+          if (window.VeloraCart) {
+            window.VeloraCart.remove(index);
+            return;
+          }
           state.cart.splice(index, 1);
         }
 

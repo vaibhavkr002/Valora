@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reviews Moderation | VELORA Admin</title>
+  <title>Customer Reviews & Ratings | VELORA Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -81,9 +81,9 @@
         </a>
   
 
-        <a href="banners.html" class="sidebar-link ">
-          <i class="fas fa-images"></i>
-          <span>Hero Banners</span>
+        <a href="advertisements.html" class="sidebar-link ">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
         </a>
   
 
@@ -109,61 +109,359 @@
   
     <div class="admin-main">
       
-    <header class="admin-header">
-      <div class="header-left">
-        <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="admin-breadcrumbs">
-          <a href="dashboard.html">Velora Admin</a>
-          <span>/</span>
-          <span class="current">Reviews Moderation</span>
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="dashboard.html">Velora Admin</a>
+            <span>/</span>
+            <span class="current">Customer Reviews</span>
+          </div>
         </div>
-      </div>
-      <div class="header-right">
-        <div class="admin-user-menu-wrap">
-          <div class="admin-user-pill" id="admin-user-pill">
-            <div class="admin-avatar" id="header-admin-avatar">AD</div>
-            <div class="admin-info-text">
-              <div class="admin-name-display" id="header-admin-name">Admin</div>
-              <div class="admin-role-display">ADMINISTRATOR</div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
             </div>
-            <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
-          </div>
-          <div class="admin-dropdown-menu" id="admin-dropdown-menu">
-            <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
-            <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
-            <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+              <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
   
       <main class="admin-content">
+        <!-- Page Title -->
         <div class="page-title-row">
           <div>
-            <h1 class="page-heading">Customer Reviews</h1>
-            <p class="page-subheading">Approve, moderate, or remove product customer feedback</p>
+            <h1 class="page-heading">Customer Reviews & Ratings</h1>
+            <p class="page-subheading">Manage verified customer feedback, star ratings, and testimonials across your catalog</p>
           </div>
         </div>
 
-        <div class="admin-card">
-          <div class="admin-table-container">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Customer</th>
-                  <th>Rating</th>
-                  <th>Comment</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="reviews-tbody">
-                <tr><td colspan="6" style="text-align:center; padding: 24px;">Loading reviews...</td></tr>
-              </tbody>
-            </table>
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Catalog Products</span>
+              <span class="metric-value" id="stat-total-products">--</span>
+              <span class="metric-sub">Active in store</span>
+            </div>
+            <div class="metric-icon-box indigo">
+              <i class="fas fa-box-open"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Reviewed Products</span>
+              <span class="metric-value" id="stat-reviewed-products">--</span>
+              <span class="metric-sub">With customer feedback</span>
+            </div>
+            <div class="metric-icon-box emerald">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Total Approved Reviews</span>
+              <span class="metric-value" id="stat-total-reviews">--</span>
+              <span class="metric-sub">Live on storefront</span>
+            </div>
+            <div class="metric-icon-box amber">
+              <i class="fas fa-star"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Catalog Avg Rating</span>
+              <span class="metric-value" id="stat-avg-rating">--</span>
+              <span class="metric-sub">Across all reviews</span>
+            </div>
+            <div class="metric-icon-box cyan">
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: PRODUCTS CATALOG LIST (DEFAULT)     -->
+        <!-- ========================================== -->
+        <div id="view-products">
+          <div class="admin-card">
+            <div class="filter-bar">
+              <div class="filter-group">
+                <div class="search-wrap">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="search-review-products" class="admin-search-input" placeholder="Search product name, brand, SKU...">
+                </div>
+                <select id="filter-review-category" class="admin-select">
+                  <option value="">All Categories</option>
+                </select>
+                <select id="filter-has-reviews" class="admin-select">
+                  <option value="">All Products</option>
+                  <option value="with">With Reviews Only</option>
+                  <option value="without">No Reviews Yet</option>
+                </select>
+                <select id="sort-review-products" class="admin-select">
+                  <option value="reviews-desc">Sort: Most Reviews</option>
+                  <option value="rating-desc">Sort: Highest Rating</option>
+                  <option value="rating-asc">Sort: Lowest Rating</option>
+                  <option value="name-asc">Sort: Product Name (A-Z)</option>
+                </select>
+              </div>
+              <div>
+                <span class="badge badge-indigo" id="product-review-count-badge">Loading...</span>
+              </div>
+            </div>
+
+            <!-- Product Cards Grid -->
+            <div id="review-products-grid" class="reviews-products-grid">
+              <div style="grid-column: 1 / -1; text-align: center; padding: 48px 24px; color: var(--admin-text-muted);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.8rem; color: var(--admin-accent); margin-bottom: 12px; display: block;"></i>
+                Loading products catalog and customer review counts...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: PRODUCT REVIEWS MANAGEMENT VIEW    -->
+        <!-- ========================================== -->
+        <div id="view-product-reviews" style="display: none;">
+          <!-- Navigation -->
+          <div style="margin-bottom: 18px;">
+            <button type="button" id="btn-back-to-products" class="btn-admin-secondary">
+              <i class="fas fa-arrow-left"></i> Back to Products
+            </button>
+          </div>
+
+          <!-- Product Details Header Banner -->
+          <div class="review-product-header-card">
+            <div class="review-product-header-left">
+              <img id="detail-product-img" class="review-product-header-thumb" src="" alt="Product Preview">
+              <div class="review-product-header-info">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <span id="detail-product-category" class="badge badge-indigo">Category</span>
+                  <span id="detail-product-brand" class="badge badge-muted">Brand</span>
+                </div>
+                <h2 id="detail-product-name">Product Name</h2>
+                <p id="detail-product-price" style="font-weight: 700; color: #fff; margin-top: 4px;">₹0</p>
+              </div>
+            </div>
+
+            <div class="review-product-header-stats">
+              <div class="review-stat-box">
+                <div class="review-stat-box-val" id="detail-product-rating" style="color: #f59e0b;">0.0 ★</div>
+                <div class="review-stat-box-lbl">Average Rating</div>
+              </div>
+              <div class="review-stat-box">
+                <div class="review-stat-box-val" id="detail-product-review-count">0</div>
+                <div class="review-stat-box-lbl">Total Reviews</div>
+              </div>
+              <div>
+                <button type="button" id="btn-open-add-review" class="btn-admin-primary" style="padding: 12px 20px;">
+                  <i class="fas fa-plus"></i> Add Review
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews Table / List Container -->
+          <div class="admin-card">
+            <div class="filter-bar">
+              <div class="filter-group">
+                <div class="search-wrap">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="search-reviews-text" class="admin-search-input" placeholder="Filter reviews by text or customer...">
+                </div>
+                <select id="filter-review-status" class="admin-select">
+                  <option value="">All Statuses</option>
+                  <option value="approved">Approved Only</option>
+                  <option value="pending">Pending Only</option>
+                  <option value="rejected">Rejected Only</option>
+                </select>
+                <select id="filter-review-rating" class="admin-select">
+                  <option value="">All Star Ratings</option>
+                  <option value="5">★★★★★ (5 Stars)</option>
+                  <option value="4">★★★★☆ (4 Stars)</option>
+                  <option value="3">★★★☆☆ (3 Stars)</option>
+                  <option value="2">★★☆☆☆ (2 Stars)</option>
+                  <option value="1">★☆☆☆☆ (1 Star)</option>
+                </select>
+              </div>
+              <div>
+                <span class="badge badge-indigo" id="reviews-filtered-count-badge">0 Reviews</span>
+              </div>
+            </div>
+
+            <!-- List of Reviews -->
+            <div id="product-reviews-container">
+              <div style="text-align: center; padding: 36px; color: var(--admin-text-muted);">
+                Loading reviews...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL 1: ADD REVIEW                         -->
+        <!-- ========================================== -->
+        <div id="modal-add-review" class="admin-modal-backdrop">
+          <div class="admin-modal">
+            <div class="admin-modal-header">
+              <div>
+                <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-star" style="color: #f59e0b;"></i> Add Customer Review
+                </h3>
+                <p style="font-size: 0.78rem; color: var(--admin-text-muted); margin-top: 4px;">
+                  Product: <strong id="add-modal-product-title" style="color: #fff;">--</strong>
+                </p>
+              </div>
+              <button type="button" class="btn-close-modal" id="btn-close-add-modal" style="background: none; border: none; color: var(--admin-text-muted); font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <div class="admin-modal-body">
+              <form id="form-add-review" style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="admin-form-group">
+                  <label class="admin-label" for="add-review-author">Customer Name *</label>
+                  <input type="text" id="add-review-author" class="admin-input" placeholder="e.g. Priya Sharma" required>
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label">Star Rating *</label>
+                  <div style="display: flex; align-items: center; gap: 14px;">
+                    <div id="add-review-stars-group" class="star-rating-picker">
+                      <span class="star-item active" data-rating="1">★</span>
+                      <span class="star-item active" data-rating="2">★</span>
+                      <span class="star-item active" data-rating="3">★</span>
+                      <span class="star-item active" data-rating="4">★</span>
+                      <span class="star-item active" data-rating="5">★</span>
+                    </div>
+                    <span id="add-review-rating-label" style="font-size: 0.9rem; font-weight: 700; color: #f59e0b;">5 Stars</span>
+                  </div>
+                  <input type="hidden" id="add-review-rating" value="5">
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label" for="add-review-status">Review Status</label>
+                  <select id="add-review-status" class="admin-select" style="width: 100%;">
+                    <option value="approved" selected>Approved (Visible to customers)</option>
+                    <option value="pending">Pending Review</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label" for="add-review-comment">Review Content / Testimonial *</label>
+                  <textarea id="add-review-comment" class="admin-textarea" rows="4" placeholder="Detailed feedback from customer regarding product quality, fit, and satisfaction..." required></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="admin-modal-footer">
+              <button type="button" class="btn-admin-secondary" id="btn-cancel-add-review">Cancel</button>
+              <button type="button" class="btn-admin-primary" id="btn-save-add-review">
+                <i class="fas fa-save"></i> Save Review
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL 2: EDIT REVIEW                        -->
+        <!-- ========================================== -->
+        <div id="modal-edit-review" class="admin-modal-backdrop">
+          <div class="admin-modal">
+            <div class="admin-modal-header">
+              <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-pencil-alt" style="color: #818cf8;"></i> Edit Customer Review
+              </h3>
+              <button type="button" class="btn-close-modal" id="btn-close-edit-modal" style="background: none; border: none; color: var(--admin-text-muted); font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <div class="admin-modal-body">
+              <form id="form-edit-review" style="display: flex; flex-direction: column; gap: 16px;">
+                <input type="hidden" id="edit-review-id">
+
+                <div class="admin-form-group">
+                  <label class="admin-label" for="edit-review-author">Customer Name *</label>
+                  <input type="text" id="edit-review-author" class="admin-input" required>
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label">Star Rating *</label>
+                  <div style="display: flex; align-items: center; gap: 14px;">
+                    <div id="edit-review-stars-group" class="star-rating-picker">
+                      <span class="star-item" data-rating="1">★</span>
+                      <span class="star-item" data-rating="2">★</span>
+                      <span class="star-item" data-rating="3">★</span>
+                      <span class="star-item" data-rating="4">★</span>
+                      <span class="star-item" data-rating="5">★</span>
+                    </div>
+                    <span id="edit-review-rating-label" style="font-size: 0.9rem; font-weight: 700; color: #f59e0b;">5 Stars</span>
+                  </div>
+                  <input type="hidden" id="edit-review-rating" value="5">
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label" for="edit-review-status">Review Status</label>
+                  <select id="edit-review-status" class="admin-select" style="width: 100%;">
+                    <option value="approved">Approved (Visible to customers)</option>
+                    <option value="pending">Pending Review</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label" for="edit-review-comment">Review Content / Testimonial *</label>
+                  <textarea id="edit-review-comment" class="admin-textarea" rows="4" required></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="admin-modal-footer">
+              <button type="button" class="btn-admin-secondary" id="btn-cancel-edit-review">Cancel</button>
+              <button type="button" class="btn-admin-primary" id="btn-save-edit-review">
+                <i class="fas fa-check"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL 3: DELETE REVIEW CONFIRMATION         -->
+        <!-- ========================================== -->
+        <div id="modal-delete-review" class="admin-modal-backdrop">
+          <div class="admin-modal" style="max-width: 460px;">
+            <div class="admin-modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2);">
+              <h3 class="card-title" style="display: flex; align-items: center; gap: 8px; color: #fca5a5;">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Delete Customer Review
+              </h3>
+              <button type="button" class="btn-close-modal" id="btn-close-delete-modal" style="background: none; border: none; color: var(--admin-text-muted); font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <div class="admin-modal-body">
+              <input type="hidden" id="delete-review-id">
+              <p style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6; margin-bottom: 12px;">
+                Are you sure you want to delete the review from <strong id="delete-review-author" style="color: #fff;">Customer</strong>?
+              </p>
+              <div id="delete-review-preview" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--admin-card-border); border-radius: 8px; padding: 12px; font-size: 0.85rem; color: var(--admin-text-muted); font-style: italic; margin-bottom: 14px;">
+                "..."
+              </div>
+              <p style="color: var(--admin-text-muted); font-size: 0.8rem; margin: 0; line-height: 1.5;">
+                This action cannot be undone. The review will be removed from Supabase, and the product's overall rating and review count will automatically recalculate.
+              </p>
+            </div>
+            <div class="admin-modal-footer">
+              <button type="button" class="btn-admin-secondary" id="btn-cancel-delete-review">Cancel</button>
+              <button type="button" class="btn-admin-danger" id="btn-confirm-delete-review" style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-trash-alt"></i> Delete Review
+              </button>
+            </div>
           </div>
         </div>
       </main>

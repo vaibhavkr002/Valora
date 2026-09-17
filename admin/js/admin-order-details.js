@@ -423,6 +423,138 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // --- DELETE ORDER HANDLER ---
+  const btnDeleteOrderDetail = document.getElementById("btn-delete-order-detail");
+  const deleteModal = document.getElementById("delete-order-modal");
+  const deleteModalBackdrop = document.getElementById("delete-order-backdrop");
+  const deleteModalCloseBtn = document.getElementById("btn-close-delete-modal");
+  const deleteCancelBtn = document.getElementById("btn-cancel-delete-order");
+  const deleteConfirmBtn = document.getElementById("btn-confirm-delete-order");
+  const deleteOrderNumDisplay = document.getElementById("delete-order-number-display");
+
+  function openDeleteModal() {
+    if (deleteOrderNumDisplay && elOrderNum) {
+      deleteOrderNumDisplay.textContent = elOrderNum.textContent || `#${orderId}`;
+    }
+    if (deleteModal) {
+      deleteModal.classList.add("show");
+    }
+  }
+
+  function closeDeleteModal() {
+    if (deleteModal) {
+      deleteModal.classList.remove("show");
+    }
+    if (deleteConfirmBtn) {
+      deleteConfirmBtn.disabled = false;
+      deleteConfirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>Delete Order</span>';
+    }
+  }
+
+  async function executeDeleteOrder() {
+    if (!orderId) return;
+    deleteConfirmBtn.disabled = true;
+    deleteConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Deleting...</span>';
+
+    // Ensure admin profile sync
+    try {
+      const { data: { user } } = await client.auth.getUser();
+      if (user && (user.user_metadata?.role === "admin" || user.app_metadata?.role === "admin")) {
+        const { data: prof } = await client.from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if (!prof || prof.role !== "admin") {
+          await client.from("profiles").upsert({
+            id: user.id,
+            role: "admin",
+            full_name: user.user_metadata?.full_name || "Administrator",
+            email: user.email
+          }, { onConflict: "id" });
+        }
+      }
+    } catch (_) {}
+
+    let success = false;
+    let lastError = null;
+
+    // 1. Try atomic admin RPC
+    try {
+      const { data: rpcRes, error: rpcErr } = await client.rpc("admin_delete_order", { p_order_id: orderId });
+      if (!rpcErr && rpcRes && rpcRes.success) {
+        success = true;
+      } else if (rpcErr) {
+        console.warn("admin_delete_order RPC notice, trying direct cascade:", rpcErr);
+        lastError = rpcErr;
+      }
+    } catch (rpcEx) {
+      console.warn("admin_delete_order RPC exception:", rpcEx);
+      lastError = rpcEx;
+    }
+
+    // 2. Direct database deletion fallback
+    if (!success) {
+      try {
+        const { error: itemsErr } = await client.from("order_items").delete().eq("order_id", orderId);
+        if (itemsErr) console.warn("order_items delete notice:", itemsErr);
+
+        try {
+          await client.from("upi_payment_transactions").update({ order_id: null }).eq("order_id", orderId);
+        } catch (_) {}
+
+        const { data: deletedOrders, error: orderErr } = await client
+          .from("orders")
+          .delete()
+          .eq("id", orderId)
+          .select("id");
+
+        if (orderErr) {
+          console.error("Supabase orders delete error:", orderErr);
+          lastError = orderErr;
+        } else if (!deletedOrders || deletedOrders.length === 0) {
+          console.error("Database returned 0 deleted rows for ID:", orderId);
+          lastError = new Error("Order deletion was not permitted by database RLS.");
+        } else {
+          success = true;
+        }
+      } catch (directEx) {
+        console.error("Direct deletion error:", directEx);
+        lastError = directEx;
+      }
+    }
+
+    if (success) {
+      if (typeof window.showToast === "function") {
+        window.showToast("Order deleted successfully.", "success");
+      }
+      setTimeout(() => {
+        window.location.href = "orders.html";
+      }, 500);
+    } else {
+      console.error("Failed to delete order:", lastError);
+      deleteConfirmBtn.disabled = false;
+      deleteConfirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>Delete Order</span>';
+      if (typeof window.showToast === "function") {
+        window.showToast("Failed to delete order. Please try again.", "error");
+      } else {
+        alert("Failed to delete order. Please try again.");
+      }
+    }
+  }
+
+  if (btnDeleteOrderDetail) btnDeleteOrderDetail.addEventListener("click", openDeleteModal);
+  if (deleteModalCloseBtn) deleteModalCloseBtn.addEventListener("click", closeDeleteModal);
+  if (deleteCancelBtn) deleteCancelBtn.addEventListener("click", closeDeleteModal);
+  if (deleteModal) {
+    deleteModal.addEventListener("click", e => {
+      if (e.target === deleteModal) closeDeleteModal();
+    });
+  }
+  if (deleteConfirmBtn) deleteConfirmBtn.addEventListener("click", executeDeleteOrder);
+
+  window.addEventListener("keydown", e => {
+    if (e.key === "Escape" && deleteModal?.classList.contains("show")) {
+      closeDeleteModal();
+    }
+  });
+
   await loadOrder();
   const { data: currentOrder } = await client.from("orders").select("*").eq("id", orderId).maybeSingle();
   if (currentOrder) {

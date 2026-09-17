@@ -6,6 +6,33 @@
 (function () {
   'use strict';
 
+  /* -------------------------------------------------------------------------
+     SAFE INITIAL PAGE SCROLL POSITION
+     Ensures page load and refresh cleanly starts at the top (0, 0)
+     unless an intentional hash anchor (e.g. #orders) is present.
+  ------------------------------------------------------------------------- */
+  try {
+    if ('scrollRestoration' in history) {
+      if (!window.location.hash) {
+        history.scrollRestoration = 'manual';
+      }
+    }
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener('load', () => {
+      if (!window.location.hash) {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'auto'
+        });
+      }
+    });
+  } catch (err) {
+    // Non-critical browser feature check
+  }
+
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* -------------------------------------------------------------------------
@@ -315,6 +342,11 @@
           if (window.location.pathname.endsWith('contact-support.html') || window.location.pathname.endsWith('contact.html')) a.classList.add('active');
         }
       });
+    }
+
+    // Yield to dynamic AdsEngine if active or present
+    if (window.AdsEngine || topBar.dataset.adsEngineManaged === 'true' || window.AdsEngineActive) {
+      return;
     }
 
     const announcements = [

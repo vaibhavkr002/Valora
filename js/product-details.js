@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.benefitsBoxSubtitle) {
           elements.benefitsBoxSubtitle.innerHTML = isOnline
             ? `Pay 100% online via UPI, Card, or Net Banking to automatically unlock ${giftsCount} complimentary accessories:`
-            : `<em>Free gifts (${giftNamesList}) & Open Box Delivery apply exclusively to Full Online Payment. Switch to Full Online above to unlock.</em>`;
+            : `<em>Free gifts (${giftNamesList}) apply exclusively to Full Online Payment. Switch to Full Online above to unlock.</em>`;
         }
         if (elements.benefitsGiftsPills) {
           elements.benefitsGiftsPills.innerHTML = giftRes.gifts.map(g => {
@@ -447,31 +447,19 @@ document.addEventListener("DOMContentLoaded", () => {
           elements.benefitsGiftsPills.style.opacity = isOnline ? "1" : "0.45";
         }
         if (elements.benefitsOpenboxNote) {
-          elements.benefitsOpenboxNote.style.display = isOnline ? "flex" : "none";
+          elements.benefitsOpenboxNote.style.display = "flex";
         }
       }
     }
 
-    // 5. Delivery Preference Section
+    // 5. Delivery Preference Section (Available for All Orders: COD & Online)
     if (elements.detailDeliveryPrefWrap) {
-      if (isOnline) {
-        elements.detailDeliveryPrefWrap.style.opacity = "1";
-        elements.detailDeliveryPrefWrap.style.pointerEvents = "auto";
-        if (elements.deliveryPrefNoteBadge) {
-          elements.deliveryPrefNoteBadge.textContent = "Online Exclusive Feature";
-          elements.deliveryPrefNoteBadge.style.background = "rgba(2, 132, 199, 0.12)";
-          elements.deliveryPrefNoteBadge.style.color = "#0284c7";
-        }
-      } else {
-        elements.detailDeliveryPrefWrap.style.opacity = "0.7";
-        elements.detailDeliveryPrefWrap.style.pointerEvents = "none";
-        if (elements.deliveryPrefNoteBadge) {
-          elements.deliveryPrefNoteBadge.textContent = "Simple Delivery only for COD";
-          elements.deliveryPrefNoteBadge.style.background = "rgba(100, 116, 139, 0.15)";
-          elements.deliveryPrefNoteBadge.style.color = "#64748b";
-        }
-        // Reset to Simple Delivery when COD is chosen
-        state.selectedDeliveryPreference = "Simple Delivery";
+      elements.detailDeliveryPrefWrap.style.opacity = "1";
+      elements.detailDeliveryPrefWrap.style.pointerEvents = "auto";
+      if (elements.deliveryPrefNoteBadge) {
+        elements.deliveryPrefNoteBadge.textContent = "Doorstep Choice";
+        elements.deliveryPrefNoteBadge.style.background = "rgba(2, 132, 199, 0.12)";
+        elements.deliveryPrefNoteBadge.style.color = "#0284c7";
       }
     }
 
@@ -887,7 +875,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadProductReviews(productId) {
     const container = document.getElementById("product-reviews-container");
     const countBadge = document.getElementById("tab-reviews-count");
-    if (!container) return;
+    if (!container || !productId) return;
 
     const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
@@ -913,12 +901,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (res.ok) {
         const reviews = await res.json();
-        if (countBadge) countBadge.textContent = reviews.length;
-        if (elements.reviewsCount && reviews.length > 0) {
-          elements.reviewsCount.textContent = `(${reviews.length})`;
+
+        // Enforce single source of truth: exactly ONE review object per database ID
+        const seenIds = new Set();
+        const uniqueReviews = [];
+        if (Array.isArray(reviews)) {
+          for (const r of reviews) {
+            if (r && r.id && !seenIds.has(r.id)) {
+              seenIds.add(r.id);
+              uniqueReviews.push(r);
+            }
+          }
         }
 
-        if (reviews.length === 0) {
+        if (countBadge) countBadge.textContent = uniqueReviews.length;
+        if (elements.reviewsCount) {
+          elements.reviewsCount.textContent = `(${uniqueReviews.length} customer review${uniqueReviews.length === 1 ? '' : 's'})`;
+        }
+
+        if (uniqueReviews.length === 0) {
           container.innerHTML = `
             <div style="text-align: center; padding: 40px 20px; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(0,0,0,0.01);">
               <div style="font-size: 2rem; margin-bottom: 8px;">✍️</div>
@@ -930,22 +931,24 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        container.innerHTML = reviews.map(r => {
-          const stars = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
-          const dateStr = new Date(r.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+        container.innerHTML = uniqueReviews.map(r => {
+          const ratingVal = Math.max(1, Math.min(5, Number(r.rating) || 5));
+          const stars = "★".repeat(ratingVal) + "☆".repeat(5 - ratingVal);
+          const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "";
+          const authorName = escapeHTML(r.user_name || "Verified Customer");
+          const commentText = escapeHTML(r.comment || "");
+
           return `
-            <div style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="customer-review-card" data-review-id="${escapeHTML(r.id)}" style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="font-size: 0.95rem; color: var(--text-main);">${r.user_name}</strong>
-                  <strong style="font-size: 0.95rem; color: var(--text-main);">${escapeHTML(r.user_name)}</strong>
-                  <span style="font-size: 0.72rem; color: var(--color-success); background: rgba(34, 197, 94, 0.1); padding: 1px 6px; border-radius: 4px; font-weight: 600;">✓ Verified Buyer</span>
+                  <strong class="review-author" style="font-size: 0.95rem; color: var(--text-main);">${authorName}</strong>
+                  <span class="verified-buyer" style="font-size: 0.72rem; color: var(--color-success); background: rgba(34, 197, 94, 0.1); padding: 1px 6px; border-radius: 4px; font-weight: 600;">✓ Verified Buyer</span>
                 </div>
-                <span style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
+                <span class="review-date" style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
               </div>
-              <div style="color: #f59e0b; font-size: 0.95rem; margin-bottom: 6px;">${stars}</div>
-              <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0;">${r.comment}</p>
-              <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0;">${escapeHTML(r.comment)}</p>
+              <div class="review-stars" style="color: #f59e0b; font-size: 0.95rem; margin-bottom: 6px;">${stars}</div>
+              <p class="review-comment" style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0; word-break: break-word;">${commentText}</p>
             </div>
           `;
         }).join("");
@@ -1217,7 +1220,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     elements.relatedGrid.innerHTML = related.map(item => {
       const isWishlisted = state.wishlist.has(item.id);
-      const isInCart = state.cart.some(c => c.id === item.id);
+      const isInCart = state.cart.some(c => String(c.id || c.supabase_id) === String(item.id || item.supabase_id));
       const badgeClass = `badge-${item.badgeType || 'popular'}`;
 
       return `
@@ -1356,20 +1359,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateCartQuantity(index, delta) {
-    if (!state.cart[index]) return;
-    state.cart[index].quantity += delta;
-
-    if (state.cart[index].quantity <= 0) {
-      const removed = state.cart.splice(index, 1)[0];
-      showToast(`Removed "${removed.name}" from cart`, "info");
+    if (window.VeloraCart && typeof window.VeloraCart.updateQty === "function") {
+      window.VeloraCart.updateQty(index, delta);
+      return;
     }
-
-    saveCart();
-    updateBadges();
-    renderCartDrawer();
+    if (!state.cart[index]) return;
+    const currentQty = Number(state.cart[index].quantity) || 1;
+    if (delta > 0) {
+      state.cart[index].quantity = currentQty + 1;
+      saveCart();
+      updateBadges();
+      renderCartDrawer();
+    } else if (delta < 0) {
+      if (currentQty > 1) {
+        state.cart[index].quantity = currentQty - 1;
+        saveCart();
+        updateBadges();
+        renderCartDrawer();
+      } else {
+        removeFromCart(index);
+      }
+    }
   }
 
   function removeFromCart(index) {
+    if (window.VeloraCart && typeof window.VeloraCart.remove === "function") {
+      window.VeloraCart.remove(index);
+      return;
+    }
     if (!state.cart[index]) return;
     const removed = state.cart.splice(index, 1)[0];
     saveCart();
@@ -1380,6 +1397,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function saveCart() {
     localStorage.setItem("velora_cart", JSON.stringify(state.cart));
+    window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+    syncProductCartButtons();
+  }
+
+  let lastToggleTime = 0;
+
+  // Toggle Cart: If in cart -> remove completely; If not in cart -> add to cart
+  function toggleCart(productId) {
+    if (!productId) return;
+    const now = Date.now();
+    if (now - lastToggleTime < 150) return;
+    lastToggleTime = now;
+
+    try {
+      state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+    } catch (e) {
+      state.cart = [];
+    }
+    const pidStr = String(productId);
+    const inCartIndex = state.cart.findIndex(item => String(item.id || item.supabase_id) === pidStr);
+
+    if (inCartIndex > -1) {
+      const removed = state.cart[inCartIndex];
+      // Remove all entries for this product ID
+      state.cart = state.cart.filter(item => String(item.id || item.supabase_id) !== pidStr);
+      saveCart();
+      updateBadges();
+      renderCartDrawer();
+      showToast(`Removed "${removed.name}" from cart`, "info");
+      window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+      syncProductCartButtons();
+    } else {
+      addToCart(productId, "Standard", "Default", 1);
+    }
+  }
+
+  // Synchronize all product buttons on the page with state.cart
+  function syncProductCartButtons() {
+    const inCartIds = new Set((state.cart || []).map(item => String(item.id || item.supabase_id)));
+    document.querySelectorAll(".btn-add-to-cart[data-cart-id]").forEach(btn => {
+      if (btn.classList.contains("btn-claim-bogo") || btn.dataset.bogoId) return;
+      const pid = String(btn.dataset.cartId);
+      if (inCartIds.has(pid)) {
+        btn.classList.add("added");
+        btn.innerHTML = `<span class="btn-cart-icon">${icons.check}</span><span class="btn-cart-text">In Cart</span>`;
+      } else {
+        btn.classList.remove("added");
+        btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
+      }
+    });
   }
 
   function renderCartDrawer() {
@@ -1612,11 +1679,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Add to Cart on related product card
+      // Add to Cart / Toggle Cart on related product card
       const addCartCardBtn = e.target.closest(".btn-add-to-cart");
       if (addCartCardBtn) {
+        e.preventDefault();
         e.stopPropagation();
-        addToCart(addCartCardBtn.dataset.cartId);
+        toggleCart(addCartCardBtn.dataset.cartId);
         return;
       }
 
@@ -1639,6 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Cart Drawer quantity controls
       const qtyBtn = e.target.closest(".cart-qty-btn");
       if (qtyBtn) {
+        if (window.VeloraCart) return; // Managed exclusively by cart-drawer.js
         const idx = parseInt(qtyBtn.dataset.cartIdx, 10);
         const delta = parseInt(qtyBtn.dataset.cartDelta, 10);
         updateCartQuantity(idx, delta);
@@ -1648,6 +1717,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Cart Drawer remove
       const removeBtn = e.target.closest(".cart-item-remove");
       if (removeBtn) {
+        if (window.VeloraCart) return; // Managed exclusively by cart-drawer.js
         const idx = parseInt(removeBtn.dataset.cartRemove, 10);
         removeFromCart(idx);
         return;
@@ -1699,10 +1769,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.prefPills) {
       elements.prefPills.forEach(pill => {
         pill.addEventListener("click", () => {
-          if (state.selectedPaymentMethod !== "online") {
-            showToast("Open Box Delivery is available exclusively for Full Online Payment", "info");
-            return;
-          }
           state.selectedDeliveryPreference = pill.dataset.deliveryPref || "Simple Delivery";
           localStorage.setItem("velora_preferred_delivery", state.selectedDeliveryPreference);
           updatePaymentSelectionUI();
@@ -1885,6 +1951,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // 11. Browser Back / Forward support
     window.addEventListener("popstate", () => {
       initProductDetails();
+    });
+
+    // 12. Cross-component Cart synchronization
+    window.addEventListener("velora:cart-updated", () => {
+      try {
+        const stored = localStorage.getItem("velora_cart");
+        state.cart = stored ? JSON.parse(stored) : [];
+      } catch (err) {
+        state.cart = [];
+      }
+      syncProductCartButtons();
+    });
+
+    window.addEventListener("storage", e => {
+      if (e.key === "velora_cart") {
+        try {
+          state.cart = e.newValue ? JSON.parse(e.newValue) : [];
+        } catch (err) {
+          state.cart = [];
+        }
+        syncProductCartButtons();
+      }
     });
   }
 });

@@ -127,13 +127,13 @@ document.addEventListener("DOMContentLoaded", () => {
         syncDeliveryPartners(),
         window.syncStoreSettings ? window.syncStoreSettings() : Promise.resolve()
       ]);
-      renderCategories();
-      renderTrendingProducts(state.activeTrendingCategory || "all");
-      renderNewArrivals();
-      renderFlashDeals();
-      renderBogoProducts();
-      updateBadges();
-      applyStoreSettings();
+      try { renderCategories(); } catch (e) { console.warn("renderCategories live error:", e); }
+      try { renderTrendingProducts(state.activeTrendingCategory || "all"); } catch (e) { console.warn("renderTrendingProducts live error:", e); }
+      try { renderNewArrivals(); } catch (e) { console.warn("renderNewArrivals live error:", e); }
+      try { renderFlashDeals(); } catch (e) { console.warn("renderFlashDeals live error:", e); }
+      try { renderBogoProducts(); } catch (e) { console.warn("renderBogoProducts live error:", e); }
+      try { updateBadges(); } catch (e) { console.warn("updateBadges live error:", e); }
+      try { applyStoreSettings(); } catch (e) { console.warn("applyStoreSettings live error:", e); }
     } catch (err) {
       console.warn("Live homepage catalog sync:", err);
     }
@@ -143,17 +143,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Reactive listener for background Supabase updates
   window.addEventListener("velora:products-synced", () => {
-    renderCategories();
-    renderTrendingProducts(state.activeTrendingCategory || "all");
-    renderNewArrivals();
-    renderFlashDeals();
-    renderBogoProducts();
-    updateBadges();
+    try { renderCategories(); } catch (e) { console.warn("renderCategories sync error:", e); }
+    try { renderTrendingProducts(state.activeTrendingCategory || "all"); } catch (e) { console.warn("renderTrendingProducts sync error:", e); }
+    try { renderNewArrivals(); } catch (e) { console.warn("renderNewArrivals sync error:", e); }
+    try { renderFlashDeals(); } catch (e) { console.warn("renderFlashDeals sync error:", e); }
+    try { renderBogoProducts(); } catch (e) { console.warn("renderBogoProducts sync error:", e); }
+    try { updateBadges(); } catch (e) { console.warn("updateBadges sync error:", e); }
   });
 
   window.addEventListener("velora:settings-synced", () => {
-    applyStoreSettings();
-    renderBogoProducts();
+    try { applyStoreSettings(); } catch (e) { console.warn("applyStoreSettings sync error:", e); }
+    try { renderBogoProducts(); } catch (e) { console.warn("renderBogoProducts sync error:", e); }
   });
 
   // 1b. Render Promotional Hero Banner (Projected & Cached from Supabase banners table)
@@ -338,13 +338,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Render Product Card HTML Template
   function createProductCardHTML(product, forceBogo = false) {
-    const isWishlisted = state.wishlist.has(product.id);
+    if (!product) return "";
+    try {
+      const isWishlisted = state.wishlist.has(product.id);
     const bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
       ? window.VELORA_SETTINGS.bogo_config.product_ids
       : [];
     const isBogo = forceBogo || Boolean(product.isBogo) || Boolean(product.is_bogo) || bogoConfigIds.includes(product.id) || bogoConfigIds.includes(product.supabase_id) || (product.legacyId && bogoConfigIds.includes(product.legacyId));
+    const prodId = String(product.id || product.supabase_id);
+    const isInCart = state.cart.some(item => String(item.id || item.supabase_id) === prodId);
     const badgeClass = isBogo ? 'badge-deal' : `badge-${product.badgeType || 'popular'}`;
-    const isInCart = state.cart.some(item => item.id === product.id);
 
     let badgeHtml = "";
     if (isBogo) {
@@ -424,6 +427,10 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
+    } catch (cardErr) {
+      console.warn("createProductCardHTML error for product:", product ? product.id : null, cardErr);
+      return "";
+    }
   }
 
   // 3. Render Trending Now Products (5 cards per row x 3 rows = up to 15)
@@ -991,35 +998,92 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCartDrawer();
     openCartDrawer();
     showToast(`Added "${product.name}" to cart!`, "success");
+    window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+    syncProductCartButtons();
+  }
 
-    // Refresh buttons state in grid
-    document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${productId}"]`).forEach(btn => {
-      btn.classList.add("added");
-      btn.innerHTML = `<span class="btn-cart-icon">${icons.check}</span><span class="btn-cart-text">In Cart</span>`;
+  let lastToggleTime = 0;
+
+  // Toggle Cart: If in cart -> remove completely; If not in cart -> add to cart
+  function toggleCart(productId) {
+    if (!productId) return;
+    const now = Date.now();
+    if (now - lastToggleTime < 150) return;
+    lastToggleTime = now;
+
+    state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+    const pidStr = String(productId);
+    const inCartIndex = state.cart.findIndex(item => String(item.id || item.supabase_id) === pidStr);
+
+    if (inCartIndex > -1) {
+      const removedItem = state.cart[inCartIndex];
+      // Remove all entries for this product ID
+      state.cart = state.cart.filter(item => String(item.id || item.supabase_id) !== pidStr);
+
+      if (removedItem.bogo_pair_id) {
+        state.cart = state.cart.filter(i => i.bogo_pair_id !== removedItem.bogo_pair_id);
+      }
+
+      saveCart();
+      updateBadges();
+      renderCartDrawer();
+      showToast(`Removed "${removedItem.name}" from cart`, "info");
+      window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+      syncProductCartButtons();
+    } else {
+      addToCart(productId);
+    }
+  }
+
+  // Synchronize all product buttons on the page with state.cart
+  function syncProductCartButtons() {
+    const inCartIds = new Set((state.cart || []).map(item => String(item.id || item.supabase_id)));
+    document.querySelectorAll(".btn-add-to-cart[data-cart-id]").forEach(btn => {
+      if (btn.classList.contains("btn-claim-bogo") || btn.dataset.bogoId) return;
+      const pid = String(btn.dataset.cartId);
+      if (inCartIds.has(pid)) {
+        btn.classList.add("added");
+        btn.innerHTML = `<span class="btn-cart-icon">${icons.check}</span><span class="btn-cart-text">In Cart</span>`;
+      } else {
+        btn.classList.remove("added");
+        btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
+      }
     });
   }
 
   function updateCartQuantity(index, delta) {
-    if (!state.cart[index]) return;
-
-    state.cart[index].quantity += delta;
-
-    if (state.cart[index].quantity <= 0) {
-      const removedItem = state.cart.splice(index, 1)[0];
-      showToast(`Removed "${removedItem.name}" from cart`, "info");
-      // Reset button state
-      document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${removedItem.id}"]`).forEach(btn => {
-        btn.classList.remove("added");
-        btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
-      });
+    if (window.VeloraCart && typeof window.VeloraCart.updateQty === "function") {
+      window.VeloraCart.updateQty(index, delta);
+      return;
     }
-
-    saveCart();
-    updateBadges();
-    renderCartDrawer();
+    if (!state.cart[index]) return;
+    const currentQty = Number(state.cart[index].quantity) || 1;
+    if (delta > 0) {
+      state.cart[index].quantity = currentQty + 1;
+      saveCart();
+      updateBadges();
+      renderCartDrawer();
+      window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+      syncProductCartButtons();
+    } else if (delta < 0) {
+      if (currentQty > 1) {
+        state.cart[index].quantity = currentQty - 1;
+        saveCart();
+        updateBadges();
+        renderCartDrawer();
+        window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+        syncProductCartButtons();
+      } else {
+        removeFromCart(index);
+      }
+    }
   }
 
   function removeFromCart(index) {
+    if (window.VeloraCart && typeof window.VeloraCart.remove === "function") {
+      window.VeloraCart.remove(index);
+      return;
+    }
     if (!state.cart[index]) return;
     const removedItem = state.cart.splice(index, 1)[0];
     
@@ -1035,11 +1099,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateBadges();
     renderCartDrawer();
     showToast(`Removed "${removedItem.name}" from cart`, "info");
-
-    document.querySelectorAll(`.btn-add-to-cart[data-cart-id="${removedItem.id}"]`).forEach(btn => {
-      btn.classList.remove("added");
-      btn.innerHTML = `<span class="btn-cart-icon">${icons.cart}</span><span class="btn-cart-text">Add to Cart</span>`;
-    });
+    window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+    syncProductCartButtons();
   }
 
   function saveCart() {
@@ -1409,16 +1470,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function bindEventListeners() {
     // 1. Delegated clicks for Products (Add to cart, Wishlist, Quick View)
     document.addEventListener("click", e => {
-      // Add to Cart
+      // Add to Cart / In Cart Toggle
       const addCartBtn = e.target.closest(".btn-add-to-cart");
       if (addCartBtn) {
+        e.preventDefault();
+        e.stopPropagation();
         if (addCartBtn.classList.contains("btn-claim-bogo") || addCartBtn.dataset.bogoId) {
           const bogoId = addCartBtn.dataset.bogoId || addCartBtn.dataset.cartId;
           openBogoModal(bogoId);
           return;
         }
         const id = addCartBtn.dataset.cartId;
-        addToCart(id);
+        toggleCart(id);
         return;
       }
 
@@ -1449,6 +1512,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Cart Drawer quantity controls
       const qtyBtn = e.target.closest(".cart-qty-btn");
       if (qtyBtn) {
+        if (window.VeloraCart) return; // Managed exclusively by cart-drawer.js
         const idx = parseInt(qtyBtn.dataset.cartIdx, 10);
         const delta = parseInt(qtyBtn.dataset.cartDelta, 10);
         updateCartQuantity(idx, delta);
@@ -1458,6 +1522,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Cart Drawer remove button
       const removeBtn = e.target.closest(".cart-item-remove");
       if (removeBtn) {
+        if (window.VeloraCart) return; // Managed exclusively by cart-drawer.js
         const idx = parseInt(removeBtn.dataset.cartRemove, 10);
         removeFromCart(idx);
         return;
@@ -1760,6 +1825,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.searchResultsDropdown) {
           elements.searchResultsDropdown.classList.remove("active");
         }
+      }
+    });
+
+    // 14. Cross-component & Cross-tab Cart Synchronization
+    window.addEventListener("velora:cart-updated", () => {
+      state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+      syncProductCartButtons();
+      updateBadges();
+      renderCartDrawer();
+    });
+
+    window.addEventListener("storage", e => {
+      if (e.key === "velora_cart") {
+        state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+        syncProductCartButtons();
+        updateBadges();
+        renderCartDrawer();
       }
     });
   }

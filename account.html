@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/auth.css">
   <link rel="stylesheet" href="css/premium-3d.css">
+  <link rel="stylesheet" href="css/mobile-app.css">
+  <link rel="stylesheet" href="css/promotions.css">
 </head>
 <body>
 
@@ -76,6 +78,11 @@
       </nav>
     </div>
   </header>
+
+  <!-- ========================================================================
+       GLOBAL PROMOTIONAL AD STRIP (BOGO & TRENDING PROMO BAR)
+       ======================================================================== -->
+  
 
   <!-- ========================================================================
        MAIN ACCOUNT DASHBOARD SECTION
@@ -416,32 +423,6 @@
         }, 5000);
       }
 
-      // 1. Get Supabase client
-      const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
-
-      if (!client) {
-        userNameElem.textContent = "Connection Error";
-        userEmailElem.textContent = "Supabase client not initialized";
-        if (loadingIndicator) loadingIndicator.style.display = "none";
-        return;
-      }
-
-      // 2. Authenticate User
-      let authUser = null;
-      try {
-        const { data: { user }, error: authErr } = await client.auth.getUser();
-        if (authErr || !user) {
-          const redirectTarget = encodeURIComponent("account.html" + window.location.search + window.location.hash);
-          window.location.href = `login.html?redirect=${redirectTarget}`;
-          return;
-        }
-        authUser = user;
-      } catch (err) {
-        const redirectTarget = encodeURIComponent("account.html" + window.location.search + window.location.hash);
-        window.location.href = `login.html?redirect=${redirectTarget}`;
-        return;
-      }
-
       // Security: HTML escaping helper to eliminate XSS vectors
       function escapeHTML(str) {
         if (typeof str !== 'string') return str == null ? '' : String(str);
@@ -454,15 +435,172 @@
         }[tag] || tag));
       }
 
-      // 3. Fetch user profile from public.profiles table using user.id
+      // 1. Tab Switching Setup (Bound immediately so navigation always works)
+      const tabBtns = document.querySelectorAll(".account-tab-btn[data-tab]");
+      const panels = {
+        profile: document.getElementById("panel-profile"),
+        orders: document.getElementById("panel-orders"),
+        addresses: document.getElementById("panel-addresses")
+      };
+
+      function switchTab(tabKey) {
+        tabBtns.forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.tab === tabKey);
+        });
+        Object.keys(panels).forEach(key => {
+          if (panels[key]) panels[key].classList.toggle("active", key === tabKey);
+        });
+      }
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+      });
+
+      function handleTabRouting() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hash = window.location.hash;
+        if (hash === "#orders" || urlParams.get("tab") === "orders") {
+          switchTab("orders");
+          setTimeout(() => {
+            const panel = document.getElementById("panel-orders");
+            if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 200);
+        } else if (hash === "#addresses" || urlParams.get("tab") === "addresses") {
+          switchTab("addresses");
+        } else if (hash === "#profile" || urlParams.get("tab") === "profile") {
+          switchTab("profile");
+        }
+      }
+
+      handleTabRouting();
+      window.addEventListener("hashchange", handleTabRouting);
+
+      // Single Main Navigation Sign Out Button Handler
+      const logoutBtn = document.getElementById("btn-account-logout");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          logoutBtn.disabled = true;
+          const textSpan = logoutBtn.querySelector("span");
+          if (textSpan) textSpan.textContent = "Signing out...";
+
+          try {
+            if (window.VeloraAuth && typeof window.VeloraAuth.logout === "function") {
+              await window.VeloraAuth.logout();
+            } else if (typeof getSupabaseClient === "function") {
+              const c = await getSupabaseClient();
+              if (c && c.auth) await c.auth.signOut();
+            }
+          } catch (err) {
+            console.warn("Sign out notice:", err);
+          } finally {
+            localStorage.removeItem("velora_user_session");
+            window.location.href = "login.html";
+          }
+        });
+      }
+
+      // 2. Get Supabase client helper with retry
+      async function getSupabaseClient() {
+        let c = (window.VeloraAuth && typeof window.VeloraAuth.getClient === "function" && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+        if (c) return c;
+        for (let i = 0; i < 20; i++) {
+          await new Promise(r => setTimeout(r, 50));
+          c = (window.VeloraAuth && typeof window.VeloraAuth.getClient === "function" && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+          if (c) return c;
+        }
+        return null;
+      }
+
+      const client = await getSupabaseClient();
+      if (!client) {
+        if (userNameElem) userNameElem.textContent = "Connection Error";
+        if (userEmailElem) userEmailElem.textContent = "Supabase client not initialized";
+        if (loadingIndicator) loadingIndicator.style.display = "none";
+        showStatus("Could not initialize database connection. Please refresh.", "error");
+        return;
+      }
+
+      // 3. Authenticate User
+      let authUser = null;
+      try {
+        const { data: sessionData } = await client.auth.getSession();
+        if (sessionData && sessionData.session && sessionData.session.user) {
+          authUser = sessionData.session.user;
+        } else {
+          const { data: userData, error: userErr } = await client.auth.getUser();
+          if (!userErr && userData && userData.user) {
+            authUser = userData.user;
+          }
+        }
+      } catch (err) {
+        console.warn("Authentication check warning:", err);
+      }
+
+      if (!authUser) {
+        const redirectTarget = encodeURIComponent("account.html" + window.location.search + window.location.hash);
+        window.location.href = `login.html?redirect=${redirectTarget}`;
+        return;
+      }
+
+      // 4. Fetch user profile from public.profiles table using user.id with UI state machine
+      function setProfileUI(state, data) {
+        if (state === "loading") {
+          if (loadingIndicator) loadingIndicator.style.display = "flex";
+          if (userNameElem) userNameElem.textContent = "Loading Profile...";
+          if (userEmailElem) userEmailElem.textContent = "Connecting to Supabase...";
+          if (avatarCircle) avatarCircle.textContent = "--";
+        } else if (state === "success") {
+          if (loadingIndicator) loadingIndicator.style.display = "none";
+          const name = data.name || "VELORA Member";
+          const email = data.email || "";
+          const phone = data.phone || "";
+          const initials = data.initials || "ME";
+
+          if (avatarCircle) avatarCircle.textContent = initials;
+          if (userNameElem) userNameElem.textContent = name;
+          if (userEmailElem) userEmailElem.textContent = email;
+
+          if (nameInput) nameInput.value = (name !== "VELORA Member" ? name : "");
+          if (emailInput) emailInput.value = email;
+          if (phoneInput) {
+            phoneInput.value = phone;
+            phoneInput.placeholder = phone ? "e.g. +91 98765 43210" : "Not added";
+          }
+
+          if (window.VeloraAuth && typeof window.VeloraAuth.updateNavbarAuth === "function") {
+            window.VeloraAuth.updateNavbarAuth();
+          }
+        } else if (state === "error") {
+          if (loadingIndicator) loadingIndicator.style.display = "none";
+          const fallbackName = (authUser && authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name))
+            || (authUser && authUser.email ? authUser.email.split("@")[0] : "VELORA Member");
+          const fallbackEmail = (authUser && authUser.email) || "";
+          let initials = "ME";
+          if (fallbackName && fallbackName !== "VELORA Member") {
+            const parts = fallbackName.trim().split(/\s+/);
+            initials = parts.length > 1 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
+          } else if (fallbackEmail) {
+            initials = fallbackEmail.substring(0, 2).toUpperCase();
+          }
+
+          if (avatarCircle) avatarCircle.textContent = initials;
+          if (userNameElem) userNameElem.textContent = fallbackName;
+          if (userEmailElem) userEmailElem.textContent = fallbackEmail;
+          if (nameInput) nameInput.value = (fallbackName !== "VELORA Member" ? fallbackName : "");
+          if (emailInput) emailInput.value = fallbackEmail;
+
+          showStatus(data && data.message ? data.message : "Unable to load profile. Please try again.", "error");
+        }
+      }
+
       async function fetchAndRenderProfile() {
-        if (loadingIndicator) loadingIndicator.style.display = "flex";
+        setProfileUI("loading");
 
         let profileData = null;
         try {
           const { data, error } = await client
             .from("profiles")
-            .select("*")
             .select("id, full_name, email, phone, avatar_url, role")
             .eq("id", authUser.id)
             .maybeSingle();
@@ -474,7 +612,7 @@
           console.warn("Profile fetch notice:", err);
         }
 
-        // If profile record does not exist in profiles table, create/insert it
+        // If profile record does not exist in profiles table (NO PROFILE state), create/insert it
         if (!profileData) {
           const fallbackName = (authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name)) || "";
           const fallbackPhone = (authUser.user_metadata && authUser.user_metadata.phone) || "";
@@ -488,7 +626,7 @@
                 phone: fallbackPhone,
                 role: "customer"
               }], { onConflict: "id" })
-              .select()
+              .select("id, full_name, email, phone, avatar_url, role")
               .maybeSingle();
 
             if (!insErr && inserted) {
@@ -504,26 +642,27 @@
           } catch (e) {
             profileData = {
               id: authUser.id,
-              full_name: "",
+              full_name: fallbackName,
               email: authUser.email,
-              phone: ""
+              phone: fallbackPhone
             };
           }
         }
 
         // Determine correct full name, email, and phone
-        const realName = (profileData.full_name && profileData.full_name.trim())
+        const realName = (profileData && profileData.full_name && profileData.full_name.trim())
           || (authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name))
-          || "";
+          || (authUser.email ? authUser.email.split("@")[0] : "")
+          || "VELORA Member";
 
-        const realEmail = authUser.email || profileData.email || "";
-        const realPhone = (profileData.phone && profileData.phone.trim())
+        const realEmail = authUser.email || (profileData && profileData.email) || "";
+        const realPhone = (profileData && profileData.phone && profileData.phone.trim())
           || (authUser.user_metadata && authUser.user_metadata.phone)
           || "";
 
         // Calculate initials
         let initials = "ME";
-        if (realName) {
+        if (realName && realName !== "VELORA Member") {
           const parts = realName.trim().split(/\s+/);
           initials = parts.length > 1
             ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
@@ -532,24 +671,12 @@
           initials = realEmail.substring(0, 2).toUpperCase();
         }
 
-        // Update UI elements
-        if (avatarCircle) avatarCircle.textContent = initials;
-        if (userNameElem) userNameElem.textContent = realName || "VELORA Member";
-        if (userEmailElem) userEmailElem.textContent = realEmail;
-
-        if (nameInput) nameInput.value = realName;
-        if (emailInput) emailInput.value = realEmail;
-        if (phoneInput) {
-          phoneInput.value = realPhone;
-          phoneInput.placeholder = realPhone ? "e.g. +91 98765 43210" : "Not added";
-        }
-
-        if (loadingIndicator) loadingIndicator.style.display = "none";
-
-        // Update navbar with user name
-        if (window.VeloraAuth && typeof window.VeloraAuth.updateNavbarAuth === "function") {
-          window.VeloraAuth.updateNavbarAuth();
-        }
+        setProfileUI("success", {
+          name: realName,
+          email: realEmail,
+          phone: realPhone,
+          initials: initials
+        });
       }
 
       await fetchAndRenderProfile();
@@ -630,7 +757,6 @@
           const orderCols = "id, order_number, total, subtotal, discount, shipping_charge, payment_method, payment_status, order_status, advance_amount, advance_paid, cod_balance, delivery_preference, free_gifts_eligible, free_gifts_items, is_full_online_payment, estimated_delivery, tracking_data, created_at, order_items(id, product_name, product_image, price, quantity, selected_size, selected_color, subtotal)";
           const { data: dbOrders, error } = await client
             .from("orders")
-            .select("*, order_items(*)")
             .select(orderCols)
             .eq("user_id", authUser.id)
             .order("created_at", { ascending: false });
@@ -640,15 +766,12 @@
               const statusClass = ord.order_status === "delivered" ? "color: var(--color-success);" : "color: var(--accent);";
               const itemsHtml = (ord.order_items || []).map(item => `
                 <div style="display:flex; align-items:center; gap:14px; padding: 8px 0;">
-                  <img src="${item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80'}" alt="${item.product_name}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
-                  <img src="${escapeHTML(item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80')}" alt="${escapeHTML(item.product_name)}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
+                  <img src="${escapeHTML(item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80')}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
                   <div style="flex:1;">
-                    <strong style="font-size:0.88rem; color:var(--text-main);">${item.product_name}</strong>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + item.selected_size : ''} • Qty: ${item.quantity}</div>
-                    <strong style="font-size:0.88rem; color:var(--text-main);">${escapeHTML(item.product_name)}</strong>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} • Qty: ${item.quantity}</div>
+                    <strong style="font-size:0.88rem; color:var(--text-main);">${escapeHTML(item.product_name || 'Item')}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} • Qty: ${item.quantity || 1}</div>
                   </div>
-                  <div style="font-weight:700; color:var(--text-main); font-size:0.9rem;">₹${Math.round(item.subtotal || (item.price * item.quantity)).toLocaleString("en-IN")}</div>
+                  <div style="font-weight:700; color:var(--text-main); font-size:0.9rem;">₹${Math.round(item.subtotal || (item.price * (item.quantity || 1))).toLocaleString("en-IN")}</div>
                 </div>
               `).join("");
 
@@ -760,7 +883,6 @@
           const addrCols = "id, user_id, full_name, phone, house, street, landmark, city, state, country, pincode, address_type, is_default, created_at";
           const { data: dbAddresses, error } = await client
             .from("addresses")
-            .select("*")
             .select(addrCols)
             .eq("user_id", authUser.id)
             .order("is_default", { ascending: false });
@@ -769,19 +891,14 @@
             addressesContainer.innerHTML = dbAddresses.map(addr => `
               <div class="address-box ${addr.is_default ? 'is-default' : ''}">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                  <strong style="font-size: 0.95rem; color: var(--text-main);">${addr.address_type} Address</strong>
-                  <strong style="font-size: 0.95rem; color: var(--text-main);">${escapeHTML(addr.address_type)} Address</strong>
+                  <strong style="font-size: 0.95rem; color: var(--text-main);">${escapeHTML(addr.address_type || 'Delivery')} Address</strong>
                   ${addr.is_default ? '<span class="pm-badge">Default</span>' : ''}
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                  ${addr.full_name}<br>
-                  ${addr.house}, ${addr.street}${addr.landmark ? ', ' + addr.landmark : ''}<br>
-                  ${addr.city}, ${addr.state} ${addr.pincode}, ${addr.country}<br>
-                  Phone: ${addr.phone}
-                  ${escapeHTML(addr.full_name)}<br>
-                  ${escapeHTML(addr.house)}, ${escapeHTML(addr.street)}${addr.landmark ? ', ' + escapeHTML(addr.landmark) : ''}<br>
-                  ${escapeHTML(addr.city)}, ${escapeHTML(addr.state)} ${escapeHTML(addr.pincode)}, ${escapeHTML(addr.country)}<br>
-                  Phone: ${escapeHTML(addr.phone)}
+                  <strong>${escapeHTML(addr.full_name || '')}</strong><br>
+                  ${escapeHTML(addr.house || '')}, ${escapeHTML(addr.street || '')}${addr.landmark ? ', ' + escapeHTML(addr.landmark) : ''}<br>
+                  ${escapeHTML(addr.city || '')}, ${escapeHTML(addr.state || '')} ${escapeHTML(addr.pincode || '')}, ${escapeHTML(addr.country || 'India')}<br>
+                  ${addr.phone ? 'Phone: ' + escapeHTML(addr.phone) : ''}
                 </div>
               </div>
             `).join("");
@@ -919,14 +1036,8 @@
         trackingOverlay.style.pointerEvents = "auto";
         document.body.style.overflow = "hidden";
 
-        // Asynchronously fetch specific courier tracking details from Supabase
         // Asynchronously fetch specific courier tracking details strictly for this user's order
         try {
-          const { data: settingsRow } = await client
-            .from("store_settings")
-            .select("value")
-            .eq("key", "order_tracking")
-          let trackingData = null;
           const { data: ordRow } = await client
             .from("orders")
             .select("tracking_data, estimated_delivery")
@@ -935,8 +1046,6 @@
             .maybeSingle();
 
           let trackingData = null;
-          if (settingsRow && settingsRow.value && settingsRow.value[orderId]) {
-            trackingData = settingsRow.value[orderId];
           if (ordRow && ordRow.tracking_data && typeof ordRow.tracking_data === "object" && Object.keys(ordRow.tracking_data).length > 0) {
             trackingData = ordRow.tracking_data;
           }
@@ -1039,58 +1148,6 @@
           console.warn("Realtime order subscription notice:", e);
         }
       }
-
-      // 7. Tab Switching
-      const tabBtns = document.querySelectorAll(".account-tab-btn[data-tab]");
-      const panels = {
-        profile: document.getElementById("panel-profile"),
-        orders: document.getElementById("panel-orders"),
-        addresses: document.getElementById("panel-addresses")
-      };
-
-      function switchTab(tabKey) {
-        tabBtns.forEach(btn => {
-          btn.classList.toggle("active", btn.dataset.tab === tabKey);
-        });
-        Object.keys(panels).forEach(key => {
-          if (panels[key]) panels[key].classList.toggle("active", key === tabKey);
-        });
-      }
-
-      tabBtns.forEach(btn => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-      });
-
-      function handleTabRouting() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const hash = window.location.hash;
-        if (hash === "#orders" || urlParams.get("tab") === "orders") {
-          switchTab("orders");
-          setTimeout(() => {
-            const panel = document.getElementById("panel-orders");
-            if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-          }, 200);
-        } else if (hash === "#addresses" || urlParams.get("tab") === "addresses") {
-          switchTab("addresses");
-        } else if (hash === "#profile" || urlParams.get("tab") === "profile") {
-          switchTab("profile");
-        }
-      }
-
-      handleTabRouting();
-      window.addEventListener("hashchange", handleTabRouting);
-
-      // 8. Sign Out Button
-      const logoutBtn = document.getElementById("btn-account-logout");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-          if (window.VeloraAuth) {
-            window.VeloraAuth.logout();
-          } else {
-            client.auth.signOut().then(() => window.location.href = "login.html");
-          }
-        });
-      }
     });
   </script>
 
@@ -1168,5 +1225,8 @@
 
   <script src="js/cart-drawer.js"></script>
   <script src="js/premium-3d.js" defer></script>
+  <script src="js/mobile-app.js" defer></script>
+  <script src="js/promotions.js" defer></script>
+  <script src="js/ads-engine.js" defer></script>
 </body>
 </html>

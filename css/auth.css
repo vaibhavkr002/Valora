@@ -956,7 +956,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .auth-section {
     padding: 24px 0 40px !important;
   }
@@ -1068,5 +1068,195 @@
     padding: 6px 10px !important;
     font-size: 0.78rem !important;
   }
+}
+
+/* ==========================================================================
+   VELORA AUTHENTICATION — PREMIUM 3D PROMOTIONAL ADVERTISEMENT CARD
+   ========================================================================== */
+.auth-3d-ad-slot {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 18px 0;
+  perspective: 1200px;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.auth-3d-carousel {
+  position: relative;
+  width: 100%;
+  min-height: 124px;
+}
+
+.auth-3d-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-3d-slide.active {
+  position: relative;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.auth-3d-card-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 120px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 23, 42, 0.55) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: #ffffff;
+  overflow: visible;
+}
+
+.auth-3d-card-wrapper:hover {
+  transform: translateY(-4px) rotateX(2.5deg) rotateY(-2.5deg);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.48), 0 0 28px rgba(99, 102, 241, 0.22);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
+.auth-3d-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(12px);
+  transform-style: preserve-3d;
+}
+
+.auth-3d-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(251, 191, 36, 0.16);
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  border-radius: 6px;
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  backdrop-filter: blur(4px);
+}
+
+.auth-3d-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.25;
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.auth-3d-subtitle {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.35;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.auth-3d-cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #ffffff;
+  color: #090d16;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 100px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.auth-3d-card-wrapper:hover .auth-3d-cta {
+  background: #f8fafc;
+  transform: translateX(3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.auth-3d-image-wrap {
+  width: 90px;
+  height: 90px;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transform: translateZ(24px);
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-3d-card-wrapper:hover .auth-3d-image-wrap {
+  transform: translateZ(36px) scale(1.08);
+}
+
+.auth-3d-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.5));
+  transition: filter 0.3s ease;
+}
+
+.auth-3d-dots {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 5;
+}
+
+.auth-3d-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.auth-3d-dot.active {
+  width: 16px;
+  border-radius: 4px;
+  background: #fbbf24;
 }
 

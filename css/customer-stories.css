@@ -1,0 +1,626 @@
+/* ==========================================================================
+   VELORA - 3D REAL CUSTOMER EXPERIENCES SECTION
+   Scoped styles for 3D Customer Wall, Stage, Cards & Lightbox
+   ========================================================================== */
+
+.velora-customer-stories {
+  position: relative;
+  width: 100%;
+  padding: 80px 0 90px;
+  background: radial-gradient(circle at 50% 15%, rgba(37, 99, 235, 0.06) 0%, rgba(15, 23, 42, 0.02) 45%, transparent 75%),
+              linear-gradient(180deg, rgba(248, 250, 252, 0.7) 0%, #ffffff 50%, rgba(248, 250, 252, 0.8) 100%);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Ambient glow background accents */
+.velora-customer-stories::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 450px;
+  background: radial-gradient(ellipse at center, rgba(37, 99, 235, 0.12), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.velora-cs-container {
+  position: relative;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 20px;
+  z-index: 1;
+}
+
+/* Header Section */
+.velora-cs-header {
+  text-align: center;
+  max-width: 780px;
+  margin: 0 auto 40px;
+}
+
+.velora-cs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.velora-cs-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  animation: velora-cs-pulse-anim 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes velora-cs-pulse-anim {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+.velora-cs-title {
+  font-size: 2.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  margin: 0 0 14px;
+}
+
+.velora-cs-highlight {
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.velora-cs-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: #64748b;
+  margin: 0 0 18px;
+}
+
+.velora-cs-trust-bar {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 16px;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.velora-cs-trust-bar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.velora-cs-trust-bar svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.velora-cs-trust-bar .dot {
+  color: #cbd5e1;
+  font-size: 0.7rem;
+}
+
+/* ==========================================================================
+   3D STAGE & CAROUSEL VIEWPORT
+   ========================================================================== */
+.velora-cs-viewport {
+  position: relative;
+  width: 100%;
+  height: 540px;
+  margin: 20px auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1300px;
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+}
+
+.velora-cs-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Individual 3D Card */
+.velora-cs-card {
+  position: absolute;
+  width: 275px;
+  height: 480px;
+  border-radius: 22px;
+  background: #0f172a;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.28),
+              0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.velora-cs-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #0b141a;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Mini App Bar */
+.velora-cs-card-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.velora-cs-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #22c55e;
+  letter-spacing: 0.02em;
+}
+
+.velora-cs-card-badge svg {
+  fill: #22c55e;
+}
+
+.velora-cs-card-zoom-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s ease;
+}
+
+/* Screenshot image wrapper */
+.velora-cs-card-img-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 41px);
+  background: #0a0f1d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.velora-cs-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+/* Glass shine gradient overlay */
+.velora-cs-card-glare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 55%);
+  pointer-events: none;
+  border-radius: 22px;
+  z-index: 3;
+}
+
+/* Center card highlight ring & hover effects */
+.velora-cs-card.is-center {
+  cursor: zoom-in;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.38),
+              0 0 0 2px rgba(59, 130, 246, 0.5),
+              0 0 25px rgba(59, 130, 246, 0.2);
+}
+
+.velora-cs-card.is-center:hover .velora-cs-card-zoom-hint {
+  color: #ffffff;
+}
+
+.velora-cs-card.is-center:hover .velora-cs-card-img {
+  transform: scale(1.02);
+}
+
+/* Flank cards hover */
+.velora-cs-card:not(.is-center):hover {
+  filter: brightness(1.08) drop-shadow(0 15px 30px rgba(0,0,0,0.25));
+}
+
+/* ==========================================================================
+   CONTROLS & NAVIGATION
+   ========================================================================== */
+.velora-cs-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 10px;
+}
+
+.velora-cs-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  z-index: 10;
+}
+
+.velora-cs-btn:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+}
+
+.velora-cs-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.velora-cs-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+/* Counter & Scrub Indicators */
+.velora-cs-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.velora-cs-counter {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.velora-cs-counter-total {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.velora-cs-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 240px;
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.velora-cs-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #cbd5e1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.velora-cs-dot.active {
+  width: 22px;
+  background: #2563eb;
+}
+
+/* Auto-play pause indicator */
+.velora-cs-pause-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 10px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   FULLSCREEN LIGHTBOX MODAL
+   ========================================================================== */
+.velora-cs-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(10, 15, 29, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 20px;
+}
+
+.velora-cs-lightbox.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.velora-cs-lightbox-dialog {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.velora-cs-lightbox.is-open .velora-cs-lightbox-dialog {
+  transform: scale(1);
+}
+
+.velora-cs-lightbox-img-wrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.65),
+              0 0 0 1px rgba(255, 255, 255, 0.15);
+  background: #0b141a;
+  max-height: 82vh;
+}
+
+.velora-cs-lightbox-img {
+  max-width: 85vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Lightbox Close button */
+.velora-cs-lightbox-close {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.velora-cs-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.08);
+}
+
+/* Lightbox Nav buttons */
+.velora-cs-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.velora-cs-lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.velora-cs-lightbox-nav.prev {
+  left: 24px;
+}
+
+.velora-cs-lightbox-nav.next {
+  right: 24px;
+}
+
+.velora-cs-lightbox-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.velora-cs-lightbox-info .pill {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .velora-cs-viewport {
+    height: 500px;
+  }
+  .velora-cs-card {
+    width: 250px;
+    height: 440px;
+  }
+  .velora-cs-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .velora-customer-stories {
+    padding: 50px 0 60px;
+  }
+  .velora-cs-header {
+    margin-bottom: 24px;
+    padding: 0 12px;
+  }
+  .velora-cs-title {
+    font-size: 1.6rem;
+  }
+  .velora-cs-subtitle {
+    font-size: 0.9rem;
+  }
+  .velora-cs-trust-bar {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    gap: 8px 12px;
+  }
+  .velora-cs-viewport {
+    height: 440px;
+    margin: 8px auto 20px;
+    overflow: hidden;
+  }
+  .velora-cs-card {
+    width: min(240px, 72vw);
+    height: 390px;
+  }
+  .velora-cs-lightbox-nav {
+    width: 42px;
+    height: 42px;
+  }
+  .velora-cs-lightbox-nav.prev {
+    left: 10px;
+  }
+  .velora-cs-lightbox-nav.next {
+    right: 10px;
+  }
+}
+
+@media (max-width: 430px) {
+  .velora-customer-stories {
+    padding: 40px 0 48px;
+  }
+  .velora-cs-title {
+    font-size: 1.35rem;
+  }
+  .velora-cs-viewport {
+    height: 400px;
+  }
+  .velora-cs-card {
+    width: min(225px, 75vw);
+    height: 360px;
+  }
+  .velora-cs-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+  .velora-cs-controls {
+    gap: 14px;
+  }
+  .velora-cs-dots {
+    max-width: 160px;
+  }
+  .velora-cs-lightbox-close {
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 360px) {
+  .velora-cs-viewport {
+    height: 360px;
+  }
+  .velora-cs-card {
+    width: min(200px, 80vw);
+    height: 330px;
+  }
+  .velora-cs-title {
+    font-size: 1.2rem;
+  }
+}
+

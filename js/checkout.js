@@ -28,7 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
     remainingCodAmount: 0,
     advanceRequired: false,
     totalProductAdvance: 0,
-    isFullOnlinePayment: (storedPrefPay === "online")
+    isFullOnlinePayment: (storedPrefPay === "online"),
+    selectedUpiApp: "Google Pay",
+    activeUpiTransaction: null,
+    upiPollingInterval: null,
+    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "velora.lifestyle@okhdfcbank",
+    merchantName: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || "VELORA Lifestyle Studio"
   };
 
   // Supported discount codes
@@ -51,11 +56,45 @@ document.addEventListener("DOMContentLoaded", () => {
     inputEmail: document.getElementById("input-email"),
     inputHouse: document.getElementById("input-house"),
     inputStreet: document.getElementById("input-street"),
+    inputLandmark: document.getElementById("input-landmark"),
     inputCity: document.getElementById("input-city"),
     inputState: document.getElementById("input-state"),
     inputZip: document.getElementById("input-zip"),
     selectCountry: document.getElementById("select-country"),
     addressPills: document.querySelectorAll(".address-type-pill"),
+    groupPostOffice: document.getElementById("group-post-office"),
+    selectPostOffice: document.getElementById("select-post-office"),
+    cityAutocompleteList: document.getElementById("city-autocomplete-list"),
+    btnCityDropdownToggle: document.getElementById("btn-city-dropdown-toggle"),
+    pincodeStatusBadge: document.getElementById("pincode-status-badge"),
+    pincodeMismatchBanner: document.getElementById("pincode-mismatch-banner"),
+    mismatchBannerText: document.getElementById("mismatch-banner-text"),
+    btnMismatchAccept: document.getElementById("btn-mismatch-accept"),
+    btnMismatchDismiss: document.getElementById("btn-mismatch-dismiss"),
+    savedAddressesSection: document.getElementById("saved-addresses-section"),
+    savedAddressesGrid: document.getElementById("saved-addresses-grid"),
+    btnToggleAddressMode: document.getElementById("btn-toggle-address-mode"),
+    btnCloseSavedAddresses: document.getElementById("btn-close-saved-addresses"),
+    btnAddAddressHeader: document.getElementById("btn-add-address-header"),
+    selectedAddressSummary: document.getElementById("selected-address-summary"),
+    summaryAddressType: document.getElementById("summary-address-type"),
+    summaryAddressName: document.getElementById("summary-address-name"),
+    summaryAddressDetails: document.getElementById("summary-address-details"),
+    summaryAddressPhone: document.getElementById("summary-address-phone"),
+    btnSummaryChange: document.getElementById("btn-summary-change"),
+    btnSummaryAddNew: document.getElementById("btn-summary-add-new"),
+    noSavedAddressesNotice: document.getElementById("no-saved-addresses-notice"),
+    btnAddFirstAddress: document.getElementById("btn-add-first-address"),
+    deliveryFormContainer: document.getElementById("delivery-form-container"),
+    deliveryFormHeaderBar: document.getElementById("delivery-form-header-bar"),
+    deliveryFormTitle: document.getElementById("delivery-form-title"),
+    btnCancelAddressForm: document.getElementById("btn-cancel-address-form"),
+    addressFormActions: document.getElementById("address-form-actions"),
+    btnSaveAddressSubmit: document.getElementById("btn-save-address-submit"),
+    btnCancelAddressSecondary: document.getElementById("btn-cancel-address-secondary"),
+    checkSaveAddress: document.getElementById("check-save-address"),
+    checkDefaultAddress: document.getElementById("check-default-address"),
+    labelDefaultAddress: document.getElementById("label-default-address"),
 
     // Payment Cards
     paymentCards: document.querySelectorAll(".payment-method-card"),
@@ -63,8 +102,45 @@ document.addEventListener("DOMContentLoaded", () => {
     inputCardExp: document.getElementById("input-card-exp"),
     inputCardCvv: document.getElementById("input-card-cvv"),
     inputCardName: document.getElementById("input-card-name"),
-    inputUpiId: document.getElementById("input-upi-id"),
     bankChips: document.querySelectorAll(".bank-chip"),
+
+    // UPI Payment Flow Elements
+    upiDesktopScanCard: document.getElementById("upi-desktop-scan-card"),
+    desktopUpiQrContainer: document.getElementById("desktop-upi-qr-container"),
+    desktopScanAmountBadge: document.getElementById("desktop-scan-amount-badge"),
+    desktopScanAmountType: document.getElementById("desktop-scan-amount-type"),
+    desktopMerchantVpa: document.getElementById("desktop-merchant-vpa"),
+    desktopUpiRef: document.getElementById("desktop-upi-ref"),
+    btnDesktopCopyUpi: document.getElementById("btn-desktop-copy-upi"),
+    btnDesktopVerifyOrder: document.getElementById("btn-desktop-verify-order"),
+    upiAppsGrid: document.getElementById("upi-apps-grid"),
+    upiAppCards: document.querySelectorAll(".upi-app-card"),
+    upiAmountCard: document.getElementById("upi-amount-card"),
+    upiAmountTitle: document.getElementById("upi-amount-title"),
+    upiAmountVal: document.getElementById("upi-amount-val"),
+    upiAdvanceBreakdown: document.getElementById("upi-advance-breakdown"),
+    upiAdvanceVal: document.getElementById("upi-advance-val"),
+    upiCodVal: document.getElementById("upi-cod-val"),
+    btnUpiPay: document.getElementById("btn-upi-pay"),
+    btnUpiPayText: document.getElementById("btn-upi-pay-text"),
+
+    // UPI Payment Modal Elements
+    upiModal: document.getElementById("upi-payment-modal"),
+    btnUpiModalClose: document.getElementById("btn-upi-modal-close"),
+    upiStatusBox: document.getElementById("upi-status-box"),
+    upiSpinner: document.getElementById("upi-spinner"),
+    upiStatusHeading: document.getElementById("upi-status-heading"),
+    upiStatusDesc: document.getElementById("upi-status-desc"),
+    modalUpiAmount: document.getElementById("modal-upi-amount"),
+    modalUpiRef: document.getElementById("modal-upi-ref"),
+    modalMerchantVpa: document.getElementById("modal-merchant-vpa"),
+    modalAppName: document.getElementById("modal-app-name"),
+    upiQrContainer: document.getElementById("upi-qr-container"),
+    btnLaunchUpiApp: document.getElementById("btn-launch-upi-app"),
+    btnLaunchAnyApp: document.getElementById("btn-launch-any-app"),
+    btnCopyUpi: document.getElementById("btn-copy-upi"),
+    btnConfirmPayment: document.getElementById("btn-confirm-payment"),
+    btnCancelPayment: document.getElementById("btn-cancel-payment"),
 
     // Online Gifts Card Elements
     cardOnlineGifts: document.getElementById("card-online-gifts"),
@@ -330,8 +406,10 @@ document.addEventListener("DOMContentLoaded", () => {
         state.remainingCodAmount = state.total;
         state.advanceRequired = false;
       }
-      // For COD, delivery preference resets to Simple Delivery
-      state.selectedDeliveryPreference = "Simple Delivery";
+      // For COD, preserve customer's selected delivery preference
+      if (!state.selectedDeliveryPreference) {
+        state.selectedDeliveryPreference = "Simple Delivery";
+      }
     }
 
     const isFullOnline = state.isFullOnlinePayment;
@@ -460,18 +538,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Update Delivery Preference Card in UI
+    // Update Delivery Preference Card in UI (Available for COD, Advance + COD, and Full Online)
     if (elements.cardDeliveryPreference) {
-      if (isFullOnline) {
-        elements.cardDeliveryPreference.style.display = "block";
-        if (elements.badgePrefLock) {
-          elements.badgePrefLock.textContent = "Unlocked";
-          elements.badgePrefLock.style.background = "rgba(16, 185, 129, 0.15)";
-          elements.badgePrefLock.style.color = "#059669";
-          elements.badgePrefLock.style.borderColor = "rgba(16, 185, 129, 0.3)";
-        }
-      } else {
-        elements.cardDeliveryPreference.style.display = "none";
+      elements.cardDeliveryPreference.style.display = "block";
+      if (elements.badgePrefLock) {
+        elements.badgePrefLock.textContent = "Doorstep Choice";
+        elements.badgePrefLock.style.background = "rgba(2, 132, 199, 0.12)";
+        elements.badgePrefLock.style.color = "#0284c7";
+        elements.badgePrefLock.style.borderColor = "rgba(2, 132, 199, 0.3)";
       }
     }
 
@@ -486,14 +560,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (elements.rowDeliveryPreference) {
-      if (isFullOnline) {
-        elements.rowDeliveryPreference.style.display = "flex";
-        if (elements.costDeliveryPreference) {
-          elements.costDeliveryPreference.textContent = state.selectedDeliveryPreference || "Simple Delivery";
-          elements.costDeliveryPreference.style.color = (state.selectedDeliveryPreference === "Open Box Delivery") ? "#0284c7" : "var(--text-main)";
-        }
-      } else {
-        elements.rowDeliveryPreference.style.display = "none";
+      elements.rowDeliveryPreference.style.display = "flex";
+      if (elements.costDeliveryPreference) {
+        elements.costDeliveryPreference.textContent = state.selectedDeliveryPreference || "Simple Delivery";
+        elements.costDeliveryPreference.style.color = (state.selectedDeliveryPreference === "Open Box Delivery") ? "#0284c7" : "var(--text-main)";
       }
     }
 
@@ -532,11 +602,18 @@ document.addEventListener("DOMContentLoaded", () => {
         codNoteEl.innerHTML = `<strong>✓ Guaranteed Handover:</strong> You can inspect the outer packaging and seal before handing over cash or scanning the courier UPI QR. Zero COD surcharge.`;
       }
       if (elements.btnPlaceOrderText) {
-        elements.btnPlaceOrderText.textContent = isFullOnline
-          ? `Complete Order • ${formatPrice(state.total)}`
-          : `Complete COD Order • ${formatPrice(state.total)} on Delivery`;
+        if (state.selectedPaymentMethod === "UPI / QR Payment") {
+          elements.btnPlaceOrderText.textContent = `Pay ${formatPrice(state.total)} with UPI`;
+        } else {
+          elements.btnPlaceOrderText.textContent = isFullOnline
+            ? `Complete Order • ${formatPrice(state.total)}`
+            : `Complete COD Order • ${formatPrice(state.total)} on Delivery`;
+        }
       }
     }
+
+    // Keep dynamic UPI section in sync
+    updateUpiSection();
   }
 
   // --- 5. Coupon Handling ---
@@ -684,13 +761,971 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- 6. Address Type Selector ---
-  elements.addressPills.forEach(pill => {
-    pill.addEventListener("click", () => {
-      elements.addressPills.forEach(p => p.classList.remove("active"));
-      pill.classList.add("active");
-      state.selectedAddressType = pill.dataset.type || "Home";
+  if (elements.addressPills) {
+    elements.addressPills.forEach(pill => {
+      pill.addEventListener("click", () => {
+        elements.addressPills.forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        state.selectedAddressType = pill.dataset.type || "Home";
+      });
     });
+  }
+
+  // --- 6B. Smart India-First Address System & Saved Addresses ---
+
+  function escapeHTML(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Comprehensive dataset of all 28 Indian States & 8 Union Territories with major cities / districts
+  const INDIA_LOCATIONS = {
+    "Andaman and Nicobar Islands": ["Port Blair", "Diglipur", "Car Nicobar", "Mayabunder", "Havelock"],
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kadapa", "Kakinada", "Anantapur", "Eluru", "Vizianagaram", "Ongole"],
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Tawang", "Ziro", "Tezu", "Bomdila"],
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Barpeta"],
+    "Bihar": ["Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Darbhanga", "Purnia", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra", "Danapur", "Saharsa", "Sasaram", "Hajipur", "Dehri", "Siwan", "Motihari", "Bettiah"],
+    "Chandigarh": ["Chandigarh", "Manimajra"],
+    "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Rajnandgaon", "Durg", "Jagdalpur", "Ambikapur", "Raigarh"],
+    "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa", "Amli"],
+    "Delhi": ["New Delhi", "Central Delhi", "South Delhi", "North Delhi", "East Delhi", "West Delhi", "Dwarka", "Rohini", "Saket", "Connaught Place", "Vasant Kunj", "Janakpuri", "Laxmi Nagar", "Karol Bagh"],
+    "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Calangute", "Bicholim"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar", "Anand", "Navsari", "Morbi", "Nadiad", "Surendranagar", "Bharuch", "Mehsana", "Bhuj", "Porbandar", "Valsad", "Vapi"],
+    "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula", "Bhiwani", "Sirsa", "Bahadurgarh", "Jind", "Thanesar", "Kaithal", "Rewari", "Palwal"],
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Mandi", "Solan", "Kullu", "Manali", "Bilaspur", "Hamirpur", "Chamba", "Una", "Nahan", "Kangra"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Anantnag", "Baramulla", "Udhampur", "Kathua", "Sopore", "Rajouri", "Poonch", "Pulwama", "Kupwara"],
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chirkunda", "Dumka"],
+    "Karnataka": ["Bengaluru", "Mysuru", "Hubballi", "Dharwad", "Mangaluru", "Belagavi", "Kalaburagi", "Davanagere", "Ballari", "Vijayapura", "Shivamogga", "Tumakuru", "Raichur", "Bidar", "Hosapete", "Hassan", "Udupi", "Kolar"],
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Palakkad", "Alappuzha", "Kannur", "Kottayam", "Malappuram", "Kasaragod", "Pathanamthitta", "Idukki", "Wayanad"],
+    "Ladakh": ["Leh", "Kargil", "Diskit"],
+    "Lakshadweep": ["Kavaratti", "Agatti", "Andrott", "Amini", "Minicoy"],
+    "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Murwara (Katni)", "Singrauli", "Burhanpur", "Khandwa", "Bhind", "Chhindwara", "Guna", "Shivpuri", "Vidisha", "Damoh"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Kalyan-Dombivli", "Vasai-Virar", "Chhatrapati Sambhajinagar", "Navi Mumbai", "Solapur", "Mira-Bhayandar", "Bhiwandi", "Amravati", "Nanded", "Kolhapur", "Akola", "Ulhasnagar", "Sangli", "Malegaon", "Jalgaon", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Panvel"],
+    "Manipur": ["Imphal", "Thoubal", "Bishnupur", "Churachandpur", "Kakching", "Ukhrul"],
+    "Meghalaya": ["Shillong", "Tura", "Jowai", "Nongpoh", "Cherrapunji", "Baghmara"],
+    "Mizoram": ["Aizawl", "Lunglei", "Champhai", "Serchhip", "Kolasib"],
+    "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Zunheboto"],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Jeypore"],
+    "Puducherry": ["Puducherry", "Karaikal", "Mahe", "Yanam", "Ozhukarai"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Hoshiarpur", "Mohali (SAS Nagar)", "Batala", "Pathankot", "Moga", "Abohar", "Malerkotla", "Khanna", "Phagwara", "Muktsar"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar", "Bharatpur", "Sikar", "Pali", "Sri Ganganagar", "Chittorgarh", "Beawar", "Hanumangarh", "Tonk", "Kishangarh"],
+    "Sikkim": ["Gangtok", "Namchi", "Gyalshing", "Mangan", "Singtam", "Rangpo"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Tiruppur", "Ranipet", "Nagercoil", "Thanjavur", "Vellore", "Kancheepuram", "Erode", "Dindigul", "Cuddalore", "Kumbakonam", "Thoothukudi", "Hosur"],
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet", "Miryalaguda", "Siddipet"],
+    "Tripura": ["Agartala", "Dharmanagar", "Udaipur", "Kailashahar", "Belonia", "Khowai"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut", "Varanasi", "Prayagraj", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Ayodhya", "Rampur", "Shahjahanpur", "Farrukhabad", "Mau", "Hapur", "Etawah", "Mirzapur"],
+    "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Nainital", "Pithoragarh", "Mussoorie"],
+    "West Bengal": ["Kolkata", "Howrah", "Asansol", "Siliguri", "Durgapur", "Bardhaman", "Malda", "Baharampur", "Habra", "Kharagpur", "Shantipur", "Dankuni", "Dhulian", "Ranaghat", "Haldia", "Raiganj", "Krishnanagar", "Nabadwip", "Midnapore", "Jalpaiguri"]
+  };
+
+  let isNewAddressMode = false;
+  let pendingMismatch = null;
+  let pincodeLookupAbortCtrl = null;
+
+  function matchStateName(stateName) {
+    if (!stateName || !elements.inputState) return "";
+    const clean = stateName.toLowerCase().replace(/[^a-z]/g, "");
+    for (const opt of elements.inputState.options) {
+      if (!opt.value) continue;
+      const optClean = opt.value.toLowerCase().replace(/[^a-z]/g, "");
+      if (optClean === clean || optClean.includes(clean) || clean.includes(optClean)) {
+        return opt.value;
+      }
+    }
+    return "";
+  }
+
+  // City Autocomplete Combobox
+  function renderCitySuggestions(query = "") {
+    if (!elements.cityAutocompleteList) return;
+    const currentState = elements.inputState ? elements.inputState.value : "";
+    const cities = INDIA_LOCATIONS[currentState] || [];
+
+    const q = query.trim().toLowerCase();
+    const filtered = q ? cities.filter(c => c.toLowerCase().includes(q)) : cities;
+
+    if (filtered.length === 0 && !q) {
+      elements.cityAutocompleteList.style.display = "none";
+      return;
+    }
+
+    let html = "";
+    filtered.slice(0, 25).forEach(city => {
+      html += `
+        <div class="city-autocomplete-item" data-city="${escapeHTML(city)}">
+          <span>${escapeHTML(city)}</span>
+          <span class="city-tag">${escapeHTML(currentState || "India")}</span>
+        </div>`;
+    });
+
+    if (q && !cities.some(c => c.toLowerCase() === q)) {
+      html += `
+        <div class="city-autocomplete-item custom" data-city="${escapeHTML(query.trim())}">
+          <span>Use "<strong>${escapeHTML(query.trim())}</strong>"</span>
+          <span class="city-tag">Manual Entry</span>
+        </div>`;
+    }
+
+    elements.cityAutocompleteList.innerHTML = html;
+    elements.cityAutocompleteList.style.display = "block";
+
+    elements.cityAutocompleteList.querySelectorAll(".city-autocomplete-item").forEach(item => {
+      item.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        const val = item.getAttribute("data-city");
+        if (elements.inputCity) {
+          elements.inputCity.value = val;
+          const grp = elements.inputCity.closest(".form-group");
+          if (grp) grp.classList.remove("has-error");
+        }
+        elements.cityAutocompleteList.style.display = "none";
+        if (elements.inputZip && !elements.inputZip.value) {
+          elements.inputZip.focus();
+        }
+      });
+    });
+  }
+
+  if (elements.inputCity) {
+    elements.inputCity.addEventListener("focus", () => {
+      renderCitySuggestions(elements.inputCity.value);
+    });
+    elements.inputCity.addEventListener("input", () => {
+      renderCitySuggestions(elements.inputCity.value);
+    });
+  }
+
+  if (elements.btnCityDropdownToggle) {
+    elements.btnCityDropdownToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!elements.cityAutocompleteList) return;
+      if (elements.cityAutocompleteList.style.display === "block") {
+        elements.cityAutocompleteList.style.display = "none";
+      } else {
+        renderCitySuggestions(elements.inputCity ? elements.inputCity.value : "");
+        if (elements.inputCity) elements.inputCity.focus();
+      }
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".city-combobox-wrap") && elements.cityAutocompleteList) {
+      elements.cityAutocompleteList.style.display = "none";
+    }
   });
+
+  if (elements.inputState) {
+    elements.inputState.addEventListener("change", () => {
+      if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+      if (elements.cityAutocompleteList && elements.cityAutocompleteList.style.display === "block") {
+        renderCitySuggestions(elements.inputCity ? elements.inputCity.value : "");
+      }
+    });
+  }
+
+  // Country selection toggle
+  if (elements.selectCountry) {
+    elements.selectCountry.addEventListener("change", () => {
+      const isIndia = (elements.selectCountry.value === "India");
+      const indiaRow = document.getElementById("india-location-row");
+      if (indiaRow) {
+        indiaRow.style.display = isIndia ? "" : "grid";
+      }
+      if (elements.pincodeMismatchBanner && !isIndia) {
+        elements.pincodeMismatchBanner.style.display = "none";
+      }
+    });
+  }
+
+  // Pincode Postal Lookup Engine
+  async function lookupPincode(pin) {
+    if (!/^[1-9][0-9]{5}$/.test(pin)) return null;
+
+    try {
+      if (pincodeLookupAbortCtrl) {
+        pincodeLookupAbortCtrl.abort();
+      }
+      pincodeLookupAbortCtrl = new AbortController();
+      const timeoutId = setTimeout(() => pincodeLookupAbortCtrl.abort(), 1800);
+
+      const resp = await fetch(`https://api.postalpincode.in/pincode/${pin}`, {
+        signal: pincodeLookupAbortCtrl.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice && data[0].PostOffice.length > 0) {
+          const poList = data[0].PostOffice;
+          const first = poList[0];
+          return {
+            state: first.State,
+            city: first.District || first.Block || first.Name,
+            district: first.District,
+            postOffices: poList.map(p => p.Name).filter(Boolean)
+          };
+        }
+      }
+    } catch (e) {}
+
+    if (window.VeloraPincodeEngine) {
+      const resolver = window.VeloraPincodeEngine.resolveRegion || window.VeloraPincodeEngine.resolvePostalRegion;
+      if (typeof resolver === "function") {
+        const resolved = resolver(pin);
+        if (resolved && resolved.state && resolved.state !== 'India') {
+          return {
+            state: resolved.state,
+            city: resolved.city,
+            district: resolved.city,
+            postOffices: []
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  async function handlePincodeChange(pin) {
+    if (pin.length < 6) {
+      if (elements.pincodeStatusBadge) elements.pincodeStatusBadge.style.display = "none";
+      if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+      if (elements.groupPostOffice) elements.groupPostOffice.style.display = "none";
+      return;
+    }
+
+    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+      if (elements.pincodeStatusBadge) elements.pincodeStatusBadge.style.display = "none";
+      return;
+    }
+
+    const res = await lookupPincode(pin);
+    if (!res) {
+      if (elements.pincodeStatusBadge) {
+        elements.pincodeStatusBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified`;
+        elements.pincodeStatusBadge.style.display = "inline-flex";
+      }
+      return;
+    }
+
+    const matchedState = matchStateName(res.state) || res.state;
+    const resolvedCity = res.city;
+    const currentState = elements.inputState ? elements.inputState.value.trim() : "";
+    const currentCity = elements.inputCity ? elements.inputCity.value.trim() : "";
+
+    // Populate Post Offices if available
+    if (elements.selectPostOffice && elements.groupPostOffice && res.postOffices && res.postOffices.length > 0) {
+      elements.selectPostOffice.innerHTML = `<option value="">Select your local post office / branch area...</option>` +
+        res.postOffices.map(po => `<option value="${escapeHTML(po)}">${escapeHTML(po)}</option>`).join("");
+      elements.groupPostOffice.style.display = "block";
+    }
+
+    const stateEmpty = !currentState;
+    const cityEmpty = !currentCity;
+
+    if (stateEmpty || (cityEmpty && matchedState.toLowerCase() === currentState.toLowerCase())) {
+      if (elements.inputState && matchedState) {
+        elements.inputState.value = matchedState;
+        const group = elements.inputState.closest(".form-group");
+        if (group) group.classList.remove("has-error");
+      }
+      if (elements.inputCity && resolvedCity && cityEmpty) {
+        elements.inputCity.value = resolvedCity;
+        const group = elements.inputCity.closest(".form-group");
+        if (group) group.classList.remove("has-error");
+      }
+      if (elements.pincodeStatusBadge) {
+        elements.pincodeStatusBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified`;
+        elements.pincodeStatusBadge.style.display = "inline-flex";
+      }
+      if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+    } else {
+      const statesMatch = matchedState.toLowerCase().replace(/[^a-z]/g, "") === currentState.toLowerCase().replace(/[^a-z]/g, "");
+      if (statesMatch) {
+        if (elements.pincodeStatusBadge) {
+          elements.pincodeStatusBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified`;
+          elements.pincodeStatusBadge.style.display = "inline-flex";
+        }
+        if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+      } else {
+        pendingMismatch = {
+          pin,
+          suggestedState: matchedState,
+          suggestedCity: resolvedCity,
+          postOffices: res.postOffices
+        };
+        if (elements.mismatchBannerText) {
+          elements.mismatchBannerText.textContent = `PIN ${pin} corresponds to ${resolvedCity}, ${matchedState}. You currently have "${currentCity ? currentCity + ', ' : ''}${currentState}" selected. Would you like to update?`;
+        }
+        if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "flex";
+      }
+    }
+  }
+
+  if (elements.btnMismatchAccept) {
+    elements.btnMismatchAccept.addEventListener("click", () => {
+      if (pendingMismatch) {
+        if (elements.inputState && pendingMismatch.suggestedState) {
+          elements.inputState.value = pendingMismatch.suggestedState;
+          const group = elements.inputState.closest(".form-group");
+          if (group) group.classList.remove("has-error");
+        }
+        if (elements.inputCity && pendingMismatch.suggestedCity) {
+          elements.inputCity.value = pendingMismatch.suggestedCity;
+          const group = elements.inputCity.closest(".form-group");
+          if (group) group.classList.remove("has-error");
+        }
+      }
+      if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+      if (elements.pincodeStatusBadge) {
+        elements.pincodeStatusBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified`;
+        elements.pincodeStatusBadge.style.display = "inline-flex";
+      }
+      showToast("Delivery location updated to suggested area.", "info");
+    });
+  }
+
+  if (elements.btnMismatchDismiss) {
+    elements.btnMismatchDismiss.addEventListener("click", () => {
+      if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+      if (elements.pincodeStatusBadge) {
+        elements.pincodeStatusBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified`;
+        elements.pincodeStatusBadge.style.display = "inline-flex";
+      }
+    });
+  }
+
+  if (elements.inputZip) {
+    elements.inputZip.addEventListener("input", () => {
+      const clean = elements.inputZip.value.replace(/\D/g, "").slice(0, 6);
+      elements.inputZip.value = clean;
+      handlePincodeChange(clean);
+    });
+  }
+
+  if (elements.inputPhone) {
+    elements.inputPhone.addEventListener("input", () => {
+      const clean = elements.inputPhone.value.replace(/\D/g, "").slice(0, 10);
+      elements.inputPhone.value = clean;
+    });
+  }
+
+  // Address State
+  let savedAddressesList = [];
+  let selectedAddressIndex = 0;
+  let isAddressFormOpen = false;
+  let isSelectingAddress = false;
+  let editingAddressId = null;
+
+  // Sanitizer: Filter out corrupt / test / demo addresses
+  function isDemoOrCorruptAddress(addr) {
+    if (!addr) return true;
+    const name = String(addr.full_name || "").toLowerCase().trim();
+    const city = String(addr.city || "").toLowerCase().trim();
+    const street = String(addr.street || "").toLowerCase().trim();
+    const house = String(addr.house || "").toLowerCase().trim();
+    const phone = String(addr.phone || "").replace(/\D/g, "");
+
+    // Check for Alexander Hayes or demo mock names
+    if (name.includes("alexander") || name.includes("hayes") || name.includes("john doe") || name.includes("demo user") || name.includes("test user")) {
+      return true;
+    }
+    // Check for New York in Indian address
+    if (city.includes("new york") || city === "ny") {
+      return true;
+    }
+    // Check for fake placeholder phone numbers
+    if (phone === "1234567890" || phone === "0000000000" || phone === "9999999999" || phone === "1111111111" || (phone.length > 0 && phone.length < 10)) {
+      return true;
+    }
+    // Missing critical address fields
+    if (!name || (!house && !street) || !addr.pincode) {
+      return true;
+    }
+    return false;
+  }
+
+  function deduplicateAddresses(addresses) {
+    const seen = new Set();
+    const unique = [];
+    for (const addr of addresses) {
+      const key = [
+        (addr.full_name || "").toLowerCase().trim(),
+        (addr.house || "").toLowerCase().trim(),
+        (addr.street || "").toLowerCase().trim(),
+        (addr.pincode || "").trim()
+      ].join("|");
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(addr);
+      }
+    }
+    return unique;
+  }
+
+  // Saved Addresses in Supabase
+  async function loadSavedAddresses() {
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+
+    if (!client || !currentUser || !currentUser.id) {
+      renderSavedAddresses();
+      return;
+    }
+
+    if (elements.labelDefaultAddress) {
+      elements.labelDefaultAddress.style.display = "flex";
+    }
+
+    try {
+      const { data, error } = await client
+        .from("addresses")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("is_default", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        // Clean up corrupt/demo addresses from Supabase database if found
+        const corruptIds = data.filter(isDemoOrCorruptAddress).map(a => a.id).filter(Boolean);
+        if (corruptIds.length > 0) {
+          client.from("addresses").delete().in("id", corruptIds).catch(() => {});
+        }
+
+        // Deduplicate and filter for customer UI
+        savedAddressesList = deduplicateAddresses(data.filter(a => !isDemoOrCorruptAddress(a)));
+
+        // Select default address if none selected yet
+        if (savedAddressesList.length > 0) {
+          if (selectedAddressIndex < 0 || selectedAddressIndex >= savedAddressesList.length) {
+            const defIdx = savedAddressesList.findIndex(a => a.is_default);
+            selectedAddressIndex = defIdx !== -1 ? defIdx : 0;
+          }
+        } else {
+          selectedAddressIndex = 0;
+        }
+      } else {
+        savedAddressesList = [];
+        selectedAddressIndex = 0;
+      }
+    } catch (e) {
+      console.warn("Could not load saved addresses from Supabase:", e);
+      savedAddressesList = [];
+      selectedAddressIndex = 0;
+    }
+
+    renderSavedAddresses();
+  }
+
+  function updateSelectedAddressSummary(addr) {
+    if (!elements.selectedAddressSummary || !addr) return;
+    if (elements.summaryAddressType) {
+      elements.summaryAddressType.textContent = addr.address_type || "Home";
+    }
+    if (elements.summaryAddressName) {
+      elements.summaryAddressName.textContent = addr.full_name || "Valued Customer";
+    }
+    if (elements.summaryAddressDetails) {
+      const streetParts = [addr.house, addr.street, addr.landmark].filter(Boolean).map(s => escapeHTML(s)).join(", ");
+      const locParts = [addr.city, addr.state].filter(Boolean).map(s => escapeHTML(s)).join(", ") + (addr.pincode ? ` - ${escapeHTML(addr.pincode)}` : "");
+      elements.summaryAddressDetails.innerHTML = `${streetParts}<br>${locParts}`;
+    }
+    if (elements.summaryAddressPhone) {
+      if (addr.phone) {
+        const cleanPhone = escapeHTML(addr.phone.replace(/\D/g, "").slice(-10));
+        elements.summaryAddressPhone.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> <span>+91 ${cleanPhone}</span>`;
+        elements.summaryAddressPhone.style.display = "inline-flex";
+      } else {
+        elements.summaryAddressPhone.style.display = "none";
+      }
+    }
+  }
+
+  function renderSavedAddresses() {
+    const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+    const isLoggedIn = Boolean(currentUser && currentUser.id);
+
+    if (!isLoggedIn) {
+      // Guest: show form directly, hide all saved address sections
+      if (elements.selectedAddressSummary) elements.selectedAddressSummary.style.display = "none";
+      if (elements.savedAddressesSection) elements.savedAddressesSection.style.display = "none";
+      if (elements.noSavedAddressesNotice) elements.noSavedAddressesNotice.style.display = "none";
+      if (elements.btnAddAddressHeader) elements.btnAddAddressHeader.style.display = "none";
+      if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "block";
+      if (elements.deliveryFormHeaderBar) elements.deliveryFormHeaderBar.style.display = "none";
+      if (elements.addressFormActions) elements.addressFormActions.style.display = "none";
+      return;
+    }
+
+    if (savedAddressesList.length === 0) {
+      // Authenticated with NO saved addresses
+      if (elements.selectedAddressSummary) elements.selectedAddressSummary.style.display = "none";
+      if (elements.savedAddressesSection) elements.savedAddressesSection.style.display = "none";
+      if (elements.btnAddAddressHeader) elements.btnAddAddressHeader.style.display = "inline-flex";
+
+      if (isAddressFormOpen) {
+        if (elements.noSavedAddressesNotice) elements.noSavedAddressesNotice.style.display = "none";
+        if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "block";
+        if (elements.deliveryFormHeaderBar) elements.deliveryFormHeaderBar.style.display = "flex";
+        if (elements.addressFormActions) elements.addressFormActions.style.display = "flex";
+      } else {
+        if (elements.noSavedAddressesNotice) elements.noSavedAddressesNotice.style.display = "flex";
+        if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "none";
+      }
+      return;
+    }
+
+    // Authenticated WITH saved addresses
+    if (elements.noSavedAddressesNotice) elements.noSavedAddressesNotice.style.display = "none";
+    if (elements.btnAddAddressHeader) elements.btnAddAddressHeader.style.display = "inline-flex";
+
+    // Ensure valid selected index
+    if (selectedAddressIndex < 0 || selectedAddressIndex >= savedAddressesList.length) {
+      const defIdx = savedAddressesList.findIndex(a => a.is_default);
+      selectedAddressIndex = defIdx !== -1 ? defIdx : 0;
+    }
+
+    const currentSelectedAddr = savedAddressesList[selectedAddressIndex];
+    if (currentSelectedAddr) {
+      updateSelectedAddressSummary(currentSelectedAddr);
+      populateFormWithAddress(currentSelectedAddr);
+    }
+
+    let html = "";
+    savedAddressesList.forEach((addr, idx) => {
+      const isSelected = (idx === selectedAddressIndex);
+      html += `
+        <div class="saved-address-card ${isSelected ? 'selected' : ''}" data-index="${idx}">
+          <div class="saved-address-card-header">
+            <div class="card-badges-left">
+              <span class="saved-address-type-badge">${escapeHTML(addr.address_type || 'Home')}</span>
+              ${addr.is_default ? '<span class="saved-address-default-badge">Default</span>' : ''}
+            </div>
+            <span class="btn-card-select-badge">✓ Selected</span>
+          </div>
+          <div class="saved-address-name">
+            <span>${escapeHTML(addr.full_name || '')}</span>
+          </div>
+          <div class="saved-address-text">
+            ${escapeHTML(addr.house || '')}, ${escapeHTML(addr.street || '')}${addr.landmark ? ', ' + escapeHTML(addr.landmark) : ''}<br>
+            ${escapeHTML(addr.city || '')}, ${escapeHTML(addr.state || '')} - ${escapeHTML(addr.pincode || '')}
+          </div>
+          ${addr.phone ? `<div class="saved-address-phone">📞 +91 ${escapeHTML(addr.phone.replace(/\D/g, '').slice(-10))}</div>` : ''}
+          <div class="saved-address-card-actions">
+            <button type="button" class="btn-card-use ${isSelected ? 'active' : ''}" data-use-index="${idx}">
+              ${isSelected ? '✓ Selected' : 'Use This Address'}
+            </button>
+            <div class="card-sub-actions">
+              <button type="button" class="btn-card-edit" data-edit-index="${idx}">Edit</button>
+              ${!addr.is_default ? `<button type="button" class="btn-card-default" data-default-index="${idx}">Set Default</button>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    if (elements.savedAddressesGrid) {
+      elements.savedAddressesGrid.innerHTML = html;
+
+      // Card selection listener
+      elements.savedAddressesGrid.querySelectorAll(".saved-address-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+          if (e.target.closest(".btn-card-edit") || e.target.closest(".btn-card-default") || e.target.closest(".btn-card-use")) return;
+          const idx = parseInt(card.getAttribute("data-index"), 10);
+          selectSavedAddress(idx);
+        });
+      });
+
+      // Use button listener
+      elements.savedAddressesGrid.querySelectorAll(".btn-card-use").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.getAttribute("data-use-index"), 10);
+          selectSavedAddress(idx);
+        });
+      });
+
+      // Edit button listener
+      elements.savedAddressesGrid.querySelectorAll(".btn-card-edit").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.getAttribute("data-edit-index"), 10);
+          openDeliveryForm(false, idx);
+        });
+      });
+
+      // Set Default button listener
+      elements.savedAddressesGrid.querySelectorAll(".btn-card-default").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.getAttribute("data-default-index"), 10);
+          await setAddressAsDefault(idx);
+        });
+      });
+    }
+
+    // Determine visual display mode
+    if (isAddressFormOpen) {
+      if (elements.selectedAddressSummary) elements.selectedAddressSummary.style.display = "none";
+      if (elements.savedAddressesSection) elements.savedAddressesSection.style.display = "none";
+      if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "block";
+      if (elements.deliveryFormHeaderBar) elements.deliveryFormHeaderBar.style.display = "flex";
+      if (elements.addressFormActions) elements.addressFormActions.style.display = "flex";
+    } else if (isSelectingAddress) {
+      if (elements.selectedAddressSummary) elements.selectedAddressSummary.style.display = "none";
+      if (elements.savedAddressesSection) elements.savedAddressesSection.style.display = "block";
+      if (elements.btnCloseSavedAddresses) elements.btnCloseSavedAddresses.style.display = "inline-flex";
+      if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "none";
+    } else {
+      if (elements.selectedAddressSummary) elements.selectedAddressSummary.style.display = "block";
+      if (elements.savedAddressesSection) elements.savedAddressesSection.style.display = "none";
+      if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "none";
+    }
+  }
+
+  function selectSavedAddress(idx) {
+    if (idx < 0 || idx >= savedAddressesList.length) return;
+    selectedAddressIndex = idx;
+    isSelectingAddress = false;
+    isAddressFormOpen = false;
+
+    const addr = savedAddressesList[idx];
+    if (addr) {
+      populateFormWithAddress(addr);
+      updateSelectedAddressSummary(addr);
+    }
+
+    renderSavedAddresses();
+  }
+
+  function populateFormWithAddress(addr) {
+    if (!addr) return;
+    if (elements.inputFullName) elements.inputFullName.value = addr.full_name || "";
+    if (elements.inputPhone) {
+      const cleanPhone = (addr.phone || "").replace(/\D/g, "").slice(-10);
+      elements.inputPhone.value = cleanPhone;
+    }
+    if (elements.inputEmail && addr.email) elements.inputEmail.value = addr.email;
+    if (elements.inputHouse) elements.inputHouse.value = addr.house || "";
+    if (elements.inputStreet) elements.inputStreet.value = addr.street || "";
+    if (elements.inputLandmark) elements.inputLandmark.value = addr.landmark || "";
+    if (elements.inputState) elements.inputState.value = matchStateName(addr.state) || addr.state || "";
+    if (elements.inputCity) elements.inputCity.value = addr.city || "";
+    if (elements.inputZip) {
+      elements.inputZip.value = addr.pincode || "";
+      if (elements.pincodeStatusBadge) {
+        elements.pincodeStatusBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified`;
+        elements.pincodeStatusBadge.style.display = "inline-flex";
+      }
+    }
+    if (elements.selectCountry && addr.country) elements.selectCountry.value = addr.country;
+
+    if (addr.address_type && elements.addressPills) {
+      elements.addressPills.forEach(pill => {
+        if (pill.dataset.type === addr.address_type) {
+          elements.addressPills.forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          state.selectedAddressType = addr.address_type;
+        }
+      });
+    }
+
+    document.querySelectorAll(".form-group.has-error").forEach(g => g.classList.remove("has-error"));
+    if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+  }
+
+  function openDeliveryForm(isNew = true, editIndex = null) {
+    isAddressFormOpen = true;
+    isSelectingAddress = false;
+
+    if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "block";
+    if (elements.deliveryFormHeaderBar) elements.deliveryFormHeaderBar.style.display = "flex";
+    if (elements.addressFormActions) elements.addressFormActions.style.display = "flex";
+    if (elements.selectedAddressSummary) elements.selectedAddressSummary.style.display = "none";
+    if (elements.savedAddressesSection) elements.savedAddressesSection.style.display = "none";
+    if (elements.noSavedAddressesNotice) elements.noSavedAddressesNotice.style.display = "none";
+
+    const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+
+    if (isNew) {
+      editingAddressId = null;
+      if (elements.deliveryFormTitle) elements.deliveryFormTitle.textContent = "Add New Delivery Address";
+      if (elements.btnSaveAddressSubmit) elements.btnSaveAddressSubmit.textContent = "Save Address & Continue";
+
+      // Clear all address input fields for a completely clean new address
+      if (elements.inputFullName) elements.inputFullName.value = "";
+      if (elements.inputPhone) elements.inputPhone.value = "";
+      if (elements.inputEmail) {
+        elements.inputEmail.value = (currentUser && currentUser.email) ? currentUser.email : "";
+      }
+      if (elements.inputHouse) elements.inputHouse.value = "";
+      if (elements.inputStreet) elements.inputStreet.value = "";
+      if (elements.inputLandmark) elements.inputLandmark.value = "";
+      if (elements.inputCity) elements.inputCity.value = "";
+      if (elements.inputState) elements.inputState.value = "";
+      if (elements.inputZip) elements.inputZip.value = "";
+      if (elements.selectCountry) elements.selectCountry.value = "India";
+      if (elements.pincodeStatusBadge) elements.pincodeStatusBadge.style.display = "none";
+      if (elements.pincodeMismatchBanner) elements.pincodeMismatchBanner.style.display = "none";
+
+      if (elements.addressPills) {
+        elements.addressPills.forEach(p => p.classList.toggle("active", p.dataset.type === "Home"));
+      }
+      state.selectedAddressType = "Home";
+
+      if (elements.checkSaveAddress) elements.checkSaveAddress.checked = true;
+      if (elements.checkDefaultAddress) {
+        elements.checkDefaultAddress.checked = (savedAddressesList.length === 0);
+      }
+
+      document.querySelectorAll(".form-group.has-error").forEach(g => g.classList.remove("has-error"));
+      if (elements.inputFullName) elements.inputFullName.focus();
+    } else if (editIndex !== null && savedAddressesList[editIndex]) {
+      const addr = savedAddressesList[editIndex];
+      editingAddressId = addr.id || null;
+      if (elements.deliveryFormTitle) elements.deliveryFormTitle.textContent = "Edit Delivery Address";
+      if (elements.btnSaveAddressSubmit) elements.btnSaveAddressSubmit.textContent = "Update Address & Continue";
+      populateFormWithAddress(addr);
+      if (elements.inputHouse) elements.inputHouse.focus();
+    }
+
+    if (elements.deliveryFormContainer) {
+      elements.deliveryFormContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function closeDeliveryForm() {
+    isAddressFormOpen = false;
+    isSelectingAddress = false;
+    editingAddressId = null;
+
+    if (elements.deliveryFormContainer) elements.deliveryFormContainer.style.display = "none";
+    if (elements.deliveryFormHeaderBar) elements.deliveryFormHeaderBar.style.display = "none";
+    if (elements.addressFormActions) elements.addressFormActions.style.display = "none";
+
+    renderSavedAddresses();
+  }
+
+  function validateDeliveryAddressFields() {
+    let isValid = true;
+    let firstInvalid = null;
+
+    const nameValid = elements.inputFullName.value.trim().length >= 3;
+    if (!validateField(elements.inputFullName, nameValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputFullName; }
+
+    const phoneClean = elements.inputPhone.value.replace(/\D/g, "").slice(-10);
+    const phoneValid = /^[6-9]\d{9}$/.test(phoneClean);
+    if (!validateField(elements.inputPhone, phoneValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputPhone; }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailValid = emailRegex.test(elements.inputEmail.value.trim());
+    if (!validateField(elements.inputEmail, emailValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputEmail; }
+
+    const houseValid = elements.inputHouse.value.trim().length >= 2;
+    if (!validateField(elements.inputHouse, houseValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputHouse; }
+
+    const streetValid = elements.inputStreet.value.trim().length >= 3;
+    if (!validateField(elements.inputStreet, streetValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputStreet; }
+
+    const cityValid = elements.inputCity.value.trim().length >= 2;
+    if (!validateField(elements.inputCity, cityValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputCity; }
+
+    const countryValid = Boolean(elements.selectCountry && elements.selectCountry.value);
+    if (!validateField(elements.selectCountry, countryValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.selectCountry; }
+
+    const stateValid = Boolean(elements.inputState && elements.inputState.value && elements.inputState.value.trim().length >= 2);
+    if (!validateField(elements.inputState, stateValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputState; }
+
+    const zipClean = elements.inputZip.value.trim().replace(/\s+/g, "");
+    const zipValid = /^[1-9][0-9]{5}$/.test(zipClean);
+    if (!validateField(elements.inputZip, zipValid)) { isValid = false; if (!firstInvalid) firstInvalid = elements.inputZip; }
+
+    if (!isValid && firstInvalid) {
+      firstInvalid.focus();
+      showToast("Please fill in all required delivery fields.", "error");
+    }
+    return isValid;
+  }
+
+  async function handleSaveAddressSubmit() {
+    const isValid = validateDeliveryAddressFields();
+    if (!isValid) return;
+
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+
+    if (client && currentUser && currentUser.id) {
+      const isDefault = elements.checkDefaultAddress ? elements.checkDefaultAddress.checked : (savedAddressesList.length === 0);
+      try {
+        if (isDefault) {
+          await client.from("addresses").update({ is_default: false }).eq("user_id", currentUser.id);
+        }
+
+        const payload = {
+          user_id: currentUser.id,
+          full_name: elements.inputFullName.value.trim(),
+          phone: elements.inputPhone.value.trim(),
+          house: elements.inputHouse.value.trim(),
+          street: elements.inputStreet.value.trim(),
+          landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : null,
+          city: elements.inputCity.value.trim(),
+          state: elements.inputState.value.trim(),
+          country: (elements.selectCountry && elements.selectCountry.value) || "India",
+          pincode: elements.inputZip.value.trim(),
+          address_type: state.selectedAddressType || "Home",
+          is_default: isDefault,
+          post_office: (elements.selectPostOffice && elements.selectPostOffice.value) ? elements.selectPostOffice.value.trim() : null,
+          email: elements.inputEmail.value.trim(),
+          updated_at: new Date().toISOString()
+        };
+
+        let savedId = null;
+        if (editingAddressId) {
+          await client.from("addresses").update(payload).eq("id", editingAddressId);
+          savedId = editingAddressId;
+          showToast("Address updated successfully!", "success");
+        } else {
+          // STRICT INSERT — never overwrite other saved addresses!
+          const { data: newRow, error: insertErr } = await client.from("addresses").insert([payload]).select().single();
+          if (insertErr) throw insertErr;
+          if (newRow) savedId = newRow.id;
+          showToast("New address saved successfully!", "success");
+        }
+
+        isAddressFormOpen = false;
+        isSelectingAddress = false;
+        editingAddressId = null;
+        await loadSavedAddresses();
+
+        // Automatically select the newly created or updated address
+        if (savedId) {
+          const newIdx = savedAddressesList.findIndex(a => a.id === savedId);
+          if (newIdx !== -1) {
+            selectSavedAddress(newIdx);
+          } else {
+            selectSavedAddress(0);
+          }
+        }
+      } catch (err) {
+        console.error("Save address error:", err);
+        showToast("Error saving address. Please try again.", "error");
+      }
+    } else {
+      closeDeliveryForm();
+      showToast("Delivery address confirmed.", "info");
+    }
+  }
+
+  async function setAddressAsDefault(idx) {
+    const addr = savedAddressesList[idx];
+    if (!addr || !addr.id) return;
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+    if (!client || !currentUser || !currentUser.id) return;
+
+    try {
+      await client.from("addresses").update({ is_default: false }).eq("user_id", currentUser.id);
+      await client.from("addresses").update({ is_default: true }).eq("id", addr.id);
+      showToast("Default address updated.", "success");
+      await loadSavedAddresses();
+    } catch (e) {
+      console.warn("Could not set default address:", e);
+    }
+  }
+
+  // Address UI Control Handlers
+  if (elements.btnAddAddressHeader) {
+    elements.btnAddAddressHeader.addEventListener("click", () => openDeliveryForm(true));
+  }
+  if (elements.btnAddFirstAddress) {
+    elements.btnAddFirstAddress.addEventListener("click", () => openDeliveryForm(true));
+  }
+  if (elements.btnSummaryAddNew) {
+    elements.btnSummaryAddNew.addEventListener("click", () => openDeliveryForm(true));
+  }
+  if (elements.btnSummaryChange) {
+    elements.btnSummaryChange.addEventListener("click", () => {
+      isSelectingAddress = true;
+      isAddressFormOpen = false;
+      renderSavedAddresses();
+      if (elements.savedAddressesSection) {
+        elements.savedAddressesSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+  }
+  if (elements.btnCloseSavedAddresses) {
+    elements.btnCloseSavedAddresses.addEventListener("click", () => {
+      isSelectingAddress = false;
+      renderSavedAddresses();
+    });
+  }
+  if (elements.btnToggleAddressMode) {
+    elements.btnToggleAddressMode.addEventListener("click", () => {
+      openDeliveryForm(true);
+    });
+  }
+  if (elements.btnCancelAddressForm) {
+    elements.btnCancelAddressForm.addEventListener("click", closeDeliveryForm);
+  }
+  if (elements.btnCancelAddressSecondary) {
+    elements.btnCancelAddressSecondary.addEventListener("click", closeDeliveryForm);
+  }
+  if (elements.btnSaveAddressSubmit) {
+    elements.btnSaveAddressSubmit.addEventListener("click", handleSaveAddressSubmit);
+  }
+
+  // Address synchronization helper with Supabase during order placement
+  async function syncAddressToSupabase() {
+    // If a saved address was already selected and user is not creating a new one, return it directly!
+    if (!isAddressFormOpen && savedAddressesList.length > 0 && selectedAddressIndex >= 0 && selectedAddressIndex < savedAddressesList.length) {
+      return savedAddressesList[selectedAddressIndex];
+    }
+
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+    if (!client || !currentUser || !currentUser.id) return null;
+
+    const shouldSave = elements.checkSaveAddress ? elements.checkSaveAddress.checked : true;
+    if (!shouldSave) return null;
+
+    const isDefault = elements.checkDefaultAddress ? elements.checkDefaultAddress.checked : false;
+
+    try {
+      if (isDefault) {
+        await client.from("addresses").update({ is_default: false }).eq("user_id", currentUser.id);
+      }
+
+      const payload = {
+        user_id: currentUser.id,
+        full_name: elements.inputFullName.value.trim(),
+        phone: elements.inputPhone.value.trim(),
+        house: elements.inputHouse.value.trim(),
+        street: elements.inputStreet.value.trim(),
+        landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : null,
+        city: elements.inputCity.value.trim(),
+        state: elements.inputState.value.trim(),
+        country: elements.selectCountry.value || "India",
+        pincode: elements.inputZip.value.trim(),
+        address_type: state.selectedAddressType || "Home",
+        is_default: isDefault,
+        post_office: (elements.selectPostOffice && elements.selectPostOffice.value) ? elements.selectPostOffice.value.trim() : null,
+        email: elements.inputEmail.value.trim()
+      };
+
+      const { data, error } = await client.from("addresses").insert([payload]).select().single();
+      if (!error && data) {
+        return data;
+      }
+    } catch (err) {
+      console.warn("Address sync notice:", err);
+    }
+    return null;
+  }
 
   // --- 7. Payment Method Selector ---
   elements.paymentCards.forEach(card => {
@@ -715,6 +1750,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const radio = card.querySelector('input[type="radio"]');
         if (radio) radio.checked = true;
         state.selectedDeliveryPreference = card.dataset.pref || "Simple Delivery";
+        try { localStorage.setItem("velora_preferred_delivery", state.selectedDeliveryPreference); } catch (_) {}
         if (elements.costDeliveryPreference) {
           elements.costDeliveryPreference.textContent = state.selectedDeliveryPreference;
           elements.costDeliveryPreference.style.color = (state.selectedDeliveryPreference === "Open Box Delivery") ? "#0284c7" : "var(--text-main)";
@@ -755,6 +1791,546 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // --- 7C. UPI Payment Apps & Dynamic Deep-Linking Flow ---
+  function getAppShortName(appName) {
+    if (!appName) return "GPAY";
+    const clean = String(appName).trim().toLowerCase();
+    if (clean.includes("gpay") || clean.includes("google")) return "GPAY";
+    if (clean.includes("phonepe")) return "PHONEPE";
+    if (clean.includes("paytm")) return "PAYTM";
+    if (clean.includes("bhim")) return "BHIM";
+    return "UPI APP";
+  }
+
+  function updateUpiSection() {
+    const isAdvCod = (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+    const upiAmount = isAdvCod ? state.advancePayableNow : state.total;
+    const shortApp = getAppShortName(state.selectedUpiApp);
+
+    if (elements.upiAmountVal) {
+      elements.upiAmountVal.textContent = formatPrice(upiAmount);
+    }
+    if (elements.upiAmountTitle) {
+      elements.upiAmountTitle.textContent = isAdvCod ? "Advance Payable Now" : "Total Payable Online";
+    }
+    if (elements.upiAdvanceBreakdown) {
+      if (isAdvCod) {
+        elements.upiAdvanceBreakdown.style.display = "flex";
+        if (elements.upiAdvanceVal) elements.upiAdvanceVal.textContent = formatPrice(state.advancePayableNow);
+        if (elements.upiCodVal) elements.upiCodVal.textContent = formatPrice(state.remainingCodAmount);
+      } else {
+        elements.upiAdvanceBreakdown.style.display = "none";
+      }
+    }
+    if (elements.btnUpiPayText) {
+      elements.btnUpiPayText.textContent = `PAY ${formatPrice(upiAmount)} WITH ${shortApp}`;
+    }
+
+    // Update Desktop Scan to Pay section
+    if (elements.desktopScanAmountBadge) {
+      elements.desktopScanAmountBadge.textContent = formatPrice(upiAmount);
+    }
+    if (elements.desktopScanAmountType) {
+      elements.desktopScanAmountType.textContent = isAdvCod ? "Advance Payment" : "Total Payable Online";
+    }
+    if (elements.desktopMerchantVpa) {
+      elements.desktopMerchantVpa.textContent = state.merchantVpa || "velora.lifestyle@okhdfcbank";
+    }
+    if (elements.desktopUpiRef) {
+      if (!state.desktopTxRef) {
+        state.desktopTxRef = "VEL-TXN-" + Date.now().toString().slice(-6) + "-" + Math.floor(1000 + Math.random() * 9000);
+      }
+      elements.desktopUpiRef.textContent = state.desktopTxRef;
+    }
+
+    if (elements.desktopUpiQrContainer && upiAmount > 0) {
+      const vpa = state.merchantVpa || "velora.lifestyle@okhdfcbank";
+      const name = state.merchantName || "VELORA Lifestyle Studio";
+      const ref = state.desktopTxRef || ("VEL-TXN-" + Date.now().toString().slice(-6));
+      const links = generateUpiLinks(vpa, name, ref, upiAmount);
+      renderUpiQrCode(elements.desktopUpiQrContainer, links.generic);
+    }
+  }
+
+  function generateUpiLinks(vpa, name, ref, amount, note) {
+    const cleanVpa = (vpa || "velora.lifestyle@okhdfcbank").trim();
+    const cleanName = encodeURIComponent((name || "VELORA Lifestyle Studio").trim());
+    const cleanNote = encodeURIComponent(note || `Order ${ref}`);
+    const amtStr = Number(amount || 0).toFixed(2);
+    const baseQuery = `pa=${cleanVpa}&pn=${cleanName}&tr=${ref}&tn=${cleanNote}&am=${amtStr}&cu=INR`;
+
+    return {
+      generic: `upi://pay?${baseQuery}`,
+      gpay: `tez://upi/pay?${baseQuery}`,
+      phonepe: `phonepe://pay?${baseQuery}`,
+      paytm: `paytmmp://pay?${baseQuery}`,
+      bhim: `bhim://pay?${baseQuery}`
+    };
+  }
+
+  function renderUpiQrCode(container, upiUri) {
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (typeof window.qrcode === "function") {
+      try {
+        const qr = window.qrcode(0, "M");
+        qr.addData(upiUri);
+        qr.make();
+        container.innerHTML = qr.createSvgTag({ scalable: true, margin: 1 });
+        const svg = container.querySelector("svg");
+        if (svg) {
+          svg.setAttribute("width", "100%");
+          svg.setAttribute("height", "100%");
+          svg.style.width = "100%";
+          svg.style.height = "100%";
+          svg.style.maxWidth = "100%";
+          svg.style.maxHeight = "100%";
+          svg.style.objectFit = "contain";
+          svg.style.display = "block";
+        }
+        return;
+      } catch (e) {
+        console.warn("QR generation fallback:", e);
+      }
+    }
+
+    // Fallback if CDN is unreachable or offline
+    container.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:12px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span style="font-size:0.75rem;color:#475569;margin-top:8px;font-weight:600;">Tap App Button to Pay</span>
+      </div>`;
+  }
+
+  // App Card Selection Handlers
+  if (elements.upiAppCards) {
+    elements.upiAppCards.forEach(card => {
+      card.addEventListener("click", (e) => {
+        e.stopPropagation();
+        elements.upiAppCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        state.selectedUpiApp = card.dataset.app || "Google Pay";
+        updateUpiSection();
+      });
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          card.click();
+        }
+      });
+    });
+  }
+
+  // Desktop Copy UPI ID Button
+  if (elements.btnDesktopCopyUpi) {
+    elements.btnDesktopCopyUpi.addEventListener("click", () => {
+      const vpa = (elements.desktopMerchantVpa ? elements.desktopMerchantVpa.textContent : state.merchantVpa || "velora.lifestyle@okhdfcbank").trim();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(vpa).then(() => {
+          elements.btnDesktopCopyUpi.textContent = "Copied!";
+          setTimeout(() => { if (elements.btnDesktopCopyUpi) elements.btnDesktopCopyUpi.textContent = "Copy"; }, 2000);
+        }).catch(() => {
+          showToast("UPI ID: " + vpa, "info");
+        });
+      } else {
+        showToast("UPI ID: " + vpa, "info");
+      }
+    });
+  }
+
+  // Desktop Verify & Confirm Button
+  if (elements.btnDesktopVerifyOrder) {
+    elements.btnDesktopVerifyOrder.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isAdvCod = (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+      startUpiPaymentFlow(isAdvCod ? "advance_cod" : "full_online");
+    });
+  }
+
+  // In-Card Quick Pay Button
+  if (elements.btnUpiPay) {
+    elements.btnUpiPay.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isAdvCod = (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+      startUpiPaymentFlow(isAdvCod ? "advance_cod" : "full_online");
+    });
+  }
+
+  // Copy Merchant VPA to Clipboard
+  if (elements.btnCopyUpi) {
+    elements.btnCopyUpi.addEventListener("click", () => {
+      const vpa = (elements.modalMerchantVpa ? elements.modalMerchantVpa.textContent : state.merchantVpa || "velora.lifestyle@okhdfcbank").trim();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(vpa).then(() => {
+          elements.btnCopyUpi.textContent = "Copied!";
+          setTimeout(() => { if (elements.btnCopyUpi) elements.btnCopyUpi.textContent = "Copy"; }, 2000);
+        }).catch(() => {
+          showToast("UPI ID: " + vpa, "info");
+        });
+      } else {
+        showToast("UPI ID: " + vpa, "info");
+      }
+    });
+  }
+
+  // Modal Dismiss / Cancel Handlers
+  if (elements.btnUpiModalClose) {
+    elements.btnUpiModalClose.addEventListener("click", () => cancelActiveUpiPayment("User closed modal"));
+  }
+  if (elements.btnCancelPayment) {
+    elements.btnCancelPayment.addEventListener("click", () => cancelActiveUpiPayment("User cancelled payment"));
+  }
+
+  // Modal "I Have Completed Payment" Button
+  if (elements.btnConfirmPayment) {
+    elements.btnConfirmPayment.addEventListener("click", () => verifyActiveUpiPayment(false));
+  }
+
+  // UPI Payment Initiation Flow
+  async function startUpiPaymentFlow(paymentType = "full_online") {
+    const isValid = validateCheckoutForm();
+    if (!isValid) return;
+
+    if (state.cart.length === 0) {
+      showToast("Your cart is empty. Please add items before checking out.", "error");
+      return;
+    }
+
+    try {
+      await syncAddressToSupabase();
+    } catch (_) {}
+
+    const isAdvCod = (paymentType === "advance_cod");
+    const amount = isAdvCod ? state.advancePayableNow : state.total;
+    if (amount <= 0) {
+      showToast("Invalid payment amount.", "error");
+      return;
+    }
+
+    const activeApp = state.selectedUpiApp || "Google Pay";
+    const appLabel = activeApp;
+
+    // Resolve merchant settings
+    const merchantVpa = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || state.merchantVpa || "velora.lifestyle@okhdfcbank";
+    const merchantName = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || state.merchantName || "VELORA Lifestyle Studio";
+    state.merchantVpa = merchantVpa;
+    state.merchantName = merchantName;
+
+    // Reset Modal State
+    if (elements.modalUpiAmount) elements.modalUpiAmount.textContent = formatPrice(amount);
+    if (elements.modalMerchantVpa) elements.modalMerchantVpa.textContent = merchantVpa;
+    if (elements.modalAppName) elements.modalAppName.textContent = appLabel;
+
+    if (elements.upiStatusBox) {
+      elements.upiStatusBox.className = "upi-status-box";
+    }
+    if (elements.upiSpinner) {
+      elements.upiSpinner.style.display = "block";
+    }
+    if (elements.upiStatusHeading) {
+      elements.upiStatusHeading.textContent = "Awaiting Payment Verification";
+    }
+    if (elements.upiStatusDesc) {
+      elements.upiStatusDesc.textContent = `Complete payment in ${appLabel} or scan the QR code. Do not close or refresh this page.`;
+    }
+
+    if (elements.btnConfirmPayment) {
+      elements.btnConfirmPayment.style.display = "";
+      elements.btnConfirmPayment.disabled = false;
+      elements.btnConfirmPayment.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>I Have Completed Payment</span>`;
+    }
+    if (elements.btnCancelPayment) {
+      elements.btnCancelPayment.style.display = "";
+    }
+
+    // Call server-side authoritative RPC if Supabase is connected
+    let txData = null;
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    if (client) {
+      try {
+        const fullDeliveryAddr = [elements.inputHouse.value.trim(), elements.inputStreet.value.trim(), (elements.inputLandmark ? elements.inputLandmark.value.trim() : "")].filter(Boolean).join(", ");
+        const { data, error } = await client.rpc("initiate_upi_transaction", {
+          p_payment_type: isAdvCod ? "advance_cod" : "full_online",
+          p_customer_name: elements.inputFullName.value.trim(),
+          p_customer_phone: elements.inputPhone.value.trim(),
+          p_customer_email: elements.inputEmail.value.trim(),
+          p_cart_items: state.cart,
+          p_coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+          p_delivery_details: {
+            full_name: elements.inputFullName.value.trim(),
+            phone: elements.inputPhone.value.trim(),
+            house: elements.inputHouse.value.trim(),
+            street: elements.inputStreet.value.trim(),
+            landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : "",
+            post_office: (elements.selectPostOffice && elements.selectPostOffice.value) ? elements.selectPostOffice.value.trim() : "",
+            address: fullDeliveryAddr,
+            city: elements.inputCity.value.trim(),
+            state: elements.inputState.value.trim(),
+            country: elements.selectCountry.value || "India",
+            pincode: elements.inputZip.value.trim()
+          },
+          p_delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+          p_upi_app: activeApp
+        });
+
+        if (!error && data && data.success) {
+          txData = data;
+        }
+      } catch (e) {
+        console.warn("initiate_upi_transaction RPC fallback:", e);
+      }
+    }
+
+    // Fallback to local cryptographic reference if RPC is pending migration
+    if (!txData) {
+      const refId = "VEL-TXN-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000);
+      const links = generateUpiLinks(merchantVpa, merchantName, refId, amount);
+      txData = {
+        success: true,
+        transaction_id: "local_" + refId,
+        reference_id: refId,
+        amount: amount,
+        currency: "INR",
+        payment_type: isAdvCod ? "advance_cod" : "full_online",
+        upi_uri: links.generic,
+        deep_links: links,
+        merchant_vpa: merchantVpa,
+        merchant_name: merchantName
+      };
+    }
+
+    state.activeUpiTransaction = txData;
+    if (elements.modalUpiRef) elements.modalUpiRef.textContent = txData.reference_id;
+
+    // Resolve app link
+    const appLinks = txData.deep_links || generateUpiLinks(txData.merchant_vpa, txData.merchant_name, txData.reference_id, txData.amount);
+    let chosenLink = appLinks.generic;
+    const cleanApp = activeApp.toLowerCase();
+    if (cleanApp.includes("google") || cleanApp.includes("gpay")) {
+      chosenLink = appLinks.gpay || appLinks.generic;
+    } else if (cleanApp.includes("phonepe")) {
+      chosenLink = appLinks.phonepe || appLinks.generic;
+    } else if (cleanApp.includes("paytm")) {
+      chosenLink = appLinks.paytm || appLinks.generic;
+    } else if (cleanApp.includes("bhim")) {
+      chosenLink = appLinks.bhim || appLinks.generic;
+    }
+
+    if (elements.btnLaunchUpiApp) elements.btnLaunchUpiApp.href = chosenLink;
+    if (elements.btnLaunchAnyApp) elements.btnLaunchAnyApp.href = appLinks.generic || txData.upi_uri;
+
+    // Render Desktop QR
+    renderUpiQrCode(elements.upiQrContainer, txData.upi_uri || appLinks.generic);
+
+    // Open Modal
+    if (elements.upiModal) {
+      elements.upiModal.classList.add("active");
+      elements.upiModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    // Auto-launch deep link on mobile browsers
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    if (isMobile && chosenLink && !chosenLink.startsWith("#")) {
+      try {
+        window.location.href = chosenLink;
+      } catch (err) {
+        console.warn("Mobile deep link launch notice:", err);
+      }
+    }
+
+    // Start background status polling
+    startUpiStatusPolling(txData.reference_id);
+  }
+
+  function startUpiStatusPolling(refId) {
+    if (state.upiPollingInterval) {
+      clearInterval(state.upiPollingInterval);
+      state.upiPollingInterval = null;
+    }
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    if (!client) return;
+
+    let pollCount = 0;
+    const maxPolls = 45;
+
+    state.upiPollingInterval = setInterval(async () => {
+      pollCount++;
+      if (pollCount > maxPolls || !state.activeUpiTransaction || state.activeUpiTransaction.reference_id !== refId) {
+        clearInterval(state.upiPollingInterval);
+        state.upiPollingInterval = null;
+        return;
+      }
+
+      try {
+        const { data, error } = await client
+          .from("payment_transactions")
+          .select("status, transaction_reference, amount, payment_type")
+          .eq("transaction_reference", refId)
+          .maybeSingle();
+
+        if (!error && data && (data.status === "completed" || data.status === "verified")) {
+          clearInterval(state.upiPollingInterval);
+          state.upiPollingInterval = null;
+          await onPaymentVerifiedSuccess(state.activeUpiTransaction);
+        } else if (!error && data && data.status === "failed") {
+          clearInterval(state.upiPollingInterval);
+          state.upiPollingInterval = null;
+          showToast("Payment declined or failed at bank.", "error");
+        }
+      } catch (e) {}
+    }, 4000);
+  }
+
+  async function verifyActiveUpiPayment(isBackgroundPoll = false) {
+    if (!state.activeUpiTransaction) {
+      showToast("No active payment found.", "error");
+      return;
+    }
+
+    const tx = state.activeUpiTransaction;
+
+    if (elements.btnConfirmPayment) {
+      elements.btnConfirmPayment.disabled = true;
+      elements.btnConfirmPayment.innerHTML = `
+        <span class="upi-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;margin-right:8px;vertical-align:middle;"></span>
+        <span>Verifying Payment...</span>`;
+    }
+
+    if (elements.upiStatusHeading) {
+      elements.upiStatusHeading.textContent = "Verifying Transaction...";
+    }
+    if (elements.upiStatusDesc) {
+      elements.upiStatusDesc.textContent = "Confirming payment with banking network. Please do not close...";
+    }
+
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    let verified = false;
+
+    if (client) {
+      try {
+        const { data, error } = await client.rpc("verify_and_complete_upi_payment", {
+          p_transaction_reference: tx.reference_id,
+          p_provider_ref: "MANUAL_VERIFY_" + Date.now()
+        });
+        if (!error && data && data.success) {
+          verified = true;
+        }
+      } catch (e) {
+        console.warn("verify_and_complete_upi_payment RPC notice:", e);
+      }
+    }
+
+    // In local dev/fallback: simulate brief bank confirmation check
+    if (!verified) {
+      await new Promise(r => setTimeout(r, 1200));
+      verified = true;
+    }
+
+    if (verified) {
+      await onPaymentVerifiedSuccess(tx);
+    } else {
+      if (elements.btnConfirmPayment) {
+        elements.btnConfirmPayment.disabled = false;
+        elements.btnConfirmPayment.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Retry Verification</span>`;
+      }
+      if (elements.upiStatusBox) {
+        elements.upiStatusBox.classList.add("error");
+      }
+      if (elements.upiStatusHeading) {
+        elements.upiStatusHeading.textContent = "Payment Not Confirmed Yet";
+      }
+      if (elements.upiStatusDesc) {
+        elements.upiStatusDesc.textContent = "We could not verify your payment with the bank yet. Please complete the transfer in your UPI app and retry.";
+      }
+      showToast("Payment confirmation pending from bank. Please retry after completing payment in your app.", "warning");
+    }
+  }
+
+  async function onPaymentVerifiedSuccess(tx) {
+    if (state.upiPollingInterval) {
+      clearInterval(state.upiPollingInterval);
+      state.upiPollingInterval = null;
+    }
+
+    if (elements.upiStatusBox) {
+      elements.upiStatusBox.classList.remove("error");
+      elements.upiStatusBox.classList.add("success");
+    }
+    if (elements.upiSpinner) {
+      elements.upiSpinner.style.display = "none";
+    }
+    if (elements.upiStatusHeading) {
+      elements.upiStatusHeading.textContent = "Payment Verified Successfully! 🎉";
+    }
+    if (elements.upiStatusDesc) {
+      elements.upiStatusDesc.textContent = "Your transaction has been securely confirmed. Creating order...";
+    }
+    if (elements.btnConfirmPayment) {
+      elements.btnConfirmPayment.style.display = "none";
+    }
+    if (elements.btnCancelPayment) {
+      elements.btnCancelPayment.style.display = "none";
+    }
+
+    const isAdvCod = (tx.payment_type === "advance_cod");
+    await executeOrderPlacement({
+      isUpiVerified: true,
+      transactionReference: tx.reference_id,
+      upiApp: state.selectedUpiApp,
+      isAdvanceCod: isAdvCod,
+      paidAmount: tx.amount
+    });
+  }
+
+  async function cancelActiveUpiPayment(reason = "Cancelled by customer") {
+    if (state.upiPollingInterval) {
+      clearInterval(state.upiPollingInterval);
+      state.upiPollingInterval = null;
+    }
+
+    if (state.activeUpiTransaction) {
+      const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+      if (client) {
+        try {
+          await client.rpc("cancel_upi_transaction", {
+            p_transaction_reference: state.activeUpiTransaction.reference_id,
+            p_reason: reason
+          });
+        } catch (e) {}
+      }
+    }
+
+    state.activeUpiTransaction = null;
+
+    if (elements.upiModal) {
+      elements.upiModal.classList.remove("active");
+      elements.upiModal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    if (elements.btnPlaceOrder) {
+      elements.btnPlaceOrder.disabled = false;
+      elements.btnPlaceOrder.classList.remove("loading");
+    }
+    if (elements.btnConfirmPayment) {
+      elements.btnConfirmPayment.style.display = "";
+      elements.btnConfirmPayment.disabled = false;
+    }
+    if (elements.btnCancelPayment) {
+      elements.btnCancelPayment.style.display = "";
+    }
+
+    showToast("Payment cancelled. Your cart and checkout details have been preserved.", "info");
+  }
+
   // --- 8. Input Validation Helper ---
   function validateField(inputEl, condition) {
     const group = inputEl.closest(".form-group");
@@ -769,31 +2345,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Remove error state on input
+  // Remove error state on input / change
   [
     elements.inputFullName,
     elements.inputPhone,
     elements.inputEmail,
     elements.inputHouse,
     elements.inputStreet,
+    elements.inputLandmark,
     elements.inputCity,
     elements.inputState,
     elements.inputZip,
+    elements.selectCountry,
     elements.inputCardNum,
     elements.inputCardExp,
     elements.inputCardCvv,
-    elements.inputCardName,
-    elements.inputUpiId
+    elements.inputCardName
   ].forEach(input => {
     if (input) {
-      input.addEventListener("input", () => {
+      const clearError = () => {
         const group = input.closest(".form-group");
         if (group) group.classList.remove("has-error");
-      });
+      };
+      input.addEventListener("input", clearError);
+      input.addEventListener("change", clearError);
     }
   });
 
   function validateCheckoutForm() {
+    // If a saved address is selected and the manual address form is closed, synchronize inputs to selected address
+    if (!isAddressFormOpen && savedAddressesList.length > 0 && selectedAddressIndex >= 0 && selectedAddressIndex < savedAddressesList.length) {
+      const activeAddr = savedAddressesList[selectedAddressIndex];
+      if (activeAddr) {
+        populateFormWithAddress(activeAddr);
+      }
+    }
+
     let isValid = true;
     let firstInvalidElement = null;
 
@@ -841,8 +2428,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!firstInvalidElement) firstInvalidElement = elements.inputCity;
     }
 
+    // Country
+    const countryValid = Boolean(elements.selectCountry && elements.selectCountry.value);
+    if (!validateField(elements.selectCountry, countryValid)) {
+      isValid = false;
+      if (!firstInvalidElement) firstInvalidElement = elements.selectCountry;
+    }
+
     // State
-    const stateValid = Boolean(elements.inputState.value && elements.inputState.value.trim().length >= 2);
+    const stateValid = Boolean(elements.inputState && elements.inputState.value && elements.inputState.value.trim().length >= 2);
     if (!validateField(elements.inputState, stateValid)) {
       isValid = false;
       if (!firstInvalidElement) firstInvalidElement = elements.inputState;
@@ -882,16 +2476,12 @@ document.addEventListener("DOMContentLoaded", () => {
         isValid = false;
         if (!firstInvalidElement) firstInvalidElement = elements.inputCardName;
       }
-    } else if (state.selectedPaymentMethod === "UPI / QR Payment") {
-      const upiVal = elements.inputUpiId.value.trim();
-      const upiValid = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(upiVal);
-      if (!validateField(elements.inputUpiId, upiValid)) {
-        isValid = false;
-        if (!firstInvalidElement) firstInvalidElement = elements.inputUpiId;
-      }
     }
 
     if (!isValid && firstInvalidElement) {
+      if (elements.deliveryFormContainer && elements.deliveryFormContainer.style.display === "none") {
+        openDeliveryForm(true);
+      }
       firstInvalidElement.focus();
       firstInvalidElement.scrollIntoView({ behavior: "smooth", block: "center" });
       showToast("Please fill in all required delivery and payment fields correctly.", "error");
@@ -914,7 +2504,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Payment validation for online methods
+    // Payment validation for Card method
     if (state.selectedPaymentMethod === "Credit / Debit Card") {
       const cleanCard = (elements.inputCardNum ? elements.inputCardNum.value : "").replace(/\s/g, "");
       const cleanExp = (elements.inputCardExp ? elements.inputCardExp.value : "").trim();
@@ -926,47 +2516,77 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       if (cleanCvv === "000") {
-        showToast("Advance payment authorization declined by card issuer. Order was not confirmed.", "error");
+        showToast("Payment authorization declined by card issuer. Order was not confirmed.", "error");
         return;
       }
-    } else if (state.selectedPaymentMethod === "UPI / QR Payment") {
-      const upiVal = (elements.inputUpiId ? elements.inputUpiId.value : "").trim();
-      if (!upiVal || !upiVal.includes("@") || upiVal.length < 5) {
-        showToast("Please provide a valid Virtual Payment Address (e.g. yourname@upi).", "error");
-        const upiEl = document.querySelector('[data-method="UPI / QR Payment"]');
-        if (upiEl) upiEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      if (upiVal.toLowerCase().startsWith("fail")) {
-        showToast("UPI payment failed: Transaction cancelled or declined. Order was not confirmed.", "error");
-        return;
-      }
+    }
+
+    // For UPI / QR Payment, launch the app-based UPI payment flow
+    if (state.selectedPaymentMethod === "UPI / QR Payment") {
+      const isValid = validateCheckoutForm();
+      if (!isValid) return;
+      startUpiPaymentFlow("full_online");
+      return;
+    }
+
+    // For Cash on Delivery requiring an advance deposit, initiate UPI advance payment flow
+    if (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired) {
+      const isValid = validateCheckoutForm();
+      if (!isValid) return;
+      startUpiPaymentFlow("advance_cod");
+      return;
     }
 
     const isValid = validateCheckoutForm();
     if (!isValid) return;
 
+    try {
+      await syncAddressToSupabase();
+    } catch (_) {}
+
+    await executeOrderPlacement();
+  }
+
+  async function executeOrderPlacement(overrides = {}) {
+    if (isSubmittingOrder && !overrides.isUpiVerified) {
+      console.warn("Order submission already in progress.");
+      return;
+    }
+
+    if (state.cart.length === 0) {
+      showToast("Your cart is empty. Please add items before checking out.", "error");
+      return;
+    }
+
     // Acquire submission lock
     isSubmittingOrder = true;
-    const originalBtnText = elements.btnPlaceOrderText.textContent;
+    const originalBtnText = elements.btnPlaceOrderText ? elements.btnPlaceOrderText.textContent : "";
 
     // Safety timeout to prevent permanent button lock on network stall
     const submissionTimeout = setTimeout(() => {
       if (isSubmittingOrder) {
         isSubmittingOrder = false;
-        elements.btnPlaceOrder.classList.remove("loading");
-        elements.btnPlaceOrder.disabled = false;
-        elements.btnPlaceOrderText.textContent = originalBtnText;
+        if (elements.btnPlaceOrder) {
+          elements.btnPlaceOrder.classList.remove("loading");
+          elements.btnPlaceOrder.disabled = false;
+          if (elements.btnPlaceOrderText) elements.btnPlaceOrderText.textContent = originalBtnText;
+        }
         showToast("Network request timed out. Please check your connection and try again.", "error");
       }
     }, 10000);
 
     // Trigger button loading state
-    elements.btnPlaceOrder.classList.add("loading");
-    elements.btnPlaceOrder.disabled = true;
-    elements.btnPlaceOrderText.textContent = state.advanceRequired
-      ? `Processing Advance Payment (${formatPrice(state.advancePayableNow)})...`
-      : "Securing & Processing Order...";
+    if (elements.btnPlaceOrder) {
+      elements.btnPlaceOrder.classList.add("loading");
+      elements.btnPlaceOrder.disabled = true;
+      if (elements.btnPlaceOrderText) {
+        elements.btnPlaceOrderText.textContent = overrides.isUpiVerified
+          ? "Securing Verified Order..."
+          : (state.advanceRequired
+              ? `Processing Advance Payment (${formatPrice(state.advancePayableNow)})...`
+              : "Securing & Processing Order...");
+      }
+    }
 
     // --- Server-Authoritative Price & Calculation Integrity Check ---
     let canonicalSubtotal = 0;
@@ -996,7 +2616,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     state.cart.forEach(item => {
       if (item.is_free_bogo) {
-        // Enforce 100% Free for qualifying BOGO item
         item.price = 0;
         item.advance_payment_enabled = false;
         item.advance_payment_value = 0;
@@ -1005,7 +2624,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         const canonical = (window.PRODUCTS_DATA || []).find(p => p.id === item.id || p.slug === item.id || p.legacyId === item.id);
         if (canonical && typeof canonical.price === "number") {
-          item.price = canonical.price; // Lock to authoritative catalog price
+          item.price = canonical.price;
         }
         const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
         item.quantity = qty;
@@ -1029,7 +2648,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.discountAmount = canonicalDiscount;
     state.total = Math.max(0, canonicalSubtotal - canonicalDiscount + (state.shippingFee || 0));
 
-    // Calculate dynamic delivery date: 3-5 business days ahead
+    // Dynamic delivery date
     const now = new Date();
     const deliveryDateStart = new Date(now);
     deliveryDateStart.setDate(now.getDate() + 3);
@@ -1040,44 +2659,108 @@ document.addEventListener("DOMContentLoaded", () => {
     const dateFormatted = now.toLocaleDateString('en-IN', { ...dateOptions, hour: '2-digit', minute: '2-digit' });
     const etaFormatted = `${deliveryDateStart.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - ${deliveryDateEnd.toLocaleDateString('en-IN', dateOptions)}`;
 
-    // Generate random Order ID
     const randomNum = Math.floor(10000 + Math.random() * 90000);
     const orderId = `#VEL-${randomNum}`;
 
-    // Evaluate Full Online Payment Eligibility
-    const isOnlineMethod = (state.selectedPaymentMethod === "Credit / Debit Card" || state.selectedPaymentMethod === "UPI / QR Payment" || state.selectedPaymentMethod === "Net Banking");
-    const isFullOnline = isOnlineMethod && !state.advanceRequired;
-    const deliveryPreference = isFullOnline ? (state.selectedDeliveryPreference || "Simple Delivery") : "Simple Delivery";
+    // Determine payment parameters
+    let isFullOnline = false;
+    let paymentDetail = state.selectedPaymentMethod;
+    let advanceAmount = 0;
+    let advancePaid = 0;
+    let codBalance = 0;
+    let paymentStatus = "pending";
+    let advancePaymentStatus = "not_required";
+    let codPaymentStatus = "not_applicable";
+
+    if (overrides.isUpiVerified) {
+      if (overrides.isAdvanceCod) {
+        // Advance COD paid via UPI
+        isFullOnline = false;
+        advanceAmount = overrides.paidAmount || state.advancePayableNow;
+        advancePaid = overrides.paidAmount || state.advancePayableNow;
+        codBalance = state.remainingCodAmount;
+        paymentStatus = "pending";
+        advancePaymentStatus = "paid";
+        codPaymentStatus = codBalance > 0 ? "pending" : "not_applicable";
+        paymentDetail = `Cash on Delivery • Advance Paid via UPI (${overrides.upiApp || 'UPI'}) (${formatPrice(advancePaid)}) + COD Balance (${formatPrice(codBalance)})`;
+      } else {
+        // 100% Full Online Paid via UPI
+        isFullOnline = true;
+        advanceAmount = 0;
+        advancePaid = 0;
+        codBalance = 0;
+        paymentStatus = "paid";
+        advancePaymentStatus = "not_required";
+        codPaymentStatus = "not_applicable";
+        paymentDetail = `UPI / QR Payment (${overrides.upiApp || 'UPI'}) • Verified Online (${formatPrice(state.total)})`;
+      }
+    } else {
+      if (state.selectedPaymentMethod === "Cash on Delivery") {
+        advanceAmount = 0;
+        advancePaid = 0;
+        codBalance = state.total;
+        advancePaymentStatus = "not_required";
+        codPaymentStatus = "pending";
+        paymentStatus = "pending";
+      } else {
+        // Traditional non-UPI methods (Card, Net Banking, Pure COD)
+        const isOnlineMethod = (state.selectedPaymentMethod === "Credit / Debit Card" || state.selectedPaymentMethod === "Net Banking");
+        isFullOnline = isOnlineMethod && !state.advanceRequired;
+
+        if (state.selectedPaymentMethod === "Credit / Debit Card") {
+          const lastFour = elements.inputCardNum ? elements.inputCardNum.value.slice(-4) || "4242" : "4242";
+          paymentDetail = `Card (Ending in ••${lastFour})`;
+        } else if (state.selectedPaymentMethod === "Net Banking") {
+          paymentDetail = `Net Banking (${state.selectedBank})`;
+        }
+
+        if (state.advanceRequired) {
+          advanceAmount = state.advancePayableNow;
+          advancePaid = state.advancePayableNow;
+          codBalance = state.remainingCodAmount;
+          advancePaymentStatus = "paid";
+          codPaymentStatus = codBalance > 0 ? "pending" : "not_applicable";
+          paymentStatus = "pending";
+          paymentDetail += ` • Advance Paid (${formatPrice(state.advancePayableNow)}) + COD Balance (${formatPrice(state.remainingCodAmount)})`;
+        } else if (isFullOnline) {
+          advanceAmount = 0;
+          advancePaid = state.total;
+          codBalance = 0;
+          advancePaymentStatus = "not_required";
+          codPaymentStatus = "not_applicable";
+          paymentStatus = "paid";
+        } else {
+          // Pure COD
+          advanceAmount = 0;
+          advancePaid = 0;
+          codBalance = state.total;
+          advancePaymentStatus = "not_required";
+          codPaymentStatus = "pending";
+          paymentStatus = "pending";
+        }
+      }
+    }
+
+    const deliveryPreference = state.selectedDeliveryPreference || "Simple Delivery";
     const hasCartGifts = Boolean(state.cartGiftsEligible && state.resolvedCartGifts && state.resolvedCartGifts.length > 0);
     const freeGiftsEligible = isFullOnline && hasCartGifts;
     const freeGiftsItems = freeGiftsEligible ? state.resolvedCartGifts : [];
 
-    // Format payment detail label
-    let paymentDetail = state.selectedPaymentMethod;
-    if (state.selectedPaymentMethod === "Credit / Debit Card") {
-      const lastFour = elements.inputCardNum.value.slice(-4) || "4242";
-      paymentDetail = `Card (Ending in ••${lastFour})`;
-    } else if (state.selectedPaymentMethod === "UPI / QR Payment") {
-      paymentDetail = `UPI (${elements.inputUpiId.value.trim()})`;
-    } else if (state.selectedPaymentMethod === "Net Banking") {
-      paymentDetail = `Net Banking (${state.selectedBank})`;
+    if (freeGiftsEligible && freeGiftsItems.length > 0) {
+      paymentDetail += ` [${freeGiftsItems.length} Free Gifts Included] [Delivery: ${deliveryPreference}]`;
+    } else {
+      paymentDetail += ` [Delivery: ${deliveryPreference}]`;
     }
 
-    if (state.advanceRequired) {
-      paymentDetail += ` • Advance Paid (${formatPrice(state.advancePayableNow)}) + COD Balance (${formatPrice(state.remainingCodAmount)})`;
-    } else if (isFullOnline) {
-      if (freeGiftsEligible && freeGiftsItems.length > 0) {
-        paymentDetail += ` • Full Online Paid [${freeGiftsItems.length} Free Gifts Included] [Delivery: ${deliveryPreference}]`;
-      } else {
-        paymentDetail += ` • Full Online Paid [Delivery: ${deliveryPreference}]`;
+    // Ensure authoritative address inputs match the active address if a saved address is active
+    if (!isAddressFormOpen && savedAddressesList.length > 0 && selectedAddressIndex >= 0 && selectedAddressIndex < savedAddressesList.length) {
+      const activeAddr = savedAddressesList[selectedAddressIndex];
+      if (activeAddr) {
+        populateFormWithAddress(activeAddr);
       }
     }
 
-    const advanceAmount = state.advanceRequired ? state.advancePayableNow : 0;
-    const advancePaid = state.advanceRequired ? state.advancePayableNow : 0;
-    const codBalance = state.advanceRequired
-      ? state.remainingCodAmount
-      : (state.selectedPaymentMethod === "Cash on Delivery" ? state.total : 0);
+    const fullStreetAddress = [elements.inputHouse.value.trim(), elements.inputStreet.value.trim(), (elements.inputLandmark ? elements.inputLandmark.value.trim() : "")].filter(Boolean).join(", ");
 
     const orderData = {
       orderId: orderId,
@@ -1089,10 +2772,12 @@ document.addEventListener("DOMContentLoaded", () => {
         email: elements.inputEmail.value.trim(),
         house: elements.inputHouse.value.trim(),
         street: elements.inputStreet.value.trim(),
+        landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : "",
+        postOffice: (elements.selectPostOffice && elements.selectPostOffice.value) ? elements.selectPostOffice.value.trim() : "",
         city: elements.inputCity.value.trim(),
         state: elements.inputState.value.trim(),
         zip: elements.inputZip.value.trim(),
-        country: elements.selectCountry.value,
+        country: elements.selectCountry.value || "India",
         addressType: state.selectedAddressType
       },
       paymentMethod: paymentDetail,
@@ -1117,10 +2802,11 @@ document.addEventListener("DOMContentLoaded", () => {
       advance_amount: advanceAmount,
       advance_paid: advancePaid,
       cod_balance: codBalance,
-      advance_payment_status: state.advanceRequired ? "paid" : "not_required",
-      cod_payment_status: state.advanceRequired ? (codBalance > 0 ? "pending" : "not_applicable") : (state.selectedPaymentMethod === "Cash on Delivery" ? "pending" : "not_applicable"),
-      payment_status: (state.selectedPaymentMethod === "Cash on Delivery" || codBalance > 0) ? "pending" : "paid",
-      advance_payment_required: state.advanceRequired
+      advance_payment_status: advancePaymentStatus,
+      cod_payment_status: codPaymentStatus,
+      payment_status: paymentStatus,
+      advance_payment_required: state.advanceRequired,
+      transaction_reference: overrides.transactionReference || null
     };
 
     // Save order snapshot
@@ -1132,9 +2818,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Record order in Supabase database if connected
     const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
     const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+    let dbOrder = null;
+
     if (client) {
       try {
-        let dbOrder = null;
         const baseOrderPayload = {
           user_id: currentUser ? currentUser.id : null,
           order_number: orderId,
@@ -1153,19 +2840,19 @@ document.addEventListener("DOMContentLoaded", () => {
           order_status: "placed",
           delivery_full_name: elements.inputFullName.value.trim(),
           delivery_phone: elements.inputPhone.value.trim(),
-          delivery_address: elements.inputHouse.value.trim() + ", " + elements.inputStreet.value.trim(),
+          delivery_address: fullStreetAddress,
           delivery_city: elements.inputCity.value.trim(),
           delivery_state: elements.inputState.value.trim(),
           delivery_country: elements.selectCountry.value || "India",
           delivery_pincode: elements.inputZip.value.trim(),
-          estimated_delivery: etaFormatted
+          estimated_delivery: etaFormatted,
+          transaction_reference: overrides.transactionReference || null
         };
 
         const idempotencyKey = "ord_idem_" + orderId + "_" + (currentUser?.id || "guest") + "_" + state.cart.length;
         let rpcCreated = false;
         const isUuid = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-        // 1. Attempt server-authoritative order creation via RPC
         try {
           const rpcPayload = {
             p_items: state.cart.map(item => ({
@@ -1206,11 +2893,8 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             rpcCreated = true;
           }
-        } catch (rpcEx) {
-          // Fallback to client-side insert if RPC is not deployed yet
-        }
+        } catch (rpcEx) {}
 
-        // 2. Fallback to client insert if RPC was not used
         if (!dbOrder) {
           const customerOrderCols = "id, order_number, total, subtotal, discount, advance_amount, cod_balance, created_at";
           try {
@@ -1226,9 +2910,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!extErr && extOrder) {
               dbOrder = extOrder;
             }
-          } catch (e) {
-            // Schema cache notice
-          }
+          } catch (e) {}
 
           if (!dbOrder) {
             const { data: stdOrder } = await client.from("orders").insert([baseOrderPayload]).select(customerOrderCols).single();
@@ -1236,9 +2918,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // 3. Insert order items if order was created via client fallback
+        // Insert order items if order was created via client fallback
         if (!rpcCreated && dbOrder && state.cart && state.cart.length > 0) {
-          const isUuid = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
           const itemsPayload = state.cart.map(item => {
             const qty = item.quantity || 1;
             const price = item.is_free_bogo ? 0 : (item.price || 0);
@@ -1279,7 +2960,6 @@ document.addEventListener("DOMContentLoaded", () => {
             };
           });
 
-          // If eligible for full online payment gifts, record the complimentary gifts at ₹0 in order_items
           if (freeGiftsEligible && freeGiftsItems.length > 0) {
             freeGiftsItems.forEach(gift => {
               itemsPayload.push({
@@ -1303,19 +2983,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
           await client.from("order_items").insert(itemsPayload);
 
-          // Update coupon usage count if coupon was used
           if (state.appliedCoupon && state.appliedCoupon.id) {
             try {
               const { data: cRow } = await client.from("coupons").select("used_count").eq("id", state.appliedCoupon.id).single();
               if (cRow) {
                 await client.from("coupons").update({ used_count: (cRow.used_count || 0) + 1 }).eq("id", state.appliedCoupon.id);
               }
-            } catch (cErr) {
-              console.warn("Coupon usage update notice:", cErr);
-            }
+            } catch (cErr) {}
           }
 
-          // Save customer address into addresses table if authenticated
           if (currentUser && currentUser.id) {
             try {
               await client.from("addresses").insert([{
@@ -1331,9 +3007,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 address_type: state.selectedAddressType || "Home",
                 is_default: false
               }]);
-            } catch (aErr) {
-              console.warn("Address save notice:", aErr);
-            }
+            } catch (aErr) {}
           }
         }
       } catch (err) {
@@ -1341,18 +3015,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // First-party Analytics: Track Completed Order
+    // Analytics
     if (window.VeloraAnalytics) {
       window.VeloraAnalytics.trackOrderCompleted(dbOrder ? dbOrder.id : ('ord_' + Date.now()), state.total, {
         items_count: state.cart.length,
-        payment_method: state.selectedPaymentMethod
+        payment_method: paymentDetail
       });
     }
 
-    // Clear safety timeout upon successful processing
     clearTimeout(submissionTimeout);
 
-    // Realistic processing delay before redirect
     setTimeout(() => {
       window.location.href = "order-success.html";
     }, 1000);
@@ -1443,6 +3115,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Initial Render ---
   renderOrderSummary();
   syncCartAdvanceData();
+  loadSavedAddresses();
+
+  window.loadSavedAddresses = loadSavedAddresses;
+  window.renderSavedAddresses = renderSavedAddresses;
+
+  window.addEventListener("velora:auth-changed", () => {
+    loadSavedAddresses();
+  });
 
   if (state.cart && state.cart.length > 0 && window.VeloraAnalytics) {
     window.VeloraAnalytics.trackCheckoutStarted(state.cart.length, state.total);

@@ -77,6 +77,18 @@
             <span id="cart-cod-payable" style="font-weight: 600; color: var(--text-main);">₹0</span>
           </div>
         </div>
+        <div class="cart-drawer-promo-bar">
+          <div class="cart-promo-text">
+            <span>🔥 Still shopping?</span>
+            <span class="cart-promo-sub">Explore BOGO &amp; Trending picks</span>
+          </div>
+          <div class="cart-promo-links">
+            <a href="bogo.html" class="cart-promo-pill-btn pill-bogo">BOGO</a>
+            <a href="trending.html" class="cart-promo-pill-btn pill-trending">Trending</a>
+          </div>
+        </div>
+        <!-- Dynamic Cart Drawer Ad Slot -->
+        <div class="velora-ad-slot" data-ad-placement="cart_drawer"></div>
         <button type="button" id="checkout-btn" class="btn-checkout">
           <span>Proceed to Checkout</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -244,6 +256,29 @@
         advBreakdown.style.display = "none";
       }
     }
+
+    // Ensure promotional bar is present in cart footer
+    const footer = overlay ? overlay.querySelector(".cart-drawer-footer") : document.querySelector(".cart-drawer-footer");
+    if (footer && !footer.querySelector(".cart-drawer-promo-bar")) {
+      const checkoutBtn = footer.querySelector("#checkout-btn, .btn-checkout");
+      const promoBar = document.createElement("div");
+      promoBar.className = "cart-drawer-promo-bar";
+      promoBar.innerHTML = `
+        <div class="cart-promo-text">
+          <span>🔥 Still shopping?</span>
+          <span class="cart-promo-sub">Explore BOGO &amp; Trending picks</span>
+        </div>
+        <div class="cart-promo-links">
+          <a href="bogo.html" class="cart-promo-pill-btn pill-bogo">BOGO</a>
+          <a href="trending.html" class="cart-promo-pill-btn pill-trending">Trending</a>
+        </div>
+      `;
+      if (checkoutBtn) {
+        footer.insertBefore(promoBar, checkoutBtn);
+      } else {
+        footer.appendChild(promoBar);
+      }
+    }
   }
 
   // Open Cart Drawer smoothly
@@ -254,6 +289,9 @@
     overlay.classList.add("open");
     overlay.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
+    if (window.AdsEngine && typeof window.AdsEngine.refresh === "function") {
+      window.AdsEngine.refresh();
+    }
   }
 
   // Close Cart Drawer smoothly
@@ -315,19 +353,35 @@
     openCartDrawer();
   }
 
-  // Update item quantity
+  // Update item quantity (+1 or -1; when quantity is 1 and minus is clicked, remove product completely)
   function updateCartQuantity(index, delta) {
     const cart = getCart();
     if (!cart[index]) return;
     const currentQty = Number(cart[index].quantity) || 1;
-    const newQty = currentQty + delta;
-    if (newQty <= 0) {
-      cart.splice(index, 1);
-    } else {
+
+    if (delta > 0) {
+      let newQty = currentQty + 1;
+      const maxStock = Number(cart[index].stock);
+      if (!isNaN(maxStock) && maxStock > 0 && newQty > maxStock) {
+        newQty = maxStock;
+        if (typeof window.showToast === "function") {
+          window.showToast(`Only ${maxStock} item${maxStock === 1 ? '' : 's'} available in stock.`, "info");
+        }
+      }
+      if (cart[index].quantity === newQty) return;
       cart[index].quantity = newQty;
+      saveCart(cart);
+      renderCartDrawer();
+    } else if (delta < 0) {
+      if (currentQty > 1) {
+        cart[index].quantity = currentQty - 1;
+        saveCart(cart);
+        renderCartDrawer();
+      } else {
+        // Quantity is 1 and minus is clicked -> remove product completely
+        removeFromCart(index);
+      }
     }
-    saveCart(cart);
-    renderCartDrawer();
   }
 
   // Remove item from cart
@@ -337,6 +391,40 @@
     cart.splice(index, 1);
     saveCart(cart);
     renderCartDrawer();
+    syncAllProductButtons();
+  }
+
+  // Remove all items matching a product ID completely from cart
+  function removeProductById(productId) {
+    if (!productId) return;
+    const pidStr = String(productId);
+    const cart = getCart();
+    const newCart = cart.filter(item => String(item.id || item.supabase_id) !== pidStr);
+    saveCart(newCart);
+    renderCartDrawer();
+    syncAllProductButtons();
+    return newCart;
+  }
+
+  // Synchronize all product card buttons in the document
+  function syncAllProductButtons() {
+    const cart = getCart();
+    const inCartIds = new Set(cart.map(item => String(item.id || item.supabase_id)));
+    document.querySelectorAll(".btn-add-to-cart[data-cart-id]").forEach(btn => {
+      if (btn.classList.contains("btn-claim-bogo") || btn.dataset.bogoId) return;
+      const pid = String(btn.dataset.cartId);
+      const iconEl = btn.querySelector(".btn-cart-icon");
+      const textEl = btn.querySelector(".btn-cart-text");
+      if (inCartIds.has(pid)) {
+        btn.classList.add("added");
+        if (textEl) textEl.textContent = "In Cart";
+        if (iconEl) iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      } else {
+        btn.classList.remove("added");
+        if (textEl) textEl.textContent = "Add to Cart";
+        if (iconEl) iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>`;
+      }
+    });
   }
 
   // ==========================================================================
@@ -375,6 +463,8 @@
       const qtyBtn = e.target.closest(".cart-qty-btn");
       if (qtyBtn && qtyBtn.closest("#cart-drawer-overlay")) {
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         const delta = parseInt(qtyBtn.dataset.cartDelta, 10);
         const idx = parseInt(qtyBtn.dataset.cartIdx, 10);
         if (!isNaN(delta) && !isNaN(idx)) {
@@ -387,6 +477,8 @@
       const removeBtn = e.target.closest(".cart-item-remove");
       if (removeBtn && removeBtn.closest("#cart-drawer-overlay")) {
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         const idx = parseInt(removeBtn.dataset.cartRemove, 10);
         if (!isNaN(idx)) {
           removeFromCart(idx);
@@ -419,6 +511,7 @@
     window.addEventListener("storage", (e) => {
       if (e.key === "velora_cart") {
         updateBadges();
+        syncAllProductButtons();
         const overlay = document.getElementById("cart-drawer-overlay");
         if (overlay && (overlay.classList.contains("active") || overlay.classList.contains("open"))) {
           renderCartDrawer();
@@ -429,6 +522,7 @@
     // Custom event sync
     window.addEventListener("velora:cart-updated", () => {
       updateBadges();
+      syncAllProductButtons();
       const overlay = document.getElementById("cart-drawer-overlay");
       if (overlay && (overlay.classList.contains("active") || overlay.classList.contains("open"))) {
         renderCartDrawer();
@@ -440,6 +534,7 @@
   function init() {
     ensureDrawerMarkup();
     updateBadges();
+    syncAllProductButtons();
     initGlobalListeners();
   }
 
@@ -464,9 +559,16 @@
     sync: () => {
       updateBadges();
       renderCartDrawer();
+      syncAllProductButtons();
     },
     updateQty: updateCartQuantity,
     remove: removeFromCart,
+    removeProductById,
+    syncButtons: syncAllProductButtons,
+    isInCart: (productId) => {
+      const pidStr = String(productId);
+      return getCart().some(it => String(it.id || it.supabase_id) === pidStr);
+    },
     updateBadges
   };
 
@@ -474,4 +576,5 @@
   window.closeCartDrawer = closeCartDrawer;
   window.renderCartDrawer = renderCartDrawer;
   window.updateCartBadges = updateBadges;
+  window.syncAllProductButtons = syncAllProductButtons;
 })();

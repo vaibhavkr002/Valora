@@ -130,10 +130,9 @@
       try {
         const { data, error } = await client
           .from('profiles')
-          .select('*')
           .select('id, full_name, email, phone, avatar_url, role')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (data && !error) {
           cachedProfile = data;
@@ -141,8 +140,8 @@
         }
 
         // If profile row doesn't exist yet, construct from user metadata
-        if (cachedUser && cachedUser.user_metadata) {
-          const meta = cachedUser.user_metadata;
+        if (cachedUser) {
+          const meta = cachedUser.user_metadata || {};
           cachedProfile = {
             id: userId,
             full_name: meta.full_name || meta.name || '',
@@ -150,8 +149,10 @@
             phone: meta.phone || '',
             role: 'customer'
           };
-          // Attempt insertion
-          await client.from('profiles').upsert([cachedProfile], { onConflict: 'id' });
+          // Attempt upsert
+          try {
+            await client.from('profiles').upsert([cachedProfile], { onConflict: 'id' });
+          } catch (e) {}
           return cachedProfile;
         }
       } catch (e) {
@@ -333,29 +334,40 @@
      */
     logout: async function () {
       const client = this.getClient();
-      try {
-        if (client) {
-          await client.auth.signOut();
-        }
-      } catch (err) {
-        console.warn("Sign out notice:", err);
-      }
 
       cachedUser = null;
       cachedProfile = null;
 
-      // Clear any legacy auth keys
+      // Clear legacy auth session without touching cart or wishlist
       localStorage.removeItem('velora_user_session');
+
+      // Clear Supabase auth keys from localStorage immediately
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('sb-') && k.endsWith('-auth-token')) {
+            localStorage.removeItem(k);
+          }
+        });
+      } catch (e) {}
+
+      // Fire cloud signOut asynchronously so network latency does not block redirect
+      if (client && client.auth && typeof client.auth.signOut === 'function') {
+        try {
+          client.auth.signOut().catch(err => console.warn("Sign out notice:", err));
+        } catch (err) {
+          console.warn("Sign out notice:", err);
+        }
+      }
 
       this.updateNavbarAuth();
       showAuthToast('You have signed out successfully.', 'info');
 
-      // If on protected page, redirect to login
-      const currentPath = window.location.pathname;
-      if (currentPath.includes('account.html') || currentPath.includes('checkout.html') || currentPath.includes('wishlist.html')) {
+      // If on protected page or account, redirect to login immediately
+      const currentPath = (window.location.pathname || '') + (window.location.href || '');
+      if (currentPath.includes('account') || currentPath.includes('checkout') || currentPath.includes('wishlist')) {
         setTimeout(() => {
           window.location.href = 'login.html';
-        }, 400);
+        }, 150);
       }
     },
 

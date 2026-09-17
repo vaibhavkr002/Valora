@@ -81,9 +81,9 @@
         </a>
   
 
-        <a href="banners.html" class="sidebar-link ">
-          <i class="fas fa-images"></i>
-          <span>Hero Banners</span>
+        <a href="advertisements.html" class="sidebar-link ">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
         </a>
   
 
@@ -182,9 +182,76 @@
                 <label class="admin-label">Standard Shipping Fee (₹)</label>
                 <input type="number" id="set-shipping-fee" class="admin-input" value="99" style="width:100%;">
               </div>
-              <div style="margin-top: 24px;">
-                <button type="submit" class="btn-admin-primary" style="width:100%; justify-content:center; padding: 12px;">
-                  <i class="fas fa-save"></i> Save Configuration
+            </div>
+
+            <div class="admin-card">
+              <h3 class="card-title" style="margin-bottom: 16px;"><i class="fas fa-box-open" style="color: #0284c7; margin-right: 8px;"></i> Open Box Delivery Configuration</h3>
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.88rem; cursor: pointer;">
+                  <input type="checkbox" id="set-openbox-enabled" checked style="accent-color: #0284c7;"> Enable Open Box Delivery
+                </label>
+                <p style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 4px;">Allow customers to choose doorstep package inspection before acceptance.</p>
+              </div>
+              <div class="form-group" style="margin-top: 14px;">
+                <label class="admin-label">Open Box Additional Fee (₹)</label>
+                <input type="number" id="set-openbox-fee" class="admin-input" value="0" min="0" style="width:100%;">
+                <p style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 4px;">Set to 0 for complimentary service.</p>
+              </div>
+              <div class="form-group" style="margin-top: 14px;">
+                <label class="admin-label" style="margin-bottom: 6px; display: block;">Payment Mode Eligibility</label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                    <input type="checkbox" id="set-openbox-cod" checked style="accent-color: #0284c7;"> Cash on Delivery (COD)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                    <input type="checkbox" id="set-openbox-adv-cod" checked style="accent-color: #0284c7;"> Advance + COD
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                    <input type="checkbox" id="set-openbox-online" checked style="accent-color: #0284c7;"> Full Online Payment
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card" style="grid-column: 1 / -1;">
+              <h3 class="card-title" style="margin-bottom: 16px;"><i class="fas fa-qrcode" style="color: #6366f1; margin-right: 8px;"></i> UPI Payment Gateway & Merchant Settings</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="admin-label">Merchant UPI Virtual Payment Address (VPA) <span style="color: #ef4444;">*</span></label>
+                  <input type="text" id="set-merchant-vpa" class="admin-input" value="velora.lifestyle@okhdfcbank" style="width:100%; font-family: monospace; font-weight: 600;">
+                  <p style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 4px;">Authoritative UPI ID used for customer app intent links and dynamic QR codes.</p>
+                </div>
+                <div class="form-group">
+                  <label class="admin-label">Merchant Business Display Name <span style="color: #ef4444;">*</span></label>
+                  <input type="text" id="set-merchant-name" class="admin-input" value="VELORA Lifestyle Studio" style="width:100%;">
+                  <p style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 4px;">Recipient name verified and displayed in customer UPI banking apps (pn parameter).</p>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 16px;">
+                <label class="admin-label" style="margin-bottom: 8px; display: block;">Enabled UPI Customer Applications</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 6px;">
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" id="app-gpay" checked style="accent-color: #6366f1;"> Google Pay (tez://)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" id="app-phonepe" checked style="accent-color: #6366f1;"> PhonePe (phonepe://)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" id="app-paytm" checked style="accent-color: #6366f1;"> Paytm (paytmmp://)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" id="app-bhim" checked style="accent-color: #6366f1;"> BHIM (bhim://)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" id="app-generic" checked style="accent-color: #6366f1;"> Any UPI App (upi://)
+                  </label>
+                </div>
+              </div>
+
+              <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--admin-border);">
+                <button type="submit" class="btn-admin-primary" style="padding: 12px 28px;">
+                  <i class="fas fa-save"></i> Save All Settings
                 </button>
               </div>
             </div>

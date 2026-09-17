@@ -313,7 +313,7 @@ body {
   font-size: 0.65rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .top-announcement-bar {
     min-height: 34px !important;
     height: 34px !important;
@@ -2589,7 +2589,7 @@ button[type="submit"].checkout-btn {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .hero-image-card {
     border-radius: 20px;
   }

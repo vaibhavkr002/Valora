@@ -66,9 +66,10 @@
   padding: 40px 0 80px;
 }
 
-.shop-layout-grid {
+.shop-layout-grid,
+.shop-content-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
   gap: 36px;
   align-items: start;
 }
@@ -76,7 +77,8 @@
 /* ==========================================================================
    SIDEBAR FILTER COMPONENT (Desktop)
    ========================================================================== */
-.shop-sidebar {
+.shop-sidebar,
+.shop-filter-sidebar {
   position: sticky;
   top: 96px;
   background: #ffffff;
@@ -87,6 +89,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
 }
 
 .sidebar-header {
@@ -395,10 +398,12 @@
 /* ==========================================================================
    PRODUCT LISTING AREA & TOOLBAR
    ========================================================================= */
-.products-listing-wrapper {
+.products-listing-wrapper,
+.shop-products-area {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
 }
 
 /* Top Toolbar */
