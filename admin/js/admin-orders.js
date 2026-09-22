@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tbody = document.getElementById("orders-tbody");
   const searchInput = document.getElementById("search-orders");
   const statusFilter = document.getElementById("filter-status");
+  const catalogFilter = document.getElementById("filter-catalog");
 
   // Selection & Bulk Actions Elements
   const masterCheckbox = document.getElementById("checkbox-select-all-orders");
@@ -38,8 +39,55 @@ document.addEventListener("DOMContentLoaded", async () => {
   let allOrders = [];
   let currentlyDisplayedOrders = [];
   let orderMetadata = {};
+  let orderRequests = [];
   const selectedOrderIds = new Set();
   let orderToDelete = null;
+
+  // Store Origin Detector
+  function getOrderCatalogInfo(order) {
+    const items = order.order_items || [];
+    if (items.length === 0) {
+      return {
+        type: "main",
+        label: "MAIN VADI",
+        icon: "🏪",
+        color: "#94a3b8",
+        bg: "rgba(255, 255, 255, 0.05)",
+        border: "rgba(255, 255, 255, 0.1)"
+      };
+    }
+    const hasSarojini = items.some(it => it.catalog_type === "sarojini" || it.sarojini_product_id != null);
+    const hasMain = items.some(it => it.catalog_type !== "sarojini" && it.product_id != null);
+
+    if (hasSarojini && hasMain) {
+      return {
+        type: "mixed",
+        label: "MIXED CATALOG",
+        icon: "🔀",
+        color: "#c084fc",
+        bg: "rgba(168, 85, 247, 0.15)",
+        border: "rgba(168, 85, 247, 0.3)"
+      };
+    } else if (hasSarojini) {
+      return {
+        type: "sarojini",
+        label: "SAROJINI BAZAAR",
+        icon: "🛍️",
+        color: "#fda4af",
+        bg: "rgba(225, 29, 72, 0.15)",
+        border: "rgba(225, 29, 72, 0.3)"
+      };
+    } else {
+      return {
+        type: "main",
+        label: "MAIN VADI",
+        icon: "🏪",
+        color: "#94a3b8",
+        bg: "rgba(255, 255, 255, 0.05)",
+        border: "rgba(255, 255, 255, 0.1)"
+      };
+    }
+  }
 
   // ----------------------------------------------------
   // Admin Profile Role Synchronization
@@ -74,9 +122,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     } catch (_) {}
 
+    // Load customer order requests (cancellation & return)
+    orderRequests = [];
+    try {
+      const { data: reqs } = await client.from("order_requests").select("*");
+      if (reqs) orderRequests = reqs;
+    } catch (e) {
+      console.warn("order_requests fetch notice:", e);
+    }
+    try {
+      const { data: sRow } = await client.from("store_settings").select("value").eq("key", "order_requests").maybeSingle();
+      if (sRow && Array.isArray(sRow.value)) {
+        const existingIds = new Set(orderRequests.map(r => r.id));
+        sRow.value.forEach(r => { if (!existingIds.has(r.id)) orderRequests.push(r); });
+      }
+    } catch (_) {}
+    try {
+      const localReqs = JSON.parse(localStorage.getItem("velora_order_requests") || "[]");
+      if (Array.isArray(localReqs)) {
+        const existingIds = new Set(orderRequests.map(r => r.id));
+        localReqs.forEach(lr => { if (!existingIds.has(lr.id)) orderRequests.push(lr); });
+      }
+    } catch (_) {}
+
     const { data, error } = await client
       .from("orders")
-      .select("*, order_items(count)")
+      .select("*, order_items(id, catalog_type, product_id, sarojini_product_id, product_name, product_image, price, quantity)")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -85,7 +156,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    allOrders = data || [];
+    // Filter out orders archived/hidden from Admin view
+    allOrders = (data || []).filter(o => {
+      const isHiddenInTracking = Boolean(o.tracking_data && typeof o.tracking_data === "object" && o.tracking_data.admin_hidden);
+      const isHiddenInMeta = Boolean(orderMetadata && orderMetadata[o.id] && orderMetadata[o.id].admin_hidden);
+      return !isHiddenInTracking && !isHiddenInMeta;
+    });
     renderOrders();
   }
 
@@ -96,17 +172,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     let filtered = [...allOrders];
     const q = (searchInput?.value || "").trim().toLowerCase();
     const st = statusFilter?.value || "";
+    const catVal = catalogFilter?.value || "";
+
+    // Catalog Filter (Main / Sarojini / Mixed)
+    if (catVal) {
+      filtered = filtered.filter(o => getOrderCatalogInfo(o).type === catVal);
+    }
 
     if (q) {
       filtered = filtered.filter(o => 
         (o.order_number && o.order_number.toLowerCase().includes(q)) ||
         (o.delivery_full_name && o.delivery_full_name.toLowerCase().includes(q)) ||
-        (o.delivery_phone && o.delivery_phone.includes(q))
+        (o.delivery_phone && o.delivery_phone.includes(q)) ||
+        (o.delivery_email && o.delivery_email.toLowerCase().includes(q)) ||
+        (Array.isArray(o.order_items) && o.order_items.some(it => it.product_name && it.product_name.toLowerCase().includes(q)))
       );
     }
 
     if (st) {
-      filtered = filtered.filter(o => o.order_status === st);
+      if (st === "cancellation_requested") {
+        filtered = filtered.filter(o => o.order_status === "cancellation_requested" || orderRequests.some(r => r.order_id === o.id && r.request_type === "cancellation" && r.status === "requested"));
+      } else if (st === "return_requested") {
+        filtered = filtered.filter(o => o.order_status === "return_requested" || orderRequests.some(r => r.order_id === o.id && r.request_type === "return" && r.status === "requested"));
+      } else {
+        filtered = filtered.filter(o => o.order_status === st);
+      }
     }
 
     currentlyDisplayedOrders = filtered;
@@ -119,13 +209,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     tbody.innerHTML = filtered.map(o => {
       let badgeClass = "badge-info";
+      let displayStatus = o.order_status;
+      let requestBadgeHtml = "";
+
+      const reqs = orderRequests.filter(r => r.order_id === o.id);
+      const pendingCancelReq = reqs.find(r => r.request_type === "cancellation" && r.status === "requested");
+      const pendingReturnReq = reqs.find(r => r.request_type === "return" && r.status === "requested");
+
       if (o.order_status === "delivered") badgeClass = "badge-success";
       if (o.order_status === "cancelled") badgeClass = "badge-danger";
       if (o.order_status === "processing") badgeClass = "badge-warning";
       if (o.order_status === "shipped") badgeClass = "badge-indigo";
+      if (o.order_status === "cancellation_requested" || pendingCancelReq) {
+        badgeClass = "badge-warning";
+        displayStatus = "Cancel Req";
+        requestBadgeHtml = `<div style="margin-top: 3px;"><span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.68rem; font-weight: 700;">⚠️ CANCEL REQ</span></div>`;
+      } else if (o.order_status === "return_requested" || pendingReturnReq) {
+        badgeClass = "badge-indigo";
+        displayStatus = "Return Req";
+        requestBadgeHtml = `<div style="margin-top: 3px;"><span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.68rem; font-weight: 700;">↩️ RETURN REQ</span></div>`;
+      } else if (o.order_status === "returned") {
+        badgeClass = "badge-success";
+        displayStatus = "Returned";
+      }
 
       const dateStr = new Date(o.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
-      const itemCount = (o.order_items && o.order_items[0]) ? o.order_items[0].count : 1;
+      const itemCount = Array.isArray(o.order_items) ? o.order_items.length : ((o.order_items && o.order_items[0]) ? (o.order_items[0].count || 1) : 1);
+      const catInfo = getOrderCatalogInfo(o);
 
       const meta = orderMetadata[o.id] || {};
       const hasAdvance = Number(o.advance_paid || o.advance_amount || 0) > 0;
@@ -191,7 +301,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           <td style="text-align: center;">
             <input type="checkbox" class="order-checkbox" data-order-id="${o.id}" data-order-number="${o.order_number}" ${isChecked} style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--admin-accent);">
           </td>
-          <td><strong>${o.order_number}</strong></td>
+          <td>
+            <strong>${o.order_number}</strong>
+            <div style="margin-top: 4px;">
+              <span class="badge" style="background: ${catInfo.bg}; color: ${catInfo.color}; border: 1px solid ${catInfo.border}; font-size: 0.65rem; font-weight: 700; padding: 2px 6px;">
+                ${catInfo.icon} ${catInfo.label}
+              </span>
+            </div>
+          </td>
           <td>
             <div><strong>${o.delivery_full_name}</strong></div>
             <div style="font-size: 0.75rem; color: var(--admin-text-muted);">${o.delivery_phone}</div>
@@ -201,7 +318,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <td><span class="badge ${o.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}">${o.payment_status}</span></td>
           <td>${advCodHtml}</td>
           <td><strong>${window.formatINR(o.total)}</strong> <span style="font-size: 0.75rem; color: var(--admin-text-muted);">(${itemCount} items)</span></td>
-          <td><span class="badge ${badgeClass}">${o.order_status}</span></td>
+          <td><span class="badge ${badgeClass}">${displayStatus}</span>${requestBadgeHtml}</td>
           <td>
             <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-start; flex-wrap: nowrap;">
               <a href="order-details.html?id=${o.id}" class="btn-admin-secondary" style="padding: 5px 10px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;" title="View & Manage Order">
@@ -391,99 +508,85 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // ----------------------------------------------------
-  // CORE SECURE DATABASE DELETION ENGINE
+  // NON-DESTRUCTIVE ADMIN-ONLY ORDER ARCHIVAL / HIDE
+  // Removes order strictly from Admin Panel view while preserving
+  // customer order record, order_items, payments, tracking, and history intact.
   // ----------------------------------------------------
   async function executeDatabaseDeletion(idsToDelete) {
+    if (!client) throw new Error("Database client not available.");
     if (!idsToDelete || idsToDelete.length === 0) {
       throw new Error("No order IDs specified for deletion.");
     }
 
     await ensureAdminProfileSync();
 
-    let success = false;
+    let successCount = 0;
     let lastError = null;
 
-    // A) Try atomic RPC first
-    if (idsToDelete.length === 1) {
+    // 1. Mark tracking_data.admin_hidden = true on each order in public.orders
+    for (const orderId of idsToDelete) {
       try {
-        const { data: rpcRes, error: rpcErr } = await client.rpc("admin_delete_order", { p_order_id: idsToDelete[0] });
-        if (!rpcErr && rpcRes && rpcRes.success) {
-          success = true;
-        } else if (rpcErr) {
-          console.warn("admin_delete_order RPC notice, trying direct cascade:", rpcErr);
-          lastError = rpcErr;
-        }
-      } catch (ex) {
-        lastError = ex;
-      }
-    } else {
-      try {
-        const { data: rpcRes, error: rpcErr } = await client.rpc("admin_bulk_delete_orders", { p_order_ids: idsToDelete });
-        if (!rpcErr && rpcRes && rpcRes.success) {
-          success = true;
-        } else if (rpcErr) {
-          console.warn("admin_bulk_delete_orders RPC notice, trying direct cascade:", rpcErr);
-          lastError = rpcErr;
-        }
-      } catch (ex) {
-        lastError = ex;
-      }
-    }
+        const orderObj = allOrders.find(o => o.id === orderId);
+        const currentTracking = (orderObj && orderObj.tracking_data && typeof orderObj.tracking_data === "object")
+          ? { ...orderObj.tracking_data }
+          : {};
 
-    // B) Direct database deletion fallback with strict cascade
-    if (!success) {
-      try {
-        // 1. Delete child order_items first
-        const { error: itemsErr } = await client
-          .from("order_items")
-          .delete()
-          .in("order_id", idsToDelete);
+        currentTracking.admin_hidden = true;
+        currentTracking.admin_hidden_at = new Date().toISOString();
 
-        if (itemsErr) {
-          console.warn("order_items deletion notice:", itemsErr);
-        }
-
-        // 2. Nullify references in upi_payment_transactions if present
-        try {
-          await client
-            .from("upi_payment_transactions")
-            .update({ order_id: null })
-            .in("order_id", idsToDelete);
-        } catch (_) {}
-
-        // 3. Delete from orders table with explicit select verification
-        const { data: deletedOrders, error: orderErr } = await client
+        const { error: updErr } = await client
           .from("orders")
-          .delete()
-          .in("id", idsToDelete)
-          .select("id");
+          .update({
+            tracking_data: currentTracking,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", orderId);
 
-        if (orderErr) {
-          console.error("Supabase orders delete error:", orderErr);
-          throw orderErr;
+        if (updErr) {
+          console.warn("Order tracking_data admin_hidden update notice:", updErr);
+          lastError = updErr;
+        } else {
+          successCount++;
+          if (orderObj) {
+            orderObj.tracking_data = currentTracking;
+          }
         }
-
-        if (!deletedOrders || deletedOrders.length === 0) {
-          console.error("Database returned 0 deleted rows for IDs:", idsToDelete);
-          throw new Error("Order deletion was not permitted by database RLS. Please ensure you are authenticated as an administrator.");
-        }
-
-        success = true;
-      } catch (directErr) {
-        console.error("Direct deletion error:", directErr);
-        lastError = directErr;
+      } catch (ex) {
+        console.warn("Exception updating order tracking_data:", ex);
+        lastError = ex;
       }
     }
 
-    if (!success) {
-      throw (lastError || new Error("Failed to delete order. Please try again."));
+    // 2. Synchronize with store_settings order_metadata backup
+    try {
+      let currentMeta = { ...orderMetadata };
+      let metaChanged = false;
+      for (const orderId of idsToDelete) {
+        if (!currentMeta[orderId]) currentMeta[orderId] = {};
+        currentMeta[orderId].admin_hidden = true;
+        currentMeta[orderId].admin_hidden_at = new Date().toISOString();
+        metaChanged = true;
+      }
+
+      if (metaChanged) {
+        const { error: setErr } = await client
+          .from("store_settings")
+          .upsert({ key: "order_metadata", value: currentMeta }, { onConflict: "key" });
+        if (!setErr) {
+          orderMetadata = currentMeta;
+        }
+      }
+    } catch (_) {}
+
+    if (successCount === 0 && lastError) {
+      throw lastError;
     }
 
     return true;
   }
 
   // ----------------------------------------------------
-  // Execute Single Delete Handler
+  // Execute Single Delete Handler (Admin Hide)
   // ----------------------------------------------------
   if (deleteConfirmBtn) {
     deleteConfirmBtn.addEventListener("click", async () => {
@@ -491,7 +594,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const targetId = orderToDelete.id;
 
       deleteConfirmBtn.disabled = true;
-      deleteConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Deleting...</span>';
+      deleteConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Removing...</span>';
 
       try {
         await executeDatabaseDeletion([targetId]);
@@ -503,23 +606,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderOrders();
 
         if (typeof window.showToast === "function") {
-          window.showToast("Order deleted successfully.", "success");
+          window.showToast("Order removed from Admin view.", "success");
         }
       } catch (err) {
-        console.error("Failed to delete order from Supabase:", err);
+        console.error("Failed to remove order from Admin view:", err);
         deleteConfirmBtn.disabled = false;
         deleteConfirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>Delete Order</span>';
         if (typeof window.showToast === "function") {
-          window.showToast("Failed to delete order. Please try again.", "error");
+          window.showToast("Failed to remove order. Please try again.", "error");
         } else {
-          alert("Failed to delete order. Please try again.");
+          alert("Failed to remove order. Please try again.");
         }
       }
     });
   }
 
   // ----------------------------------------------------
-  // Execute Bulk Delete Handler
+  // Execute Bulk Delete Handler (Admin Hide)
   // ----------------------------------------------------
   if (bulkDeleteConfirmBtn) {
     bulkDeleteConfirmBtn.addEventListener("click", async () => {
@@ -527,7 +630,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (idsToDelete.length === 0) return;
 
       bulkDeleteConfirmBtn.disabled = true;
-      bulkDeleteConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Deleting...</span>';
+      bulkDeleteConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Removing...</span>';
 
       try {
         await executeDatabaseDeletion(idsToDelete);
@@ -539,16 +642,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderOrders();
 
         if (typeof window.showToast === "function") {
-          window.showToast(`${count} orders deleted successfully.`, "success");
+          window.showToast(`${count} order${count > 1 ? 's' : ''} removed from Admin view.`, "success");
         }
       } catch (err) {
-        console.error("Failed to bulk delete orders from Supabase:", err);
+        console.error("Failed to bulk remove orders from Admin view:", err);
         bulkDeleteConfirmBtn.disabled = false;
         bulkDeleteConfirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span id="btn-confirm-bulk-delete-label">Delete Selected Orders</span>';
         if (typeof window.showToast === "function") {
-          window.showToast("Failed to delete orders. Please try again.", "error");
+          window.showToast("Failed to remove orders. Please try again.", "error");
         } else {
-          alert("Failed to delete orders. Please try again.");
+          alert("Failed to remove orders. Please try again.");
         }
       }
     });

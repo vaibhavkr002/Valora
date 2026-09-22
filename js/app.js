@@ -340,7 +340,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function createProductCardHTML(product, forceBogo = false) {
     if (!product) return "";
     try {
-      const isWishlisted = state.wishlist.has(product.id);
+      const isWishlisted = (window.VadiWishlist && typeof window.VadiWishlist.has === 'function')
+        ? window.VadiWishlist.has(product.id)
+        : state.wishlist.has(product.id);
     const bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
       ? window.VELORA_SETTINGS.bogo_config.product_ids
       : [];
@@ -826,11 +828,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (elements.bogoPaidBanner) {
       elements.bogoPaidBanner.innerHTML = `
-        <div style="display:flex; align-items:center; gap: 14px;">
-          <img src="${paidProduct.image}" alt="${paidProduct.name}" style="width: 58px; height: 58px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
-          <div>
-            <span style="font-size: 0.72rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px;">Purchasing Qualifying Item:</span>
-            <h4 style="font-size: 0.98rem; font-weight: 700; color: var(--text-main); margin: 2px 0;">${paidProduct.name}</h4>
+        <div style="display:flex; align-items:center; gap: 10px; width: 100%; min-width: 0;">
+          <img src="${paidProduct.image}" alt="${paidProduct.name}" style="width: 52px; height: 52px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border-color); flex-shrink: 0; background: #ffffff;">
+          <div style="flex: 1; min-width: 0; overflow-wrap: anywhere; word-break: break-word;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px; display: block;">Purchasing Qualifying Item:</span>
+            <h4 style="font-size: 0.94rem; font-weight: 700; color: var(--text-main); margin: 2px 0; line-height: 1.3; overflow-wrap: anywhere; word-break: break-word;">${paidProduct.name}</h4>
             <span style="font-size: 0.92rem; font-weight: 700; color: var(--accent);">${formatPrice(paidProduct.price)}</span>
           </div>
         </div>
@@ -877,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="bogo-price-free">₹0 FREE</span>
                 <span class="bogo-price-orig">${formatPrice(freeItem.price)}</span>
               </div>
-              <span style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom: 8px;">Price Match: Δ ₹${diff}</span>
+              <span style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom: 4px;">Price Match: Δ ₹${diff}</span>
               <button type="button" class="bogo-select-btn" data-free-select-id="${freeItem.id}">
                 Select This Gift
               </button>
@@ -926,6 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (elements.bogoModalOverlay) {
       elements.bogoModalOverlay.classList.add("active");
+      document.body.classList.add("bogo-modal-open");
       document.body.style.overflow = "hidden";
     }
   }
@@ -933,11 +936,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function closeBogoModal() {
     if (elements.bogoModalOverlay) {
       elements.bogoModalOverlay.classList.remove("active");
+      document.body.classList.remove("bogo-modal-open");
       document.body.style.overflow = "";
     }
     selectedBogoPaidProduct = null;
     selectedBogoFreeProduct = null;
   }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && elements.bogoModalOverlay && elements.bogoModalOverlay.classList.contains("active")) {
+      closeBogoModal();
+    }
+  });
 
   // ==========================================================================
   // CART OPERATIONS & DRAWER
@@ -1276,6 +1286,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================================
 
   function toggleWishlist(productId) {
+    if (window.VadiWishlist && typeof window.VadiWishlist.toggle === 'function') {
+      const product = (window.PRODUCTS_DATA || []).find(p => p.id === productId);
+      window.VadiWishlist.toggle(productId, 'main', product);
+      return;
+    }
+
     const product = window.PRODUCTS_DATA.find(p => p.id === productId);
     if (!product) return;
 
@@ -1844,5 +1860,9 @@ document.addEventListener("DOMContentLoaded", () => {
         renderCartDrawer();
       }
     });
+
+    // Expose helpers for dynamic sections engine
+    window.createProductCardHTML = createProductCardHTML;
+    window.syncProductCartButtons = syncProductCartButtons;
   }
 });

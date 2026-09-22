@@ -1,0 +1,1802 @@
+/* ============================================================================
+   VADI - SAROJINI BAZAAR DESIGN SYSTEM & STOREFRONT STYLESHEET
+   Delhi Street-Market Character + Premium Fashion Editorial Design
+   Curated Affordable Finds + Modern E-Commerce UX + VADI Reliability
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Caveat:wght@600;700&display=swap');
+
+:root {
+  /* Editorial Palette: Delhi Street Market Meets High Fashion */
+  --bazaar-bg: #faf7f2;
+  --bazaar-surface: #ffffff;
+  --bazaar-surface-warm: #f5f0e6;
+  --bazaar-surface-tint: #f3ece0;
+  --bazaar-stone: #ede6d8;
+  
+  /* Text & Typography */
+  --bazaar-dark: #1c1917;
+  --bazaar-slate: #292524;
+  --bazaar-text-muted: #78716c;
+  --bazaar-text-subtle: #a8a29e;
+
+  /* Delhi Heritage Accents: Terracotta, Rust, Spiced Ochre, Market Emerald */
+  --bazaar-terracotta: #9e2a2b;
+  --bazaar-terracotta-hover: #7f1d1d;
+  --bazaar-terracotta-soft: #fcf1ef;
+  --bazaar-terracotta-border: #f2d2ce;
+  
+  --bazaar-rust: #b84233;
+  --bazaar-ochre: #d97706;
+  --bazaar-ochre-soft: #fef3c7;
+  --bazaar-emerald: #065f46;
+  --bazaar-emerald-soft: #ecfdf5;
+
+  /* Editorial Hairlines & Borders */
+  --bazaar-border: #e8e2d5;
+  --bazaar-border-strong: #d8cfbe;
+
+  /* Typography Fonts */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-hand: 'Caveat', cursive;
+
+  /* Diffuse Shadows */
+  --bazaar-shadow-sm: 0 2px 8px rgba(28, 25, 23, 0.04);
+  --bazaar-shadow-md: 0 8px 24px rgba(28, 25, 23, 0.06);
+  --bazaar-shadow-lg: 0 16px 40px rgba(28, 25, 23, 0.09);
+}
+
+/* Base Body Styling */
+body.sarojini-storefront-body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bazaar-bg);
+  color: var(--bazaar-dark);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ----------------------------------------------------------------------------
+   1. TOP ANNOUNCEMENT BAR (Connected to dynamic ads / banners)
+   ---------------------------------------------------------------------------- */
+.sarojini-announcement-bar {
+  background: var(--bazaar-dark);
+  color: #f5f0e6;
+  font-size: 0.8rem;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1001;
+  transition: all 0.3s ease;
+}
+
+.sarojini-announcement-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.announcement-badge {
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.announcement-text {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.announcement-text a {
+  color: #fef3c7;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-left: 6px;
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------------------------
+   2. REFINED NAVIGATION HEADER
+   ---------------------------------------------------------------------------- */
+.sarojini-nav-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(250, 247, 242, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--bazaar-border);
+  padding: 14px 0;
+  box-shadow: var(--bazaar-shadow-sm);
+  transition: all 0.25s ease;
+}
+
+.sarojini-nav-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.sarojini-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+/* Brand Identity Emblem */
+.sarojini-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.sarojini-brand-logo .logo-txt {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--bazaar-dark);
+}
+
+.sarojini-brand-logo .logo-sub-badge {
+  background: var(--bazaar-terracotta);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: 0 2px 8px rgba(158, 42, 43, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Desktop Directory Links */
+.sarojini-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.sarojini-nav-link {
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--bazaar-slate);
+  position: relative;
+  padding: 6px 2px;
+  transition: color 0.2s ease;
+  letter-spacing: 0.2px;
+}
+
+.sarojini-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--bazaar-terracotta);
+  transition: width 0.25s ease;
+  border-radius: 2px;
+}
+
+.sarojini-nav-link:hover {
+  color: var(--bazaar-terracotta);
+}
+
+.sarojini-nav-link:hover::after,
+.sarojini-nav-link.active::after {
+  width: 100%;
+}
+
+.sarojini-nav-link.active {
+  color: var(--bazaar-terracotta);
+  font-weight: 700;
+}
+
+.sarojini-nav-link.nav-main-store {
+  color: var(--bazaar-text-muted);
+  font-weight: 500;
+  border-right: 1px solid var(--bazaar-border-strong);
+  padding-right: 16px;
+  margin-right: 4px;
+}
+
+.sarojini-nav-link.nav-main-store:hover {
+  color: var(--bazaar-dark);
+}
+
+/* Search Box Scoped to Sarojini */
+.sarojini-search-box {
+  flex: 1;
+  max-width: 420px;
+}
+
+.sarojini-search-box form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sarojini-search-box .search-icon {
+  position: absolute;
+  left: 15px;
+  color: var(--bazaar-text-subtle);
+  font-size: 0.88rem;
+  pointer-events: none;
+}
+
+.sarojini-search-box input {
+  width: 100%;
+  padding: 10px 80px 10px 40px;
+  background: var(--bazaar-surface-warm);
+  border: 1px solid var(--bazaar-border);
+  border-radius: 50px;
+  font-size: 0.86rem;
+  font-family: inherit;
+  color: var(--bazaar-dark);
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.sarojini-search-box input::placeholder {
+  color: var(--bazaar-text-muted);
+  font-weight: 500;
+}
+
+.sarojini-search-box input:focus {
+  background: #fff;
+  border-color: var(--bazaar-terracotta);
+  box-shadow: 0 0 0 3px rgba(158, 42, 43, 0.12);
+}
+
+.sarojini-search-box .search-submit-btn {
+  position: absolute;
+  right: 4px;
+  background: var(--bazaar-dark);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.sarojini-search-box .search-submit-btn:hover {
+  background: var(--bazaar-terracotta);
+  transform: scale(1.02);
+}
+
+/* Nav Right Actions */
+.sarojini-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sarojini-exit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--bazaar-dark);
+  padding: 7px 14px;
+  background: var(--bazaar-surface);
+  border: 1px solid var(--bazaar-border);
+  border-radius: 50px;
+  transition: all 0.2s ease;
+  box-shadow: var(--bazaar-shadow-sm);
+}
+
+.sarojini-exit-btn:hover {
+  border-color: var(--bazaar-dark);
+  background: var(--bazaar-surface-warm);
+  transform: translateY(-1px);
+}
+
+.sarojini-icon-btn {
+  position: relative;
+  background: var(--bazaar-surface);
+  border: 1px solid var(--bazaar-border);
+  font-size: 1.05rem;
+  color: var(--bazaar-dark);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--bazaar-shadow-sm);
+}
+
+.sarojini-icon-btn:hover {
+  background: var(--bazaar-terracotta-soft);
+  color: var(--bazaar-terracotta);
+  border-color: var(--bazaar-terracotta-border);
+  transform: translateY(-1px);
+}
+
+.sarojini-badge-pill {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(158, 42, 43, 0.3);
+}
+
+/* Mobile Category Directory Bar */
+.sarojini-mobile-dept-strip {
+  display: none;
+  background: var(--bazaar-surface);
+  border-bottom: 1px solid var(--bazaar-border);
+  padding: 8px 14px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.sarojini-mobile-dept-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.sarojini-mobile-dept-strip a {
+  display: inline-block;
+  padding: 6px 14px;
+  margin-right: 8px;
+  border-radius: 50px;
+  background: var(--bazaar-surface-warm);
+  border: 1px solid var(--bazaar-border);
+  color: var(--bazaar-slate);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.sarojini-mobile-dept-strip a.active,
+.sarojini-mobile-dept-strip a:hover {
+  background: var(--bazaar-terracotta);
+  color: #ffffff;
+  border-color: var(--bazaar-terracotta);
+}
+
+/* ----------------------------------------------------------------------------
+   3. EDITORIAL HERO SECTION: DELHI STREET BAZAAR
+   ---------------------------------------------------------------------------- */
+.sarojini-hero-section {
+  padding: 24px 0 20px;
+}
+
+.sarojini-hero-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.sarojini-hero-card {
+  background: linear-gradient(135deg, #f8f3ea 0%, #faf5ee 40%, #fefcf8 100%);
+  border-radius: 28px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: stretch;
+  box-shadow: 0 20px 48px -12px rgba(41, 37, 36, 0.09), 0 4px 16px rgba(158, 42, 43, 0.04), 0 0 0 1px var(--bazaar-border);
+  border: 1px solid var(--bazaar-border);
+  position: relative;
+}
+
+/* Editorial Texture Accent */
+.sarojini-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: radial-gradient(rgba(158, 42, 43, 0.035) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.sarojini-hero-content {
+  padding: 52px 48px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 1. Eyebrow Tagline */
+.hero-tagline-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  animation: heroEntranceFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+.hero-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bazaar-terracotta-soft);
+  color: var(--bazaar-terracotta);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 5px 14px;
+  border-radius: 50px;
+  border: 1px solid var(--bazaar-terracotta-border);
+}
+
+.hero-handwritten-badge {
+  font-family: var(--font-hand);
+  font-size: 1.25rem;
+  color: var(--bazaar-rust);
+  font-weight: 700;
+  transform: rotate(-3deg);
+  display: inline-block;
+}
+
+/* 2. Prominent Sarojini Bazaar Visual Identity */
+.hero-sarojini-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  animation: heroEntranceFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+
+.sarojini-identity-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--bazaar-rust);
+  margin-bottom: 4px;
+}
+
+.sarojini-identity-kicker .kicker-brand {
+  color: var(--bazaar-terracotta);
+  font-weight: 900;
+  letter-spacing: 1.4px;
+}
+
+.sarojini-identity-kicker .kicker-sep {
+  color: var(--bazaar-border-strong);
+  font-size: 0.65rem;
+}
+
+.sarojini-identity-kicker .kicker-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--bazaar-slate);
+}
+
+.sarojini-identity-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sarojini-identity-title {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1.05;
+  color: var(--bazaar-terracotta);
+  text-transform: uppercase;
+  position: relative;
+  text-shadow: 0 1px 2px rgba(158, 42, 43, 0.12);
+}
+
+.sarojini-identity-badge {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  background: var(--bazaar-dark);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.18);
+  text-transform: uppercase;
+}
+
+.sarojini-identity-badge i {
+  color: var(--bazaar-emerald);
+  font-size: 0.72rem;
+}
+
+.sarojini-identity-accent-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 3px;
+}
+
+.sarojini-identity-brush {
+  width: 170px;
+  height: 7px;
+  color: var(--bazaar-terracotta);
+  display: block;
+}
+
+.sarojini-identity-handnote {
+  font-family: var(--font-hand);
+  font-size: 1.18rem;
+  color: var(--bazaar-rust);
+  font-weight: 700;
+  transform: rotate(-2deg);
+  display: inline-block;
+  line-height: 1;
+}
+
+/* 3. Headline */
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: 3.1rem;
+  font-weight: 800;
+  line-height: 1.12;
+  color: var(--bazaar-dark);
+  margin: 0 0 14px 0;
+  letter-spacing: -0.5px;
+  animation: heroEntranceFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.65s both;
+}
+
+.hero-title .serif-accent {
+  font-style: italic;
+  font-weight: 700;
+  color: var(--bazaar-terracotta);
+}
+
+/* 4. Subtitle Description */
+.hero-subtitle {
+  font-size: 1.08rem;
+  font-weight: 500;
+  color: var(--bazaar-text-muted);
+  margin: 0 0 28px 0;
+  line-height: 1.6;
+  max-width: 580px;
+  animation: heroEntranceFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.95s both;
+}
+
+/* 5. Hero Action Buttons */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  animation: heroEntranceFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 1.25s both;
+}
+
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  padding: 15px 32px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  letter-spacing: 0.2px;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(158, 42, 43, 0.28);
+}
+
+.btn-hero-primary:hover {
+  background: var(--bazaar-terracotta-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(158, 42, 43, 0.35);
+}
+
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bazaar-surface);
+  color: var(--bazaar-dark);
+  padding: 15px 26px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 1px solid var(--bazaar-border-strong);
+  transition: all 0.25s ease;
+  box-shadow: var(--bazaar-shadow-sm);
+}
+
+.btn-hero-secondary:hover {
+  border-color: var(--bazaar-dark);
+  background: var(--bazaar-surface-warm);
+  transform: translateY(-1px);
+}
+
+/* 6. Feature Points / Highlights */
+.hero-highlights {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bazaar-slate);
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px dashed var(--bazaar-border-strong);
+  animation: heroEntranceFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 1.55s both;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.highlight-item i {
+  color: var(--bazaar-emerald);
+  font-size: 0.95rem;
+}
+
+/* 7. Right Visual Area - Seamless Editorial Composition */
+.sarojini-hero-visual {
+  position: relative;
+  min-height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #eae2d3;
+  border-left: 1px solid rgba(223, 215, 200, 0.7);
+}
+
+/* Editorial Depth Gradient & Vignette Overlay */
+.sarojini-hero-visual::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(248, 243, 234, 0.25) 0%, transparent 10%),
+              linear-gradient(to top, rgba(28, 25, 23, 0.12) 0%, transparent 20%);
+  z-index: 1;
+}
+
+.hero-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.02) saturate(1.03);
+  transition: transform 0.6s ease, filter 0.3s ease;
+  animation: heroImageReveal 1.05s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+.sarojini-hero-card:hover .hero-cover-img {
+  transform: scale(1.02);
+}
+
+/* Layered Editorial Floating Badges */
+.hero-floating-badge {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(255, 253, 250, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 14px 22px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(28, 25, 23, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(223, 215, 200, 0.85);
+  z-index: 3;
+  animation: heroBadgeFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.45s both;
+}
+
+.hero-floating-badge .badge-accent {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--bazaar-terracotta);
+  letter-spacing: -0.3px;
+}
+
+.hero-floating-badge .badge-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--bazaar-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-top: 2px;
+}
+
+.hero-floating-badge-top {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  background: rgba(28, 25, 23, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 3;
+  animation: heroBadgeFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.15s both;
+}
+
+/* ----------------------------------------------------------------------------
+   HERO ENTRANCE ANIMATION KEYFRAMES (High-end editorial staggered reveal)
+   Completes in under 2.4 seconds, then strictly remains static and stable.
+   ---------------------------------------------------------------------------- */
+@keyframes heroEntranceFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heroImageReveal {
+  0% {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes heroBadgeFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Respect user accessibility settings */
+@media (prefers-reduced-motion: reduce) {
+  .hero-tagline-wrap,
+  .hero-sarojini-identity,
+  .hero-title,
+  .hero-subtitle,
+  .hero-actions,
+  .hero-highlights,
+  .hero-cover-img,
+  .hero-floating-badge-top,
+  .hero-floating-badge {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   4. AUTHENTIC VALUE STRIP ("Why Sarojini Bazaar?")
+   ---------------------------------------------------------------------------- */
+.sarojini-value-strip {
+  padding: 28px 0;
+  background: var(--bazaar-surface);
+  border-top: 1px solid var(--bazaar-border);
+  border-bottom: 1px solid var(--bazaar-border);
+}
+
+.sarojini-strip-grid {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+
+.value-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.value-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--bazaar-surface-warm);
+  color: var(--bazaar-terracotta);
+  border: 1px solid var(--bazaar-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.value-item:hover .value-icon {
+  background: var(--bazaar-terracotta-soft);
+  border-color: var(--bazaar-terracotta-border);
+  transform: translateY(-2px);
+}
+
+.value-text h4 {
+  margin: 0 0 3px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--bazaar-dark);
+}
+
+.value-text p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--bazaar-text-muted);
+  line-height: 1.5;
+}
+
+/* ----------------------------------------------------------------------------
+   5. COMMON SECTION LAYOUT & HEADINGS
+   ---------------------------------------------------------------------------- */
+.sarojini-section {
+  padding: 64px 0;
+}
+
+.section-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  gap: 20px;
+}
+
+.section-kicker {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--bazaar-terracotta);
+  margin-bottom: 6px;
+}
+
+.section-heading {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--bazaar-dark);
+  margin: 0;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+.section-subheading {
+  font-size: 0.95rem;
+  color: var(--bazaar-text-muted);
+  margin: 6px 0 0 0;
+  font-weight: 500;
+}
+
+.section-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--bazaar-terracotta);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: var(--bazaar-terracotta-soft);
+  border: 1px solid var(--bazaar-terracotta-border);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.section-view-all:hover {
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  gap: 11px;
+}
+
+/* ----------------------------------------------------------------------------
+   6. SHOP BY DEPARTMENT: BAZAAR LANES
+   ---------------------------------------------------------------------------- */
+.department-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.department-card {
+  position: relative;
+  background: var(--bazaar-surface);
+  border-radius: 20px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--bazaar-border);
+  box-shadow: var(--bazaar-shadow-sm);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.department-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--bazaar-shadow-lg);
+  border-color: var(--bazaar-terracotta-border);
+}
+
+.department-card.dept-women {
+  grid-column: span 2;
+}
+
+.department-card.dept-men {
+  grid-column: span 2;
+}
+
+.dept-lane-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  background: rgba(28, 25, 23, 0.88);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  backdrop-filter: blur(6px);
+}
+
+.dept-media {
+  width: 100%;
+  height: 230px;
+  background: #ede6d8;
+  overflow: hidden;
+  position: relative;
+}
+
+.dept-women .dept-media,
+.dept-men .dept-media {
+  height: 280px;
+}
+
+.dept-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.department-card:hover .dept-media img {
+  transform: scale(1.06);
+}
+
+.dept-info {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bazaar-surface);
+  flex: 1;
+}
+
+.dept-count {
+  font-size: 0.78rem;
+  color: var(--bazaar-text-muted);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.dept-name {
+  font-family: var(--font-serif);
+  margin: 4px 0 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--bazaar-dark);
+  letter-spacing: -0.3px;
+}
+
+.dept-cta {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--bazaar-terracotta);
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap 0.2s ease;
+}
+
+.department-card:hover .dept-cta {
+  gap: 8px;
+}
+
+/* ----------------------------------------------------------------------------
+   7. BUDGET BAR: SAROJINI BARGAIN CORNER
+   ---------------------------------------------------------------------------- */
+.sarojini-budget-bar {
+  background: linear-gradient(90deg, #1c1917 0%, #292524 100%);
+  color: #fff;
+  padding: 26px 0;
+  border-top: 1px solid #332d29;
+  border-bottom: 1px solid #332d29;
+}
+
+.budget-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.budget-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.budget-fire {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.budget-title {
+  font-family: var(--font-serif);
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+
+.budget-desc {
+  margin: 3px 0 0 0;
+  font-size: 0.84rem;
+  color: #d6d3d1;
+}
+
+.budget-pills {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.budget-pill {
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 700;
+  padding: 9px 20px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f0e6;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.25s ease;
+  letter-spacing: 0.2px;
+}
+
+.budget-pill:hover {
+  background: #ffffff;
+  color: var(--bazaar-dark);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.budget-pill.pill-discount {
+  background: var(--bazaar-terracotta);
+  border-color: var(--bazaar-terracotta);
+  color: #fff;
+}
+
+.budget-pill.pill-discount:hover {
+  background: var(--bazaar-terracotta-hover);
+  color: #fff;
+}
+
+/* ----------------------------------------------------------------------------
+   8. ELEVATED COMPACT PRODUCT GRID & CARDS (6 CARDS PER DESKTOP ROW)
+   ---------------------------------------------------------------------------- */
+.sarojini-product-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.sarojini-product-card {
+  background: var(--bazaar-surface);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--bazaar-border);
+  box-shadow: var(--bazaar-shadow-sm);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sarojini-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(28, 25, 23, 0.09);
+  border-color: var(--bazaar-terracotta-border);
+}
+
+/* Compact Image Container with Consistent 1:1 Aspect Ratio & Complete Product View */
+.product-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f6f3ec;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(223, 215, 200, 0.5);
+}
+
+.product-card-media a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+
+.product-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.35s ease;
+  display: block;
+}
+
+.sarojini-product-card:hover .product-card-media img {
+  transform: scale(1.05);
+}
+
+/* Compact Discount Pill */
+.product-card-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2.5px 6.5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  box-shadow: 0 2px 6px rgba(158, 42, 43, 0.25);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Stock Tag */
+.product-card-stock-tag {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(28, 25, 23, 0.88);
+  color: #fef3c7;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+/* Compact Wishlist Heart Button */
+.product-card-wishlist {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--bazaar-border);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bazaar-text-muted);
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+}
+
+.product-card-wishlist:hover {
+  color: var(--bazaar-terracotta);
+  background: #fff;
+  transform: scale(1.12);
+  border-color: var(--bazaar-terracotta-border);
+}
+
+.product-card-wishlist.active {
+  color: var(--bazaar-terracotta);
+  background: #fff;
+}
+
+.product-card-wishlist.active i {
+  animation: heartPop 0.3s ease-in-out;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Product Card Details - Compact & Aligned */
+.product-card-body {
+  padding: 11px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.product-card-dept {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--bazaar-terracotta);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-card-title {
+  margin: 0 0 6px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--bazaar-dark);
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-decoration: none;
+  min-height: 2.15em;
+  transition: color 0.2s ease;
+}
+
+.product-card-title:hover {
+  color: var(--bazaar-terracotta);
+}
+
+.product-card-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 7px;
+  border-top: 1px solid var(--bazaar-border);
+  flex-wrap: wrap;
+}
+
+.price-selling {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--bazaar-dark);
+}
+
+.price-original {
+  font-size: 0.72rem;
+  color: var(--bazaar-text-subtle);
+  text-decoration: line-through;
+}
+
+.price-discount {
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: var(--bazaar-emerald);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Compact Add to Bag Button */
+.btn-card-add-bag {
+  margin-top: 8px;
+  width: 100%;
+  background: var(--bazaar-dark);
+  color: #fff;
+  border: none;
+  padding: 7px 0;
+  border-radius: 50px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-card-add-bag i {
+  font-size: 0.72rem;
+}
+
+.btn-card-add-bag:hover {
+  background: var(--bazaar-terracotta);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(158, 42, 43, 0.25);
+}
+
+/* ----------------------------------------------------------------------------
+   9. EDITORIAL SPOTLIGHT POSTER
+   ---------------------------------------------------------------------------- */
+.sarojini-spotlight-section {
+  padding: 30px 0 70px;
+}
+
+.spotlight-banner {
+  background: var(--bazaar-surface);
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid var(--bazaar-border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  box-shadow: var(--bazaar-shadow-md);
+}
+
+.spotlight-content {
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.spotlight-pill {
+  display: inline-block;
+  background: var(--bazaar-ochre-soft);
+  color: var(--bazaar-ochre);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 4px 12px;
+  border-radius: 50px;
+  margin-bottom: 16px;
+  align-self: flex-start;
+  border: 1px solid #fde68a;
+}
+
+.spotlight-title {
+  font-family: var(--font-serif);
+  margin: 0 0 14px 0;
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: var(--bazaar-dark);
+  line-height: 1.2;
+}
+
+.spotlight-desc {
+  margin: 0 0 28px 0;
+  font-size: 0.98rem;
+  color: var(--bazaar-text-muted);
+  line-height: 1.65;
+}
+
+.btn-spotlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bazaar-dark);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 13px 28px;
+  border-radius: 50px;
+  align-self: flex-start;
+  transition: all 0.25s ease;
+}
+
+.btn-spotlight:hover {
+  background: var(--bazaar-terracotta);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(158, 42, 43, 0.3);
+}
+
+.spotlight-img-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  background: #ece4d7;
+}
+
+.spotlight-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* ----------------------------------------------------------------------------
+   10. CURATED FOOTER
+   ---------------------------------------------------------------------------- */
+.sarojini-footer {
+  background: #141210;
+  color: #e7e5e4;
+  padding: 68px 0 28px;
+  border-top: 1px solid #292524;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+  gap: 48px;
+  margin-bottom: 56px;
+}
+
+.footer-logo {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fff;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.footer-logo small {
+  font-family: var(--font-sans);
+  font-size: 0.65em;
+  font-weight: 800;
+  color: #f87171;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-left: 6px;
+}
+
+.footer-tagline {
+  font-size: 0.88rem;
+  color: #a8a29e;
+  line-height: 1.65;
+  margin-bottom: 22px;
+}
+
+.footer-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-col h4 {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 800;
+  margin: 0 0 20px 0;
+  letter-spacing: 0.4px;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-col ul li a {
+  color: #a8a29e;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.2s ease;
+}
+
+.footer-col ul li a:hover {
+  color: #fff;
+}
+
+.footer-shop-btn {
+  display: inline-block;
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  text-decoration: none;
+  padding: 11px 22px;
+  border-radius: 50px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+
+.footer-shop-btn:hover {
+  background: var(--bazaar-terracotta-hover);
+}
+
+.footer-bottom {
+  padding-top: 26px;
+  border-top: 1px solid #292524;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #78716c;
+}
+
+/* ----------------------------------------------------------------------------
+   11. RESPONSIVE BREAKPOINTS (Desktop, Tablet, Mobile)
+   ---------------------------------------------------------------------------- */
+@media (max-width: 1280px) {
+  .sarojini-nav-links {
+    gap: 12px;
+  }
+  .sarojini-nav-link {
+    font-size: 0.82rem;
+  }
+  .sarojini-product-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 992px) {
+  .sarojini-nav-links {
+    display: none;
+  }
+  .sarojini-mobile-dept-strip {
+    display: block;
+  }
+  .sarojini-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .department-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .department-card.dept-women,
+  .department-card.dept-men {
+    grid-column: span 1;
+  }
+  .sarojini-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sarojini-hero-card {
+    grid-template-columns: 1fr;
+  }
+  .sarojini-hero-content {
+    padding: 36px 20px 28px;
+  }
+  .sarojini-identity-title {
+    font-size: 1.75rem;
+    letter-spacing: 1.5px;
+  }
+  .sarojini-identity-brush {
+    max-width: 150px;
+  }
+  .hero-title {
+    font-size: 2.2rem;
+  }
+  .hero-subtitle {
+    font-size: 0.98rem;
+    margin-bottom: 24px;
+  }
+  .sarojini-hero-visual {
+    min-height: 280px;
+    border-left: none;
+    border-top: 1px solid var(--bazaar-border);
+  }
+  .sarojini-strip-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .department-grid {
+    grid-template-columns: 1fr;
+  }
+  .dept-media {
+    height: 200px;
+  }
+  .sarojini-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .product-card-body {
+    padding: 14px 12px 12px;
+  }
+  .product-card-title {
+    font-size: 0.88rem;
+  }
+  .price-selling {
+    font-size: 1.1rem;
+  }
+  .spotlight-banner {
+    grid-template-columns: 1fr;
+  }
+  .spotlight-content {
+    padding: 32px 24px;
+  }
+  .spotlight-title {
+    font-size: 1.65rem;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sarojini-nav-container {
+    padding: 0 16px;
+  }
+  .sarojini-search-box {
+    display: none;
+  }
+  .section-container {
+    padding: 0 16px;
+  }
+  .sarojini-identity-title {
+    font-size: 1.45rem;
+    letter-spacing: 1px;
+  }
+  .sarojini-identity-badge {
+    font-size: 0.62rem;
+    padding: 3px 8px;
+  }
+  .sarojini-identity-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.8px;
+  }
+  .sarojini-identity-handnote {
+    font-size: 1.05rem;
+  }
+  .sarojini-identity-brush {
+    max-width: 130px;
+  }
+  .hero-floating-badge {
+    padding: 10px 14px;
+    bottom: 14px;
+    right: 14px;
+    border-radius: 12px;
+  }
+  .hero-floating-badge .badge-accent {
+    font-size: 1.1rem;
+  }
+  .hero-floating-badge-top {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    top: 14px;
+    left: 14px;
+  }
+  .hero-title {
+    font-size: 1.85rem;
+  }
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  .budget-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .budget-pills {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+  .budget-pill {
+    white-space: nowrap;
+  }
+}

@@ -43,7 +43,7 @@
         },
         {
           id: "gift-shoes-3",
-          name: "Complimentary Signature VELORA Keychain",
+          name: "Complimentary Signature VADI Keychain",
           description: "Brushed stainless luxury metal accessory",
           icon_or_image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
           quantity: 1,
@@ -107,7 +107,7 @@
         },
         {
           id: "gift-bag-2",
-          name: "Complimentary Signature VELORA Keychain",
+          name: "Complimentary Signature VADI Keychain",
           description: "Luxury metal key ring with clip",
           icon_or_image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
           quantity: 1,

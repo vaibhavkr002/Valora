@@ -135,9 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
+        const fallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200';
+        const displayImg = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
+          ? window.VeloraImageUtils.normalizeImageUrl(item.image, { isAdmin: false, fallback: fallbackSvg })
+          : (item.image || fallbackSvg);
+
         return `
           <div class="receipt-item-row">
-            <img src="${item.image}" alt="${item.name}" class="receipt-item-img" onerror="this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200';">
+            <img src="${displayImg}" alt="${item.name}" class="receipt-item-img" onerror="this.onerror=null; this.src='${fallbackSvg}';">
             <div class="receipt-item-details">
               <div class="receipt-item-name">${item.name}</div>
               <div class="receipt-item-variant">

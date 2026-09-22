@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View product specifications, sizes, prices, and high-resolution photos for Sarojini Bazaar fashion on VADI.">
+  <title>Sarojini Bazaar Product | VADI Online Shopping</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23e11d48'/><path d='M30 30L50 70L70 30' stroke='%23ffffff' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Font Awesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/sarojini-bazaar-page.css">
+  <link rel="stylesheet" href="css/sarojini-product-details.css">
+  <link rel="stylesheet" href="css/cart-drawer.css">
+</head>
+<body class="sarojini-storefront-body sarojini-pdp-page">
+
+  <!-- Top Announcement Bar -->
+  <aside class="sarojini-announcement-bar" id="sarojini-top-announcement" aria-label="Store Announcements">
+    <div class="sarojini-announcement-inner">
+      <span class="announcement-badge">🛍️ DELHI BAZAAR</span>
+      <span class="announcement-text">
+        Direct Street Rates Across India • 7-Day Easy Replacements • Cash on Delivery &amp; Open Box Delivery
+        <a href="sarojini-shop.html">Browse All Finds →</a>
+      </span>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       REFINED NAVIGATION HEADER
+       ======================================================================== -->
+  <header class="sarojini-nav-header" aria-label="Sarojini Bazaar Navigation">
+    <div class="sarojini-nav-container">
+      <div class="sarojini-nav-left">
+        <a href="sarojini-bazaar.html" class="sarojini-brand-logo" title="Back to Sarojini Hub">
+          <span class="logo-txt">VADI</span>
+          <span class="logo-sub-badge"><i class="fas fa-store-alt"></i> Sarojini Bazaar</span>
+        </a>
+
+        <nav class="sarojini-nav-links" aria-label="Store Navigation">
+          <a href="homepage.html" class="sarojini-nav-link nav-main-store" title="Switch to Main VADI Luxury Store">Main Store</a>
+          <a href="sarojini-shop.html?department=WOMEN" class="sarojini-nav-link">Women</a>
+          <a href="sarojini-shop.html?department=MEN" class="sarojini-nav-link">Men</a>
+          <a href="sarojini-shop.html?department=ACCESSORIES" class="sarojini-nav-link">Accessories</a>
+          <a href="sarojini-shop.html?department=FOOTWEAR" class="sarojini-nav-link">Footwear</a>
+          <a href="sarojini-shop.html?department=BAGS" class="sarojini-nav-link">Bags</a>
+          <a href="sarojini-shop.html?department=JEWELLERY" class="sarojini-nav-link">Jewellery</a>
+          <a href="sarojini-shop.html?department=CAPS" class="sarojini-nav-link">Caps</a>
+        </nav>
+      </div>
+
+      <div class="sarojini-nav-right">
+        <a href="sarojini-shop.html" class="sarojini-exit-btn" title="Back to Catalog">
+          <i class="fas fa-arrow-left"></i>
+          <span>All Finds</span>
+        </a>
+
+        <a href="account.html" class="sarojini-icon-btn" aria-label="Account Profile" title="Profile">
+          <i class="far fa-user"></i>
+        </a>
+
+        <a href="wishlist.html" class="sarojini-icon-btn" aria-label="Saved Wishlist" title="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="sarojini-badge-pill wishlist-count-badge">0</span>
+        </a>
+
+        <button type="button" id="btn-open-cart" class="sarojini-icon-btn cart-trigger-btn" aria-label="Shopping Cart" title="Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="sarojini-badge-pill cart-count-badge" id="nav-cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Category Directory Bar -->
+  <nav class="sarojini-mobile-dept-strip" aria-label="Mobile Category Navigation">
+    <a href="homepage.html" style="background: #1c1917; color: #fff;">← Main Store</a>
+    <a href="sarojini-bazaar.html">Bazaar Home</a>
+    <a href="sarojini-shop.html">All Finds</a>
+    <a href="sarojini-shop.html?department=WOMEN">Women's Lane</a>
+    <a href="sarojini-shop.html?department=MEN">Men's Lane</a>
+    <a href="sarojini-shop.html?department=ACCESSORIES">Accessories</a>
+    <a href="sarojini-shop.html?department=FOOTWEAR">Footwear</a>
+    <a href="sarojini-shop.html?department=BAGS">Bags</a>
+    <a href="sarojini-shop.html?department=JEWELLERY">Jewellery</a>
+    <a href="sarojini-shop.html?department=CAPS">Caps</a>
+  </nav>
+
+  <!-- ========================================================================
+       MAIN PRODUCT DETAILS VIEW
+       ======================================================================== -->
+  <main class="sarojini-pdp-main">
+    <div class="section-container">
+
+      <!-- Breadcrumbs -->
+      <nav class="sarojini-breadcrumbs" aria-label="Breadcrumb" style="padding: 16px 0 20px;">
+        <a href="homepage.html">Home</a>
+        <span class="sep">/</span>
+        <a href="sarojini-bazaar.html">Sarojini Bazaar</a>
+        <span class="sep">/</span>
+        <a href="sarojini-shop.html" id="breadcrumb-dept-link">Collection</a>
+        <span class="sep">/</span>
+        <span class="current" id="breadcrumb-product-name">Loading Product...</span>
+      </nav>
+
+      <!-- Main PDP 2-Column Grid -->
+      <div class="pdp-grid">
+
+        <!-- LEFT: GALLERY -->
+        <div class="pdp-gallery-col">
+          <div class="pdp-main-media-wrap">
+            <img id="pdp-main-img" src="assets/sarojni/prod-1-graphic-tee.png" alt="Sarojini Product">
+            <span class="pdp-discount-badge" id="pdp-discount-badge" style="display: none;">50% OFF</span>
+            <button type="button" class="pdp-wishlist-btn" id="btn-pdp-wishlist" aria-label="Save to Wishlist">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
+          <!-- Thumbnails Row -->
+          <div class="pdp-thumbnails-strip" id="pdp-thumbnails-strip">
+            <!-- Thumbnails injected via JS -->
+          </div>
+        </div>
+
+        <!-- RIGHT: PRODUCT INFO & PURCHASE CONTROLS -->
+        <div class="pdp-info-col">
+          
+          <div class="pdp-dept-badge-row">
+            <span class="pdp-dept-tag" id="pdp-dept-tag">SAROJINI BAZAAR</span>
+            <span class="pdp-stock-tag" id="pdp-stock-tag"><i class="fas fa-check-circle"></i> In Stock</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+            <div>
+              <h1 class="pdp-title" id="pdp-title" style="margin-bottom: 4px;">Sarojini Fashion Item</h1>
+              <p class="pdp-brand" id="pdp-brand" style="margin-bottom: 12px;">Brand: <strong>Sarojini Bazaar</strong></p>
+            </div>
+            <button type="button" id="btn-toggle-wishlist" class="btn-pdp-wishlist" aria-label="Save to Wishlist" style="background: none; border: 1.5px solid #e2e8f0; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #64748b; cursor: pointer; transition: all 0.2s;">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
+
+          <!-- Price Row -->
+          <div class="pdp-price-box">
+            <div class="pdp-price-row">
+              <span class="pdp-selling-price" id="pdp-selling-price">₹0</span>
+              <span class="pdp-original-price" id="pdp-original-price">₹0</span>
+              <span class="pdp-save-badge" id="pdp-save-badge">Save ₹0</span>
+            </div>
+            <div class="pdp-tax-notice">Inclusive of all local taxes. Free delivery on all prepaid &amp; COD orders across India.</div>
+          </div>
+
+          <!-- Payment Options Selector (Full Online vs Advance + COD) -->
+          <div class="pdp-payment-options-wrap" style="margin: 18px 0;">
+            <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 10px;">
+              Select Payment Option
+            </div>
+            <div class="pdp-payment-cards-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              
+              <!-- Option 1: Full Online Payment -->
+              <div class="pcard-choice selected" id="card-pay-online" data-pay-method="online" role="button" tabindex="0">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 0.72rem; font-weight: 800; background: #ecfdf5; color: #059669; padding: 2px 6px; border-radius: 4px;">100% ONLINE</span>
+                  <div class="pcard-radio-circle active"><div class="pcard-radio-inner"></div></div>
+                </div>
+                <strong style="display: block; font-size: 0.88rem; color: #0f172a; margin-bottom: 2px;">Pay Full Online</strong>
+                <div style="font-size: 0.76rem; color: #64748b;" id="pcard-online-amount-sub">₹0 • ₹0 Advance</div>
+              </div>
+
+              <!-- Option 2: Advance + COD -->
+              <div class="pcard-choice" id="card-pay-cod" data-pay-method="cod" role="button" tabindex="0">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 0.72rem; font-weight: 800; background: #fff1f2; color: #e11d48; padding: 2px 6px; border-radius: 4px;" id="pcard-cod-tag">ADVANCE REQ.</span>
+                  <div class="pcard-radio-circle"><div class="pcard-radio-inner"></div></div>
+                </div>
+                <strong style="display: block; font-size: 0.88rem; color: #0f172a; margin-bottom: 2px;">Pay Advance + COD</strong>
+                <div style="font-size: 0.76rem; color: #64748b;" id="pcard-cod-amount-sub">Pay advance now</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Dynamic Advance Payment Notice Banner -->
+          <div id="detail-advance-box" style="display: none; margin: 12px 0 18px; padding: 14px 16px; border-radius: 10px; background: #fff1f2; border: 1.5px solid #fecdd3;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #e11d48; color: #fff; font-size: 0.75rem; font-weight: 800;">₹</span>
+                <strong id="detail-advance-headline" style="font-size: 0.95rem; color: #be123c; font-weight: 800;">
+                  ₹0 Advance Payment Required
+                </strong>
+              </div>
+              <span style="background: rgba(225, 29, 72, 0.12); color: #be123c; font-weight: 800; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">Advance Required</span>
+            </div>
+            <div id="detail-advance-explainer" style="font-size: 0.84rem; font-weight: 600; color: #475569; margin-top: 4px; line-height: 1.4;">
+              Pay ₹0 now • Remaining ₹0 via Cash on Delivery
+            </div>
+          </div>
+
+          <!-- Doorstep Delivery Choice: Simple Delivery vs Open Box Delivery -->
+          <div class="pdp-delivery-pref-wrap" style="margin: 16px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Doorstep Handover Choice</span>
+              <span style="font-size: 0.72rem; font-weight: 700; color: #e11d48;"><i class="fas fa-shield-alt"></i> Buyer Protection</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <button type="button" class="btn-delivery-pref selected" id="pref-simple" data-pref="Simple Delivery">
+                <div class="pref-radio-dot"></div>
+                <div>
+                  <strong>Simple Delivery</strong>
+                  <span>(Standard Sealed Box)</span>
+                </div>
+              </button>
+              <button type="button" class="btn-delivery-pref" id="pref-openbox" data-pref="Open Box Delivery">
+                <div class="pref-radio-dot"></div>
+                <div>
+                  <strong>Open Box Delivery</strong>
+                  <span>(Inspect Before Pay)</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Size Selector -->
+          <div class="pdp-option-section" id="pdp-size-section">
+            <div class="pdp-option-header">
+              <span class="option-title">Select Size:</span>
+              <span class="option-selected-label" id="pdp-selected-size-label">Free Size</span>
+            </div>
+            <div class="pdp-size-pills" id="pdp-size-pills">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Color Selector -->
+          <div class="pdp-option-section" id="pdp-color-section" style="display: none;">
+            <div class="pdp-option-header">
+              <span class="option-title">Color:</span>
+              <span class="option-selected-label" id="pdp-selected-color-label">Default</span>
+            </div>
+            <div class="pdp-color-pills" id="pdp-color-pills">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Quantity Selector -->
+          <div class="pdp-option-section">
+            <div class="pdp-option-header">
+              <span class="option-title">Quantity:</span>
+            </div>
+            <div class="pdp-qty-control">
+              <button type="button" class="btn-qty-minus" id="btn-qty-minus">-</button>
+              <span class="pdp-qty-val" id="pdp-qty-val">1</span>
+              <button type="button" class="btn-qty-plus" id="btn-qty-plus">+</button>
+            </div>
+          </div>
+
+          <!-- Action CTA Buttons -->
+          <div class="pdp-actions-row">
+            <button type="button" class="btn-pdp-add-cart" id="btn-pdp-add-bag">
+              <i class="fas fa-shopping-bag"></i>
+              <span>Add to Bag</span>
+            </button>
+            <button type="button" class="btn-pdp-buy-now" id="btn-pdp-buy-now">
+              <i class="fas fa-bolt"></i>
+              <span>Buy Now</span>
+            </button>
+          </div>
+
+          <!-- Sarojini Bazaar Trust Pillars -->
+          <div class="pdp-trust-box">
+            <div class="trust-row">
+              <i class="fas fa-shield-alt trust-icon"></i>
+              <div>
+                <strong>Quality Inspected Piece</strong>
+                <p>Export surplus and market finds checked for seams, buttons, and stitching.</p>
+              </div>
+            </div>
+            <div class="trust-row">
+              <i class="fas fa-truck trust-icon"></i>
+              <div>
+                <strong>Fast Express Dispatch</strong>
+                <p>Direct door-to-door delivery with live tracking.</p>
+              </div>
+            </div>
+            <div class="trust-row">
+              <i class="fas fa-undo-alt trust-icon"></i>
+              <div>
+                <strong id="pdp-return-title">7-Day Hassle-Free Returns</strong>
+                <p>Easy size replacement or refund if you're not 100% satisfied.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description & Specifications -->
+          <div class="pdp-details-accordion">
+            <div class="accordion-item">
+              <h3 class="accordion-header">Product Description</h3>
+              <div class="accordion-body" id="pdp-description-text">
+                Comfortable, versatile street fashion staple handpicked from Delhi's Sarojini Nagar market.
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">Material &amp; Specifications</h3>
+              <div class="accordion-body">
+                <table class="specs-mini-table">
+                  <tbody>
+                    <tr><th>Material</th><td id="spec-table-material">Premium Cotton Blend</td></tr>
+                    <tr><th>Fit Type</th><td id="spec-table-fit">Regular Street Fit</td></tr>
+                    <tr><th>Department</th><td id="spec-table-dept">Sarojini Bazaar</td></tr>
+                    <tr><th>Care</th><td>Machine wash cold, gentle cycle</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           CUSTOMER RATINGS & REVIEWS (PARITY WITH MAIN VADI)
+           ==================================================================== -->
+      <section class="pdp-reviews-section" style="margin-top: 48px; padding-top: 36px; border-top: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #e11d48;">VERIFIED BUYER EXPERIENCES</span>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 4px 0 0 0;">Customer Reviews</h2>
+          </div>
+          <button type="button" id="btn-open-review-form" class="btn-pdp-add-cart" style="max-width: 180px; padding: 10px 16px; font-size: 0.85rem;">
+            <i class="fas fa-pen"></i> Write a Review
+          </button>
+        </div>
+
+        <!-- Rating Summary Box -->
+        <div style="display: grid; grid-template-columns: 200px 1fr; gap: 28px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+          <div style="text-align: center; border-right: 1px solid #e2e8f0; padding-right: 20px;">
+            <div style="font-size: 3rem; font-weight: 800; color: #0f172a; line-height: 1;" id="reviews-avg-rating">4.8</div>
+            <div style="color: #f59e0b; font-size: 1.1rem; margin: 6px 0;" id="reviews-star-icons">
+              <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+            </div>
+            <div style="font-size: 0.8rem; color: #64748b;" id="reviews-total-count">Based on 18 verified orders</div>
+          </div>
+          <div style="display: flex; flex-direction: column; justify-content: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #475569;">
+              <span style="width: 45px;">5 Stars</span>
+              <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;"><div style="width: 80%; height: 100%; background: #10b981;"></div></div>
+              <span style="width: 35px; text-align: right;">80%</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #475569;">
+              <span style="width: 45px;">4 Stars</span>
+              <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;"><div style="width: 15%; height: 100%; background: #6366f1;"></div></div>
+              <span style="width: 35px; text-align: right;">15%</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #475569;">
+              <span style="width: 45px;">3 Stars</span>
+              <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;"><div style="width: 5%; height: 100%; background: #f59e0b;"></div></div>
+              <span style="width: 35px; text-align: right;">5%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review Submission Modal Form -->
+        <div id="review-form-wrap" style="display: none; margin-bottom: 24px; padding: 20px; background: #fff; border: 1.5px solid #cbd5e1; border-radius: 12px;">
+          <h4 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 700; color: #0f172a;">Leave Your Feedback</h4>
+          <form id="sarojini-review-form" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 4px;">Your Name *</label>
+                <input type="text" id="review-author" class="admin-input" required placeholder="e.g. Priya S." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
+              </div>
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 4px;">Rating (1 to 5 Stars) *</label>
+                <select id="review-rating" class="admin-select" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  <option value="5">⭐⭐⭐⭐⭐ 5 Stars - Excellent</option>
+                  <option value="4">⭐⭐⭐⭐ 4 Stars - Very Good</option>
+                  <option value="3">⭐⭐⭐ 3 Stars - Average</option>
+                  <option value="2">⭐⭐ 2 Stars - Below Expectation</option>
+                  <option value="1">⭐ 1 Star - Poor</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 4px;">Review Title</label>
+              <input type="text" id="review-title" class="admin-input" placeholder="e.g. Super trendy fit, worth the price!" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
+            <div>
+              <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 4px;">Your Review *</label>
+              <textarea id="review-comment" class="admin-input" rows="3" required placeholder="Tell other shoppers about fabric quality, fit, style..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" id="btn-cancel-review" class="btn-pdp-wishlist" style="width: auto; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem;">Cancel</button>
+              <button type="submit" class="btn-pdp-add-cart" style="width: auto; padding: 8px 20px; font-size: 0.85rem;">Submit Review</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Reviews List -->
+        <div id="reviews-list-container" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Injected dynamically via JS -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SIMILAR SAROJINI FINDS (STRICTLY ISOLATED TO SAROJINI CATALOG)
+           ==================================================================== -->
+      <section class="pdp-recommendations-section">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">YOU MAY ALSO LIKE</span>
+            <h2 class="section-heading">More Finds From This Department</h2>
+          </div>
+          <a href="sarojini-shop.html" class="section-view-all" id="rec-dept-view-all">View All In Dept <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="sarojini-product-grid" id="pdp-related-grid">
+          <!-- Injected via JS -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer class="sarojini-footer">
+    <div class="section-container">
+      <div class="footer-grid">
+        <div class="footer-col brand-col">
+          <span class="footer-logo">VADI <small>Sarojini Bazaar</small></span>
+          <p class="footer-tagline">
+            Delhi street market style, online rates, hand-inspected and verified by VADI.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> 100% Hand-Checked Quality</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Real Delhi Bazaar Rates</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Open Box Delivery Supported</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Bazaar Lanes</h4>
+          <ul>
+            <li><a href="sarojini-shop.html?department=WOMEN">Women's Lane</a></li>
+            <li><a href="sarojini-shop.html?department=MEN">Men's Lane</a></li>
+            <li><a href="sarojini-shop.html?department=ACCESSORIES">Accessories Corner</a></li>
+            <li><a href="sarojini-shop.html?department=FOOTWEAR">Sneaker Street</a></li>
+            <li><a href="sarojini-shop.html?department=BAGS">Bag Corner</a></li>
+            <li><a href="sarojini-shop.html?department=JEWELLERY">Jewellery Lane</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Customer Care</h4>
+          <ul>
+            <li><a href="account.html">My Orders</a></li>
+            <li><a href="cart.html">View Cart</a></li>
+            <li><a href="wishlist.html">Saved Finds</a></li>
+            <li><a href="account.html">Track Order</a></li>
+            <li><a href="homepage.html">Return to Main Store</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quality Guarantee</h4>
+          <p style="font-size:0.85rem; color:#a8a29e; line-height:1.65; margin:0 0 16px 0;">
+            Each product is individually hand-checked for fabric, stitching, and seams before dispatch. Covered by our 7-day replacement guarantee.
+          </p>
+          <a href="sarojini-shop.html" class="footer-shop-btn">Explore Full Bazaar</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 VADI. Sarojini Bazaar Division. Strictly separate from main VADI products.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/image-utils.js"></script>
+  <script src="js/wishlist-service.js"></script>
+  <script src="js/ads-engine.js" defer></script>
+  <script src="js/sarojini-product-details.js" defer></script>
+</body>
+</html>
+

@@ -61,7 +61,7 @@
     },
     {
       id: "ad-seed-3",
-      title: "TRENDING THIS WEEK — ICONIC VELORA COUTURE",
+      title: "TRENDING THIS WEEK — ICONIC VADI COUTURE",
       subtitle: "Celebrity favorites & exquisite bridal silhouettes",
       badge_text: "TRENDING NOW",
       ad_type: "top_announcement",
@@ -76,7 +76,7 @@
     },
     {
       id: "ad-seed-4",
-      title: "VELORA ROYAL BOGO FESTIVAL",
+      title: "VADI ROYAL BOGO FESTIVAL",
       subtitle: "Select any 2 pieces from our master artisanal collection — the second piece is our gift to you. Free luxury gift wrap included.",
       badge_text: "ROYAL PRIVILEGE",
       ad_type: "hero_banner",
@@ -121,7 +121,7 @@
     },
     {
       id: "ad-seed-7",
-      title: "DISCOVER WHAT'S TRENDING AT VELORA",
+      title: "DISCOVER WHAT'S TRENDING AT VADI",
       subtitle: "Handcrafted luxury footwear and precision horology.",
       badge_text: "TRENDING NOW",
       ad_type: "floating_card",
@@ -440,6 +440,7 @@
       document.getElementById("ad-cta-link").value = ad.cta_link || "";
       document.getElementById("ad-priority").value = ad.priority || 5;
       document.getElementById("ad-sort-order").value = ad.sort_order || 1;
+      document.getElementById("ad-coupon-code").value = ad.coupon_code || "";
       document.getElementById("ad-is-active").checked = ad.is_active !== false;
 
       if (ad.start_at) {
@@ -459,6 +460,7 @@
       document.getElementById("ad-id").value = "";
       document.getElementById("ad-priority").value = "5";
       document.getElementById("ad-sort-order").value = (allAds.length + 1);
+      document.getElementById("ad-coupon-code").value = "";
       document.getElementById("ad-is-active").checked = true;
       document.querySelector('input[name="target_pages"][value="all"]').checked = true;
     }
@@ -579,6 +581,7 @@
     const cta_link = document.getElementById("ad-cta-link").value.trim() || "shop.html";
     const priority = parseInt(document.getElementById("ad-priority").value, 10) || 5;
     const sort_order = parseInt(document.getElementById("ad-sort-order").value, 10) || 1;
+    const coupon_code = (document.getElementById("ad-coupon-code").value || "").trim().toUpperCase() || null;
     const start_at = document.getElementById("ad-start-at").value || null;
     const end_at = document.getElementById("ad-end-at").value || null;
     const is_active = document.getElementById("ad-is-active").checked;
@@ -606,6 +609,7 @@
       priority,
       sort_order,
       display_order: sort_order,
+      coupon_code,
       is_active,
       start_at: start_at ? new Date(start_at).toISOString() : null,
       end_at: end_at ? new Date(end_at).toISOString() : null,
@@ -616,10 +620,15 @@
       let savedId = id;
 
       if (id) {
-        // Update existing
-        const { error } = await client.from("banners").update(adPayload).eq("id", id);
+        // Update existing (with schema fallback if column coupon_code pending)
+        let { error } = await client.from("banners").update(adPayload).eq("id", id);
+        if (error && (error.code === "42703" || (error.message && error.message.includes("coupon_code")))) {
+          const { coupon_code: _c, ...legacyPayload } = adPayload;
+          const retry = await client.from("banners").update(legacyPayload).eq("id", id);
+          error = retry.error;
+        }
         if (error) {
-          console.warn("[Advertisements] Direct banners update failed, syncing fallback:", error.message);
+          console.warn("[Advertisements] Direct banners update notice:", error.message);
         }
         
         // Update local state
@@ -628,18 +637,25 @@
           allAds[idx] = { ...allAds[idx], ...adPayload, id };
         }
       } else {
-        // Insert new
+        // Insert new (with schema fallback if column coupon_code pending)
         const insertPayload = {
           ...adPayload,
           created_at: new Date().toISOString()
         };
 
-        const { data: inserted, error } = await client.from("banners").insert([insertPayload]).select();
+        let { data: inserted, error } = await client.from("banners").insert([insertPayload]).select();
+        if (error && (error.code === "42703" || (error.message && error.message.includes("coupon_code")))) {
+          const { coupon_code: _c, ...legacyPayload } = insertPayload;
+          const retry = await client.from("banners").insert([legacyPayload]).select();
+          inserted = retry.data;
+          error = retry.error;
+        }
+
         if (!error && inserted && inserted.length > 0) {
           savedId = inserted[0].id;
           allAds.push({ ...insertPayload, id: savedId });
         } else {
-          console.warn("[Advertisements] Direct banners insert failed, using fallback:", error?.message);
+          console.warn("[Advertisements] Direct banners insert fallback:", error?.message);
           savedId = "ad-" + Date.now();
           allAds.push({ ...insertPayload, id: savedId });
         }
@@ -732,6 +748,10 @@
     } catch (e) {
       console.warn("store_settings upsert error:", e);
     }
+    try {
+      localStorage.removeItem("velora_ads_cache_v2");
+      window.dispatchEvent(new CustomEvent("velora:ads-updated"));
+    } catch (_) {}
   }
 
   function escapeHtml(str) {

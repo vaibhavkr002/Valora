@@ -32,16 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedUpiApp: "Google Pay",
     activeUpiTransaction: null,
     upiPollingInterval: null,
-    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "velora.lifestyle@okhdfcbank",
-    merchantName: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || "VELORA Lifestyle Studio"
+    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "vadi.lifestyle@okhdfcbank",
+    merchantName: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || "VADI Lifestyle Studio"
   };
 
-  // Supported discount codes
-  const COUPONS = {
-    "VELORA10": 10,
-    "VELORA15": 15,
-    "WELCOME15": 15
-  };
+  // Database is the sole source of truth for all promo and coupon codes
 
   // --- 2. DOM Elements ---
   const elements = {
@@ -362,23 +357,36 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.costShipping.style.fontWeight = "700";
     }
 
-    // Discount calculation
+    // Discount calculation with dynamic coupon synchronization
     if (state.appliedCoupon) {
-      let disc = 0;
-      if (state.appliedCoupon.type === "fixed") {
-        disc = Math.min(subtotal, state.appliedCoupon.value);
+      if (state.appliedCoupon.minOrderAmount && subtotal < state.appliedCoupon.minOrderAmount) {
+        const removedCode = state.appliedCoupon.code;
+        const minReq = state.appliedCoupon.minOrderAmount;
+        state.appliedCoupon = null;
+        state.discountAmount = 0;
+        if (elements.appliedCouponPill) elements.appliedCouponPill.style.display = "none";
+        if (elements.rowDiscount) elements.rowDiscount.classList.remove("active");
+        showToast(`Coupon removed because minimum order requirement of ${formatPrice(minReq)} is no longer met.`, "warning");
       } else {
-        disc = (subtotal * ((state.appliedCoupon.discountPercent || state.appliedCoupon.value) / 100));
-        if (state.appliedCoupon.maxDiscount && disc > state.appliedCoupon.maxDiscount) {
-          disc = state.appliedCoupon.maxDiscount;
+        let disc = 0;
+        if (state.appliedCoupon.type === "fixed") {
+          disc = Math.min(subtotal, state.appliedCoupon.value);
+        } else {
+          disc = Math.round(subtotal * ((state.appliedCoupon.discountPercent || state.appliedCoupon.value) / 100));
+          if (state.appliedCoupon.maxDiscount && disc > state.appliedCoupon.maxDiscount) {
+            disc = state.appliedCoupon.maxDiscount;
+          }
         }
+        state.discountAmount = Math.max(0, Math.min(subtotal, Math.round(disc)));
+        if (elements.rowDiscount) elements.rowDiscount.classList.add("active");
+        if (elements.costDiscount) elements.costDiscount.textContent = `-${formatPrice(state.discountAmount)}`;
+        if (elements.appliedCouponPill) elements.appliedCouponPill.style.display = "flex";
       }
-      state.discountAmount = Math.round(disc);
-      elements.rowDiscount.classList.add("active");
-      elements.costDiscount.textContent = `-${formatPrice(state.discountAmount)}`;
     } else {
       state.discountAmount = 0;
-      elements.rowDiscount.classList.remove("active");
+      if (elements.rowDiscount) elements.rowDiscount.classList.remove("active");
+      if (elements.costDiscount) elements.costDiscount.textContent = "-₹0";
+      if (elements.appliedCouponPill) elements.appliedCouponPill.style.display = "none";
     }
 
     // Total Calculation
@@ -618,118 +626,181 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 5. Coupon Handling ---
   async function applyCoupon(rawCode) {
-    if (!rawCode) {
+    if (!rawCode || !rawCode.trim()) {
       showToast("Please enter a promotional code.", "error");
       return;
     }
     const code = rawCode.trim().toUpperCase();
 
-    // Query Supabase coupons table
+    // Query Supabase coupons table (Database is the single source of truth)
     const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
-    let dbCoupon = null;
+    if (!client) {
+      showToast("Unable to validate coupon at this time. Please try again.", "error");
+      return;
+    }
 
-    if (client) {
-      try {
-        // 1. Try server-side authoritative RPC first
-        const { data: rpcCoupon, error: rpcErr } = await client.rpc("validate_coupon", {
-          p_code: code,
-          p_cart_subtotal: state.subtotal
-        });
+    if (elements.btnApplyCoupon) {
+      elements.btnApplyCoupon.disabled = true;
+      elements.btnApplyCoupon.textContent = "Checking...";
+    }
 
-        if (!rpcErr && rpcCoupon && rpcCoupon.valid) {
-          dbCoupon = {
-            id: rpcCoupon.id,
-            code: rpcCoupon.code,
-            discount_type: rpcCoupon.discount_type,
-            discount_value: Number(rpcCoupon.discount_value),
-            min_order_amount: Number(rpcCoupon.min_order_amount || 0),
-            max_discount: rpcCoupon.max_discount ? Number(rpcCoupon.max_discount) : null
-          };
-        } else if (!rpcErr && rpcCoupon && !rpcCoupon.valid) {
-          showToast(rpcCoupon.message || `Invalid coupon code "${rawCode}".`, "error");
+    try {
+      // Direct authoritative query by code (case-insensitive)
+      const couponCols = "id, code, discount_type, discount_value, min_order_amount, max_discount, usage_limit, used_count, start_date, expiry_date, is_active";
+      const { data: dbCoupon, error: dbErr } = await client
+        .from("coupons")
+        .select(couponCols)
+        .ilike("code", code)
+        .maybeSingle();
+
+      if (dbErr) {
+        console.error("Coupon lookup error:", dbErr);
+        showToast("Error checking coupon code. Please try again.", "error");
+        return;
+      }
+
+      if (!dbCoupon) {
+        showToast("Invalid coupon code.", "error");
+        return;
+      }
+
+      // Check is_active
+      if (!dbCoupon.is_active) {
+        showToast("This coupon is no longer active.", "error");
+        return;
+      }
+
+      // Check start_date
+      if (dbCoupon.start_date) {
+        const startDate = new Date(dbCoupon.start_date);
+        if (!isNaN(startDate.getTime()) && new Date() < startDate) {
+          showToast("This coupon is not yet active.", "error");
           return;
-        } else {
-          // 2. Direct allowlisted column fallback (never select * or expose usage counts)
-          const couponCols = "id, code, discount_type, discount_value, min_order_amount, max_discount, expiry_date";
-          const { data, error } = await client
-            .from("coupons")
-            .select(couponCols)
-            .eq("code", code)
-            .eq("is_active", true)
-            .maybeSingle();
-
-          if (!error && data) {
-            dbCoupon = data;
-          }
         }
-      } catch (err) {
-        console.warn("Coupon lookup notice:", err);
+      }
+
+      // Check expiry_date
+      if (dbCoupon.expiry_date) {
+        const expiryDate = new Date(dbCoupon.expiry_date);
+        if (!isNaN(expiryDate.getTime()) && new Date() > expiryDate) {
+          showToast("This coupon has expired.", "error");
+          return;
+        }
+      }
+
+      // Check usage limit
+      if (dbCoupon.usage_limit && Number(dbCoupon.used_count || 0) >= Number(dbCoupon.usage_limit)) {
+        showToast("This coupon has reached its maximum usage limit.", "error");
+        return;
+      }
+
+      // Check minimum order amount against current cart subtotal
+      const minOrder = Number(dbCoupon.min_order_amount || 0);
+      if (minOrder > 0 && state.subtotal < minOrder) {
+        showToast(`Minimum order value of ${formatPrice(minOrder)} required for this coupon.`, "error");
+        return;
+      }
+
+      // Calculate discount
+      let calculatedDiscount = 0;
+      const discVal = Number(dbCoupon.discount_value) || 0;
+      if (dbCoupon.discount_type === "percentage") {
+        calculatedDiscount = Math.round((state.subtotal * discVal) / 100);
+        if (dbCoupon.max_discount && calculatedDiscount > Number(dbCoupon.max_discount)) {
+          calculatedDiscount = Number(dbCoupon.max_discount);
+        }
+      } else {
+        calculatedDiscount = Math.min(state.subtotal, discVal);
+      }
+      calculatedDiscount = Math.max(0, calculatedDiscount);
+
+      state.appliedCoupon = {
+        id: dbCoupon.id,
+        code: dbCoupon.code,
+        type: dbCoupon.discount_type,
+        value: discVal,
+        discountPercent: dbCoupon.discount_type === "percentage" ? discVal : null,
+        maxDiscount: dbCoupon.max_discount ? Number(dbCoupon.max_discount) : null,
+        minOrderAmount: minOrder
+      };
+
+      if (elements.appliedCouponName) elements.appliedCouponName.textContent = dbCoupon.code;
+      if (elements.appliedCouponPercent) {
+        elements.appliedCouponPercent.textContent = dbCoupon.discount_type === "percentage"
+          ? `${discVal}%`
+          : formatPrice(discVal);
+      }
+      if (elements.appliedCouponPill) elements.appliedCouponPill.style.display = "flex";
+      if (elements.couponInput) elements.couponInput.value = "";
+
+      showToast(`Coupon applied successfully! You saved ${formatPrice(calculatedDiscount)}.`, "success");
+      renderOrderSummary();
+    } catch (err) {
+      console.error("Apply coupon error:", err);
+      showToast("Unable to apply coupon. Please try again.", "error");
+    } finally {
+      if (elements.btnApplyCoupon) {
+        elements.btnApplyCoupon.disabled = false;
+        elements.btnApplyCoupon.textContent = "Apply";
       }
     }
-
-    // Fallback to local default coupons if client couldn't connect
-    if (!dbCoupon && COUPONS[code]) {
-      dbCoupon = {
-        code: code,
-        discount_type: "percentage",
-        discount_value: COUPONS[code],
-        min_order_amount: 0,
-        max_discount: null,
-        usage_limit: 1000,
-        used_count: 0
-      };
-    }
-
-    if (!dbCoupon) {
-      showToast(`Invalid coupon code "${rawCode}". Try VELORA10, VELORA15, or FESTIVE500.`, "error");
-      return;
-    }
-
-    // Validate minimum order amount
-    if (dbCoupon.min_order_amount && state.subtotal < Number(dbCoupon.min_order_amount)) {
-      showToast(`Coupon "${code}" requires a minimum cart value of ${formatPrice(dbCoupon.min_order_amount)}.`, "error");
-      return;
-    }
-
-    // Validate expiry date
-    if (dbCoupon.expiry_date && new Date(dbCoupon.expiry_date) < new Date()) {
-      showToast(`Coupon "${code}" has expired.`, "error");
-      return;
-    }
-
-    // Validate usage limit
-    if (dbCoupon.usage_limit && (dbCoupon.used_count || 0) >= dbCoupon.usage_limit) {
-      showToast(`Coupon "${code}" has reached its maximum usage limit.`, "error");
-      return;
-    }
-
-    state.appliedCoupon = {
-      id: dbCoupon.id,
-      code: dbCoupon.code,
-      type: dbCoupon.discount_type,
-      value: Number(dbCoupon.discount_value),
-      discountPercent: dbCoupon.discount_type === "percentage" ? Number(dbCoupon.discount_value) : null,
-      maxDiscount: dbCoupon.max_discount ? Number(dbCoupon.max_discount) : null,
-      minOrderAmount: Number(dbCoupon.min_order_amount) || 0
-    };
-
-    elements.appliedCouponName.textContent = code;
-    elements.appliedCouponPercent.textContent = dbCoupon.discount_type === "percentage"
-      ? `${dbCoupon.discount_value}%`
-      : formatPrice(dbCoupon.discount_value);
-    elements.appliedCouponPill.style.display = "flex";
-    elements.couponInput.value = "";
-
-    const savingsText = dbCoupon.discount_type === "percentage" ? `${dbCoupon.discount_value}% off` : `${formatPrice(dbCoupon.discount_value)} discount`;
-    showToast(`Promo code "${code}" applied! You unlocked ${savingsText}.`, "success");
-    renderOrderSummary();
   }
 
   function removeCoupon() {
     state.appliedCoupon = null;
-    elements.appliedCouponPill.style.display = "none";
+    state.discountAmount = 0;
+    if (elements.appliedCouponPill) elements.appliedCouponPill.style.display = "none";
+    if (elements.rowDiscount) elements.rowDiscount.classList.remove("active");
+    if (elements.costDiscount) elements.costDiscount.textContent = "-₹0";
     showToast("Promotional code removed.", "info");
     renderOrderSummary();
+  }
+
+  // Dynamically load active coupon suggestions from Supabase
+  async function loadCouponSuggestions() {
+    const container = document.querySelector(".coupon-suggestions");
+    if (!container) return;
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    if (!client) {
+      container.style.display = "none";
+      return;
+    }
+    try {
+      const { data: suggestions, error } = await client
+        .from("coupons")
+        .select("code, discount_type, discount_value, min_order_amount, expiry_date")
+        .eq("is_active", true)
+        .order("discount_value", { ascending: false })
+        .limit(3);
+
+      const now = new Date();
+      const validSuggestions = (suggestions || []).filter(c => {
+        if (c.expiry_date && new Date(c.expiry_date) < now) return false;
+        return true;
+      });
+
+      if (error || validSuggestions.length === 0) {
+        container.style.display = "none";
+        return;
+      }
+
+      container.innerHTML = `<span>Try code:</span>` + validSuggestions.map(c => {
+        const disc = c.discount_type === "percentage" ? `${c.discount_value}% off` : `${formatPrice(c.discount_value)} off`;
+        return `<span class="coupon-chip-suggestion" data-code="${escapeHTML(c.code)}">${escapeHTML(c.code)} (${disc})</span>`;
+      }).join("");
+
+      container.style.display = "flex";
+
+      container.querySelectorAll(".coupon-chip-suggestion").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const chipCode = chip.dataset.code;
+          if (elements.couponInput) elements.couponInput.value = chipCode;
+          applyCoupon(chipCode);
+        });
+      });
+    } catch (err) {
+      container.style.display = "none";
+    }
   }
 
   // Coupon Listeners
@@ -1834,7 +1905,7 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.desktopScanAmountType.textContent = isAdvCod ? "Advance Payment" : "Total Payable Online";
     }
     if (elements.desktopMerchantVpa) {
-      elements.desktopMerchantVpa.textContent = state.merchantVpa || "velora.lifestyle@okhdfcbank";
+      elements.desktopMerchantVpa.textContent = state.merchantVpa || "vadi.lifestyle@okhdfcbank";
     }
     if (elements.desktopUpiRef) {
       if (!state.desktopTxRef) {
@@ -1844,8 +1915,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (elements.desktopUpiQrContainer && upiAmount > 0) {
-      const vpa = state.merchantVpa || "velora.lifestyle@okhdfcbank";
-      const name = state.merchantName || "VELORA Lifestyle Studio";
+      const vpa = state.merchantVpa || "vadi.lifestyle@okhdfcbank";
+      const name = state.merchantName || "VADI Lifestyle Studio";
       const ref = state.desktopTxRef || ("VEL-TXN-" + Date.now().toString().slice(-6));
       const links = generateUpiLinks(vpa, name, ref, upiAmount);
       renderUpiQrCode(elements.desktopUpiQrContainer, links.generic);
@@ -1853,8 +1924,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function generateUpiLinks(vpa, name, ref, amount, note) {
-    const cleanVpa = (vpa || "velora.lifestyle@okhdfcbank").trim();
-    const cleanName = encodeURIComponent((name || "VELORA Lifestyle Studio").trim());
+    const cleanVpa = (vpa || "vadi.lifestyle@okhdfcbank").trim();
+    const cleanName = encodeURIComponent((name || "VADI Lifestyle Studio").trim());
     const cleanNote = encodeURIComponent(note || `Order ${ref}`);
     const amtStr = Number(amount || 0).toFixed(2);
     const baseQuery = `pa=${cleanVpa}&pn=${cleanName}&tr=${ref}&tn=${cleanNote}&am=${amtStr}&cu=INR`;
@@ -1925,7 +1996,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Copy UPI ID Button
   if (elements.btnDesktopCopyUpi) {
     elements.btnDesktopCopyUpi.addEventListener("click", () => {
-      const vpa = (elements.desktopMerchantVpa ? elements.desktopMerchantVpa.textContent : state.merchantVpa || "velora.lifestyle@okhdfcbank").trim();
+      const vpa = (elements.desktopMerchantVpa ? elements.desktopMerchantVpa.textContent : state.merchantVpa || "vadi.lifestyle@okhdfcbank").trim();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(vpa).then(() => {
           elements.btnDesktopCopyUpi.textContent = "Copied!";
@@ -1962,7 +2033,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Copy Merchant VPA to Clipboard
   if (elements.btnCopyUpi) {
     elements.btnCopyUpi.addEventListener("click", () => {
-      const vpa = (elements.modalMerchantVpa ? elements.modalMerchantVpa.textContent : state.merchantVpa || "velora.lifestyle@okhdfcbank").trim();
+      const vpa = (elements.modalMerchantVpa ? elements.modalMerchantVpa.textContent : state.merchantVpa || "vadi.lifestyle@okhdfcbank").trim();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(vpa).then(() => {
           elements.btnCopyUpi.textContent = "Copied!";
@@ -2014,8 +2085,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const appLabel = activeApp;
 
     // Resolve merchant settings
-    const merchantVpa = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || state.merchantVpa || "velora.lifestyle@okhdfcbank";
-    const merchantName = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || state.merchantName || "VELORA Lifestyle Studio";
+    const merchantVpa = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || state.merchantVpa || "vadi.lifestyle@okhdfcbank";
+    const merchantName = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || state.merchantName || "VADI Lifestyle Studio";
     state.merchantVpa = merchantVpa;
     state.merchantName = merchantName;
 
@@ -2562,6 +2633,12 @@ document.addEventListener("DOMContentLoaded", () => {
     isSubmittingOrder = true;
     const originalBtnText = elements.btnPlaceOrderText ? elements.btnPlaceOrderText.textContent : "";
 
+    const loadingLabel = overrides.isUpiVerified
+      ? "Securing Verified Order..."
+      : (state.advanceRequired
+          ? `Processing Advance Payment (${formatPrice(state.advancePayableNow)})...`
+          : "Securing & Processing Order...");
+
     // Safety timeout to prevent permanent button lock on network stall
     const submissionTimeout = setTimeout(() => {
       if (isSubmittingOrder) {
@@ -2580,11 +2657,7 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.btnPlaceOrder.classList.add("loading");
       elements.btnPlaceOrder.disabled = true;
       if (elements.btnPlaceOrderText) {
-        elements.btnPlaceOrderText.textContent = overrides.isUpiVerified
-          ? "Securing Verified Order..."
-          : (state.advanceRequired
-              ? `Processing Advance Payment (${formatPrice(state.advancePayableNow)})...`
-              : "Securing & Processing Order...");
+        elements.btnPlaceOrderText.textContent = loadingLabel;
       }
     }
 
@@ -2762,8 +2835,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const fullStreetAddress = [elements.inputHouse.value.trim(), elements.inputStreet.value.trim(), (elements.inputLandmark ? elements.inputLandmark.value.trim() : "")].filter(Boolean).join(", ");
 
+    // Ensure authoritative product images for all cart items (Main VADI & Sarojini Bazaar)
+    const isUuidStr = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const clientForImages = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+
+    if (clientForImages && Array.isArray(state.cart)) {
+      await Promise.all(state.cart.map(async (item) => {
+        let currentImg = "";
+        if (window.VeloraImageUtils && typeof window.VeloraImageUtils.extractImageUrl === "function") {
+          currentImg = window.VeloraImageUtils.extractImageUrl(item.image || item.images);
+        } else {
+          currentImg = typeof item.image === "string" ? item.image : (Array.isArray(item.images) ? item.images[0] : "");
+        }
+
+        if (!currentImg || currentImg === "undefined" || currentImg === "null") {
+          const isSarojini = item.catalog_type === "sarojini";
+          const targetId = isUuidStr(item.id) ? item.id : (isUuidStr(item.supabase_id) ? item.supabase_id : null);
+          const table = isSarojini ? "sarojini_products" : "products";
+
+          try {
+            let q = clientForImages.from(table).select("images");
+            if (targetId) q = q.eq("id", targetId);
+            else if (item.name) q = q.eq("name", item.name);
+            const { data } = await q.maybeSingle();
+            if (data) {
+              const fetchedImg = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === "function")
+                ? window.VeloraImageUtils.resolveProductImage(data, { isAdmin: false })
+                : (Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : (data.image || ""));
+              if (fetchedImg) currentImg = fetchedImg;
+            }
+          } catch (_) {}
+        }
+
+        if (currentImg) {
+          item.image = currentImg;
+        }
+      }));
+    }
+
     const orderData = {
       orderId: orderId,
+      order_number: orderId,
+      orderNumber: orderId,
+      id: orderId,
       orderDate: dateFormatted,
       estimatedDelivery: etaFormatted,
       customer: {
@@ -2818,12 +2932,41 @@ document.addEventListener("DOMContentLoaded", () => {
     // Record order in Supabase database if connected
     const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
     const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+    let resolvedUserId = currentUser ? currentUser.id : null;
+    if (!resolvedUserId && client && client.auth) {
+      try {
+        const { data: authData } = await client.auth.getUser();
+        if (authData && authData.user && authData.user.id) {
+          resolvedUserId = authData.user.id;
+        }
+      } catch (_) {}
+      if (!resolvedUserId) {
+        try {
+          const { data: sessionData } = await client.auth.getSession();
+          if (sessionData && sessionData.session && sessionData.session.user) {
+            resolvedUserId = sessionData.session.user.id;
+          }
+        } catch (_) {}
+      }
+    }
+
+    if (resolvedUserId) {
+      orderData.user_id = resolvedUserId;
+      localStorage.setItem("velora_last_order", JSON.stringify(orderData));
+      try {
+        const userOrdKey = "velora_user_orders_" + resolvedUserId;
+        const pastList = JSON.parse(localStorage.getItem(userOrdKey) || "[]");
+        pastList.unshift(orderData);
+        localStorage.setItem(userOrdKey, JSON.stringify(pastList.slice(0, 50)));
+      } catch (_) {}
+    }
+
     let dbOrder = null;
 
     if (client) {
       try {
         const baseOrderPayload = {
-          user_id: currentUser ? currentUser.id : null,
+          user_id: resolvedUserId || null,
           order_number: orderId,
           subtotal: state.subtotal,
           discount: state.discountAmount,
@@ -2852,54 +2995,63 @@ document.addEventListener("DOMContentLoaded", () => {
         const idempotencyKey = "ord_idem_" + orderId + "_" + (currentUser?.id || "guest") + "_" + state.cart.length;
         let rpcCreated = false;
         const isUuid = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        const hasSarojiniInCart = state.cart.some(item => 
+          item.catalog_type === 'sarojini' || 
+          Boolean(item.sarojini_product_id) || 
+          (typeof item.id === 'string' && item.id.startsWith('sarojini-')) ||
+          (typeof item.image === 'string' && item.image.includes('sarojni'))
+        );
 
-        try {
-          const rpcPayload = {
-            p_items: state.cart.map(item => ({
-              product_id: isUuid(item.id) ? item.id : null,
-              slug: item.slug || item.id,
-              quantity: item.quantity || 1,
-              selected_size: item.selected_size || item.size || null,
-              selected_color: item.selected_color || item.color || null,
-              name: item.name,
-              is_free_bogo: Boolean(item.is_free_bogo),
-              bogo_pair_id: item.bogo_pair_id || null
-            })),
-            p_payment_method: state.selectedPaymentMethod,
-            p_coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
-            p_delivery_details: {
-              full_name: elements.inputFullName.value.trim(),
-              phone: elements.inputPhone.value.trim(),
-              address: elements.inputHouse.value.trim() + ", " + elements.inputStreet.value.trim(),
-              city: elements.inputCity.value.trim(),
-              state: elements.inputState.value.trim(),
-              country: elements.selectCountry.value || "India",
-              pincode: elements.inputZip.value.trim()
-            },
-            p_delivery_preference: deliveryPreference,
-            p_idempotency_key: idempotencyKey
-          };
-
-          const { data: rpcRes, error: rpcErr } = await client.rpc("create_customer_order", rpcPayload);
-          if (!rpcErr && rpcRes && rpcRes.success) {
-            dbOrder = {
-              id: rpcRes.order_id,
-              order_number: rpcRes.order_number,
-              total: rpcRes.total,
-              subtotal: rpcRes.subtotal,
-              discount: rpcRes.discount,
-              advance_amount: rpcRes.advance_amount,
-              cod_balance: rpcRes.cod_balance
+        if (!hasSarojiniInCart) {
+          try {
+            const rpcPayload = {
+              p_items: state.cart.map(item => ({
+                product_id: isUuid(item.id) ? item.id : null,
+                slug: item.slug || item.id,
+                quantity: item.quantity || 1,
+                selected_size: item.selected_size || item.size || null,
+                selected_color: item.selected_color || item.color || null,
+                name: item.name,
+                is_free_bogo: Boolean(item.is_free_bogo),
+                bogo_pair_id: item.bogo_pair_id || null
+              })),
+              p_payment_method: state.selectedPaymentMethod,
+              p_coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+              p_delivery_details: {
+                full_name: elements.inputFullName.value.trim(),
+                phone: elements.inputPhone.value.trim(),
+                address: elements.inputHouse.value.trim() + ", " + elements.inputStreet.value.trim(),
+                city: elements.inputCity.value.trim(),
+                state: elements.inputState.value.trim(),
+                country: elements.selectCountry.value || "India",
+                pincode: elements.inputZip.value.trim()
+              },
+              p_delivery_preference: deliveryPreference,
+              p_idempotency_key: idempotencyKey
             };
-            rpcCreated = true;
-          }
-        } catch (rpcEx) {}
+
+            const { data: rpcRes, error: rpcErr } = await client.rpc("create_customer_order", rpcPayload);
+            if (!rpcErr && rpcRes && rpcRes.success) {
+              dbOrder = {
+                id: rpcRes.order_id,
+                order_number: rpcRes.order_number,
+                total: rpcRes.total,
+                subtotal: rpcRes.subtotal,
+                discount: rpcRes.discount,
+                advance_amount: rpcRes.advance_amount,
+                cod_balance: rpcRes.cod_balance
+              };
+              rpcCreated = true;
+            }
+          } catch (rpcEx) {}
+        }
 
         if (!dbOrder) {
           const customerOrderCols = "id, order_number, total, subtotal, discount, advance_amount, cod_balance, created_at";
           try {
             const extendedPayload = {
               ...baseOrderPayload,
+              coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
               delivery_preference: deliveryPreference,
               free_gifts_eligible: freeGiftsEligible,
               free_gifts_items: freeGiftsItems,
@@ -2915,6 +3067,39 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!dbOrder) {
             const { data: stdOrder } = await client.from("orders").insert([baseOrderPayload]).select(customerOrderCols).single();
             dbOrder = stdOrder;
+          }
+        }
+
+        if (dbOrder) {
+          orderData.id = dbOrder.id;
+          orderData.order_number = dbOrder.order_number || orderId;
+          orderData.orderNumber = dbOrder.order_number || orderId;
+          orderData.orderId = dbOrder.order_number || orderId;
+          localStorage.setItem("velora_last_order", JSON.stringify(orderData));
+          if (resolvedUserId) {
+            try {
+              const userOrdKey = "velora_user_orders_" + resolvedUserId;
+              const pastList = JSON.parse(localStorage.getItem(userOrdKey) || "[]");
+              if (pastList.length > 0 && (pastList[0].orderId === orderId || pastList[0].order_number === orderId)) {
+                pastList[0].id = dbOrder.id;
+                pastList[0].order_number = dbOrder.order_number || orderId;
+                pastList[0].orderNumber = dbOrder.order_number || orderId;
+                pastList[0].orderId = dbOrder.order_number || orderId;
+                localStorage.setItem(userOrdKey, JSON.stringify(pastList));
+              }
+            } catch (_) {}
+          }
+        }
+
+        // Increment coupon used_count whenever an order is successfully created with a coupon
+        if (dbOrder && state.appliedCoupon && state.appliedCoupon.id) {
+          try {
+            const { data: cRow } = await client.from("coupons").select("used_count").eq("id", state.appliedCoupon.id).single();
+            if (cRow) {
+              await client.from("coupons").update({ used_count: (cRow.used_count || 0) + 1 }).eq("id", state.appliedCoupon.id);
+            }
+          } catch (cErr) {
+            console.warn("Coupon used_count increment error:", cErr);
           }
         }
 
@@ -2938,13 +3123,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemTotalAdvance = itemUnitAdvance * qty;
             const itemTotal = price * qty;
             const itemCodBalance = Math.max(0, itemTotal - itemTotalAdvance);
+            const isSarojini = item.catalog_type === 'sarojini' || 
+              Boolean(item.sarojini_product_id) || 
+              (typeof item.id === 'string' && item.id.startsWith('sarojini-')) ||
+              (typeof item.image === 'string' && item.image.includes('sarojni'));
             const resolvedProdId = isUuid(item.id) ? item.id : (isUuid(item.supabase_id) ? item.supabase_id : null);
+
+            let cleanImg = "";
+            if (window.VeloraImageUtils && typeof window.VeloraImageUtils.extractImageUrl === "function") {
+              cleanImg = window.VeloraImageUtils.extractImageUrl(item.image || item.images);
+            } else {
+              cleanImg = typeof item.image === "string" ? item.image : (Array.isArray(item.images) ? item.images[0] : "");
+            }
 
             return {
               order_id: dbOrder.id,
-              product_id: resolvedProdId,
+              product_id: isSarojini ? null : resolvedProdId,
+              sarojini_product_id: isSarojini ? resolvedProdId : null,
+              catalog_type: isSarojini ? 'sarojini' : 'main',
               product_name: item.name,
-              product_image: item.image,
+              product_image: cleanImg || null,
               price: price,
               quantity: qty,
               selected_size: item.size || null,
@@ -2954,9 +3152,7 @@ document.addEventListener("DOMContentLoaded", () => {
               cod_balance: isFullOnline ? 0 : itemCodBalance,
               advance_payment_enabled: item.is_free_bogo ? false : Boolean(item.advance_payment_enabled),
               advance_payment_type: item.is_free_bogo ? null : (item.advance_payment_type || null),
-              advance_payment_value: item.is_free_bogo ? 0 : (item.advance_payment_value ? Number(item.advance_payment_value) : null),
-              is_free_bogo: Boolean(item.is_free_bogo),
-              bogo_pair_id: item.bogo_pair_id || null
+              advance_payment_value: item.is_free_bogo ? 0 : (item.advance_payment_value ? Number(item.advance_payment_value) : null)
             };
           });
 
@@ -2965,6 +3161,8 @@ document.addEventListener("DOMContentLoaded", () => {
               itemsPayload.push({
                 order_id: dbOrder.id,
                 product_id: null,
+                sarojini_product_id: null,
+                catalog_type: 'main',
                 product_name: gift.name,
                 product_image: gift.icon_or_image || gift.image || "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
                 price: 0,
@@ -2981,15 +3179,28 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           }
 
-          await client.from("order_items").insert(itemsPayload);
-
-          if (state.appliedCoupon && state.appliedCoupon.id) {
+          const { error: itemsInsErr } = await client.from("order_items").insert(itemsPayload);
+          if (itemsInsErr) {
+            console.error("Order items insert warning:", itemsInsErr);
+            // Fallback retry with core columns only in case any optional column was rejected
             try {
-              const { data: cRow } = await client.from("coupons").select("used_count").eq("id", state.appliedCoupon.id).single();
-              if (cRow) {
-                await client.from("coupons").update({ used_count: (cRow.used_count || 0) + 1 }).eq("id", state.appliedCoupon.id);
-              }
-            } catch (cErr) {}
+              const corePayload = itemsPayload.map(p => ({
+                order_id: p.order_id,
+                product_id: p.product_id,
+                sarojini_product_id: p.sarojini_product_id,
+                catalog_type: p.catalog_type,
+                product_name: p.product_name,
+                product_image: p.product_image,
+                price: p.price,
+                quantity: p.quantity,
+                selected_size: p.selected_size,
+                selected_color: p.selected_color,
+                subtotal: p.subtotal
+              }));
+              await client.from("order_items").insert(corePayload);
+            } catch (retryErr) {
+              console.error("Order items retry error:", retryErr);
+            }
           }
 
           if (currentUser && currentUser.id) {
@@ -3115,7 +3326,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Initial Render ---
   renderOrderSummary();
   syncCartAdvanceData();
-  loadSavedAddresses();
+
+  if (state.cart && state.cart.length > 0) {
+    loadSavedAddresses();
+    loadCouponSuggestions();
+  }
 
   window.loadSavedAddresses = loadSavedAddresses;
   window.renderSavedAddresses = renderSavedAddresses;

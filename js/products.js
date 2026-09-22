@@ -206,7 +206,7 @@ const PRODUCTS_DATA = [
   {
     id: "prod-08",
     name: "Veloce Minimalist Leather Sneaker",
-    brand: "VELORA Atelier",
+    brand: "VADI Atelier",
     category: "shoes",
     categoryLabel: "Footwear",
     price: 3299,
@@ -435,7 +435,7 @@ const PRODUCTS_DATA = [
   {
     id: "prod-20",
     name: "Nordic Ribbed Merino Beanie",
-    brand: "VELORA Atelier",
+    brand: "VADI Atelier",
     category: "caps",
     categoryLabel: "Headwear",
     price: 899,
@@ -512,7 +512,7 @@ const PRODUCTS_DATA = [
   {
     id: "prod-15",
     name: "Sienna Crossbody Saddle Bag",
-    brand: "VELORA Atelier",
+    brand: "VADI Atelier",
     category: "bags",
     categoryLabel: "Bags",
     price: 2499,
@@ -564,7 +564,7 @@ const PRODUCTS_DATA = [
   {
     id: "prod-09",
     name: "Heavyweight Boxy Fleece Hoodie",
-    brand: "VELORA Atelier",
+    brand: "VADI Atelier",
     category: "clothing",
     categoryLabel: "Apparel",
     price: 2499,
@@ -666,7 +666,7 @@ const PRODUCTS_DATA = [
   {
     id: "prod-22",
     name: "Solstice Sterling Silver Cuff Bracelet",
-    brand: "VELORA Atelier",
+    brand: "VADI Atelier",
     category: "accessories",
     categoryLabel: "Jewelry",
     price: 1999,
@@ -767,8 +767,8 @@ const PRODUCTS_DATA = [
   },
   {
     id: "prod-24",
-    name: "Velora Ceramic Magnetic Wireless Pad",
-    brand: "VELORA Atelier",
+    name: "VADI Ceramic Magnetic Wireless Pad",
+    brand: "VADI Atelier",
     category: "electronics",
     categoryLabel: "Tech Accessories",
     price: 1499,
@@ -962,6 +962,38 @@ if (typeof window !== "undefined") {
         console.warn("Products sync notice:", e);
       }
 
+      // Cross-store: Check if any Sarojini products are made available in Main VADI Store
+      try {
+        const xSetRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?key=eq.cross_store_mapping&select=value`, { headers: reqHeaders });
+        if (xSetRes.ok) {
+          const xSetData = await xSetRes.json();
+          if (xSetData && xSetData[0] && xSetData[0].value && xSetData[0].value.sarojini_available_in_main) {
+            const sMap = xSetData[0].value.sarojini_available_in_main;
+            const sIds = Object.keys(sMap).filter(id => sMap[id]?.available);
+            if (sIds.length > 0) {
+              const sarCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,is_featured,is_new,is_deal,advance_payment_enabled,advance_payment_type,advance_payment_value,is_active,created_at";
+              const sRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=${sarCols}&id=in.(${sIds.join(',')})&is_active=eq.true`, { headers: reqHeaders });
+              if (sRes.ok) {
+                const sProds = await sRes.json();
+                if (Array.isArray(sProds) && sProds.length > 0) {
+                  dbProducts = dbProducts || [];
+                  sProds.forEach(sp => {
+                    const assign = sMap[sp.id] || {};
+                    dbProducts.push({
+                      ...sp,
+                      category_id: assign.category_id || sp.category_id,
+                      is_featured: (assign.is_featured !== undefined) ? assign.is_featured : sp.is_featured
+                    });
+                  });
+                }
+              }
+            }
+          }
+        }
+      } catch (xErr) {
+        console.warn("Cross-store products sync notice:", xErr);
+      }
+
       // Fetch BOGO config if not yet loaded in window.VELORA_SETTINGS
       let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
         ? window.VELORA_SETTINGS.bogo_config.product_ids
@@ -1070,7 +1102,7 @@ if (typeof window !== "undefined") {
             legacyId: legacyId,
             supabase_id: dbP.id,
             name: dbP.name,
-            brand: dbP.brand || "VELORA Atelier",
+            brand: dbP.brand || "VADI Atelier",
             slug: dbP.slug,
             category: categorySlug,
             categoryLabel: categoryLabel,

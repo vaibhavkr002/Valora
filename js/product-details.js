@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     title: document.getElementById("detail-title"),
     ratingScore: document.getElementById("detail-rating-score"),
     reviewsCount: document.getElementById("detail-reviews-count"),
+    starsWrap: document.getElementById("detail-stars-wrap"),
     currentPrice: document.getElementById("detail-current-price"),
     originalPrice: document.getElementById("detail-original-price"),
     discountPill: document.getElementById("detail-discount-pill"),
@@ -165,10 +166,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initProductDetails();
 
   async function initProductDetails() {
-    updateBadges();
-    renderCartDrawer();
-    bindCommonEvents();
-    window.addEventListener("velora:gift-offers-updated", () => updatePaymentSelectionUI());
+    try {
+      updateBadges();
+      renderCartDrawer();
+      bindCommonEvents();
+      window.addEventListener("velora:gift-offers-updated", () => updatePaymentSelectionUI());
 
     // 1. Parse Product ID from URL (?id=...)
     const urlParams = new URLSearchParams(window.location.search);
@@ -253,6 +255,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Cross-store check: If product not found in products table, check sarojini_products
+    if (!dbP && client) {
+      try {
+        let sQuery = client.from("sarojini_products").select("*");
+        if (isUUID) {
+          sQuery = sQuery.eq("id", productId);
+        } else {
+          sQuery = sQuery.eq("slug", productId);
+        }
+        const sRes = await sQuery.maybeSingle();
+        if (sRes && !sRes.error && sRes.data) {
+          dbP = {
+            ...sRes.data,
+            brand: sRes.data.brand || "Sarojini Bazaar",
+            categories: { id: sRes.data.category_id, name: sRes.data.department || "Sarojini Bazaar", slug: "sarojini" }
+          };
+        }
+      } catch (err) {
+        console.warn("Cross-store sarojini lookup notice:", err);
+      }
+    }
+
     if (dbP) {
       const imgs = (dbP.images && Array.isArray(dbP.images) && dbP.images.length > 0) 
         ? dbP.images 
@@ -265,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
         id: dbP.id,
         legacyId: productId,
         name: dbP.name,
-        brand: dbP.brand || (fallbackStatic ? fallbackStatic.brand : "VELORA Atelier"),
+        brand: dbP.brand || (fallbackStatic ? fallbackStatic.brand : "VADI Atelier"),
         slug: dbP.slug,
         category: categorySlug,
         categoryLabel: categoryLabel,
@@ -273,8 +297,8 @@ document.addEventListener("DOMContentLoaded", () => {
         price: Number(dbP.price),
         originalPrice: dbP.original_price ? Number(dbP.original_price) : (fallbackStatic ? fallbackStatic.originalPrice : null),
         discount: dbP.discount_percentage || 0,
-        rating: Number(dbP.rating) || (fallbackStatic ? fallbackStatic.rating : 4.9),
-        reviewsCount: dbP.review_count || (fallbackStatic ? fallbackStatic.reviewsCount : 18),
+        rating: (dbP.rating != null && !isNaN(dbP.rating)) ? Number(dbP.rating) : (fallbackStatic && fallbackStatic.rating != null ? fallbackStatic.rating : 0),
+        reviewsCount: (dbP.review_count != null && !isNaN(dbP.review_count)) ? Number(dbP.review_count) : (fallbackStatic && fallbackStatic.reviewsCount != null ? fallbackStatic.reviewsCount : 0),
         badge: dbP.is_new ? "New Arrival" : (dbP.is_deal ? "Special Deal" : (dbP.is_featured ? "Featured" : null)),
         badgeType: dbP.is_deal ? "deal" : "popular",
         inStock: dbP.stock > 0,
@@ -303,7 +327,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     state.currentProduct = product;
     renderProductPage(product);
+  } catch (err) {
+    console.warn("initProductDetails error:", err);
+    showNotFoundState();
   }
+}
 
   async function updatePaymentSelectionUI() {
     const p = state.currentProduct;
@@ -546,7 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showNotFoundState() {
     if (elements.mainView) elements.mainView.style.display = "none";
     if (elements.notFoundView) elements.notFoundView.style.display = "flex";
-    document.title = "Product Not Found | VELORA";
+    document.title = "Product Not Found | VADI - Everything. Simply Yours.";
     if (elements.breadcrumbProductTitle) elements.breadcrumbProductTitle.textContent = "Product Not Found";
   }
 
@@ -558,7 +586,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.notFoundView) elements.notFoundView.style.display = "none";
 
     // Set page title
-    document.title = `${product.name} | VELORA Lifestyle`;
+    document.title = `${product.name} | VADI - Everything. Simply Yours.`;
 
     // 1. Breadcrumbs
     const catName = product.categoryLabel || (product.category.charAt(0).toUpperCase() + product.category.slice(1));
@@ -571,10 +599,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 2. Main Details
-    if (elements.brandBadge) elements.brandBadge.textContent = product.brand || "VELORA Atelier";
+    if (elements.brandBadge) elements.brandBadge.textContent = product.brand || "VADI Atelier";
     if (elements.title) elements.title.textContent = product.name;
-    if (elements.ratingScore) elements.ratingScore.textContent = product.rating;
-    if (elements.reviewsCount) elements.reviewsCount.textContent = `(${product.reviewsCount} customer reviews)`;
+    if (elements.ratingScore) {
+      elements.ratingScore.textContent = product.rating > 0 ? Number(product.rating).toFixed(1) : "—";
+    }
+    if (elements.reviewsCount) {
+      elements.reviewsCount.textContent = product.reviewsCount > 0
+        ? `(${product.reviewsCount} customer review${product.reviewsCount === 1 ? '' : 's'})`
+        : `(0 reviews)`;
+    }
     if (elements.currentPrice) elements.currentPrice.textContent = formatPrice(product.price);
     if (elements.stickyPriceVal) elements.stickyPriceVal.textContent = formatPrice(product.price);
 
@@ -870,12 +904,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================================
-  // CUSTOMER REVIEWS SYSTEM (Connected to Supabase public.reviews)
+  // CUSTOMER REVIEWS & RATING SUMMARY SUBSYSTEM (Connected to Supabase public.reviews)
   // ==========================================================================
-  async function loadProductReviews(productId) {
+  let reviewsRealtimeChannel = null;
+
+  function renderStarsVisual(rating, size = 16) {
+    const r = Math.max(0, Math.min(5, Number(rating) || 0));
+    const fullStars = Math.floor(r);
+    const remainder = r - fullStars;
+    let starsHtml = '';
+
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        starsHtml += `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+      } else if (i === fullStars + 1 && remainder > 0.05) {
+        const pct = Math.round(remainder * 100);
+        const gradId = `star-grad-${pct}-${Math.random().toString(36).substr(2, 6)}`;
+        starsHtml += `
+          <svg width="${size}" height="${size}" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id="${gradId}">
+                <stop offset="${pct}%" stop-color="#f59e0b"/>
+                <stop offset="${pct}%" stop-color="#e2e8f0"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#${gradId})" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        `;
+      } else {
+        starsHtml += `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#e2e8f0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+      }
+    }
+    return starsHtml;
+  }
+
+  async function loadProductReviews(productId, setupRealtime = true) {
+    const summaryContainer = document.getElementById("product-rating-summary");
     const container = document.getElementById("product-reviews-container");
     const countBadge = document.getElementById("tab-reviews-count");
-    if (!container || !productId) return;
+    if (!productId) return;
 
     const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
@@ -902,7 +969,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.ok) {
         const reviews = await res.json();
 
-        // Enforce single source of truth: exactly ONE review object per database ID
+        // Enforce single source of truth: deduplicate by database UUID
         const seenIds = new Set();
         const uniqueReviews = [];
         if (Array.isArray(reviews)) {
@@ -914,44 +981,143 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        if (countBadge) countBadge.textContent = uniqueReviews.length;
+        const totalReviews = uniqueReviews.length;
+        let avgRating = 0.0;
+        const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+        if (totalReviews > 0) {
+          let sum = 0;
+          for (const r of uniqueReviews) {
+            const star = Math.max(1, Math.min(5, Math.round(Number(r.rating) || 5)));
+            counts[star] = (counts[star] || 0) + 1;
+            sum += Number(r.rating) || 5;
+          }
+          avgRating = Number((sum / totalReviews).toFixed(1));
+        }
+
+        // 1. Update Tab Reviews Count Badge
+        if (countBadge) {
+          countBadge.textContent = totalReviews;
+        }
+
+        // 2. Update Header/Top Rating Elements
         if (elements.reviewsCount) {
-          elements.reviewsCount.textContent = `(${uniqueReviews.length} customer review${uniqueReviews.length === 1 ? '' : 's'})`;
+          elements.reviewsCount.textContent = totalReviews > 0
+            ? `(${totalReviews} customer review${totalReviews === 1 ? '' : 's'})`
+            : `(0 reviews)`;
         }
 
-        if (uniqueReviews.length === 0) {
-          container.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(0,0,0,0.01);">
-              <div style="font-size: 2rem; margin-bottom: 8px;">✍️</div>
-              <h4 style="font-size: 1rem; color: var(--text-main); margin-bottom: 4px;">No reviews yet</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Be the first to share your thoughts about this item.</p>
-              <button onclick="document.getElementById('btn-toggle-review-form')?.click();" class="btn-primary" style="display: inline-block; padding: 6px 14px; font-size: 0.82rem;">Write the First Review</button>
-            </div>
-          `;
-          return;
+        const starsWrap = document.getElementById("detail-stars-wrap") || document.querySelector(".detail-stars");
+        if (elements.ratingScore) {
+          elements.ratingScore.textContent = totalReviews > 0 ? avgRating.toFixed(1) : "—";
+        }
+        if (starsWrap) {
+          starsWrap.innerHTML = renderStarsVisual(totalReviews > 0 ? avgRating : 0, 16);
         }
 
-        container.innerHTML = uniqueReviews.map(r => {
-          const ratingVal = Math.max(1, Math.min(5, Number(r.rating) || 5));
-          const stars = "★".repeat(ratingVal) + "☆".repeat(5 - ratingVal);
-          const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "";
-          const authorName = escapeHTML(r.user_name || "Verified Customer");
-          const commentText = escapeHTML(r.comment || "");
-
-          return `
-            <div class="customer-review-card" data-review-id="${escapeHTML(r.id)}" style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong class="review-author" style="font-size: 0.95rem; color: var(--text-main);">${authorName}</strong>
-                  <span class="verified-buyer" style="font-size: 0.72rem; color: var(--color-success); background: rgba(34, 197, 94, 0.1); padding: 1px 6px; border-radius: 4px; font-weight: 600;">✓ Verified Buyer</span>
-                </div>
-                <span class="review-date" style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
+        // 3. Render Premium Rating Summary / Review Breakdown Section
+        if (summaryContainer) {
+          if (totalReviews === 0) {
+            summaryContainer.innerHTML = `
+              <div class="rating-summary-empty">
+                <div class="rating-summary-empty-icon">★</div>
+                <h4 class="rating-summary-empty-title">No reviews yet</h4>
+                <p class="rating-summary-empty-desc">Be the first to share your experience with fellow buyers.</p>
+                <button type="button" onclick="document.getElementById('btn-toggle-review-form')?.click();" class="btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; font-size: 0.85rem;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  Write the First Review
+                </button>
               </div>
-              <div class="review-stars" style="color: #f59e0b; font-size: 0.95rem; margin-bottom: 6px;">${stars}</div>
-              <p class="review-comment" style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0; word-break: break-word;">${commentText}</p>
-            </div>
-          `;
-        }).join("");
+            `;
+          } else {
+            const starSvgTiny = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+            
+            const rowsHtml = [5, 4, 3, 2, 1].map(star => {
+              const c = counts[star] || 0;
+              const pct = Math.round((c / totalReviews) * 100);
+              return `
+                <div class="rating-dist-row">
+                  <span class="dist-label">${star} ${starSvgTiny}</span>
+                  <div class="dist-track" title="${star} Stars: ${c} review${c === 1 ? '' : 's'} (${pct}%)">
+                    <div class="dist-fill" style="width: ${pct}%;"></div>
+                  </div>
+                  <div class="dist-meta">
+                    <span class="dist-percentage">${pct}%</span>
+                    <span class="dist-count">(${c})</span>
+                  </div>
+                </div>
+              `;
+            }).join("");
+
+            summaryContainer.innerHTML = `
+              <div class="rating-summary-layout">
+                <!-- Left: Overall Rating Score & Stars -->
+                <div class="rating-summary-left">
+                  <div class="rating-summary-score">${avgRating.toFixed(1)}</div>
+                  <div class="rating-summary-stars" aria-label="${avgRating.toFixed(1)} out of 5 stars">
+                    ${renderStarsVisual(avgRating, 20)}
+                  </div>
+                  <div class="rating-summary-orders">Based on ${totalReviews} verified order${totalReviews === 1 ? '' : 's'}</div>
+                </div>
+
+                <!-- Right: Star Distribution Progress Bars -->
+                <div class="rating-summary-distribution">
+                  ${rowsHtml}
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // 4. Render Individual Customer Review Cards
+        if (container) {
+          if (totalReviews === 0) {
+            container.innerHTML = '';
+          } else {
+            container.innerHTML = uniqueReviews.map(r => {
+              const ratingVal = Math.max(1, Math.min(5, Number(r.rating) || 5));
+              const stars = renderStarsVisual(ratingVal, 14);
+              const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "";
+              const authorName = escapeHTML(r.user_name || "Verified Customer");
+              const commentText = escapeHTML(r.comment || "");
+
+              return `
+                <div class="customer-review-card" data-review-id="${escapeHTML(r.id)}" style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <strong class="review-author" style="font-size: 0.95rem; color: var(--text-main);">${authorName}</strong>
+                      <span class="verified-buyer" style="font-size: 0.72rem; color: var(--color-success); background: rgba(34, 197, 94, 0.1); padding: 1px 6px; border-radius: 4px; font-weight: 600;">✓ Verified Buyer</span>
+                    </div>
+                    <span class="review-date" style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
+                  </div>
+                  <div class="review-stars" style="display: flex; align-items: center; gap: 3px; margin-bottom: 6px;">${stars}</div>
+                  <p class="review-comment" style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0; word-break: break-word;">${commentText}</p>
+                </div>
+              `;
+            }).join("");
+          }
+        }
+
+        // 5. Managed Supabase Realtime Subscription for instant cross-device updates
+        if (setupRealtime && !reviewsRealtimeChannel) {
+          const client = window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+          if (client && typeof client.channel === "function") {
+            try {
+              reviewsRealtimeChannel = client.channel(`reviews-${productId}`)
+                .on('postgres_changes', {
+                  event: '*',
+                  schema: 'public',
+                  table: 'reviews',
+                  filter: `product_id=eq.${productId}`
+                }, () => {
+                  loadProductReviews(productId, false);
+                })
+                .subscribe();
+            } catch (realtimeErr) {
+              console.warn("Reviews realtime subscription notice:", realtimeErr);
+            }
+          }
+        }
       }
     } catch (err) {
       console.warn("Reviews load notice:", err);
@@ -965,9 +1131,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("product-review-form");
 
     if (toggleBtn && box) {
-      toggleBtn.addEventListener("click", () => {
+      toggleBtn.addEventListener("click", async () => {
         const isHidden = box.style.display === "none";
         box.style.display = isHidden ? "block" : "none";
+
+        // Auto-prefill customer name if logged in
+        if (isHidden) {
+          const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+          if (client && client.auth) {
+            try {
+              const { data: { user } } = await client.auth.getUser();
+              const nameInput = document.getElementById("review-user-name") || document.getElementById("review-author");
+              if (user && nameInput && !nameInput.value.trim()) {
+                nameInput.value = user.user_metadata?.full_name || user.email.split("@")[0];
+              }
+            } catch (e) {
+              // ignore
+            }
+          }
+        }
       });
     }
 
@@ -980,13 +1162,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const nameInput = document.getElementById("review-author");
+        const nameInput = document.getElementById("review-user-name") || document.getElementById("review-author");
         const ratingInput = document.getElementById("review-rating");
         const commentInput = document.getElementById("review-comment");
         const submitBtn = document.getElementById("btn-submit-review");
 
-        if (!nameInput.value.trim() || !commentInput.value.trim()) {
+        if (!nameInput || !nameInput.value.trim() || !commentInput || !commentInput.value.trim()) {
           showToast("Please fill out all required fields.", "error");
+          return;
+        }
+
+        const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+        if (!client) {
+          showToast("Review service is temporarily unavailable. Please try again later.", "info");
+          return;
+        }
+
+        let currentUserId = null;
+        try {
+          const { data: { user } } = await client.auth.getUser();
+          if (!user) {
+            showToast("Please sign in to your customer account to submit a verified review.", "info");
+            setTimeout(() => {
+              window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+            }, 1200);
+            return;
+          }
+          currentUserId = user.id;
+        } catch (authErr) {
+          showToast("Please sign in to submit a review.", "info");
           return;
         }
 
@@ -996,26 +1200,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-          const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
-          if (client) {
-            const { error } = await client.from("reviews").insert([{
-              product_id: state.currentProduct.id,
-              user_name: nameInput.value.trim(),
-              rating: parseInt(ratingInput.value, 10),
-              comment: commentInput.value.trim(),
-              status: "approved"
-            }]);
+          const reviewPayload = {
+            product_id: state.currentProduct.id,
+            user_id: currentUserId,
+            user_name: nameInput.value.trim(),
+            rating: parseInt(ratingInput.value, 10),
+            comment: commentInput.value.trim(),
+            status: "approved",
+            catalog_type: "main"
+          };
 
-            if (error) {
-              showToast("Could not submit review: " + error.message, "info");
-            } else {
-              showToast("Review submitted successfully! Thank you for your feedback.", "success");
-              form.reset();
-              if (box) box.style.display = "none";
-              loadProductReviews(state.currentProduct.id);
+          const { error } = await client.from("reviews").insert([reviewPayload]);
+
+          if (error) {
+            showToast("Could not submit review: " + error.message, "info");
+          } else {
+            showToast("Review submitted successfully! Thank you for your feedback.", "success");
+            form.reset();
+            if (box) box.style.display = "none";
+
+            // Sync aggregate statistics on products table via database RPC
+            try {
+              await client.rpc("sync_product_review_stats", { p_product_id: state.currentProduct.id });
+            } catch (rpcErr) {
+              console.warn("Product stats sync notice:", rpcErr);
             }
+
+            // Immediately reload and re-render the rating summary and list
+            await loadProductReviews(state.currentProduct.id, false);
           }
         } catch (err) {
+          console.error("Review submission error:", err);
           showToast("Network error submitting review.", "info");
         } finally {
           if (submitBtn) {
@@ -1238,7 +1453,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
 
           <div class="product-card-body">
-            <div class="product-card-brand">${item.brand || 'VELORA'}</div>
+            <div class="product-card-brand">${item.brand || 'VADI'}</div>
             <h4 class="product-card-name" title="${item.name}">
               <a href="product.html?id=${item.id}">${item.name}</a>
             </h4>
@@ -1567,18 +1782,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================================
-  // WISHLIST MANAGEMENT
+  // WISHLIST MANAGEMENT (LOCALSTORAGE + SUPABASE DB SYNC)
   // ==========================================================================
-  function toggleWishlist(productId) {
-    const product = window.getProductById(productId) || state.currentProduct;
+  async function toggleWishlist(productId) {
+    if (window.VadiWishlist && typeof window.VadiWishlist.toggle === 'function') {
+      const product = (window.getProductById ? window.getProductById(productId) : null) || state.currentProduct;
+      const willAdd = await window.VadiWishlist.toggle(productId, 'main', product);
+      if (elements.wishlistBtn) elements.wishlistBtn.classList.toggle("active", willAdd);
+      return;
+    }
+
+    const product = (window.getProductById ? window.getProductById(productId) : null) || state.currentProduct;
     if (!product) return;
 
-    if (state.wishlist.has(product.id)) {
-      state.wishlist.delete(product.id);
-      showToast(`Removed "${product.name}" from wishlist`, "info");
-    } else {
+    const willAdd = !state.wishlist.has(product.id);
+    if (willAdd) {
       state.wishlist.add(product.id);
       showToast(`Added "${product.name}" to wishlist!`, "success");
+    } else {
+      state.wishlist.delete(product.id);
+      showToast(`Removed "${product.name}" from wishlist`, "info");
     }
 
     localStorage.setItem("velora_wishlist", JSON.stringify(Array.from(state.wishlist)));
@@ -1586,17 +1809,56 @@ document.addEventListener("DOMContentLoaded", () => {
     updateWishlistButton();
 
     if (window.VeloraAnalytics) {
-      window.VeloraAnalytics.trackWishlist(product.id, state.wishlist.has(product.id) ? 'add' : 'remove');
+      window.VeloraAnalytics.trackWishlist(product.id, willAdd ? 'add' : 'remove');
     }
 
     document.querySelectorAll(`.wishlist-btn[data-wishlist-id="${product.id}"]`).forEach(btn => {
-      btn.classList.toggle("active", state.wishlist.has(product.id));
+      btn.classList.toggle("active", willAdd);
     });
+    window.dispatchEvent(new CustomEvent("velora:wishlist-updated"));
+
+    // Supabase DB Sync
+    const client = window.supabaseClient || 
+                   (typeof window.getSupabase === "function" ? window.getSupabase() : null) || 
+                   (window.VeloraAuth ? window.VeloraAuth.getClient() : null);
+    if (client) {
+      try {
+        let authUser = null;
+        if (window.VeloraAuth && typeof window.VeloraAuth.getUser === 'function') {
+          authUser = await window.VeloraAuth.getUser();
+        }
+        if (!authUser && client.auth) {
+          const { data } = await client.auth.getUser();
+          authUser = data ? data.user : null;
+        }
+
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(product.id);
+        if (authUser && authUser.id && isUUID) {
+          if (willAdd) {
+            const { error: insErr } = await client.from("wishlist").insert([{
+              user_id: authUser.id,
+              catalog_type: 'main',
+              product_id: product.id
+            }]);
+            if (insErr) console.warn("Main Wishlist DB Sync Insert Note:", insErr.message);
+          } else {
+            const { error: delErr } = await client.from("wishlist").delete()
+              .eq("user_id", authUser.id)
+              .eq("product_id", product.id);
+            if (delErr) console.warn("Main Wishlist DB Sync Delete Note:", delErr.message);
+          }
+        }
+      } catch (err) {
+        console.warn("Main Wishlist DB Sync Notice:", err);
+      }
+    }
   }
 
   function updateWishlistButton() {
     if (!elements.wishlistBtn || !state.currentProduct) return;
-    const isSaved = state.wishlist.has(state.currentProduct.id);
+    const isSaved = (window.VadiWishlist && typeof window.VadiWishlist.has === 'function')
+      ? window.VadiWishlist.has(state.currentProduct.id)
+      : state.wishlist.has(state.currentProduct.id);
     elements.wishlistBtn.classList.toggle("active", isSaved);
   }
 
@@ -1920,7 +2182,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <img class="search-result-thumb" src="${p.image}" alt="${p.name}">
                 <div class="search-result-info">
                   <div class="search-result-title">${p.name}</div>
-                  <div class="search-result-meta">${p.brand || 'VELORA'} • ★ ${p.rating}</div>
+                  <div class="search-result-meta">${p.brand || 'VADI'} • ★ ${p.rating}</div>
                 </div>
                 <div class="search-result-price">${formatPrice(p.price)}</div>
               </div>

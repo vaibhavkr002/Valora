@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homepage Sections Builder | VADI Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+  <style>
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .type-badge.product_grid { background: rgba(99, 102, 241, 0.16); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .type-badge.hero { background: rgba(234, 179, 8, 0.16); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+    .type-badge.promotional_banner { background: rgba(236, 72, 153, 0.16); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+    .type-badge.trending, .type-badge.deals, .type-badge.bogo { background: rgba(249, 115, 22, 0.16); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .type-badge.categories, .type-badge.brands { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .type-badge.advertisement { background: rgba(14, 165, 233, 0.16); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .type-badge.customer_stories, .type-badge.features { background: rgba(168, 85, 247, 0.16); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .type-badge.delivery_partners, .type-badge.newsletter { background: rgba(148, 163, 184, 0.16); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .type-badge.sarojini_trending { background: rgba(225, 29, 72, 0.16); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.3); }
+
+    .order-control-btn {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: #1e293b;
+      border: 1px solid var(--admin-card-border);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .order-control-btn:hover:not(:disabled) {
+      background: var(--admin-accent);
+      color: #fff;
+      border-color: var(--admin-accent);
+    }
+    .order-control-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .status-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .status-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .status-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .status-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .status-slider {
+      background-color: #10b981;
+    }
+    input:checked + .status-slider:before {
+      transform: translateX(20px);
+    }
+
+    .config-card {
+      background: #0f172a;
+      border: 1px solid var(--admin-card-border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .preview-modal-body {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 24px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .product-pick-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #0f172a;
+      border: 1px solid var(--admin-card-border);
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .product-pick-item:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .product-pick-thumb {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    /* Modal Form Controls & Geometry */
+    #modal-section-builder .admin-modal {
+      width: min(94vw, 760px);
+      max-width: 760px;
+    }
+    #modal-section-preview .admin-modal {
+      width: min(94vw, 960px);
+      max-width: 960px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    .form-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+    .form-help {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .admin-input, .admin-select, input[type="datetime-local"].admin-input {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VADI</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="sidebar-link">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+        <a href="add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+        <a href="categories.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+        <a href="gift-offers.html" class="sidebar-link">
+          <i class="fas fa-gift"></i>
+          <span>Gift Offers</span>
+        </a>
+        <a href="orders.html" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+        <a href="coupons.html" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+        <a href="reviews.html" class="sidebar-link">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+        <a href="analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="advertisements.html" class="sidebar-link">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
+        </a>
+        <a href="homepage-sections.html" class="sidebar-link active">
+          <i class="fas fa-layer-group"></i>
+          <span>Homepage Sections</span>
+        </a>
+        <a href="delivery-partners.html" class="sidebar-link">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+      
+        <!-- SAROJINI BAZAAR SECTION -->
+        <div style="padding: 16px 16px 6px; font-size: 0.7rem; font-weight: 800; color: #e11d48; letter-spacing: 0.08em; text-transform: uppercase;">
+          SAROJINI BAZAAR
+        </div>
+        <a href="sarojini-dashboard.html" class="sidebar-link">
+          <i class="fas fa-store-alt"></i>
+          <span>Sarojini Dashboard</span>
+        </a>
+        <a href="sarojini-products.html" class="sidebar-link">
+          <i class="fas fa-tshirt"></i>
+          <span>Sarojini Products</span>
+        </a>
+        <a href="sarojini-add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-square"></i>
+          <span>Add Sarojini Product</span>
+        </a>
+        <a href="sarojini-categories.html" class="sidebar-link">
+          <i class="fas fa-sitemap"></i>
+          <span>Sarojini Categories</span>
+        </a>
+        <a href="sarojini-offers.html" class="sidebar-link">
+          <i class="fas fa-fire"></i>
+          <span>Sarojini Offers</span>
+        </a>
+        <a href="sarojini-reviews.html" class="sidebar-link">
+          <i class="fas fa-star-half-alt"></i>
+          <span>Sarojini Reviews</span>
+        </a>
+        <a href="sarojini-analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-bar"></i>
+          <span>Sarojini Analytics</span>
+        </a>
+        <a href="homepage-sections.html?store=sarojini" class="sidebar-link" id="nav-sarojini-sections">
+          <i class="fas fa-layer-group" style="color: #e11d48;"></i>
+          <span>Sarojini Sections</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="dashboard.html">VADI Admin</a>
+            <span>/</span>
+            <span class="current">Homepage Sections Builder</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+            </div>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+              <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="admin-content">
+        
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title">Homepage Section Builder</h1>
+            <p class="page-subheading">Create, reorder, customize, and schedule dynamic sections on the customer homepage</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <button class="btn-admin-secondary" id="btn-save-order" style="display: none;">
+              <i class="fas fa-sort-amount-down"></i>
+              <span>Save Display Order</span>
+            </button>
+            <button class="btn-admin-primary" id="btn-add-section">
+              <i class="fas fa-plus"></i>
+              <span>Add Homepage Section</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Store Switcher Tabs -->
+        <div class="store-filter-bar" style="display: flex; gap: 8px; margin-bottom: 20px; align-items: center;">
+          <button type="button" class="btn-store-tab active" data-store="main" id="tab-store-main" style="padding: 9px 18px; font-weight: 700; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--admin-card-border); background: var(--admin-accent); color: #fff; cursor: pointer; transition: all 0.2s;">
+            <i class="fas fa-gem" style="margin-right: 6px;"></i> Main VADI Store
+          </button>
+          <button type="button" class="btn-store-tab" data-store="sarojini" id="tab-store-sarojini" style="padding: 9px 18px; font-weight: 700; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--admin-card-border); background: var(--admin-card-bg); color: var(--admin-text-muted); cursor: pointer; transition: all 0.2s;">
+            <i class="fas fa-shopping-bag" style="margin-right: 6px; color: #e11d48;"></i> 🛍️ Sarojini Bazaar
+          </button>
+          <span style="font-size: 0.78rem; color: var(--admin-text-muted); margin-left: 8px;" id="store-scope-hint">
+            Configuring homepage layout for: <strong style="color: #cbd5e1;" id="store-scope-label">Main VADI Store</strong>
+          </span>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="analytics-metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+          <div class="admin-card metric-card">
+            <span class="metric-title">Total Sections</span>
+            <div class="metric-value-row">
+              <span class="metric-val" id="metric-total-sections">0</span>
+              <i class="fas fa-layer-group metric-icon" style="color: #6366f1;"></i>
+            </div>
+          </div>
+          <div class="admin-card metric-card">
+            <span class="metric-title">Active On Storefront</span>
+            <div class="metric-value-row">
+              <span class="metric-val" id="metric-active-sections">0</span>
+              <i class="fas fa-check-circle metric-icon" style="color: #10b981;"></i>
+            </div>
+          </div>
+          <div class="admin-card metric-card">
+            <span class="metric-title">Custom Product Grids</span>
+            <div class="metric-value-row">
+              <span class="metric-val" id="metric-grid-sections">0</span>
+              <i class="fas fa-th-large metric-icon" style="color: #f59e0b;"></i>
+            </div>
+          </div>
+          <div class="admin-card metric-card">
+            <span class="metric-title">Scheduled Sections</span>
+            <div class="metric-value-row">
+              <span class="metric-val" id="metric-scheduled-sections">0</span>
+              <i class="fas fa-calendar-alt metric-icon" style="color: #38bdf8;"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sections Management Table Card -->
+        <div class="admin-card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 class="card-title">Configured Sections</h2>
+              <span class="badge" id="section-count-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem;">17 Sections</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="admin-search-wrap" style="width: 240px;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-sections" class="admin-input" placeholder="Search sections..." style="padding-left: 32px; height: 36px; font-size: 0.85rem;">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="margin-top: 14px;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px; text-align: center;">Order</th>
+                  <th style="width: 170px;">Section Type</th>
+                  <th>Title & Subtitle</th>
+                  <th style="width: 180px;">Content Rule</th>
+                  <th style="width: 100px; text-align: center;">Status</th>
+                  <th style="width: 160px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sections-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 32px; color: var(--admin-text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Loading homepage sections...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ADD / EDIT SECTION MODAL
+       ========================================================================= -->
+  <div class="admin-modal-backdrop admin-modal-overlay" id="modal-section-builder">
+    <div class="admin-modal" style="max-width: 760px; width: 100%;">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="builder-modal-title">Configure Homepage Section</h3>
+        <button class="admin-modal-close" id="btn-close-builder-modal">&times;</button>
+      </div>
+
+      <form id="form-section-builder">
+        <div class="admin-modal-body">
+          <input type="hidden" id="sec-id">
+
+          <!-- Section Type -->
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label" for="sec-type">Section Type <span style="color:#ef4444;">*</span></label>
+            <select id="sec-type" class="admin-input" required style="width: 100%;">
+              <optgroup label="Custom Dynamic Content">
+                <option value="product_grid">Product Grid (Curated / Category / Brand / Custom)</option>
+                <option value="promotional_banner">Promotional Feature Banner (Image + Text + CTA)</option>
+                <option value="category_grid">Category Grid (Curated Collections)</option>
+                <option value="brands">Brand Showcase Strip</option>
+                <option value="custom">Custom Content Block (HTML / Text / Rich Card)</option>
+              </optgroup>
+              <optgroup label="Standard Homepage Components">
+                <option value="hero">Hero Showcase</option>
+                <option value="categories">Shop By Category</option>
+                <option value="brands">Shop By Brands Strip</option>
+                <option value="trending">Trending Now & Customer Favorites</option>
+                <option value="deals">Today's Flash Deals</option>
+                <option value="new_arrivals">New Arrivals</option>
+                <option value="bogo">Buy 1 Get 1 Free (BOGO)</option>
+                <option value="advertisement">Advertisement Banner Slot</option>
+                <option value="customer_stories">Real Customer Experiences Carousel</option>
+                <option value="features">Why Shop With Us (Value Props)</option>
+                <option value="delivery_partners">Express Delivery Network</option>
+                <option value="newsletter">Newsletter Signup Bar</option>
+              </optgroup>
+              <optgroup label="Sarojini Bazaar Sections">
+                <option value="sarojini_trending">🛍️ Trending Sarojini Finds (Curated Street Product Section)</option>
+              </optgroup>
+            </select>
+            <span class="form-help">Select whether this is a dynamic product showcase, promo banner, or a core homepage block.</span>
+          </div>
+
+          <!-- Title & Subtitle -->
+          <div class="modal-grid-2" style="margin-bottom: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="sec-title">Section Title <span style="color:#ef4444;">*</span></label>
+              <input type="text" id="sec-title" class="admin-input" placeholder="e.g. Summer Essentials" required style="width: 100%;">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sec-subtitle">Eyebrow / Subtitle</label>
+              <input type="text" id="sec-subtitle" class="admin-input" placeholder="e.g. Curated Looks" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- Dynamic Type-Specific Config Container -->
+          <div id="dynamic-config-panel" class="config-card">
+            <!-- Rendered dynamically by admin-homepage-sections.js based on sec-type -->
+          </div>
+
+          <!-- Design & Background Settings -->
+          <div class="config-card" style="margin-top: 14px;">
+            <h4 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em;">
+              <i class="fas fa-palette" style="color: var(--admin-accent); margin-right: 6px;"></i> Visual & Spacing Settings
+            </h4>
+            <div class="modal-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="sec-theme">Background Theme</label>
+                <select id="sec-theme" class="admin-input" style="width: 100%;">
+                  <option value="dark">Standard Obsidian (#0b0f19)</option>
+                  <option value="slate">Deep Slate Navy (#020617)</option>
+                  <option value="subtle">Subtle Card Tint</option>
+                  <option value="transparent">Transparent</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="sec-padding">Vertical Spacing</label>
+                <select id="sec-padding" class="admin-input" style="width: 100%;">
+                  <option value="compact">Compact (40px)</option>
+                  <option value="standard" selected>Standard (64px)</option>
+                  <option value="spacious">Spacious (90px)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scheduling & Display Order Row -->
+          <div class="modal-grid-3" style="margin-top: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="sec-display-order">Display Order <span style="color:#ef4444;">*</span></label>
+              <input type="number" id="sec-display-order" class="admin-input" min="1" max="99" value="1" required style="width: 100%;">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sec-start-date">Start Date & Time (Optional)</label>
+              <input type="datetime-local" id="sec-start-date" class="admin-input" style="width: 100%;">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sec-end-date">End Date & Time (Optional)</label>
+              <input type="datetime-local" id="sec-end-date" class="admin-input" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- Active Toggle -->
+          <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px;">
+            <label class="status-switch">
+              <input type="checkbox" id="sec-is-active" checked>
+              <span class="status-slider"></span>
+            </label>
+            <span style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">Active on Storefront</span>
+          </div>
+
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-admin-secondary" id="btn-cancel-builder">Cancel</button>
+          <button type="submit" class="btn-admin-primary" id="btn-save-section">
+            <i class="fas fa-save"></i>
+            <span>Save Section</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       LIVE PREVIEW MODAL
+       ========================================================================= -->
+  <div class="admin-modal-backdrop admin-modal-overlay" id="modal-section-preview">
+    <div class="admin-modal" style="max-width: 960px; width: 100%;">
+      <div class="admin-modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <h3 class="admin-modal-title" id="preview-modal-title">Live Storefront Preview</h3>
+          <span class="type-badge" id="preview-type-badge">Product Grid</span>
+        </div>
+        <button class="admin-modal-close" id="btn-close-preview-modal">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="preview-modal-body" id="preview-content-box">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-admin-secondary" id="btn-close-preview-footer">Close Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/admin-homepage-sections.js"></script>
+</body>
+</html>
+

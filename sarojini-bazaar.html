@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shop Delhi's famous Sarojini Nagar market online on VADI. Trendy styles, authentic street finds, export surplus bargains, direct to your doorstep across India.">
+  <title>Sarojini Bazaar — VADI Online Shopping</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%239e2a2b'/><path d='M30 30L50 70L70 30' stroke='%23ffffff' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Font Awesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/sarojini-bazaar-page.css">
+  <link rel="stylesheet" href="css/cart-drawer.css">
+</head>
+<body class="sarojini-storefront-body">
+
+  <!-- ========================================================================
+       TOP ANNOUNCEMENT BAR (Connected to dynamic ads / banners)
+       ======================================================================== -->
+  <aside class="sarojini-announcement-bar" id="sarojini-top-announcement" aria-label="Store Announcements">
+    <div class="sarojini-announcement-inner">
+      <span class="announcement-badge">🛍️ DELHI BAZAAR</span>
+      <span class="announcement-text">
+        Direct Street Rates Across India • 7-Day Easy Replacements • Cash on Delivery &amp; Open Box Delivery
+        <a href="sarojini-shop.html">Explore Street Drops →</a>
+      </span>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       REFINED NAVIGATION HEADER
+       ======================================================================== -->
+  <header class="sarojini-nav-header" aria-label="Sarojini Bazaar Navigation">
+    <div class="sarojini-nav-container">
+      
+      <!-- Left: Logo & Category Directory -->
+      <div class="sarojini-nav-left">
+        <!-- VADI Brand Emblem -->
+        <a href="sarojini-bazaar.html" class="sarojini-brand-logo" title="Sarojini Bazaar Hub">
+          <span class="logo-txt">VADI</span>
+          <span class="logo-sub-badge"><i class="fas fa-store-alt"></i> Sarojini Bazaar</span>
+        </a>
+
+        <!-- Desktop Directory Links -->
+        <nav class="sarojini-nav-links" aria-label="Bazaar Directory">
+          <a href="homepage.html" class="sarojini-nav-link nav-main-store" title="Switch to Main VADI Luxury Store">Main Store</a>
+          <a href="sarojini-shop.html?department=WOMEN" class="sarojini-nav-link">Women</a>
+          <a href="sarojini-shop.html?department=MEN" class="sarojini-nav-link">Men</a>
+          <a href="sarojini-shop.html?department=ACCESSORIES" class="sarojini-nav-link">Accessories</a>
+          <a href="sarojini-shop.html?department=FOOTWEAR" class="sarojini-nav-link">Footwear</a>
+          <a href="sarojini-shop.html?department=BAGS" class="sarojini-nav-link">Bags</a>
+          <a href="sarojini-shop.html?department=JEWELLERY" class="sarojini-nav-link">Jewellery</a>
+          <a href="sarojini-shop.html?department=CAPS" class="sarojini-nav-link">Caps</a>
+        </nav>
+      </div>
+
+      <!-- Center: Scoped Search Box -->
+      <div class="sarojini-search-box">
+        <form action="sarojini-shop.html" method="GET" id="sarojini-search-form">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" name="search" id="sarojini-search-input" placeholder="Search bazaar finds, cargo, oversized tees..." autocomplete="off">
+          <button type="submit" class="search-submit-btn" aria-label="Search Bazaar">Search</button>
+        </form>
+      </div>
+
+      <!-- Right: Action Icons -->
+      <div class="sarojini-nav-right">
+        <!-- Switch to Main Store Button -->
+        <a href="homepage.html" class="sarojini-exit-btn" title="Back to VADI Main Store">
+          <i class="fas fa-arrow-left"></i>
+          <span>Main Store</span>
+        </a>
+
+        <!-- Account Profile -->
+        <a href="account.html" class="sarojini-icon-btn" aria-label="Account Profile" title="Profile">
+          <i class="far fa-user"></i>
+        </a>
+
+        <!-- Shared Wishlist -->
+        <a href="wishlist.html" class="sarojini-icon-btn" aria-label="Saved Wishlist" title="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="sarojini-badge-pill wishlist-count-badge">0</span>
+        </a>
+
+        <!-- Cart Drawer Trigger -->
+        <button type="button" id="btn-open-cart" class="sarojini-icon-btn cart-trigger-btn" aria-label="Shopping Cart" title="Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="sarojini-badge-pill cart-count-badge" id="nav-cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Horizontally Scrollable Category Bar -->
+  <nav class="sarojini-mobile-dept-strip" aria-label="Mobile Category Navigation">
+    <a href="homepage.html" style="background: #1c1917; color: #fff;">← Main Store</a>
+    <a href="sarojini-shop.html" class="active">All Finds</a>
+    <a href="sarojini-shop.html?department=WOMEN">Women's Lane</a>
+    <a href="sarojini-shop.html?department=MEN">Men's Lane</a>
+    <a href="sarojini-shop.html?department=ACCESSORIES">Accessories</a>
+    <a href="sarojini-shop.html?department=FOOTWEAR">Footwear</a>
+    <a href="sarojini-shop.html?department=BAGS">Bags</a>
+    <a href="sarojini-shop.html?department=JEWELLERY">Jewellery</a>
+    <a href="sarojini-shop.html?department=CAPS">Caps</a>
+  </nav>
+
+  <!-- ========================================================================
+       MAIN STOREFRONT CONTENT
+       ======================================================================== -->
+  <main class="sarojini-main-content">
+
+    <!-- 1. EDITORIAL HERO SECTION -->
+    <section class="sarojini-hero-section">
+      <div class="sarojini-hero-container">
+        <div class="sarojini-hero-card">
+          
+          <div class="sarojini-hero-content">
+            <div class="hero-tagline-wrap">
+              <span class="hero-tagline">🛍️ Authentic Delhi Street Fashion Online</span>
+              <span class="hero-handwritten-badge">Bazaar wale prices!</span>
+            </div>
+
+            <!-- Prominent SAROJINI BAZAAR Visual Identity -->
+            <div class="hero-sarojini-identity">
+              <div class="sarojini-identity-kicker">
+                <span class="kicker-brand">VADI PRESENTS</span>
+                <span class="kicker-sep">•</span>
+                <span class="kicker-location"><i class="fas fa-map-marker-alt"></i> SAROJINI NAGAR, NEW DELHI</span>
+              </div>
+              <div class="sarojini-identity-main">
+                <span class="sarojini-identity-title">SAROJINI BAZAAR</span>
+                <span class="sarojini-identity-badge">
+                  <i class="fas fa-check-circle"></i> VERIFIED STREET FINDS
+                </span>
+              </div>
+              <div class="sarojini-identity-accent-wrap">
+                <svg class="sarojini-identity-brush" viewBox="0 0 240 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M2 6C54 2 150 2 238 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="sarojini-identity-handnote">Original Delhi street</span>
+              </div>
+            </div>
+
+            <h1 class="hero-title">
+              Delhi's Iconic Street Bazaar.
+              <span class="serif-accent">Curated &amp; Delivered.</span>
+            </h1>
+            <p class="hero-subtitle">
+              Discover handpicked export surplus, viral streetwear drops, and authentic market bargains — sourced directly from Delhi's famous fashion lanes and delivered to your doorstep across India.
+            </p>
+            
+            <div class="hero-actions">
+              <a href="sarojini-shop.html" class="btn-hero-primary">
+                <span>Explore Street Drops</span>
+                <i class="fas fa-arrow-right"></i>
+              </a>
+              <a href="#departments-section" class="btn-hero-secondary">
+                <span>Browse Bazaar Lanes</span>
+              </a>
+            </div>
+
+            <div class="hero-highlights">
+              <div class="highlight-item"><i class="fas fa-check-circle"></i> No Retail Markups</div>
+              <div class="highlight-item"><i class="fas fa-check-circle"></i> Hand-Checked Pieces</div>
+              <div class="highlight-item"><i class="fas fa-check-circle"></i> Cash on Delivery + Open Box</div>
+            </div>
+          </div>
+
+          <div class="sarojini-hero-visual">
+            <img src="assets/sarojni/sarh.png" alt="Delhi Sarojini Nagar Fashion Scene" class="hero-cover-img" onerror="this.src='assets/sarojini/sarh.png'; this.onerror=null;">
+            <div class="hero-floating-badge-top">
+              <i class="fas fa-bolt" style="color: #f59e0b;"></i> CURATED STREET FINDS
+            </div>
+            <div class="hero-floating-badge">
+              <span class="badge-accent">UP TO 70% OFF</span>
+              <span class="badge-label">Real Bazaar Rates</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. VALUE PROPOSITIONS STRIP ("Why Sarojini Bazaar?") -->
+    <section class="sarojini-value-strip" aria-label="Value Propositions">
+      <div class="sarojini-strip-grid">
+        <div class="value-item">
+          <div class="value-icon"><i class="fas fa-tags"></i></div>
+          <div class="value-text">
+            <h4>Real Street Rates</h4>
+            <p>Authentic bazaar prices direct to you with zero retail markups.</p>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
+          <div class="value-text">
+            <h4>Every Piece Checked</h4>
+            <p>Individually inspected for stitching, seams, and fabric quality.</p>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon"><i class="fas fa-box-open"></i></div>
+          <div class="value-text">
+            <h4>Open Box Delivery</h4>
+            <p>Inspect your parcel at your doorstep before final payment.</p>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon"><i class="fas fa-undo-alt"></i></div>
+          <div class="value-text">
+            <h4>7-Day Easy Returns</h4>
+            <p>Hassle-free size replacement or returns on all bazaar orders.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SHOP BY DEPARTMENT: BAZAAR LANES -->
+    <section class="sarojini-section" id="departments-section">
+      <div class="section-container">
+        
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">CURATED STREET DIRECTORY</span>
+            <h2 class="section-heading">Shop By Department</h2>
+            <p class="section-subheading">Enter the iconic lanes of Sarojini Nagar, curated for modern everyday wardrobes.</p>
+          </div>
+          <a href="sarojini-shop.html" class="section-view-all">View All Finds <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="department-grid">
+          
+          <!-- LANE 01: WOMEN -->
+          <a href="sarojini-shop.html?department=WOMEN" class="department-card dept-women">
+            <span class="dept-lane-badge">LANE 01</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-tops.png" alt="Women's Lane Collection" onerror="this.src='assets/sarojni/prod-4-ruched-dress.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Tops, Dresses, Jeans, Co-ords &amp; Skirts</span>
+              <h3 class="dept-name">Women's Lane</h3>
+              <span class="dept-cta">Explore Women's Lane →</span>
+            </div>
+          </a>
+
+          <!-- LANE 02: MEN -->
+          <a href="sarojini-shop.html?department=MEN" class="department-card dept-men">
+            <span class="dept-lane-badge">LANE 02</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-tees.png" alt="Men's Lane Streetwear" onerror="this.src='assets/sarojni/prod-1-graphic-tee.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Oversized Graphic Tees, Cargo, Hoodies &amp; Denims</span>
+              <h3 class="dept-name">Men's Lane</h3>
+              <span class="dept-cta">Explore Men's Lane →</span>
+            </div>
+          </a>
+
+          <!-- CORNER 03: ACCESSORIES -->
+          <a href="sarojini-shop.html?department=ACCESSORIES" class="department-card dept-acc">
+            <span class="dept-lane-badge">CORNER 03</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-accessories.png" alt="Accessories Corner" onerror="this.src='assets/sarojni/con1.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Octagon Sunglasses, Vintage Belts, Wallets</span>
+              <h3 class="dept-name">Accessories Corner</h3>
+              <span class="dept-cta">Complete Your Look →</span>
+            </div>
+          </a>
+
+          <!-- STREET 04: FOOTWEAR -->
+          <a href="sarojini-shop.html?department=FOOTWEAR" class="department-card dept-footwear">
+            <span class="dept-lane-badge">STREET 04</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-sneakers.png" alt="Sneaker Street" onerror="this.src='assets/sarojni/prod-5-classic-sneakers.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Classic Low-Tops, Street Trainers, Boots</span>
+              <h3 class="dept-name">Sneaker Street</h3>
+              <span class="dept-cta">Step Into Style →</span>
+            </div>
+          </a>
+
+          <!-- CORNER 05: BAGS -->
+          <a href="sarojini-shop.html?department=BAGS" class="department-card dept-bags">
+            <span class="dept-lane-badge">CORNER 05</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-bags.png" alt="Bag Corner" onerror="this.src='assets/sarojni/prod-6-retro-bag.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Y2K Shoulder Bags, Canvas Totes &amp; Slings</span>
+              <h3 class="dept-name">Bag Corner</h3>
+              <span class="dept-cta">Find Your Bag →</span>
+            </div>
+          </a>
+
+          <!-- LANE 06: JEWELLERY -->
+          <a href="sarojini-shop.html?department=JEWELLERY" class="department-card dept-jewellery">
+            <span class="dept-lane-badge">LANE 06</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-accessories.png" alt="Jewellery Lane" onerror="this.src='assets/sarojni/con2.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Oxidised Silver Sets, Chokers, Traditional Jhumkas</span>
+              <h3 class="dept-name">Jewellery Lane</h3>
+              <span class="dept-cta">Explore Jewellery →</span>
+            </div>
+          </a>
+
+          <!-- CORNER 07: CAPS -->
+          <a href="sarojini-shop.html?department=CAPS" class="department-card dept-caps">
+            <span class="dept-lane-badge">CORNER 07</span>
+            <div class="dept-media">
+              <img src="assets/sarojini/cat-caps.png" alt="Cap Corner" onerror="this.src='assets/sarojni/con4.png'">
+            </div>
+            <div class="dept-info">
+              <span class="dept-count">Vintage Snapbacks, Beanies &amp; Bucket Hats</span>
+              <h3 class="dept-name">Cap Corner</h3>
+              <span class="dept-cta">Top Off Your Fit →</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. BUDGET BAR: SAROJINI BARGAIN CORNER -->
+    <section class="sarojini-budget-bar" aria-label="Budget Pricing Quick Filters">
+      <div class="section-container">
+        <div class="budget-inner">
+          <div class="budget-header">
+            <span class="budget-fire">🔥</span>
+            <div>
+              <h3 class="budget-title">Sarojini Bargain Rack</h3>
+              <p class="budget-desc">Direct street pricing without the hassle of bargaining. No coupon needed.</p>
+            </div>
+          </div>
+          <div class="budget-pills">
+            <a href="sarojini-shop.html?max_price=199" class="budget-pill">Under ₹199</a>
+            <a href="sarojini-shop.html?max_price=299" class="budget-pill">Under ₹299</a>
+            <a href="sarojini-shop.html?max_price=399" class="budget-pill">Under ₹399</a>
+            <a href="sarojini-shop.html?max_price=499" class="budget-pill">Under ₹499</a>
+            <a href="sarojini-shop.html?min_discount=50" class="budget-pill pill-discount">50%+ OFF Steals</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TRENDING SAROJINI FINDS (DYNAMIC FROM SUPABASE) -->
+    <section class="sarojini-section" id="trending-section">
+      <div class="section-container">
+        
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">LIVE FROM THE MARKET</span>
+            <h2 class="section-heading">Trending Sarojini Finds</h2>
+            <p class="section-subheading">Fresh streetwear drops, viral tops, and daily staples handpicked this week.</p>
+          </div>
+          <a href="sarojini-shop.html?sort=trending" class="section-view-all">View All Finds <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Dynamic Product Grid loaded from sarojini_products table -->
+        <div class="sarojini-product-grid" id="trending-products-grid">
+          <div class="product-loading-spinner" style="grid-column: 1/-1; text-align: center; padding: 48px 0; color: #78716c;">
+            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--bazaar-terracotta);"></i>
+            <p style="margin-top: 12px; font-weight: 600;">Loading fresh Sarojini finds...</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. CURATED UNDER ₹299 SPECIALS RACK -->
+    <section class="sarojini-section" id="budget-steals-section" style="background: var(--bazaar-surface-warm); border-top: 1px solid var(--bazaar-border); border-bottom: 1px solid var(--bazaar-border);">
+      <div class="section-container">
+        
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">EXPORT SURPLUS STEALS</span>
+            <h2 class="section-heading">Under ₹299 Bazaar Steals</h2>
+            <p class="section-subheading">Budget-friendly fashion finds that punch well above their weight.</p>
+          </div>
+          <a href="sarojini-shop.html?max_price=299" class="section-view-all">Shop All Under ₹299 <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="sarojini-product-grid" id="budget-products-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 7. EDITORIAL SPOTLIGHT POSTER -->
+    <section class="sarojini-spotlight-section">
+      <div class="section-container">
+        <div class="spotlight-banner">
+          
+          <div class="spotlight-content">
+            <span class="spotlight-pill">WEEKLY REFRESH</span>
+            <h2 class="spotlight-title">New Street Drops Every Friday</h2>
+            <p class="spotlight-desc">
+              Freshly sourced from Delhi's export surplus hubs and local artisan workshops. Limited pieces per drop, never mass-produced, always authentic.
+            </p>
+            <a href="sarojini-shop.html?sort=newest" class="btn-spotlight">
+              <span>Explore New Arrivals</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="spotlight-img-wrap">
+            <img src="assets/sarojni/srh2.png" alt="Delhi Sarojini Nagar Street Fashion" class="spotlight-img" onerror="this.src='assets/sarojni/sarojini-top-banner.png';">
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       CURATED FOOTER
+       ======================================================================== -->
+  <footer class="sarojini-footer">
+    <div class="section-container">
+      <div class="footer-grid">
+        
+        <div class="footer-col brand-col">
+          <span class="footer-logo">VADI <small>Sarojini Bazaar</small></span>
+          <p class="footer-tagline">
+            Bringing Delhi's most iconic fashion street market online for shoppers across India. Authentic pieces, transparent pricing, uncompromised quality.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> 100% Hand-Checked Quality</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Real Delhi Bazaar Rates</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Open Box Delivery Supported</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Bazaar Lanes</h4>
+          <ul>
+            <li><a href="sarojini-shop.html?department=WOMEN">Women's Lane</a></li>
+            <li><a href="sarojini-shop.html?department=MEN">Men's Lane</a></li>
+            <li><a href="sarojini-shop.html?department=ACCESSORIES">Accessories Corner</a></li>
+            <li><a href="sarojini-shop.html?department=FOOTWEAR">Sneaker Street</a></li>
+            <li><a href="sarojini-shop.html?department=BAGS">Bag Corner</a></li>
+            <li><a href="sarojini-shop.html?department=JEWELLERY">Jewellery Lane</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Customer Care</h4>
+          <ul>
+            <li><a href="account.html">My Orders</a></li>
+            <li><a href="cart.html">View Cart</a></li>
+            <li><a href="wishlist.html">Saved Finds</a></li>
+            <li><a href="account.html">Track Order</a></li>
+            <li><a href="homepage.html">Return to Main Store</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>VADI Quality Guarantee</h4>
+          <p style="font-size:0.85rem; color:#a8a29e; line-height:1.65; margin:0 0 16px 0;">
+            All Sarojini Bazaar products are individually inspected for fabric, stitching, and seams before dispatch. Backed by our 7-day hassle-free replacement promise.
+          </p>
+          <a href="sarojini-shop.html" class="footer-shop-btn">Explore Full Bazaar</a>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 VADI. Sarojini Bazaar is a dedicated curated street-fashion division of VADI India. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/image-utils.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/wishlist-service.js"></script>
+  <script src="js/ads-engine.js" defer></script>
+  <script src="js/sarojini-bazaar-page.js" defer></script>
+</body>
+</html>

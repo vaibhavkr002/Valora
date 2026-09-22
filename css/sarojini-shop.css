@@ -1,0 +1,464 @@
+/* ============================================================================
+   VADI - SAROJINI BAZAAR SHOP CATALOG STYLESHEET
+   Curated Street Catalog with Authentic Delhi Market Character
+   ============================================================================ */
+
+.sarojini-shop-page {
+  background: var(--bazaar-bg);
+}
+
+.sarojini-catalog-main {
+  padding: 16px 0 60px;
+}
+
+/* Breadcrumbs */
+.sarojini-breadcrumbs {
+  font-size: 0.84rem;
+  color: var(--bazaar-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sarojini-breadcrumbs a {
+  color: var(--bazaar-text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.sarojini-breadcrumbs a:hover {
+  color: var(--bazaar-terracotta);
+}
+
+.sarojini-breadcrumbs .sep {
+  color: var(--bazaar-border-strong);
+}
+
+.sarojini-breadcrumbs .current {
+  color: var(--bazaar-dark);
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------------------------
+   1. HORIZONTAL DEPARTMENT TABS (BAZAAR LANES)
+   ---------------------------------------------------------------------------- */
+.catalog-dept-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 14px 0 16px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.catalog-dept-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.catalog-dept-btn {
+  background: var(--bazaar-surface);
+  border: 1px solid var(--bazaar-border);
+  color: var(--bazaar-slate);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 9px 22px;
+  border-radius: 50px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--bazaar-shadow-sm);
+}
+
+.catalog-dept-btn:hover {
+  border-color: var(--bazaar-terracotta);
+  color: var(--bazaar-terracotta);
+  background: var(--bazaar-terracotta-soft);
+  transform: translateY(-1px);
+}
+
+.catalog-dept-btn.active {
+  background: var(--bazaar-terracotta);
+  color: #fff;
+  border-color: var(--bazaar-terracotta);
+  box-shadow: 0 4px 14px rgba(158, 42, 43, 0.3);
+}
+
+/* ----------------------------------------------------------------------------
+   2. SUBCATEGORY CHIPS BAR
+   ---------------------------------------------------------------------------- */
+.subcat-chips-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 18px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.subcat-chips-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.subcat-chip-btn {
+  background: var(--bazaar-surface-warm);
+  border: 1px solid var(--bazaar-border);
+  color: var(--bazaar-slate);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 50px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subcat-chip-btn:hover {
+  background: var(--bazaar-surface);
+  border-color: var(--bazaar-dark);
+  color: var(--bazaar-dark);
+}
+
+.subcat-chip-btn.active {
+  background: var(--bazaar-dark);
+  border-color: var(--bazaar-dark);
+  color: #fff;
+}
+
+/* ----------------------------------------------------------------------------
+   3. CATALOG LAYOUT
+   ---------------------------------------------------------------------------- */
+.catalog-layout {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 32px;
+  margin-top: 14px;
+  align-items: start;
+}
+
+/* ----------------------------------------------------------------------------
+   4. SIDEBAR FILTERS
+   ---------------------------------------------------------------------------- */
+.catalog-filters-sidebar {
+  background: var(--bazaar-surface);
+  border: 1px solid var(--bazaar-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--bazaar-shadow-sm);
+  position: sticky;
+  top: 90px;
+}
+
+.sidebar-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--bazaar-border);
+}
+
+.filters-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--bazaar-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-reset-filters {
+  background: none;
+  border: none;
+  color: var(--bazaar-terracotta);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: opacity 0.2s ease;
+}
+
+.btn-reset-filters:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.btn-close-mobile-filters {
+  display: none;
+}
+
+.filter-block {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--bazaar-border);
+}
+
+.filter-block:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filter-heading {
+  margin: 0 0 12px 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--bazaar-dark);
+}
+
+.filter-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-search-box i {
+  position: absolute;
+  left: 12px;
+  color: var(--bazaar-text-subtle);
+  font-size: 0.85rem;
+}
+
+.filter-search-box input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  background: var(--bazaar-surface-warm);
+  border: 1px solid var(--bazaar-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--bazaar-dark);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-search-box input:focus {
+  border-color: var(--bazaar-terracotta);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(158, 42, 43, 0.1);
+}
+
+.filter-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: var(--bazaar-slate);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.filter-checkbox-label input[type="radio"],
+.filter-checkbox-label input[type="checkbox"] {
+  accent-color: var(--bazaar-terracotta);
+  width: 16px;
+  height: 16px;
+}
+
+.size-chips-filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.size-chip {
+  background: var(--bazaar-surface-warm);
+  border: 1px solid var(--bazaar-border);
+  color: var(--bazaar-slate);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.size-chip:hover {
+  border-color: var(--bazaar-terracotta);
+  color: var(--bazaar-terracotta);
+}
+
+.size-chip.active {
+  background: var(--bazaar-dark);
+  border-color: var(--bazaar-dark);
+  color: #fff;
+}
+
+/* ----------------------------------------------------------------------------
+   5. TOOLBAR
+   ---------------------------------------------------------------------------- */
+.catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  background: var(--bazaar-surface);
+  border: 1px solid var(--bazaar-border);
+  padding: 14px 22px;
+  border-radius: 16px;
+  box-shadow: var(--bazaar-shadow-sm);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-mobile-filter-trigger {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: var(--bazaar-dark);
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 50px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-mobile-filter-trigger:hover {
+  background: var(--bazaar-terracotta);
+}
+
+.catalog-results-count {
+  font-size: 0.88rem;
+  color: var(--bazaar-text-muted);
+}
+
+.catalog-results-count strong {
+  color: var(--bazaar-dark);
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--bazaar-slate);
+}
+
+.catalog-sort-select {
+  background: var(--bazaar-surface-warm);
+  border: 1px solid var(--bazaar-border);
+  color: var(--bazaar-dark);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+/* ----------------------------------------------------------------------------
+   5.5 CATALOG PRODUCTS GRID (With Sidebar Layout)
+   ---------------------------------------------------------------------------- */
+.catalog-products-section .sarojini-product-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 1540px) {
+  .catalog-products-section .sarojini-product-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .catalog-products-section .sarojini-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .catalog-products-section .sarojini-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .catalog-products-section .sarojini-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   6. RESPONSIVE BREAKPOINTS
+   ---------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-filters-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 100vh;
+    z-index: 2000;
+    overflow-y: auto;
+    border-radius: 0;
+    box-shadow: 4px 0 28px rgba(0, 0, 0, 0.2);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .catalog-filters-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .btn-close-mobile-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bazaar-surface-warm);
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .btn-mobile-filter-trigger {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalog-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  .toolbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .catalog-sort-select {
+    flex: 1;
+  }
+}

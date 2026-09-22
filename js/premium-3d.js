@@ -344,8 +344,8 @@
       });
     }
 
-    // Yield to dynamic AdsEngine if active or present
-    if (window.AdsEngine || topBar.dataset.adsEngineManaged === 'true' || window.AdsEngineActive) {
+    // Yield exclusively to dynamic Supabase AdsEngine (single source of truth)
+    if (window.VeloraAds || window.AdsEngine || topBar.dataset.adsEngineManaged === 'true' || window.AdsEngineActive || document.querySelector('script[src*="ads-engine.js"]')) {
       return;
     }
 

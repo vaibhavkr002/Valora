@@ -98,7 +98,7 @@
           await client.auth.signOut();
           return {
             success: false,
-            error: "Access Denied: This account is not authorized as a VELORA administrator."
+            error: "Access Denied: This account is not authorized as a VADI administrator."
           };
         }
 

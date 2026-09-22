@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add / Edit Sarojini Product | VADI Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+  <style>
+    .image-preview-item {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--admin-border);
+      background: #f1f5f9;
+    }
+    .image-preview-item.primary {
+      border-color: #e11d48;
+    }
+    .image-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .image-preview-item .btn-remove-img {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--admin-hover-bg);
+      border: 1px solid var(--admin-border);
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .tag-pill .tag-close {
+      cursor: pointer;
+      color: var(--admin-text-muted);
+    }
+    .tag-pill .tag-close:hover {
+      color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VADI</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        <!-- Main Store Section -->
+        <a href="dashboard.html" class="sidebar-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="sidebar-link">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+        <a href="add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+        <a href="categories.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+        <a href="gift-offers.html" class="sidebar-link">
+          <i class="fas fa-gift"></i>
+          <span>Gift Offers</span>
+        </a>
+        <a href="orders.html" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+        <a href="coupons.html" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+        <a href="reviews.html" class="sidebar-link">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+        <a href="analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="advertisements.html" class="sidebar-link">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
+        </a>
+        <a href="homepage-sections.html" class="sidebar-link">
+          <i class="fas fa-layer-group"></i>
+          <span>Homepage Sections</span>
+        </a>
+        <a href="delivery-partners.html" class="sidebar-link">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+
+        <!-- SAROJINI BAZAAR SECTION -->
+        <div style="padding: 16px 16px 6px; font-size: 0.7rem; font-weight: 800; color: #e11d48; letter-spacing: 0.08em; text-transform: uppercase;">
+          SAROJINI BAZAAR
+        </div>
+        <a href="sarojini-dashboard.html" class="sidebar-link">
+          <i class="fas fa-store-alt"></i>
+          <span>Sarojini Dashboard</span>
+        </a>
+        <a href="sarojini-products.html" class="sidebar-link">
+          <i class="fas fa-tshirt"></i>
+          <span>Sarojini Products</span>
+        </a>
+        <a href="sarojini-add-product.html" class="sidebar-link active">
+          <i class="fas fa-plus-square"></i>
+          <span>Add Sarojini Product</span>
+        </a>
+        <a href="sarojini-categories.html" class="sidebar-link">
+          <i class="fas fa-sitemap"></i>
+          <span>Sarojini Categories</span>
+        </a>
+        <a href="sarojini-offers.html" class="sidebar-link">
+          <i class="fas fa-fire"></i>
+          <span>Sarojini Offers</span>
+        </a>
+        <a href="sarojini-reviews.html" class="sidebar-link">
+          <i class="fas fa-star-half-alt"></i>
+          <span>Sarojini Reviews</span>
+        </a>
+        <a href="sarojini-analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-bar"></i>
+          <span>Sarojini Analytics</span>
+        </a>
+        <a href="sarojini-coupons.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Sarojini Coupons</span>
+        </a>
+        <a href="sarojini-customers.html" class="sidebar-link">
+          <i class="fas fa-user-tag"></i>
+          <span>Sarojini Customers</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../sarojini-bazaar.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Sarojini Bazaar</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="sarojini-products.html">Sarojini Bazaar</a>
+            <span>/</span>
+            <span class="current" id="breadcrumb-page-title">Add Sarojini Product</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+            </div>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../sarojini-bazaar.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Sarojini Bazaar</a>
+              <div class="admin-dropdown-divider"></div>
+              <button id="btn-admin-logout" class="admin-dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title" id="form-heading">Add Sarojini Product</h1>
+            <p class="page-subtitle">Publish a new bargain fashion item to the dedicated VADI Sarojini Bazaar catalog.</p>
+          </div>
+          <div class="page-actions">
+            <a href="sarojini-products.html" class="btn-admin-secondary">
+              <i class="fas fa-arrow-left"></i>
+              <span>Back to Products</span>
+            </a>
+          </div>
+        </div>
+
+        <form id="sarojini-product-form">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            
+            <!-- LEFT COLUMN: Main Product Details -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              
+              <!-- Basic Information -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Product Information</h3>
+                <div class="form-group">
+                  <label class="admin-label" for="prod-name">Product Name *</label>
+                  <input type="text" id="prod-name" class="admin-input" placeholder="e.g. Vintage Washed Relaxed Graphic Tee" required style="width:100%;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px;">
+                  <div class="form-group">
+                    <label class="admin-label" for="prod-brand">Brand</label>
+                    <input type="text" id="prod-brand" class="admin-input" value="Sarojini Bazaar" required style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label" for="prod-slug">Slug (Auto-Generated) *</label>
+                    <input type="text" id="prod-slug" class="admin-input" placeholder="auto-generated-slug" required style="width:100%;">
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 14px;">
+                  <label class="admin-label" for="prod-description">Description</label>
+                  <textarea id="prod-description" class="admin-input" rows="4" placeholder="Describe the style, fit, street trend details..." style="width:100%;"></textarea>
+                </div>
+              </div>
+
+              <!-- Pricing & Inventory -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Pricing &amp; Inventory (INR ₹)</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                  <div class="form-group">
+                    <label class="admin-label" for="prod-price">Selling Price (₹) *</label>
+                    <input type="number" id="prod-price" class="admin-input" placeholder="399" required min="1" style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label" for="prod-orig-price">Original MRP (₹) *</label>
+                    <input type="number" id="prod-orig-price" class="admin-input" placeholder="999" required min="1" style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label" for="prod-stock">Stock Quantity *</label>
+                    <input type="number" id="prod-stock" class="admin-input" value="30" min="0" required style="width:100%;">
+                  </div>
+                </div>
+                <div id="discount-calc-row" style="margin-top: 12px; font-size: 0.85rem; color: #10b981; font-weight: 700;">
+                  <!-- Live Discount % calculated here -->
+                </div>
+              </div>
+
+              <!-- Product Gallery & Images -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 8px;">Product Images</h3>
+                <p style="font-size: 0.82rem; color: var(--admin-text-muted); margin-bottom: 14px;">
+                  Add multiple images. The first image will be the primary thumbnail.
+                </p>
+
+                <!-- Preset Quick Select Buttons -->
+                <div style="margin-bottom: 14px;">
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--admin-text-muted); text-transform: uppercase;">Quick Fill from Sarojini Asset Pack:</span>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;" id="preset-assets-row">
+                    <button type="button" class="btn-admin-secondary btn-preset-img" data-src="assets/sarojni/prod-1-graphic-tee.png" style="padding: 3px 10px; font-size: 0.75rem;">👕 Graphic Tee</button>
+                    <button type="button" class="btn-admin-secondary btn-preset-img" data-src="assets/sarojni/prod-2-ribbed-top.png" style="padding: 3px 10px; font-size: 0.75rem;">👚 Ribbed Top</button>
+                    <button type="button" class="btn-admin-secondary btn-preset-img" data-src="assets/sarojni/prod-3-wide-jeans.png" style="padding: 3px 10px; font-size: 0.75rem;">👖 Wide Jeans</button>
+                    <button type="button" class="btn-admin-secondary btn-preset-img" data-src="assets/sarojni/prod-4-ruched-dress.png" style="padding: 3px 10px; font-size: 0.75rem;">👗 Ruched Dress</button>
+                    <button type="button" class="btn-admin-secondary btn-preset-img" data-src="assets/sarojni/prod-5-classic-sneakers.png" style="padding: 3px 10px; font-size: 0.75rem;">👟 Sneakers</button>
+                    <button type="button" class="btn-admin-secondary btn-preset-img" data-src="assets/sarojni/prod-6-retro-bag.png" style="padding: 3px 10px; font-size: 0.75rem;">👜 Retro Bag</button>
+                  </div>
+                </div>
+
+                <!-- Manual Image Input & Local File Upload -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                  <input type="text" id="input-new-img-url" class="admin-input" placeholder="Paste Image URL or asset path (e.g. assets/sarojni/prod-1-graphic-tee.png)" style="flex: 1; min-width: 220px;">
+                  <button type="button" id="btn-add-img-url" class="btn-admin-secondary" style="padding: 0 16px;">Add URL</button>
+                  <input type="file" id="input-file-img" accept="image/*" multiple style="display: none;">
+                  <button type="button" id="btn-upload-local-img" class="btn-admin-secondary" style="padding: 0 16px; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-upload"></i> Upload Image
+                  </button>
+                </div>
+
+                <!-- Preview Grid -->
+                <div id="image-previews-container" style="display: flex; gap: 12px; flex-wrap: wrap; min-height: 90px; padding: 12px; background: var(--admin-hover-bg); border-radius: 8px; border: 1px dashed var(--admin-border);">
+                  <!-- Thumbnails injected here -->
+                  <span id="no-imgs-hint" style="color: var(--admin-text-muted); font-size: 0.85rem; align-self: center;">No images added yet. Click a preset above or enter a URL.</span>
+                </div>
+              </div>
+
+              <!-- Variants: Sizes & Colors -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Variants (Sizes &amp; Colors)</h3>
+                
+                <!-- Sizes -->
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label class="admin-label">Available Sizes</label>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;" id="size-preset-buttons">
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="Free Size" style="padding: 2px 8px; font-size: 0.75rem;">+ Free Size</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="S" style="padding: 2px 8px; font-size: 0.75rem;">+ S</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="M" style="padding: 2px 8px; font-size: 0.75rem;">+ M</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="L" style="padding: 2px 8px; font-size: 0.75rem;">+ L</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="XL" style="padding: 2px 8px; font-size: 0.75rem;">+ XL</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="XXL" style="padding: 2px 8px; font-size: 0.75rem;">+ XXL</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="UK 6" style="padding: 2px 8px; font-size: 0.75rem;">+ UK 6</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="UK 7" style="padding: 2px 8px; font-size: 0.75rem;">+ UK 7</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="UK 8" style="padding: 2px 8px; font-size: 0.75rem;">+ UK 8</button>
+                    <button type="button" class="btn-admin-secondary btn-size-preset" data-size="UK 9" style="padding: 2px 8px; font-size: 0.75rem;">+ UK 9</button>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="input-custom-size" class="admin-input" placeholder="Or type custom size and press enter..." style="flex: 1;">
+                    <button type="button" id="btn-add-custom-size" class="btn-admin-secondary" style="padding: 0 14px;">Add</button>
+                  </div>
+                  <div id="selected-sizes-list" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                    <!-- Selected Size Pills -->
+                  </div>
+                </div>
+
+                <!-- Colors -->
+                <div class="form-group">
+                  <label class="admin-label">Available Colors</label>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="input-custom-color" class="admin-input" placeholder="e.g. Washed Charcoal, Olive Green, Classic Blue..." style="flex: 1;">
+                    <button type="button" id="btn-add-custom-color" class="btn-admin-secondary" style="padding: 0 14px;">Add Color</button>
+                  </div>
+                  <div id="selected-colors-list" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                    <!-- Selected Color Pills -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Specifications & Policy -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Specifications &amp; Policy</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                  <div class="form-group">
+                    <label class="admin-label" for="spec-material">Fabric / Material</label>
+                    <input type="text" id="spec-material" class="admin-input" placeholder="e.g. 100% Cotton 240 GSM" style="width:100%;">
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label" for="spec-fit">Fit Type</label>
+                    <input type="text" id="spec-fit" class="admin-input" placeholder="e.g. Oversized Drop Shoulder" style="width:100%;">
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top: 14px;">
+                  <label class="admin-label" for="spec-returns">Return Policy</label>
+                  <input type="text" id="spec-returns" class="admin-input" value="7-Day Hassle-Free Replacement or Return" style="width:100%;">
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Taxonomy & Publishing Controls -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+
+              <!-- Department & Category -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Department &amp; Category *</h3>
+                <div class="form-group" style="margin-bottom: 14px;">
+                  <label class="admin-label" for="prod-department">Department *</label>
+                  <select id="prod-department" class="admin-select" required style="width:100%;">
+                    <option value="WOMEN">WOMEN</option>
+                    <option value="MEN">MEN</option>
+                    <option value="ACCESSORIES">ACCESSORIES</option>
+                    <option value="FOOTWEAR">FOOTWEAR</option>
+                    <option value="BAGS">BAGS</option>
+                    <option value="JEWELLERY">JEWELLERY</option>
+                    <option value="CAPS">CAPS</option>
+                    <option value="OTHER">OTHER</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="admin-label" for="prod-category">Sarojini Category *</label>
+                  <select id="prod-category" class="admin-select" required style="width:100%;">
+                    <option value="">Select Category...</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Storefront Badges & Visibility -->
+              <div class="admin-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">Visibility &amp; Badges</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="prod-is-active" checked style="width: 18px; height: 18px; accent-color: #e11d48;">
+                    <span style="font-weight: 600; font-size: 0.9rem;">Active on Storefront</span>
+                  </label>
+
+                  <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="prod-is-featured" style="width: 18px; height: 18px; accent-color: #e11d48;">
+                    <span style="font-size: 0.88rem;">⭐ Featured on Sarojini Home</span>
+                  </label>
+
+                  <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="prod-is-deal" style="width: 18px; height: 18px; accent-color: #e11d48;">
+                    <span style="font-size: 0.88rem;">🔥 Budget Deal Spotlight</span>
+                  </label>
+
+                  <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="prod-is-new" checked style="width: 18px; height: 18px; accent-color: #e11d48;">
+                    <span style="font-size: 0.88rem;">✨ Mark as New Arrival</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Payment Settings & Advance Payment (Parity with Main VADI) -->
+              <div class="admin-card" id="card-advance-payment">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700;">
+                    <i class="fas fa-hand-holding-dollar" style="color: #e11d48; margin-right: 6px;"></i>
+                    Payment &amp; Advance Settings
+                  </h4>
+                  <label style="display:flex; align-items:center; gap: 8px; cursor: pointer; font-size: 0.85rem;">
+                    <input type="checkbox" id="prod-advance-enabled" style="width: 16px; height: 16px; accent-color: #e11d48;">
+                    <span style="font-weight: 600;">Require Advance</span>
+                  </label>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--admin-text-muted); margin-bottom: 12px;">
+                  Configure payment terms. When advance is enabled, customers pay an upfront deposit (via UPI/Card) before order confirmation, with the balance collected via COD upon delivery.
+                </p>
+
+                <!-- Payment Modes Allowed -->
+                <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--admin-card-border);">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.82rem;">
+                    <input type="checkbox" id="prod-allow-online" checked style="width: 16px; height: 16px; accent-color: #e11d48;">
+                    <span>Allow Full Online Payment (UPI / Cards / Net Banking)</span>
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.82rem;">
+                    <input type="checkbox" id="prod-allow-cod" checked style="width: 16px; height: 16px; accent-color: #e11d48;">
+                    <span>Allow Cash on Delivery (COD)</span>
+                  </label>
+                </div>
+
+                <!-- Advance Payment Configuration Options -->
+                <div id="advance-options" style="display: none; flex-direction: column; gap: 12px;">
+                  <div class="form-group">
+                    <label class="admin-label" style="font-size: 0.78rem;">Advance Calculation Type *</label>
+                    <select id="prod-advance-type" class="admin-select" style="width:100%;">
+                      <option value="fixed" selected>Fixed Amount (₹ INR)</option>
+                      <option value="percentage">Percentage of Selling Price (%)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="admin-label" id="label-advance-value" style="font-size: 0.78rem;">Advance Amount (₹) *</label>
+                    <input type="number" id="prod-advance-value" class="admin-input" placeholder="e.g. 250" min="0" step="any" style="width:100%;">
+                  </div>
+
+                  <!-- Dynamic Live Preview Box -->
+                  <div id="advance-preview-box" style="padding: 12px; background: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.25); border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 1.4rem;">💳</div>
+                    <div>
+                      <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #e11d48; font-weight: 800;">Customer Split Preview</div>
+                      <div id="advance-preview-text" style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-top: 2px;">Customer pays ₹0 now + ₹0 COD</div>
+                      <div id="advance-preview-subtext" style="font-size: 0.72rem; color: var(--admin-text-muted); margin-top: 2px;">Calculated on selling price of ₹0</div>
+                    </div>
+                  </div>
+                  <div id="advance-error-msg" style="display: none; color: var(--admin-danger); font-size: 0.78rem; margin-top: 4px;"></div>
+                </div>
+              </div>
+
+              <!-- Submit Action Box -->
+              <div class="admin-card" style="background: #111827; border-color: #1f2937;">
+                <button type="submit" id="btn-save-product" class="btn-admin-primary" style="width: 100%; justify-content: center; padding: 14px; background: #e11d48; border-color: #e11d48; font-size: 0.95rem; font-weight: 800;">
+                  <i class="fas fa-save"></i>
+                  <span id="btn-save-label">Publish Sarojini Product</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <div id="admin-toast-container" class="admin-toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="../js/image-utils.js"></script>
+  <script src="js/cross-store-service.js"></script>
+  <script src="js/admin-sarojini-add-product.js"></script>
+</body>
+</html>
+

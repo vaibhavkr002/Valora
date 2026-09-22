@@ -476,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hasError) return;
 
       const appRef = "APP-" + Math.floor(1000 + Math.random() * 9000);
-      showToast(`Application received! Ref #${appRef}. Thank you for applying to VELORA.`, "success");
+      showToast(`Application received! Ref #${appRef}. Thank you for applying to VADI.`, "success");
 
       careersForm.reset();
       if (careersModalOverlay) careersModalOverlay.classList.remove("active");
@@ -526,7 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnDownloadAssets) {
     btnDownloadAssets.addEventListener("click", (e) => {
       e.preventDefault();
-      showToast("Downloading VELORA Brand Assets Kit (Vector Logos, Color Palettes & Photography)...", "info");
+      showToast("Downloading VADI Brand Assets Kit (Vector Logos, Color Palettes & Photography)...", "info");
     });
   }
 

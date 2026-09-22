@@ -34,7 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     totalFilteredProducts: [],
     streamId: 0,
     isStreaming: false,
-    renderedProductIds: new Set()
+    renderedProductIds: new Set(),
+    isCatalogSyncing: true
   };
 
   let streamBatchTimer = null;
@@ -159,13 +160,15 @@ document.addEventListener("DOMContentLoaded", () => {
         window.syncStoreSettings ? window.syncStoreSettings() : Promise.resolve(),
         window.syncProductsFromSupabase ? window.syncProductsFromSupabase() : Promise.resolve()
       ]);
+    } catch (err) {
+      console.warn("Live shop catalog sync note:", err);
+    } finally {
+      state.isCatalogSyncing = false;
       applyStoreSettings();
       renderCategoryFilters();
       renderBrandCheckboxes();
       executeFilterPipeline();
       updateBadges();
-    } catch (err) {
-      console.warn("Live shop catalog sync note:", err);
     }
   }
 
@@ -222,21 +225,21 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Trending Now";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Trending Now";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Handpicked bestsellers crafted for timeless style, all-day comfort, and daily durability.";
-      document.title = "Trending Now | VELORA - Style That Speaks For You";
+      document.title = "Trending Now | VADI - Everything. Simply Yours.";
     }
     if (path.includes("deals") || sectionParam === "deals" || dealsParam === "true" || dealsParam === "1") {
       state.filters.dealsOnly = true;
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Today's Flash Deals";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Today's Deals";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Deep discounts on high-demand pieces. Quantities are strictly limited!";
-      document.title = "Today's Deals | VELORA - Style That Speaks For You";
+      document.title = "Today's Deals | VADI - Everything. Simply Yours.";
     }
     if (path.includes("new-arrivals") || path.includes("new_arrivals") || sectionParam === "new" || sectionParam === "new-arrivals") {
       state.filters.newOnly = true;
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "New Arrivals";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "New Arrivals";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Just landed in the catalog. Be the first to experience our latest release pieces.";
-      document.title = "New Arrivals | VELORA - Style That Speaks For You";
+      document.title = "New Arrivals | VADI - Everything. Simply Yours.";
     }
     const bogoParam = (urlParams.get("bogo") || urlParams.get("is_bogo") || "").toLowerCase();
     if (path.includes("bogo") || sectionParam === "bogo" || bogoParam === "true" || bogoParam === "1") {
@@ -244,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Buy 1 Get 1 Free";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Buy 1 Get 1 Free";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Select any qualifying luxury item and unlock an eligible free companion product!";
-      document.title = "Buy 1 Get 1 Free | VELORA - Style That Speaks For You";
+      document.title = "Buy 1 Get 1 Free | VADI - Everything. Simply Yours.";
     }
 
     if (categoryParam) {
@@ -268,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = decodedBrand;
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = decodedBrand;
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = `Explore authentic premium footwear, timepieces, and apparel by ${decodedBrand}.`;
-      document.title = `${decodedBrand} | VELORA - Style That Speaks For You`;
+      document.title = `${decodedBrand} | VADI - Everything. Simply Yours.`;
     }
   }
 
@@ -548,7 +551,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function createProductCardSingleHTML(product) {
     if (!product) return "";
     try {
-      const isWishlisted = state.wishlist.has(product.id);
+      const isWishlisted = (window.VadiWishlist && typeof window.VadiWishlist.has === 'function')
+        ? window.VadiWishlist.has(product.id)
+        : state.wishlist.has(product.id);
       const prodId = String(product.id || product.supabase_id);
       const isInCart = state.cart.some(item => String(item.id || item.supabase_id) === prodId);
       const bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
@@ -596,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
 
           <div class="product-card-body">
-            <div class="product-card-brand">${product.brand || 'VELORA'}</div>
+            <div class="product-card-brand">${product.brand || 'VADI'}</div>
             <h4 class="product-card-name" title="${product.name}">
               <a href="product.html?id=${product.id}">${product.name}</a>
             </h4>
@@ -652,6 +657,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const loader = elements.catalogAutoLoader || document.getElementById("catalog-auto-loader");
 
     if (state.totalFilteredProducts.length === 0) {
+      if (state.isCatalogSyncing) {
+        renderSkeletons();
+        if (loader) loader.style.display = "none";
+        return;
+      }
       elements.productsGrid.innerHTML = `
         <div class="shop-empty-state">
           <div class="empty-state-icon">
@@ -1210,6 +1220,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // WISHLIST MANAGEMENT
   // ==========================================================================
   function toggleWishlist(productId) {
+    if (window.VadiWishlist && typeof window.VadiWishlist.toggle === 'function') {
+      const product = (window.PRODUCTS_DATA || []).find(p => p.id === productId);
+      window.VadiWishlist.toggle(productId, 'main', product);
+      return;
+    }
+
     const product = window.PRODUCTS_DATA.find(p => p.id === productId);
     if (!product) return;
 
@@ -1332,11 +1348,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (elements.bogoPaidBanner) {
       elements.bogoPaidBanner.innerHTML = `
-        <div style="display:flex; align-items:center; gap: 14px;">
-          <img src="${paidProduct.image}" alt="${paidProduct.name}" style="width: 58px; height: 58px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
-          <div>
-            <span style="font-size: 0.72rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px;">Purchasing Qualifying Item:</span>
-            <h4 style="font-size: 0.98rem; font-weight: 700; color: var(--text-main); margin: 2px 0;">${paidProduct.name}</h4>
+        <div style="display:flex; align-items:center; gap: 10px; width: 100%; min-width: 0;">
+          <img src="${paidProduct.image}" alt="${paidProduct.name}" style="width: 52px; height: 52px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border-color); flex-shrink: 0; background: #ffffff;">
+          <div style="flex: 1; min-width: 0; overflow-wrap: anywhere; word-break: break-word;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px; display: block;">Purchasing Qualifying Item:</span>
+            <h4 style="font-size: 0.94rem; font-weight: 700; color: var(--text-main); margin: 2px 0; line-height: 1.3; overflow-wrap: anywhere; word-break: break-word;">${paidProduct.name}</h4>
             <span style="font-size: 0.92rem; font-weight: 700; color: var(--accent);">${formatPrice(paidProduct.price)}</span>
           </div>
         </div>
@@ -1383,7 +1399,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="bogo-price-free">₹0 FREE</span>
                 <span class="bogo-price-orig">${formatPrice(freeItem.price)}</span>
               </div>
-              <span style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom: 8px;">Price Match: Δ ₹${diff}</span>
+              <span style="display:block; font-size:0.72rem; color:var(--text-muted); margin-bottom: 4px;">Price Match: Δ ₹${diff}</span>
               <button type="button" class="bogo-select-btn" data-free-select-id="${freeItem.id}">
                 Select This Gift
               </button>
@@ -1432,6 +1448,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (elements.bogoModalOverlay) {
       elements.bogoModalOverlay.classList.add("active");
+      document.body.classList.add("bogo-modal-open");
       document.body.style.overflow = "hidden";
     }
   }
@@ -1439,11 +1456,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function closeBogoModal() {
     if (elements.bogoModalOverlay) {
       elements.bogoModalOverlay.classList.remove("active");
+      document.body.classList.remove("bogo-modal-open");
       document.body.style.overflow = "";
     }
     selectedBogoPaidProduct = null;
     selectedBogoFreeProduct = null;
   }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && elements.bogoModalOverlay && elements.bogoModalOverlay.classList.contains("active")) {
+      closeBogoModal();
+    }
+  });
 
   // ==========================================================================
   // BIND ALL EVENT LISTENERS

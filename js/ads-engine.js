@@ -13,53 +13,9 @@
   const STORAGE_KEY = 'velora_ads_cache_v2';
   const CACHE_TTL_MS = 120000; // 2 minutes
 
-  // Default seed fallback if Supabase is offline or not yet configured
+  // Default seed fallback only for page body banners if Supabase is offline
+  // Note: Top Announcement Bar NEVER has hardcoded fallbacks and must collapse completely if 0 active ads in DB
   const DEFAULT_FALLBACK_ADS = [
-    {
-      id: 'default_top_bogo',
-      title: 'Buy 1 Get 1 on Selected Products',
-      subtitle: 'Unlock a complimentary companion piece automatically at checkout.',
-      badge_text: '🔥 BOGO SALE',
-      image_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
-      cta_text: 'Shop BOGO →',
-      cta_link: 'bogo.html',
-      ad_type: 'bogo',
-      placement: 'top_announcement',
-      target_pages: ['all'],
-      priority: 5,
-      sort_order: 1,
-      is_active: true
-    },
-    {
-      id: 'default_top_trending',
-      title: 'Discover What\'s Trending This Week',
-      subtitle: 'Handcrafted luxury footwear, precision chronographs, and curated essentials.',
-      badge_text: '⚡ TRENDING NOW',
-      image_url: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80',
-      cta_text: 'Explore Trending →',
-      cta_link: 'trending.html',
-      ad_type: 'trending',
-      placement: 'top_announcement',
-      target_pages: ['all'],
-      priority: 4,
-      sort_order: 2,
-      is_active: true
-    },
-    {
-      id: 'default_top_deals',
-      title: 'Special Savings Across Curated Collections',
-      subtitle: 'Limited-time seasonal prices on certified luxury goods.',
-      badge_text: '🏷️ WEEKEND OFFER',
-      image_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80',
-      cta_text: 'Shop Now →',
-      cta_link: 'shop.html',
-      ad_type: 'deals',
-      placement: 'top_announcement',
-      target_pages: ['all'],
-      priority: 3,
-      sort_order: 3,
-      is_active: true
-    },
     {
       id: 'default_hero_bogo',
       title: 'Double Your Style — Buy 1, Get 1 Free',
@@ -210,10 +166,11 @@
     }
 
     let loadedAds = [];
+    let dbConnected = false;
 
-    // 1. Try querying public.banners with full schema
+    // 1. Authoritative query to public.banners table
     try {
-      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/banners?select=*&is_active=eq.true&order=display_order.asc`, {
+      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/banners?select=*&is_active=eq.true&order=sort_order.asc`, {
         headers: {
           "apikey": SUPABASE_ANON_KEY,
           "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
@@ -221,8 +178,9 @@
       });
 
       if (res.ok) {
+        dbConnected = true;
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           loadedAds = data.map(b => normalizeAdRecord(b));
         }
       }
@@ -231,7 +189,7 @@
     }
 
     // 2. Try store_settings key 'advertisements' (custom admin backup)
-    if (loadedAds.length === 0) {
+    if (loadedAds.length === 0 && !dbConnected) {
       try {
         const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?key=eq.advertisements`, {
           headers: {
@@ -240,6 +198,7 @@
           }
         });
         if (res.ok) {
+          dbConnected = true;
           const data = await res.json();
           if (data && data[0] && data[0].value && Array.isArray(data[0].value)) {
             loadedAds = data[0].value
@@ -252,15 +211,8 @@
       }
     }
 
-    // 3. Supplement placements not returned from DB with default fallback ads if available
-    const existingPlacements = new Set(loadedAds.map(a => a.placement));
-    DEFAULT_FALLBACK_ADS.forEach(fb => {
-      if (!existingPlacements.has(fb.placement)) {
-        loadedAds.push(fb);
-      }
-    });
-
-    if (loadedAds.length === 0) {
+    // 3. If and only if DB was completely unreachable, supplement body-only fallbacks
+    if (!dbConnected && loadedAds.length === 0) {
       loadedAds = DEFAULT_FALLBACK_ADS;
     }
 
@@ -675,9 +627,9 @@
   // ==========================================================================
   // MASTER INITIALIZATION
   // ==========================================================================
-  async function initAdsEngine() {
+  async function initAdsEngine(forceRefresh = false) {
     const currentPage = detectCurrentPage();
-    const allAds = await fetchAllAdvertisements();
+    const allAds = await fetchAllAdvertisements(forceRefresh);
 
     // 1. Render dynamic single top announcement bar
     const topAds = getAdsForPlacement(allAds, 'top_announcement', currentPage);
@@ -692,6 +644,20 @@
     // 4. Render Authentication Left Visual 3D Card
     renderAuth3DPromoCard(allAds, currentPage);
   }
+
+  // Live synchronization listeners
+  window.addEventListener('velora:ads-updated', () => {
+    cachedAds = null;
+    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+    initAdsEngine(true);
+  });
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) {
+      cachedAds = null;
+      initAdsEngine(true);
+    }
+  });
 
   // Teardown timers on page unload
   window.addEventListener('beforeunload', () => {
@@ -710,7 +676,11 @@
   window.VeloraAds = {
     version: '2.0.0',
     init: initAdsEngine,
-    refresh: () => initAdsEngine(true),
+    refresh: () => {
+      cachedAds = null;
+      try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+      return initAdsEngine(true);
+    },
     detectPage: detectCurrentPage,
     getAds: () => cachedAds || []
   };

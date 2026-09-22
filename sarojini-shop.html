@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse the full Sarojini Bazaar online catalog. Authentic street finds, trendy clothes, bags, accessories, and shoes at Delhi market rates.">
+  <title>Sarojini Bazaar Catalog | VADI Online Shopping</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%239e2a2b'/><path d='M30 30L50 70L70 30' stroke='%23ffffff' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Font Awesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/sarojini-bazaar-page.css">
+  <link rel="stylesheet" href="css/sarojini-shop.css">
+  <link rel="stylesheet" href="css/cart-drawer.css">
+</head>
+<body class="sarojini-storefront-body sarojini-shop-page">
+
+  <!-- Top Announcement Bar -->
+  <aside class="sarojini-announcement-bar" id="sarojini-top-announcement" aria-label="Store Announcements">
+    <div class="sarojini-announcement-inner">
+      <span class="announcement-badge">🛍️ DELHI BAZAAR</span>
+      <span class="announcement-text">
+        Direct Street Rates Across India • 7-Day Easy Replacements • Cash on Delivery &amp; Open Box Delivery
+        <a href="sarojini-bazaar.html">Back to Bazaar Hub →</a>
+      </span>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       REFINED NAVIGATION HEADER
+       ======================================================================== -->
+  <header class="sarojini-nav-header" aria-label="Sarojini Bazaar Navigation">
+    <div class="sarojini-nav-container">
+      <div class="sarojini-nav-left">
+        <!-- VADI Brand Emblem -->
+        <a href="sarojini-bazaar.html" class="sarojini-brand-logo" title="Back to Sarojini Hub">
+          <span class="logo-txt">VADI</span>
+          <span class="logo-sub-badge"><i class="fas fa-store-alt"></i> Sarojini Bazaar</span>
+        </a>
+
+        <!-- Category Links -->
+        <nav class="sarojini-nav-links" aria-label="Store Navigation">
+          <a href="homepage.html" class="sarojini-nav-link nav-main-store" title="Switch to Main VADI Luxury Store">Main Store</a>
+          <a href="sarojini-shop.html?department=WOMEN" class="sarojini-nav-link" data-dept-nav="WOMEN">Women</a>
+          <a href="sarojini-shop.html?department=MEN" class="sarojini-nav-link" data-dept-nav="MEN">Men</a>
+          <a href="sarojini-shop.html?department=ACCESSORIES" class="sarojini-nav-link" data-dept-nav="ACCESSORIES">Accessories</a>
+          <a href="sarojini-shop.html?department=FOOTWEAR" class="sarojini-nav-link" data-dept-nav="FOOTWEAR">Footwear</a>
+          <a href="sarojini-shop.html?department=BAGS" class="sarojini-nav-link" data-dept-nav="BAGS">Bags</a>
+          <a href="sarojini-shop.html?department=JEWELLERY" class="sarojini-nav-link" data-dept-nav="JEWELLERY">Jewellery</a>
+          <a href="sarojini-shop.html?department=CAPS" class="sarojini-nav-link" data-dept-nav="CAPS">Caps</a>
+        </nav>
+      </div>
+
+      <!-- Scoped Search Box -->
+      <div class="sarojini-search-box">
+        <form action="sarojini-shop.html" method="GET" id="sarojini-search-form">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" name="search" id="sarojini-search-input" placeholder="Search Sarojini finds, tops, jeans..." autocomplete="off">
+          <button type="submit" class="search-submit-btn" aria-label="Search Bazaar">Search</button>
+        </form>
+      </div>
+
+      <!-- Right Action Icons -->
+      <div class="sarojini-nav-right">
+        <a href="sarojini-bazaar.html" class="sarojini-exit-btn" title="Sarojini Home">
+          <i class="fas fa-home"></i>
+          <span>Bazaar Home</span>
+        </a>
+
+        <a href="account.html" class="sarojini-icon-btn" aria-label="Account Profile" title="Profile">
+          <i class="far fa-user"></i>
+        </a>
+
+        <a href="wishlist.html" class="sarojini-icon-btn" aria-label="Saved Wishlist" title="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="sarojini-badge-pill wishlist-count-badge">0</span>
+        </a>
+
+        <button type="button" id="btn-open-cart" class="sarojini-icon-btn cart-trigger-btn" aria-label="Shopping Cart" title="Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="sarojini-badge-pill cart-count-badge" id="nav-cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Category Directory Bar -->
+  <nav class="sarojini-mobile-dept-strip" aria-label="Mobile Category Navigation">
+    <a href="homepage.html" style="background: #1c1917; color: #fff;">← Main Store</a>
+    <a href="sarojini-bazaar.html">Bazaar Home</a>
+    <a href="sarojini-shop.html" class="active">All Finds</a>
+    <a href="sarojini-shop.html?department=WOMEN">Women's Lane</a>
+    <a href="sarojini-shop.html?department=MEN">Men's Lane</a>
+    <a href="sarojini-shop.html?department=ACCESSORIES">Accessories</a>
+    <a href="sarojini-shop.html?department=FOOTWEAR">Footwear</a>
+    <a href="sarojini-shop.html?department=BAGS">Bags</a>
+    <a href="sarojini-shop.html?department=JEWELLERY">Jewellery</a>
+    <a href="sarojini-shop.html?department=CAPS">Caps</a>
+  </nav>
+
+  <!-- ========================================================================
+       MAIN CATALOG CONTENT
+       ======================================================================== -->
+  <main class="sarojini-catalog-main">
+    <div class="section-container">
+      
+      <!-- Breadcrumb -->
+      <nav class="sarojini-breadcrumbs" aria-label="Breadcrumb" style="padding: 16px 0 10px;">
+        <a href="homepage.html">Home</a>
+        <span class="sep">/</span>
+        <a href="sarojini-bazaar.html">Sarojini Bazaar</a>
+        <span class="sep">/</span>
+        <span class="current" id="catalog-breadcrumb-current">All Finds</span>
+      </nav>
+
+      <!-- Department Bar (Horizontal Tabs) -->
+      <div class="catalog-dept-tabs" id="catalog-dept-tabs">
+        <button type="button" class="catalog-dept-btn active" data-dept="">All Bazaar Finds</button>
+        <button type="button" class="catalog-dept-btn" data-dept="WOMEN">Women's Lane</button>
+        <button type="button" class="catalog-dept-btn" data-dept="MEN">Men's Lane</button>
+        <button type="button" class="catalog-dept-btn" data-dept="ACCESSORIES">Accessories Corner</button>
+        <button type="button" class="catalog-dept-btn" data-dept="FOOTWEAR">Sneaker Street</button>
+        <button type="button" class="catalog-dept-btn" data-dept="BAGS">Bag Corner</button>
+        <button type="button" class="catalog-dept-btn" data-dept="JEWELLERY">Jewellery Lane</button>
+        <button type="button" class="catalog-dept-btn" data-dept="CAPS">Cap Corner</button>
+      </div>
+
+      <!-- Subcategory Chips Bar (Dynamic from sarojini_categories) -->
+      <div class="subcat-chips-bar" id="subcat-chips-bar" style="display: none;">
+        <!-- Injected dynamically via JS -->
+      </div>
+
+      <!-- Main Layout: Filters Sidebar + Products Grid -->
+      <div class="catalog-layout">
+        
+        <!-- SIDEBAR FILTERS -->
+        <aside class="catalog-filters-sidebar" id="catalog-filters-sidebar">
+          <div class="sidebar-header-row">
+            <h3 class="filters-title"><i class="fas fa-sliders-h"></i> Filters</h3>
+            <button type="button" id="btn-reset-filters" class="btn-reset-filters">Reset All</button>
+            <button type="button" id="btn-close-filters-mobile" class="btn-close-mobile-filters" aria-label="Close Filters">&times;</button>
+          </div>
+
+          <!-- Search Filter -->
+          <div class="filter-block">
+            <h4 class="filter-heading">Search Bazaar</h4>
+            <div class="filter-search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="catalog-search-input" placeholder="Keyword, style, color...">
+            </div>
+          </div>
+
+          <!-- Price Range -->
+          <div class="filter-block">
+            <h4 class="filter-heading">Bazaar Price Range</h4>
+            <div class="filter-checkbox-list">
+              <label class="filter-checkbox-label">
+                <input type="radio" name="price-filter" value="" checked>
+                <span>All Prices</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="price-filter" value="0-199">
+                <span>Under ₹199</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="price-filter" value="0-299">
+                <span>Under ₹299</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="price-filter" value="299-499">
+                <span>₹299 – ₹499</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="price-filter" value="499-99999">
+                <span>₹499 &amp; Above</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Discount -->
+          <div class="filter-block">
+            <h4 class="filter-heading">Discount</h4>
+            <div class="filter-checkbox-list">
+              <label class="filter-checkbox-label">
+                <input type="radio" name="discount-filter" value="" checked>
+                <span>All Deals</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="discount-filter" value="30">
+                <span>30% OFF or more</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="discount-filter" value="50">
+                <span>50% OFF or more</span>
+              </label>
+              <label class="filter-checkbox-label">
+                <input type="radio" name="discount-filter" value="70">
+                <span>70% OFF or more</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sizes -->
+          <div class="filter-block">
+            <h4 class="filter-heading">Available Sizes</h4>
+            <div class="size-chips-filter" id="size-chips-filter">
+              <button type="button" class="size-chip" data-size="Free Size">Free Size</button>
+              <button type="button" class="size-chip" data-size="XS">XS</button>
+              <button type="button" class="size-chip" data-size="S">S</button>
+              <button type="button" class="size-chip" data-size="M">M</button>
+              <button type="button" class="size-chip" data-size="L">L</button>
+              <button type="button" class="size-chip" data-size="XL">XL</button>
+              <button type="button" class="size-chip" data-size="XXL">XXL</button>
+            </div>
+          </div>
+
+          <!-- Stock Only -->
+          <div class="filter-block">
+            <label class="filter-checkbox-label" style="font-weight: 700;">
+              <input type="checkbox" id="filter-in-stock-only" checked>
+              <span>In-Stock Items Only</span>
+            </label>
+          </div>
+        </aside>
+
+        <!-- RIGHT: Products Catalog Section -->
+        <section class="catalog-products-section">
+          
+          <!-- Top Sort & Count Bar -->
+          <div class="catalog-toolbar">
+            <div class="toolbar-left">
+              <button type="button" id="btn-toggle-filters-mobile" class="btn-mobile-filter-trigger">
+                <i class="fas fa-filter"></i>
+                <span>Filters &amp; Sort</span>
+              </button>
+              <span class="catalog-results-count"><strong id="results-count-number">0</strong> items found</span>
+            </div>
+
+            <div class="toolbar-right">
+              <label for="catalog-sort-select" class="sort-label">Sort by:</label>
+              <select id="catalog-sort-select" class="catalog-sort-select">
+                <option value="popular">Popular / Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest Drops</option>
+                <option value="discount">Highest Discount %</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="sarojini-product-grid" id="catalog-products-grid">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: #78716c;">
+              <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--bazaar-terracotta);"></i>
+              <p style="margin-top: 12px; font-weight: 600;">Loading Sarojini catalog...</p>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer class="sarojini-footer">
+    <div class="section-container">
+      <div class="footer-grid">
+        
+        <div class="footer-col brand-col">
+          <span class="footer-logo">VADI <small>Sarojini Bazaar</small></span>
+          <p class="footer-tagline">
+            Authentic street finds, export surplus bargains, and daily fresh styles direct to you from Delhi's fashion lanes.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> 100% Hand-Checked Quality</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Real Delhi Bazaar Rates</span>
+            <span class="footer-badge"><i class="fas fa-check-circle"></i> Open Box Delivery Supported</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Bazaar Lanes</h4>
+          <ul>
+            <li><a href="sarojini-shop.html?department=WOMEN">Women's Lane</a></li>
+            <li><a href="sarojini-shop.html?department=MEN">Men's Lane</a></li>
+            <li><a href="sarojini-shop.html?department=ACCESSORIES">Accessories Corner</a></li>
+            <li><a href="sarojini-shop.html?department=FOOTWEAR">Sneaker Street</a></li>
+            <li><a href="sarojini-shop.html?department=BAGS">Bag Corner</a></li>
+            <li><a href="sarojini-shop.html?department=JEWELLERY">Jewellery Lane</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Need Help?</h4>
+          <ul>
+            <li><a href="account.html">My Orders</a></li>
+            <li><a href="cart.html">View Cart</a></li>
+            <li><a href="wishlist.html">Saved Finds</a></li>
+            <li><a href="account.html">Track Order</a></li>
+            <li><a href="homepage.html">Return to Main Store</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Direct Dispatch</h4>
+          <p style="font-size:0.85rem; color:#a8a29e; line-height:1.65; margin:0 0 16px 0;">
+            Packed with care, quality-inspected, and delivered across India via express courier. Covered by our 7-day replacement guarantee.
+          </p>
+          <a href="sarojini-bazaar.html" class="footer-shop-btn">Return to Bazaar Hub</a>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 VADI. Sarojini Bazaar Catalog. Strictly separate from main VADI luxury products.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/image-utils.js"></script>
+  <script src="js/cart-drawer.js"></script>
+  <script src="js/wishlist-service.js"></script>
+  <script src="js/ads-engine.js" defer></script>
+  <script src="js/sarojini-shop.js" defer></script>
+</body>
+</html>

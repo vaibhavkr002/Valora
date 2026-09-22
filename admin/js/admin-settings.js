@@ -16,8 +16,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const shipping = settings.find(s => s.key === "shipping")?.value || {};
       const payment = settings.find(s => s.key === "payment")?.value || {};
 
-      if (document.getElementById("set-store-name")) document.getElementById("set-store-name").value = general.store_name || "VELORA Lifestyle Studio";
-      if (document.getElementById("set-support-email")) document.getElementById("set-support-email").value = general.support_email || "support@velorastudio.com";
+      if (document.getElementById("set-store-name")) document.getElementById("set-store-name").value = general.store_name || "VADI Lifestyle Studio";
+      if (document.getElementById("set-support-email")) document.getElementById("set-support-email").value = general.support_email || "support@vadistudio.com";
       if (document.getElementById("set-support-phone")) document.getElementById("set-support-phone").value = general.support_phone || "+91 1800 102 8356";
       if (document.getElementById("set-address")) document.getElementById("set-address").value = general.studio_address || "12 Connaught Place, New Delhi 110001, India";
 
@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (document.getElementById("set-openbox-online")) document.getElementById("set-openbox-online").checked = eligibleMethods.includes("online");
 
       // UPI Merchant Gateway Settings
-      if (document.getElementById("set-merchant-vpa")) document.getElementById("set-merchant-vpa").value = payment.merchant_vpa || "velora.lifestyle@okhdfcbank";
-      if (document.getElementById("set-merchant-name")) document.getElementById("set-merchant-name").value = payment.merchant_name || "VELORA Lifestyle Studio";
+      if (document.getElementById("set-merchant-vpa")) document.getElementById("set-merchant-vpa").value = payment.merchant_vpa || "vadi.lifestyle@okhdfcbank";
+      if (document.getElementById("set-merchant-name")) document.getElementById("set-merchant-name").value = payment.merchant_name || "VADI Lifestyle Studio";
 
       const enabledApps = payment.enabled_apps || ["Google Pay", "PhonePe", "Paytm", "BHIM", "Any UPI App"];
       if (document.getElementById("app-gpay")) document.getElementById("app-gpay").checked = enabledApps.includes("Google Pay");
@@ -86,8 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (document.getElementById("app-generic")?.checked) enabledApps.push("Any UPI App");
 
       const paymentVal = {
-        merchant_vpa: document.getElementById("set-merchant-vpa") ? document.getElementById("set-merchant-vpa").value.trim() : "velora.lifestyle@okhdfcbank",
-        merchant_name: document.getElementById("set-merchant-name") ? document.getElementById("set-merchant-name").value.trim() : "VELORA Lifestyle Studio",
+        merchant_vpa: document.getElementById("set-merchant-vpa") ? document.getElementById("set-merchant-vpa").value.trim() : "vadi.lifestyle@okhdfcbank",
+        merchant_name: document.getElementById("set-merchant-name") ? document.getElementById("set-merchant-name").value.trim() : "VADI Lifestyle Studio",
         enabled_apps: enabledApps
       };
 

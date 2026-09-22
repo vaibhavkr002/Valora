@@ -16,7 +16,7 @@
  * - Purely client-side storefront activity simulation.
  * - ZERO database pollution: No fake records are inserted into Supabase tables.
  * - No customer-facing "DEMO" labels: Clean, authentic, luxury shopping-app appearance.
- * - Live BOGO activity dynamically detects genuine BOGO-eligible products from VELORA's
+ * - Live BOGO activity dynamically detects genuine BOGO-eligible products from VADI's
  *   existing BOGO configuration and preserves the ₹20–₹40 price difference pairing rules.
  * - Ready for future real-order mode with strict customer anonymization.
  */
@@ -169,7 +169,7 @@
   }
 
   /**
-   * Returns all products that are currently eligible for BOGO under VELORA's rules
+   * Returns all products that are currently eligible for BOGO under VADI's rules
    */
   function getBogoEligibleProducts() {
     if (!window.PRODUCTS_DATA || !Array.isArray(window.PRODUCTS_DATA) || window.PRODUCTS_DATA.length === 0) {
@@ -198,7 +198,7 @@
   }
 
   /**
-   * Matches an eligible free BOGO item adhering to VELORA's ₹20–₹40 price difference rule
+   * Matches an eligible free BOGO item adhering to VADI's ₹20–₹40 price difference rule
    */
   function getEligibleBogoFreeProduct(paidProduct) {
     if (!paidProduct || !window.PRODUCTS_DATA) return null;

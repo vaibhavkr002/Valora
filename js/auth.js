@@ -315,7 +315,7 @@
 
           await this.loadProfile(data.user.id);
           this.updateNavbarAuth();
-          showAuthToast('Account created successfully! Welcome to VELORA.', 'success');
+          showAuthToast('Account created successfully! Welcome to VADI.', 'success');
         }
 
         return {
@@ -581,3 +581,6 @@
     }
   }
 })();
+
+// Backwards-compatible VADI Auth alias
+window.VadiAuth = window.VeloraAuth;

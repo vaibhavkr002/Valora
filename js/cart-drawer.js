@@ -209,6 +209,10 @@
         ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:1px 5px; border-radius:4px; margin-left:6px;">🎁 FREE BOGO</span>`
         : '';
 
+      const sarojiniBadge = item.catalog_type === 'sarojini'
+        ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#e11d48; background:rgba(225,29,72,0.1); padding:1px 6px; border-radius:4px; margin-left:6px;">🛍️ Sarojini Bazaar</span>`
+        : '';
+
       const priceDisplay = isFreeBogo
         ? `<span class="cart-item-price" style="color:#059669; font-weight:800;">FREE (₹0) <span style="font-size:0.75rem; text-decoration:line-through; color:var(--text-muted); margin-left:4px;">${formatINR(item.originalPrice || 0)}</span></span>`
         : `<span class="cart-item-price">${formatINR(lineTotal)}</span>`;
@@ -230,7 +234,7 @@
           <img class="cart-item-img" src="${item.image || fallbackImg}" alt="${item.name || 'Product'}">
           <div class="cart-item-details">
             <h4 class="cart-item-title">${item.name || 'Product Item'}</h4>
-            <span class="cart-item-meta">${item.size ? item.size + ' • ' : ''}${item.color || 'Default'} ${payBadge} ${bogoBadge}</span>
+            <span class="cart-item-meta">${item.size ? item.size + ' • ' : ''}${item.color || 'Default'} ${payBadge} ${bogoBadge} ${sarojiniBadge}</span>
             <div class="cart-item-bottom">
               ${qtyControls}
               ${priceDisplay}
@@ -318,12 +322,14 @@
     const selectedSize = options.size || product.size || "Standard";
     const selectedColor = options.color || product.color || "Default";
     const paymentMethod = options.selected_payment_method || product.selected_payment_method || "online";
+    const catalogType = options.catalog_type || product.catalog_type || "main";
 
     const existingIdx = cart.findIndex(it => 
       (it.id === pid || it.supabase_id === pid) &&
       it.size === selectedSize &&
       it.color === selectedColor &&
-      it.selected_payment_method === paymentMethod
+      it.selected_payment_method === paymentMethod &&
+      (it.catalog_type || "main") === catalogType
     );
 
     if (existingIdx >= 0) {
@@ -333,11 +339,13 @@
         id: pid,
         name: product.name,
         price: Number(product.price) || 0,
+        originalPrice: Number(product.original_price) || Number(product.originalPrice) || Number(product.price) || 0,
         image: product.image || product.image_url || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80",
         size: selectedSize,
         color: selectedColor,
         quantity: Number(options.quantity) || 1,
         selected_payment_method: paymentMethod,
+        catalog_type: catalogType,
         advance_payment_enabled: Boolean(product.advance_payment_enabled),
         advance_payment_type: product.advance_payment_type || "fixed",
         advance_payment_value: Number(product.advance_payment_value) || 0,
@@ -571,6 +579,7 @@
     },
     updateBadges
   };
+  window.CartDrawer = window.VeloraCart;
 
   window.openCartDrawer = openCartDrawer;
   window.closeCartDrawer = closeCartDrawer;
@@ -578,3 +587,6 @@
   window.updateCartBadges = updateBadges;
   window.syncAllProductButtons = syncAllProductButtons;
 })();
+
+// Backwards-compatible VADI Cart alias
+window.VadiCart = window.VeloraCart;

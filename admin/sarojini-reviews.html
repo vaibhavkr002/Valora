@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sarojini Reviews | VADI Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VADI</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        <!-- Main Store Section -->
+        <a href="dashboard.html" class="sidebar-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="sidebar-link">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+        <a href="add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+        <a href="categories.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+        <a href="gift-offers.html" class="sidebar-link">
+          <i class="fas fa-gift"></i>
+          <span>Gift Offers</span>
+        </a>
+        <a href="orders.html" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+        <a href="coupons.html" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+        <a href="reviews.html" class="sidebar-link">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+        <a href="analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="advertisements.html" class="sidebar-link">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
+        </a>
+        <a href="homepage-sections.html" class="sidebar-link">
+          <i class="fas fa-layer-group"></i>
+          <span>Homepage Sections</span>
+        </a>
+        <a href="delivery-partners.html" class="sidebar-link">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+
+        <!-- SAROJINI BAZAAR SECTION -->
+        <div style="padding: 16px 16px 6px; font-size: 0.7rem; font-weight: 800; color: #e11d48; letter-spacing: 0.08em; text-transform: uppercase;">
+          SAROJINI BAZAAR
+        </div>
+        <a href="sarojini-dashboard.html" class="sidebar-link">
+          <i class="fas fa-store-alt"></i>
+          <span>Sarojini Dashboard</span>
+        </a>
+        <a href="sarojini-products.html" class="sidebar-link">
+          <i class="fas fa-tshirt"></i>
+          <span>Sarojini Products</span>
+        </a>
+        <a href="sarojini-add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-square"></i>
+          <span>Add Sarojini Product</span>
+        </a>
+        <a href="sarojini-categories.html" class="sidebar-link">
+          <i class="fas fa-sitemap"></i>
+          <span>Sarojini Categories</span>
+        </a>
+        <a href="sarojini-offers.html" class="sidebar-link">
+          <i class="fas fa-fire"></i>
+          <span>Sarojini Offers</span>
+        </a>
+        <a href="sarojini-reviews.html" class="sidebar-link active">
+          <i class="fas fa-star-half-alt"></i>
+          <span>Sarojini Reviews</span>
+        </a>
+        <a href="sarojini-analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-bar"></i>
+          <span>Sarojini Analytics</span>
+        </a>
+        <a href="sarojini-coupons.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Sarojini Coupons</span>
+        </a>
+        <a href="sarojini-customers.html" class="sidebar-link">
+          <i class="fas fa-user-tag"></i>
+          <span>Sarojini Customers</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../sarojini-bazaar.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Sarojini Bazaar</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="sarojini-dashboard.html">Sarojini Bazaar</a>
+            <span>/</span>
+            <span class="current">Customer Reviews</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+            </div>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../sarojini-bazaar.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Sarojini Bazaar</a>
+              <div class="admin-dropdown-divider"></div>
+              <button id="btn-admin-logout" class="admin-dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title">Sarojini Customer Reviews</h1>
+            <p class="page-subtitle">Moderate, approve, and manage customer ratings &amp; feedback for Sarojini Bazaar products.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" id="btn-create-review" class="btn-admin-primary" style="background:#e11d48; border-color:#e11d48;">
+              <i class="fas fa-plus"></i>
+              <span>Add Verified Review</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Total Reviews</span>
+              <span class="metric-value" id="stat-total-reviews">0</span>
+              <span class="metric-sub">Across all Sarojini products</span>
+            </div>
+            <div class="metric-icon-box rose"><i class="fas fa-comments fa-lg"></i></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Average Rating</span>
+              <span class="metric-value" id="stat-avg-rating">5.0</span>
+              <span class="metric-sub">Storefront star score</span>
+            </div>
+            <div class="metric-icon-box amber"><i class="fas fa-star fa-lg"></i></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-data">
+              <span class="metric-title">Approved Reviews</span>
+              <span class="metric-value" id="stat-approved-reviews">0</span>
+              <span class="metric-sub">Live on product pages</span>
+            </div>
+            <div class="metric-icon-box emerald"><i class="fas fa-check-circle fa-lg"></i></div>
+          </div>
+        </div>
+
+        <!-- Table Filters -->
+        <div class="admin-card" style="margin-bottom: 20px; padding: 14px 18px;">
+          <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 12px; flex: 1; min-width: 260px; flex-wrap: wrap;">
+              <input type="text" id="search-reviews" class="admin-input" placeholder="Search by customer name, keyword, or product..." style="flex: 1; min-width: 200px;">
+              <select id="filter-product" class="admin-select" style="min-width: 170px;">
+                <option value="">All Sarojini Products</option>
+              </select>
+              <select id="filter-rating" class="admin-select" style="min-width: 130px;">
+                <option value="">All Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+                <option value="3">⭐⭐⭐ 3 Stars</option>
+                <option value="2">⭐⭐ 2 Stars</option>
+                <option value="1">⭐ 1 Star</option>
+              </select>
+              <select id="filter-status" class="admin-select" style="min-width: 130px;">
+                <option value="">All Statuses</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews Table -->
+        <div class="admin-card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="card-title"><span id="reviews-count-badge">0</span> Customer Reviews</h3>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Customer</th>
+                    <th>Rating</th>
+                    <th>Review &amp; Feedback</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reviews-tbody">
+                  <tr><td colspan="7" style="text-align: center; padding: 24px;">Loading reviews...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Create / Edit Review Modal -->
+  <div class="modal-backdrop" id="review-modal" style="display: none; align-items: center; justify-content: center; z-index: 100000; position: fixed; inset: 0; background: rgba(0,0,0,0.65);">
+    <div class="admin-modal" style="max-width: 520px; width: 92%; background: var(--admin-card-bg); border-radius: 12px; border: 1px solid var(--admin-card-border); padding: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 id="modal-review-heading" style="margin: 0; font-size: 1.1rem; font-weight: 700;">Add Verified Sarojini Review</h3>
+        <button type="button" id="btn-close-modal" style="background: none; border: none; font-size: 1.3rem; color: var(--admin-text-muted); cursor: pointer;">&times;</button>
+      </div>
+      <form id="admin-review-form" style="display: flex; flex-direction: column; gap: 14px;">
+        <input type="hidden" id="modal-review-id" value="">
+        <div>
+          <label class="admin-label">Select Sarojini Product *</label>
+          <select id="modal-review-product" class="admin-select" required style="width: 100%;">
+            <option value="">Loading products...</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label class="admin-label">Customer Name *</label>
+            <input type="text" id="modal-review-author" class="admin-input" required placeholder="e.g. Radhika Sharma" style="width: 100%;">
+          </div>
+          <div>
+            <label class="admin-label">Rating *</label>
+            <select id="modal-review-rating" class="admin-select" style="width: 100%;">
+              <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+              <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+              <option value="3">⭐⭐⭐ 3 Stars</option>
+              <option value="2">⭐⭐ 2 Stars</option>
+              <option value="1">⭐ 1 Star</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="admin-label">Review Headline</label>
+          <input type="text" id="modal-review-title" class="admin-input" placeholder="e.g. Authentic street find, fabric is awesome" style="width: 100%;">
+        </div>
+        <div>
+          <label class="admin-label">Review Comment *</label>
+          <textarea id="modal-review-comment" class="admin-input" rows="3" required placeholder="Review details regarding fit, quality..." style="width: 100%;"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
+          <button type="button" id="btn-cancel-modal" class="btn-admin-secondary">Cancel</button>
+          <button type="submit" class="btn-admin-primary" style="background:#e11d48; border-color:#e11d48;">Save Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/admin-sarojini-reviews.js"></script>
+</body>
+</html>
+

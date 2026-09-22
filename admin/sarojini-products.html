@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sarojini Products | VADI Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VADI</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        <!-- Main Store Section -->
+        <a href="dashboard.html" class="sidebar-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="sidebar-link">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+        <a href="add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+        <a href="categories.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+        <a href="gift-offers.html" class="sidebar-link">
+          <i class="fas fa-gift"></i>
+          <span>Gift Offers</span>
+        </a>
+        <a href="orders.html" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+        <a href="coupons.html" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+        <a href="reviews.html" class="sidebar-link">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+        <a href="analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="advertisements.html" class="sidebar-link">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
+        </a>
+        <a href="homepage-sections.html" class="sidebar-link">
+          <i class="fas fa-layer-group"></i>
+          <span>Homepage Sections</span>
+        </a>
+        <a href="delivery-partners.html" class="sidebar-link">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+        <a href="settings.html" class="sidebar-link">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+
+        <!-- SAROJINI BAZAAR SECTION -->
+        <div style="padding: 16px 16px 6px; font-size: 0.7rem; font-weight: 800; color: #e11d48; letter-spacing: 0.08em; text-transform: uppercase;">
+          SAROJINI BAZAAR
+        </div>
+        <a href="sarojini-dashboard.html" class="sidebar-link">
+          <i class="fas fa-store-alt"></i>
+          <span>Sarojini Dashboard</span>
+        </a>
+        <a href="sarojini-products.html" class="sidebar-link active">
+          <i class="fas fa-tshirt"></i>
+          <span>Sarojini Products</span>
+        </a>
+        <a href="sarojini-add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-square"></i>
+          <span>Add Sarojini Product</span>
+        </a>
+        <a href="sarojini-categories.html" class="sidebar-link">
+          <i class="fas fa-sitemap"></i>
+          <span>Sarojini Categories</span>
+        </a>
+        <a href="sarojini-offers.html" class="sidebar-link">
+          <i class="fas fa-fire"></i>
+          <span>Sarojini Offers</span>
+        </a>
+        <a href="sarojini-reviews.html" class="sidebar-link">
+          <i class="fas fa-star-half-alt"></i>
+          <span>Sarojini Reviews</span>
+        </a>
+        <a href="sarojini-analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-bar"></i>
+          <span>Sarojini Analytics</span>
+        </a>
+        <a href="homepage-sections.html?store=sarojini" class="sidebar-link">
+          <i class="fas fa-layer-group" style="color: #e11d48;"></i>
+          <span>Sarojini Sections</span>
+        </a>
+        <a href="sarojini-coupons.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Sarojini Coupons</span>
+        </a>
+        <a href="sarojini-customers.html" class="sidebar-link">
+          <i class="fas fa-user-tag"></i>
+          <span>Sarojini Customers</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../sarojini-bazaar.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Sarojini Bazaar</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="sarojini-dashboard.html">Sarojini Bazaar</a>
+            <span>/</span>
+            <span class="current">Products Catalog</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+            </div>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../sarojini-bazaar.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Sarojini Bazaar</a>
+              <div class="admin-dropdown-divider"></div>
+              <button id="btn-admin-logout" class="admin-dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <!-- Page Header -->
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title">Sarojini Bazaar Products</h1>
+            <p class="page-subtitle">Manage prices, variants, inventory, and storefront visibility for the Sarojini catalog. Completely isolated from main VADI products.</p>
+          </div>
+          <div class="page-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="homepage-sections.html?store=sarojini" class="btn-admin-secondary" style="border-color: rgba(225, 29, 72, 0.4); color: #fb7185;">
+              <i class="fas fa-layer-group"></i>
+              <span>Manage Homepage Section</span>
+            </a>
+            <a href="sarojini-add-product.html" class="btn-admin-primary" style="background:#e11d48; border-color:#e11d48;">
+              <i class="fas fa-plus"></i>
+              <span>Add Sarojini Product</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Filter Bar Card -->
+        <div class="admin-card" style="margin-bottom: 20px;">
+          <div class="filter-bar" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+            <!-- Search -->
+            <div style="flex: 1; min-width: 240px; position: relative;">
+              <i class="fas fa-search" style="position: absolute; left: 12px; top: 11px; color: var(--admin-text-muted);"></i>
+              <input type="text" id="search-products" class="admin-input" placeholder="Search by name, slug, brand..." style="padding-left: 36px; width: 100%;">
+            </div>
+
+            <!-- Department Filter -->
+            <select id="filter-dept" class="admin-select" style="min-width: 150px;">
+              <option value="">All Departments</option>
+              <option value="WOMEN">WOMEN</option>
+              <option value="MEN">MEN</option>
+              <option value="ACCESSORIES">ACCESSORIES</option>
+              <option value="FOOTWEAR">FOOTWEAR</option>
+              <option value="BAGS">BAGS</option>
+              <option value="JEWELLERY">JEWELLERY</option>
+              <option value="CAPS">CAPS</option>
+            </select>
+
+            <!-- Category Filter -->
+            <select id="filter-category" class="admin-select" style="min-width: 160px;">
+              <option value="">All Categories</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="filter-status" class="admin-select" style="min-width: 140px;">
+              <option value="">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Disabled Only</option>
+            </select>
+
+            <!-- Stock Filter -->
+            <select id="filter-stock" class="admin-select" style="min-width: 140px;">
+              <option value="">All Inventory</option>
+              <option value="out">Out of Stock (0)</option>
+              <option value="low">Low Stock (≤ 5)</option>
+            </select>
+
+            <!-- Store Availability Filter -->
+            <select id="filter-availability" class="admin-select" style="min-width: 160px; border-color: rgba(99, 102, 241, 0.4);">
+              <option value="">All Store Availability</option>
+              <option value="main">Main Store</option>
+              <option value="sarojini">Sarojini Bazaar</option>
+              <option value="both">Both Stores</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Products Table Card -->
+        <div class="admin-card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="card-title"><span id="product-count-badge">0</span> Sarojini Products</h3>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Department</th>
+                    <th>Price</th>
+                    <th>MRP</th>
+                    <th>Stock</th>
+                    <th>Badges</th>
+                    <th>Status</th>
+                    <th>Availability</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody">
+                  <tr><td colspan="9" style="text-align: center; padding: 24px;">Loading Sarojini products...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Cross-Store Transfer to Main VADI Store Modal -->
+  <div class="modal-backdrop" id="modal-add-to-main" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="admin-card" style="width: 90%; max-width: 560px; display: flex; flex-direction: column; padding: 24px; border: 1px solid rgba(99, 102, 241, 0.4); background: #0f172a; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.7);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--admin-card-border); padding-bottom: 12px;">
+        <div>
+          <h3 style="margin: 0; font-size: 1.15rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-arrow-right-arrow-left" style="color: #818cf8;"></i> Add to Main VADI Store
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--admin-text-muted);">
+            Publish this Sarojini Bazaar item into the primary Main VADI catalog
+          </p>
+        </div>
+        <button type="button" id="btn-close-main-modal" style="background: transparent; border: none; color: var(--admin-text-muted); font-size: 1.25rem; cursor: pointer; padding: 4px 8px;">✕</button>
+      </div>
+
+      <!-- Product Preview -->
+      <div id="main-modal-prod-preview" style="display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-card-border); margin-bottom: 16px;">
+        <img id="main-modal-img" src="" alt="Product preview" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: #1e293b;">
+        <div style="flex: 1; overflow: hidden;">
+          <h4 id="main-modal-title" style="margin: 0; font-size: 0.95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Product Title</h4>
+          <div style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 2px;">
+            Price: <strong id="main-modal-price" style="color: #10b981;">₹0</strong> • Stock: <span id="main-modal-stock">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Category Selection Form -->
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label class="admin-label" style="display: block; margin-bottom: 6px; font-size: 0.82rem; font-weight: 600; color: #cbd5e1;">Target Main Category *</label>
+          <select id="main-modal-cat" class="admin-select" style="width: 100%;">
+            <option value="">Loading main categories...</option>
+          </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+          <input type="checkbox" id="main-modal-featured" style="accent-color: #6366f1; width: 16px; height: 16px; cursor: pointer;">
+          <label for="main-modal-featured" style="font-size: 0.85rem; color: #cbd5e1; cursor: pointer;">
+            Feature on Main VADI Storefront Homepage
+          </label>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; border-top: 1px solid var(--admin-card-border); padding-top: 14px;">
+        <button type="button" id="btn-cancel-main-modal" class="btn-admin-secondary" style="padding: 8px 16px;">Cancel</button>
+        <button type="button" id="btn-confirm-add-to-main" class="btn-admin-primary" style="background: #4f46e5; border-color: #4f46e5; padding: 8px 20px; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-check"></i> Confirm &amp; Add to Main Store
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="modal-backdrop" id="delete-product-modal" style="display: none;">
+    <div class="admin-modal" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title text-danger"><i class="fas fa-trash-alt"></i> Delete Sarojini Product</h3>
+        <button type="button" class="modal-close" id="btn-close-del-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <p style="margin: 0 0 10px 0;">Are you sure you want to delete <strong id="del-product-name"></strong>?</p>
+        <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin: 0;">This will permanently remove this item from the Sarojini Bazaar storefront.</p>
+      </div>
+      <div class="modal-footer" style="padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-admin-secondary" id="btn-cancel-del">Cancel</button>
+        <button type="button" class="btn-admin-danger" id="btn-confirm-del">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-toast-container" class="admin-toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="../js/image-utils.js"></script>
+  <script src="js/cross-store-service.js"></script>
+  <script src="js/admin-sarojini-products.js"></script>
+</body>
+</html>
+

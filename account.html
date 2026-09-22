@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Manage your VELORA profile, review your orders, and update your delivery addresses.">
-  <title>My Account | VELORA - Style That Speaks For You</title>
+  <meta name="description" content="Manage your VADI profile, review your orders, and update your delivery addresses.">
+  <title>My Account | VADI - Everything. Simply Yours.</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><path d='M30 30L50 70L70 30' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
@@ -15,6 +15,85 @@
   <link rel="stylesheet" href="css/premium-3d.css">
   <link rel="stylesheet" href="css/mobile-app.css">
   <link rel="stylesheet" href="css/promotions.css">
+  <style>
+    /* Prevent Live Order Activity from covering cancel/return popups */
+    body.velora-modal-open .velora-order-activity,
+    body.velora-modal-open #velora-order-activity,
+    .velora-modal-open .velora-order-activity {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* Cancel & Return Order Modals: explicit visibility, pointer-events & display control */
+    #cancel-order-modal-overlay,
+    #return-order-modal-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 100000 !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    #cancel-order-modal-overlay:not(.active),
+    #return-order-modal-overlay:not(.active) {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    #cancel-order-modal-overlay.active,
+    #return-order-modal-overlay.active {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+
+    /* Modal Mobile Responsiveness & Polish */
+    .cancel-modal-content, .return-modal-content {
+      max-height: 88vh !important;
+      width: 100% !important;
+      max-width: 520px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    #form-cancel-order, #form-return-order {
+      min-height: 0 !important;
+      flex: 1 1 auto !important;
+      overflow-y: auto !important;
+      overscroll-behavior: contain !important;
+    }
+    .modal-footer-sticky {
+      position: sticky !important;
+      bottom: 0 !important;
+      background: #ffffff !important;
+      z-index: 10 !important;
+      margin: 0 -22px -20px -22px !important;
+      padding: 14px 22px !important;
+      border-top: 1px solid #e2e8f0 !important;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.03) !important;
+    }
+    @media (max-width: 640px) {
+      .cancel-modal-overlay, .return-modal-overlay {
+        padding: 12px !important;
+      }
+      .cancel-modal-content, .return-modal-content {
+        max-height: 89vh !important;
+        border-radius: 14px !important;
+      }
+      .cancellation-reasons-list label, .return-reasons-list label {
+        padding: 9px 12px !important;
+        font-size: 0.82rem !important;
+      }
+      .modal-footer-sticky {
+        margin: 0 -16px -16px -16px !important;
+        padding: 12px 16px !important;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -46,9 +125,9 @@
     <div class="container">
       <nav class="navbar" aria-label="Main Navigation">
         <!-- Brand Logo -->
-        <a href="homepage.html" class="brand-logo" aria-label="VELORA Homepage">
+        <a href="homepage.html" class="brand-logo" aria-label="VADI Homepage">
           <div class="brand-icon">V</div>
-          <span>VELORA<span class="dot">.</span></span>
+          <span>VADI<span class="dot">.</span></span>
         </a>
 
         <!-- Center Nav Menu -->
@@ -111,7 +190,7 @@
             <div id="account-avatar-circle" class="account-avatar-lg">--</div>
             <h2 id="account-user-name" class="account-user-title">Loading Profile...</h2>
             <p id="account-user-email" class="account-user-subtitle">Connecting to Supabase...</p>
-            <span class="account-vip-tag">★ VELORA Privé Member</span>
+            <span class="account-vip-tag">★ VADI Privé Member</span>
           </div>
 
           <ul class="account-nav-tabs">
@@ -322,6 +401,207 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       CANCEL ORDER CONFIRMATION & REASON MODAL
+       ======================================================================== -->
+  <div id="cancel-order-modal-overlay" class="modal-overlay cancel-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100000; align-items: center; justify-content: center; padding: 16px;">
+    <div class="cancel-modal-content" style="background: #ffffff; border-radius: 16px; max-width: 520px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 16px 22px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: #fef2f2; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; flex-shrink: 0;">✕</div>
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #991b1b; margin: 0; line-height: 1.2;">Cancel Your Order?</h3>
+            <span style="font-size: 0.78rem; font-weight: 700; color: #b91c1c; letter-spacing: 0.3px;" id="cancel-modal-order-number">Order #...</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close-cancel-modal" style="background: none; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer; line-height: 1; padding: 4px;" aria-label="Close Cancel Modal">✕</button>
+      </div>
+
+      <!-- Scrollable Form Body -->
+      <form id="form-cancel-order" style="padding: 20px 22px; overflow-y: auto; flex: 1; margin: 0; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Shipped/Ineligible Order Alert -->
+        <div id="cancel-shipped-alert" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px; font-size: 0.88rem; color: #92400e; line-height: 1.5;">
+          <strong>⚠️ Cancellation Unavailable:</strong><br>
+          Your order has already been shipped and can no longer be cancelled. Please wait for delivery. If the order is eligible for return, you can request a return after delivery.
+        </div>
+
+        <!-- Normal Eligible Cancellation Content Container -->
+        <div id="cancel-eligible-content" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Information Notice (Policy) -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #64748b; border-radius: 8px; padding: 12px 14px; font-size: 0.84rem; color: #334155; line-height: 1.5;">
+            <strong>Please note:</strong> Orders can be cancelled only before they are shipped. Once an order has been shipped, it cannot be cancelled.
+          </div>
+
+          <!-- Dynamic Payment-Specific Refund Notice -->
+          <div id="cancel-refund-notice-box" style="line-height: 1.5;">
+            <!-- Injected dynamically based on COD vs Full Online vs Advance+COD -->
+          </div>
+
+          <!-- Order Summary Pill -->
+          <div id="cancel-order-summary-box" style="background: #fdf2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div id="cancel-order-summary-details"></div>
+          </div>
+
+          <!-- Reason Prompt -->
+          <div>
+            <label style="display: block; font-size: 0.88rem; font-weight: 700; color: #0f172a; margin-bottom: 10px;">
+              Why are you cancelling this order? <span style="color: #dc2626;">*</span>
+            </label>
+            <div class="cancellation-reasons-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Changed my mind" required style="accent-color: #dc2626;">
+                <span>Changed my mind</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Ordered by mistake" style="accent-color: #dc2626;">
+                <span>Ordered by mistake</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Found a better price" style="accent-color: #dc2626;">
+                <span>Found a better price</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Delivery is taking too long" style="accent-color: #dc2626;">
+                <span>Delivery is taking too long</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Product is no longer required" style="accent-color: #dc2626;">
+                <span>Product is no longer required</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Ordered the wrong product/size" style="accent-color: #dc2626;">
+                <span>Ordered the wrong product/size</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+                <input type="radio" name="cancel_reason" value="Other" id="radio-cancel-other" style="accent-color: #dc2626;">
+                <span>Other</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Other Custom Reason Textarea -->
+          <div id="cancel-custom-reason-wrap" style="display: none;">
+            <textarea id="cancel-custom-reason" placeholder="Please tell us the reason..." rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; resize: vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- Footer Action Buttons -->
+        <div class="modal-footer-sticky" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-shrink: 0;">
+          <button type="button" class="btn-close-cancel-modal" id="btn-keep-my-order" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-size: 0.88rem; font-weight: 600; cursor: pointer;">Keep My Order</button>
+          <button type="submit" id="btn-submit-cancellation" style="padding: 10px 22px; border-radius: 8px; border: none; background: #dc2626; color: #ffffff; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;">
+            <span>Submit Cancellation Request</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       RETURN ORDER REQUEST MODAL (Item Selection & Reason)
+       ======================================================================== -->
+  <div id="return-order-modal-overlay" class="modal-overlay return-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100000; align-items: center; justify-content: center; padding: 16px;">
+    <div class="return-modal-content" style="background: #ffffff; border-radius: 16px; max-width: 560px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); overflow: hidden; position: relative; max-height: 88vh; display: flex; flex-direction: column;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 16px 22px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: #f8fafc; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; flex-shrink: 0;">↩️</div>
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">Request a Return</h3>
+            <span style="font-size: 0.78rem; font-weight: 700; color: #4338ca; letter-spacing: 0.3px;" id="return-modal-order-number">Order #...</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close-return-modal" style="background: none; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer; line-height: 1; padding: 4px;" aria-label="Close Return Modal">✕</button>
+      </div>
+
+      <!-- Scrollable Form Body -->
+      <form id="form-return-order" style="padding: 20px 22px; overflow-y: auto; flex: 1; margin: 0; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Return Policy Notice -->
+        <div style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-left: 4px solid #4f46e5; border-radius: 8px; padding: 12px 14px; font-size: 0.84rem; color: #312e81; line-height: 1.5;">
+          <strong>Return Policy Notice:</strong><br>
+          Return pickup is usually arranged within 2 days after approval. Once the item is received and the return is approved, your eligible refund will be processed to the original payment method and may take up to 48 hours to reflect.
+        </div>
+
+        <!-- Item Selection -->
+        <div>
+          <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Select Item(s) to Return:</label>
+          <div id="return-items-selection-container" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Return Reason -->
+        <div>
+          <label style="display: block; font-size: 0.88rem; font-weight: 700; color: #0f172a; margin-bottom: 10px;">
+            Why would you like to return this item? <span style="color: #dc2626;">*</span>
+          </label>
+          <div class="return-reasons-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Wrong product received" required style="accent-color: #4f46e5;">
+              <span>Wrong product received</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Damaged product" style="accent-color: #4f46e5;">
+              <span>Damaged product</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Defective product" style="accent-color: #4f46e5;">
+              <span>Defective product</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Size/Fit issue" style="accent-color: #4f46e5;">
+              <span>Size/Fit issue</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Product not as expected" style="accent-color: #4f46e5;">
+              <span>Product not as expected</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Missing item" style="accent-color: #4f46e5;">
+              <span>Missing item</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.86rem; color: #1e293b; background: #ffffff;">
+              <input type="radio" name="return_reason" value="Other" id="radio-return-other" style="accent-color: #4f46e5;">
+              <span>Other</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Other Custom Reason Textarea -->
+        <div id="return-custom-reason-wrap" style="display: none;">
+          <textarea id="return-custom-reason" placeholder="Please tell us the reason..." rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+
+        <!-- Optional Description -->
+        <div>
+          <label for="return-description" style="display: block; font-size: 0.84rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Additional Details (Optional):</label>
+          <textarea id="return-description" placeholder="Provide any additional details to help our inspection team..." rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+
+        <!-- Optional Photo Attachment -->
+        <div>
+          <label for="return-photo-input" style="display: block; font-size: 0.84rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Attach Photos / Evidence (Optional):</label>
+          <input type="file" id="return-photo-input" accept="image/*" style="font-size: 0.82rem; color: #64748b; width: 100%;">
+          <div id="return-photo-preview" style="margin-top: 8px; display: none;">
+            <img id="return-photo-img" src="" alt="Evidence preview" style="max-height: 80px; border-radius: 6px; border: 1px solid #e2e8f0; object-fit: cover;">
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="modal-footer-sticky" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-shrink: 0;">
+          <button type="button" class="btn-close-return-modal" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-size: 0.88rem; font-weight: 600; cursor: pointer;">Keep Order</button>
+          <button type="submit" id="btn-submit-return" style="padding: 10px 22px; border-radius: 8px; border: none; background: #4f46e5; color: #ffffff; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;">
+            <span>Submit Return Request</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
@@ -332,7 +612,7 @@
         <div class="footer-brand-col">
           <a href="homepage.html" class="brand-logo footer-logo">
             <div class="brand-icon">V</div>
-            <span>VELORA<span class="dot">.</span></span>
+            <span>VADI<span class="dot">.</span></span>
           </a>
           <p class="footer-bio">
             Curating luxury essentials and modern fashion for those who demand distinction, comfort, and unmatched craftsmanship.
@@ -364,7 +644,7 @@
         <div class="footer-col">
           <h4 class="footer-heading">Contact & Support</h4>
           <ul class="footer-contact-list">
-            <li><strong>Concierge:</strong> <a href="mailto:support@velora-style.com">support@velora-style.com</a></li>
+            <li><strong>Concierge:</strong> <a href="mailto:support@vadistudio.com">support@vadistudio.com</a></li>
             <li><strong>Toll-Free:</strong> <a href="tel:+9118001028356">+91 1800 102 8356</a></li>
             <li><strong>Hours:</strong> Mon - Sun: 8:00 AM - 11:00 PM EST</li>
           </ul>
@@ -372,7 +652,7 @@
       </div>
 
       <div class="footer-bottom-bar">
-        <p>&copy; 2026 VELORA Inc. All rights reserved. Style That Speaks For You.</p>
+        <p>&copy; 2026 VADI Inc. All rights reserved. Everything. Simply Yours..</p>
         <div class="footer-bottom-badges">
           <span class="trust-badge-pill">🔒 Verified 256-Bit SSL</span>
           <span class="trust-badge-pill">🛡️ Member Protection</span>
@@ -386,8 +666,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/image-utils.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
+    let isAccountInitialized = false;
+
+    async function initAccountPage() {
+      if (isAccountInitialized) return;
+      isAccountInitialized = true;
+
       // Elements
       const avatarCircle = document.getElementById("account-avatar-circle");
       const userNameElem = document.getElementById("account-user-name");
@@ -400,6 +686,7 @@
       const statusMsg = document.getElementById("profile-status-message");
       const ordersContainer = document.getElementById("orders-list-container");
       const addressesContainer = document.getElementById("addresses-container");
+      let orderChannel = null;
 
       function showStatus(text, type) {
         if (!statusMsg) return;
@@ -464,7 +751,7 @@
           setTimeout(() => {
             const panel = document.getElementById("panel-orders");
             if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-          }, 200);
+          }, 150);
         } else if (hash === "#addresses" || urlParams.get("tab") === "addresses") {
           switchTab("addresses");
         } else if (hash === "#profile" || urlParams.get("tab") === "profile") {
@@ -485,6 +772,9 @@
           if (textSpan) textSpan.textContent = "Signing out...";
 
           try {
+            if (orderChannel && client && typeof client.removeChannel === "function") {
+              try { client.removeChannel(orderChannel); } catch (_) {}
+            }
             if (window.VeloraAuth && typeof window.VeloraAuth.logout === "function") {
               await window.VeloraAuth.logout();
             } else if (typeof getSupabaseClient === "function") {
@@ -495,6 +785,7 @@
             console.warn("Sign out notice:", err);
           } finally {
             localStorage.removeItem("velora_user_session");
+            localStorage.removeItem("velora_last_order");
             window.location.href = "login.html";
           }
         });
@@ -504,7 +795,7 @@
       async function getSupabaseClient() {
         let c = (window.VeloraAuth && typeof window.VeloraAuth.getClient === "function" && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
         if (c) return c;
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 40; i++) {
           await new Promise(r => setTimeout(r, 50));
           c = (window.VeloraAuth && typeof window.VeloraAuth.getClient === "function" && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
           if (c) return c;
@@ -521,21 +812,28 @@
         return;
       }
 
-      // 3. Authenticate User
-      let authUser = null;
-      try {
-        const { data: sessionData } = await client.auth.getSession();
-        if (sessionData && sessionData.session && sessionData.session.user) {
-          authUser = sessionData.session.user;
-        } else {
-          const { data: userData, error: userErr } = await client.auth.getUser();
-          if (!userErr && userData && userData.user) {
-            authUser = userData.user;
+      // 3. Authenticate User with safe timeout
+      async function getAuthenticatedUser(c, timeoutMs = 5000) {
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), timeoutMs));
+        const authPromise = (async () => {
+          try {
+            const { data: sessionData } = await c.auth.getSession();
+            if (sessionData && sessionData.session && sessionData.session.user) {
+              return sessionData.session.user;
+            }
+            const { data: userData, error: userErr } = await c.auth.getUser();
+            if (!userErr && userData && userData.user) {
+              return userData.user;
+            }
+          } catch (err) {
+            console.warn("Authentication check warning:", err);
           }
-        }
-      } catch (err) {
-        console.warn("Authentication check warning:", err);
+          return null;
+        })();
+        return Promise.race([authPromise, timeoutPromise]);
       }
+
+      let authUser = await getAuthenticatedUser(client, 5000);
 
       if (!authUser) {
         const redirectTarget = encodeURIComponent("account.html" + window.location.search + window.location.hash);
@@ -552,7 +850,7 @@
           if (avatarCircle) avatarCircle.textContent = "--";
         } else if (state === "success") {
           if (loadingIndicator) loadingIndicator.style.display = "none";
-          const name = data.name || "VELORA Member";
+          const name = data.name || "VADI Member";
           const email = data.email || "";
           const phone = data.phone || "";
           const initials = data.initials || "ME";
@@ -561,7 +859,7 @@
           if (userNameElem) userNameElem.textContent = name;
           if (userEmailElem) userEmailElem.textContent = email;
 
-          if (nameInput) nameInput.value = (name !== "VELORA Member" ? name : "");
+          if (nameInput) nameInput.value = (name !== "VADI Member" ? name : "");
           if (emailInput) emailInput.value = email;
           if (phoneInput) {
             phoneInput.value = phone;
@@ -574,10 +872,10 @@
         } else if (state === "error") {
           if (loadingIndicator) loadingIndicator.style.display = "none";
           const fallbackName = (authUser && authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name))
-            || (authUser && authUser.email ? authUser.email.split("@")[0] : "VELORA Member");
+            || (authUser && authUser.email ? authUser.email.split("@")[0] : "VADI Member");
           const fallbackEmail = (authUser && authUser.email) || "";
           let initials = "ME";
-          if (fallbackName && fallbackName !== "VELORA Member") {
+          if (fallbackName && fallbackName !== "VADI Member") {
             const parts = fallbackName.trim().split(/\s+/);
             initials = parts.length > 1 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
           } else if (fallbackEmail) {
@@ -587,10 +885,10 @@
           if (avatarCircle) avatarCircle.textContent = initials;
           if (userNameElem) userNameElem.textContent = fallbackName;
           if (userEmailElem) userEmailElem.textContent = fallbackEmail;
-          if (nameInput) nameInput.value = (fallbackName !== "VELORA Member" ? fallbackName : "");
+          if (nameInput) nameInput.value = (fallbackName !== "VADI Member" ? fallbackName : "");
           if (emailInput) emailInput.value = fallbackEmail;
 
-          showStatus(data && data.message ? data.message : "Unable to load profile. Please try again.", "error");
+          showStatus(data && data.message ? data.message : "Unable to load profile. Please click to retry.", "error");
         }
       }
 
@@ -598,48 +896,62 @@
         setProfileUI("loading");
 
         let profileData = null;
+        let queryError = null;
+
         try {
-          const { data, error } = await client
+          const fetchPromise = client
             .from("profiles")
             .select("id, full_name, email, phone, avatar_url, role")
             .eq("id", authUser.id)
             .maybeSingle();
 
-          if (!error && data) {
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Profile request timed out after 6 seconds")), 6000)
+          );
+
+          const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+          if (error) {
+            queryError = error;
+            console.error("Profile query error from Supabase:", error);
+          } else if (data) {
             profileData = data;
           }
         } catch (err) {
-          console.warn("Profile fetch notice:", err);
+          queryError = err;
+          console.error("Profile fetch exception:", err);
         }
 
         // If profile record does not exist in profiles table (NO PROFILE state), create/insert it
         if (!profileData) {
           const fallbackName = (authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name)) || "";
           const fallbackPhone = (authUser.user_metadata && authUser.user_metadata.phone) || "";
-          try {
-            const { data: inserted, error: insErr } = await client
-              .from("profiles")
-              .upsert([{
-                id: authUser.id,
-                full_name: fallbackName,
-                email: authUser.email,
-                phone: fallbackPhone,
-                role: "customer"
-              }], { onConflict: "id" })
-              .select("id, full_name, email, phone, avatar_url, role")
-              .maybeSingle();
 
-            if (!insErr && inserted) {
-              profileData = inserted;
-            } else {
-              profileData = {
-                id: authUser.id,
-                full_name: fallbackName,
-                email: authUser.email,
-                phone: fallbackPhone
-              };
+          // Attempt upsert only if query didn't throw an outright network/timeout error
+          if (!queryError || (queryError.code === "PGRST116" || queryError.message.includes("0 rows"))) {
+            try {
+              const { data: inserted, error: insErr } = await client
+                .from("profiles")
+                .upsert([{
+                  id: authUser.id,
+                  full_name: fallbackName,
+                  email: authUser.email,
+                  phone: fallbackPhone,
+                  role: "customer"
+                }], { onConflict: "id" })
+                .select("id, full_name, email, phone, avatar_url, role")
+                .maybeSingle();
+
+              if (!insErr && inserted) {
+                profileData = inserted;
+              } else if (insErr) {
+                console.warn("Profile auto-creation warning:", insErr.message);
+              }
+            } catch (e) {
+              console.warn("Auto-profile upsert exception:", e);
             }
-          } catch (e) {
+          }
+
+          if (!profileData) {
             profileData = {
               id: authUser.id,
               full_name: fallbackName,
@@ -653,7 +965,7 @@
         const realName = (profileData && profileData.full_name && profileData.full_name.trim())
           || (authUser.user_metadata && (authUser.user_metadata.full_name || authUser.user_metadata.name))
           || (authUser.email ? authUser.email.split("@")[0] : "")
-          || "VELORA Member";
+          || "VADI Member";
 
         const realEmail = authUser.email || (profileData && profileData.email) || "";
         const realPhone = (profileData && profileData.phone && profileData.phone.trim())
@@ -662,7 +974,7 @@
 
         // Calculate initials
         let initials = "ME";
-        if (realName && realName !== "VELORA Member") {
+        if (realName && realName !== "VADI Member") {
           const parts = realName.trim().split(/\s+/);
           initials = parts.length > 1
             ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
@@ -677,19 +989,29 @@
           phone: realPhone,
           initials: initials
         });
+
+        if (queryError) {
+          console.warn("Profile loaded with fallback auth credentials due to query notice:", queryError.message);
+        }
       }
 
       await fetchAndRenderProfile();
 
       // Listen for auth state change to refresh dynamically
-      client.auth.onAuthStateChange(async (event, session) => {
-        if (event === "SIGNED_OUT" || !session) {
-          window.location.href = "login.html";
-        } else if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED") {
-          authUser = session.user;
-          await fetchAndRenderProfile();
-        }
-      });
+      let authSubscription = null;
+      try {
+        const { data: authSub } = client.auth.onAuthStateChange(async (event, session) => {
+          if (event === "SIGNED_OUT" || !session) {
+            window.location.href = "login.html";
+          } else if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED") {
+            authUser = session.user;
+            await fetchAndRenderProfile();
+          }
+        });
+        authSubscription = authSub && authSub.subscription;
+      } catch (subErr) {
+        console.warn("onAuthStateChange subscription notice:", subErr);
+      }
 
       // 4. Save Profile Changes
       if (saveBtn) {
@@ -748,35 +1070,365 @@
         });
       }
 
-      // 5. Render Orders History (from public.orders)
+      // Cache of current orders and requests for modal population
+      let dbOrdersCache = [];
+      let userRequestsCache = [];
+
+      function formatReturnStatus(status) {
+        const map = {
+          requested: "Requested",
+          approved: "Approved",
+          rejected: "Rejected",
+          pickup_scheduled: "Pickup Scheduled",
+          in_transit: "In Transit",
+          received: "Received",
+          refund_processing: "Refund Processing",
+          refunded: "Refunded",
+          closed: "Closed",
+          cancelled: "Cancelled"
+        };
+        return map[status] || (status ? status.charAt(0).toUpperCase() + status.slice(1) : "Requested");
+      }
+
+      let isRenderingOrders = false;
+      let pendingRenderOrders = false;
+
+      // 5. Render Orders History (from public.orders and public.order_requests)
       async function renderOrders() {
         if (!ordersContainer) return;
-        ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading your order history...</div>';
+        if (isRenderingOrders) {
+          pendingRenderOrders = true;
+          return;
+        }
+        isRenderingOrders = true;
+
+        if (!dbOrdersCache || dbOrdersCache.length === 0) {
+          ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading your order history...</div>';
+        }
 
         try {
-          const orderCols = "id, order_number, total, subtotal, discount, shipping_charge, payment_method, payment_status, order_status, advance_amount, advance_paid, cod_balance, delivery_preference, free_gifts_eligible, free_gifts_items, is_full_online_payment, estimated_delivery, tracking_data, created_at, order_items(id, product_name, product_image, price, quantity, selected_size, selected_color, subtotal)";
-          const { data: dbOrders, error } = await client
-            .from("orders")
-            .select(orderCols)
-            .eq("user_id", authUser.id)
-            .order("created_at", { ascending: false });
+          const orderCols = "id, order_number, total, subtotal, discount, shipping_charge, payment_method, payment_status, order_status, advance_amount, advance_paid, cod_balance, delivery_preference, free_gifts_eligible, free_gifts_items, is_full_online_payment, estimated_delivery, tracking_data, created_at, order_items(id, product_id, product_name, product_image, price, quantity, selected_size, selected_color, subtotal, catalog_type, sarojini_product_id, advance_amount, cod_balance)";
+          
+          let dbOrders = [];
+          try {
+            const { data, error } = await client
+              .from("orders")
+              .select(orderCols)
+              .eq("user_id", authUser.id)
+              .order("created_at", { ascending: false });
 
-          if (!error && dbOrders && dbOrders.length > 0) {
-            ordersContainer.innerHTML = dbOrders.map(ord => {
-              const statusClass = ord.order_status === "delivered" ? "color: var(--color-success);" : "color: var(--accent);";
-              const itemsHtml = (ord.order_items || []).map(item => `
-                <div style="display:flex; align-items:center; gap:14px; padding: 8px 0;">
-                  <img src="${escapeHTML(item.product_image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80')}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color);">
-                  <div style="flex:1;">
-                    <strong style="font-size:0.88rem; color:var(--text-main);">${escapeHTML(item.product_name || 'Item')}</strong>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} • Qty: ${item.quantity || 1}</div>
+            if (error) {
+              console.error("Orders fetch error:", {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+              });
+              ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Could not load orders at this time. (' + (error.message || "Database error") + ')</div>';
+              return;
+            }
+            if (Array.isArray(data)) {
+              dbOrders = data;
+            }
+          } catch (dbErr) {
+            console.error("Orders query exception:", dbErr);
+            ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Could not load orders at this time.</div>';
+            return;
+          }
+
+          // Fetch cancellation and return requests for this customer
+          let userRequests = [];
+          try {
+            const { data: reqs } = await client
+              .from("order_requests")
+              .select("*")
+              .eq("user_id", authUser.id);
+            if (reqs && Array.isArray(reqs)) userRequests = reqs;
+          } catch (e) {
+            console.warn("order_requests table fetch notice:", e);
+          }
+
+          // Fallback to store_settings or localStorage if table was empty or not yet migrated
+          if (userRequests.length === 0) {
+            try {
+              const { data: sRow } = await client.from("store_settings").select("value").eq("key", "order_requests").maybeSingle();
+              if (sRow && sRow.value && Array.isArray(sRow.value)) {
+                userRequests = sRow.value.filter(r => r.user_id === authUser.id);
+              }
+            } catch (_) {}
+          }
+          try {
+            const localReqs = JSON.parse(localStorage.getItem("velora_order_requests") || "[]");
+            if (Array.isArray(localReqs)) {
+              const existingIds = new Set(userRequests.map(r => r.id));
+              localReqs.forEach(lr => {
+                if (lr.user_id === authUser.id && !existingIds.has(lr.id)) {
+                  userRequests.push(lr);
+                }
+              });
+            }
+          } catch (_) {}
+
+          // --- ORDER RECONCILIATION & DEDUPLICATION ENGINE ---
+          // Rule 1: Authoritative source of truth is the Supabase database.
+          // Rule 2: Exactly ONE order card per physical order (by canonical order_number / primary key id).
+          // Rule 3: No card is EVER rendered with undefined/missing order ID.
+          // Rule 4: If an order has multiple products, they MUST render as multiple items inside ONE card.
+
+          let rawOrders = [...dbOrders];
+
+          // Check if there is a pending recent order in localStorage not yet synced/persisted to Supabase
+          try {
+            const lastOrd = JSON.parse(localStorage.getItem("velora_last_order") || "null");
+            if (lastOrd && (lastOrd.user_id === authUser.id || (lastOrd.customer && (lastOrd.customer.email === authUser.email || lastOrd.customer.id === authUser.id)))) {
+              const rawOrdNum = (lastOrd.order_number || lastOrd.orderNumber || lastOrd.orderId || "").toString().trim();
+              const rawOrdId = (lastOrd.id || rawOrdNum || "").toString().trim();
+
+              // Check if already present in database orders list by order_number or primary key id
+              const isAlreadyInDb = rawOrders.some(o => {
+                const oNum = (o.order_number || o.orderNumber || o.orderId || "").toString().trim();
+                const oId = (o.id || "").toString().trim();
+                return (rawOrdNum && (oNum === rawOrdNum || oId === rawOrdNum)) ||
+                       (rawOrdId && (oNum === rawOrdId || oId === rawOrdId));
+              });
+
+              if (isAlreadyInDb) {
+                // Authoritative database already contains this order; clean up the local snapshot
+                try { localStorage.removeItem("velora_last_order"); } catch (_) {}
+              } else if (rawOrdNum && rawOrdNum !== "undefined" && rawOrdId && rawOrdId !== "undefined") {
+                // Only prepend if it has a REAL, VALID, NON-EMPTY order ID not found in the database
+                rawOrders.unshift({
+                  id: rawOrdId,
+                  order_number: rawOrdNum,
+                  total: lastOrd.total,
+                  subtotal: lastOrd.subtotal,
+                  discount: lastOrd.discount || 0,
+                  shipping_charge: lastOrd.shipping || 0,
+                  payment_method: lastOrd.paymentMethod,
+                  payment_status: lastOrd.payment_status || "pending",
+                  order_status: lastOrd.status || "placed",
+                  advance_amount: lastOrd.advance_amount || 0,
+                  advance_paid: lastOrd.advance_paid || 0,
+                  cod_balance: lastOrd.cod_balance || 0,
+                  delivery_preference: lastOrd.delivery_preference || "Simple Delivery",
+                  created_at: lastOrd.date || new Date().toISOString(),
+                  order_items: (lastOrd.items || []).map(it => ({
+                    id: it.id || `local-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                    product_name: it.name,
+                    product_image: it.image,
+                    price: it.price,
+                    quantity: it.quantity || 1,
+                    selected_size: it.size || null,
+                    selected_color: it.color || null,
+                    subtotal: (it.price || 0) * (it.quantity || 1),
+                    catalog_type: it.catalog_type || "main",
+                    sarojini_product_id: it.catalog_type === "sarojini" ? it.id : null,
+                    advance_amount: (it.advance_per_unit || 0) * (it.quantity || 1),
+                    cod_balance: (it.cod_per_unit || 0) * (it.quantity || 1)
+                  }))
+                });
+              }
+            }
+          } catch (_) {}
+
+          // Consolidate into unique orders Map by canonical order identity
+          const orderMap = new Map();
+
+          for (const ord of rawOrders) {
+            if (!ord) continue;
+
+            // Resolve canonical order number and primary key
+            const resolvedNumber = (ord.order_number || ord.orderNumber || ord.orderId || "").toString().trim();
+            const resolvedId = (ord.id || "").toString().trim();
+
+            // Strictly reject malformed records with missing or "undefined" order ID
+            if ((!resolvedNumber || resolvedNumber === "undefined") && (!resolvedId || resolvedId === "undefined")) {
+              console.warn("Skipping malformed order record with missing or undefined order ID:", ord);
+              continue;
+            }
+
+            const canonicalKey = (resolvedNumber && resolvedNumber !== "undefined") ? resolvedNumber : resolvedId;
+
+            if (!orderMap.has(canonicalKey)) {
+              // Create normalized order object
+              const normalized = {
+                ...ord,
+                id: (resolvedId && resolvedId !== "undefined") ? resolvedId : canonicalKey,
+                order_number: canonicalKey,
+                order_items: Array.isArray(ord.order_items) ? [...ord.order_items] : []
+              };
+              orderMap.set(canonicalKey, normalized);
+            } else {
+              // Reconcile and consolidate duplicate records for the same order into ONE card
+              const existing = orderMap.get(canonicalKey);
+
+              // Update fields if the incoming record has authoritative database data
+              if (resolvedId && (!existing.id || existing.id.startsWith("local-"))) {
+                existing.id = resolvedId;
+              }
+              if (ord.order_status && existing.order_status === "placed") existing.order_status = ord.order_status;
+              if (ord.payment_status && existing.payment_status === "pending") existing.payment_status = ord.payment_status;
+              if (ord.created_at && !existing.created_at) existing.created_at = ord.created_at;
+
+              // Consolidate order items so all items appear inside this one order card without duplicating
+              if (Array.isArray(ord.order_items)) {
+                const existingSignatures = new Set(
+                  existing.order_items.map(it => it.id || `${it.product_name}::${it.selected_size}::${it.selected_color}::${it.price}`)
+                );
+
+                for (const item of ord.order_items) {
+                  const sig = item.id || `${item.product_name}::${item.selected_size}::${item.selected_color}::${item.price}`;
+                  if (!existingSignatures.has(sig)) {
+                    existing.order_items.push(item);
+                    existingSignatures.add(sig);
+                  }
+                }
+              }
+            }
+          }
+
+          const consolidatedOrders = Array.from(orderMap.values());
+
+          // --- HISTORICAL & REALTIME ORDER ITEM IMAGE RESOLUTION PASS ---
+          const itemsNeedingResolution = [];
+          for (const ord of consolidatedOrders) {
+            for (const item of (ord.order_items || [])) {
+              let clean = (window.VeloraImageUtils && typeof window.VeloraImageUtils.extractImageUrl === 'function')
+                ? window.VeloraImageUtils.extractImageUrl(item.product_image)
+                : (item.product_image || "");
+
+              if (!clean || clean === 'undefined' || clean === 'null') {
+                itemsNeedingResolution.push(item);
+              } else {
+                item.product_image = clean;
+              }
+            }
+          }
+
+          if (itemsNeedingResolution.length > 0) {
+            const isUuidFormat = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+            const sarojiniIds = Array.from(new Set(itemsNeedingResolution
+              .filter(it => it.catalog_type === 'sarojini' || it.sarojini_product_id != null)
+              .map(it => it.sarojini_product_id || it.product_id)
+              .filter(id => isUuidFormat(id))));
+            const mainIds = Array.from(new Set(itemsNeedingResolution
+              .filter(it => it.catalog_type !== 'sarojini' && !it.sarojini_product_id)
+              .map(it => it.product_id)
+              .filter(id => isUuidFormat(id))));
+
+            const imageLookup = new Map();
+
+            if (sarojiniIds.length > 0) {
+              try {
+                const { data: sProds } = await client.from("sarojini_products").select("id, name, images").in("id", sarojiniIds);
+                if (Array.isArray(sProds)) {
+                  sProds.forEach(p => {
+                    const img = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function')
+                      ? window.VeloraImageUtils.resolveProductImage(p, { isAdmin: false })
+                      : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image || ""));
+                    if (img) {
+                      imageLookup.set('sarojini:' + p.id, img);
+                      if (p.name) imageLookup.set('sarojini_name:' + p.name, img);
+                    }
+                  });
+                }
+              } catch (_) {}
+            }
+
+            if (mainIds.length > 0) {
+              try {
+                const { data: mProds } = await client.from("products").select("id, name, images").in("id", mainIds);
+                if (Array.isArray(mProds)) {
+                  mProds.forEach(p => {
+                    const img = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function')
+                      ? window.VeloraImageUtils.resolveProductImage(p, { isAdmin: false })
+                      : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image || ""));
+                    if (img) {
+                      imageLookup.set('main:' + p.id, img);
+                      if (p.name) imageLookup.set('main_name:' + p.name, img);
+                    }
+                  });
+                }
+              } catch (_) {}
+            }
+
+            for (const item of itemsNeedingResolution) {
+              const isSar = item.catalog_type === 'sarojini' || item.sarojini_product_id != null;
+              const targetId = isSar ? (item.sarojini_product_id || item.product_id) : item.product_id;
+              const prefix = isSar ? 'sarojini:' : 'main:';
+              const namePrefix = isSar ? 'sarojini_name:' : 'main_name:';
+              const found = (targetId && imageLookup.get(prefix + targetId)) || (item.product_name && imageLookup.get(namePrefix + item.product_name));
+              if (found) {
+                item.product_image = found;
+              }
+            }
+          }
+
+          dbOrdersCache = consolidatedOrders;
+          userRequestsCache = userRequests || [];
+
+          if (dbOrdersCache.length > 0) {
+            ordersContainer.innerHTML = dbOrdersCache.map(ord => {
+              const orderReqs = userRequestsCache.filter(r => r.order_id === ord.id);
+              const cancelReq = orderReqs.find(r => r.request_type === "cancellation");
+              const returnReqs = orderReqs.filter(r => r.request_type === "return");
+
+              // Status calculation
+              let displayStatus = ord.order_status === "placed" ? "Confirmed & In Process" : ord.order_status;
+              let statusClass = "color: var(--accent);";
+              if (ord.order_status === "delivered") {
+                statusClass = "color: var(--color-success);";
+                displayStatus = "Delivered";
+              } else if (ord.order_status === "cancelled") {
+                statusClass = "color: #dc2626;";
+                displayStatus = "Order Cancelled";
+              } else if (ord.order_status === "cancellation_requested") {
+                statusClass = "color: #d97706;";
+                displayStatus = "Cancellation Requested";
+              } else if (ord.order_status === "return_requested") {
+                statusClass = "color: #4f46e5;";
+                displayStatus = "Return Requested";
+              } else if (ord.order_status === "returned") {
+                statusClass = "color: #059669;";
+                displayStatus = "Returned & Refunded";
+              }
+
+              const isOrderSarojini = (ord.order_items || []).some(it => it.catalog_type === 'sarojini' || it.sarojini_product_id);
+
+              const itemsHtml = (ord.order_items || []).map(item => {
+                const isItemSarojini = item.catalog_type === 'sarojini' || item.sarojini_product_id;
+                const itemAdv = Number(item.advance_amount || (ord.advance_paid ? (ord.advance_paid / (ord.order_items.length || 1)) : 0) || 0);
+                const itemCod = Number(item.cod_balance || 0);
+
+                let itemSplitText = '';
+                if (itemAdv > 0) {
+                  itemSplitText = ` • <span style="color:#e11d48; font-weight:700;">Adv. Paid: ₹${Math.round(itemAdv).toLocaleString('en-IN')}</span>` + 
+                    (itemCod > 0 ? ` • <span style="color:#d97706; font-weight:600;">COD Bal: ₹${Math.round(itemCod).toLocaleString('en-IN')}</span>` : '');
+                }
+
+                const fallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200';
+                const resolvedItemImg = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
+                  ? window.VeloraImageUtils.normalizeImageUrl(item.product_image, { isAdmin: false, fallback: fallbackSvg })
+                  : (item.product_image || fallbackSvg);
+
+                return `
+                  <div style="display:flex; align-items:center; gap:14px; padding: 10px 0; border-bottom: 1px dashed var(--border-light, #f1f5f9);">
+                    <img src="${escapeHTML(resolvedItemImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--border-color, #e2e8f0);" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+                    <div style="flex:1;">
+                      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <strong style="font-size:0.9rem; color:var(--text-main);">${escapeHTML(item.product_name || 'Item')}</strong>
+                        ${isItemSarojini ? '<span style="background:rgba(225,29,72,0.1); color:#e11d48; font-size:0.68rem; font-weight:800; padding:2px 6px; border-radius:4px; border:1px solid rgba(225,29,72,0.2);">🛍️ SAROJINI BAZAAR</span>' : ''}
+                      </div>
+                      <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+                        ${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} • Qty: ${item.quantity || 1}${itemSplitText}
+                      </div>
+                    </div>
+                    <div style="font-weight:800; color:var(--text-main); font-size:0.95rem;">₹${Math.round(item.subtotal || (item.price * (item.quantity || 1))).toLocaleString("en-IN")}</div>
                   </div>
-                  <div style="font-weight:700; color:var(--text-main); font-size:0.9rem;">₹${Math.round(item.subtotal || (item.price * (item.quantity || 1))).toLocaleString("en-IN")}</div>
-                </div>
-              `).join("");
+                `;
+              }).join("");
 
               const formattedDate = new Date(ord.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
-              const displayStatus = ord.order_status === "placed" ? "Confirmed & In Process" : ord.order_status;
               const hasAdvance = Number(ord.advance_paid || ord.advance_amount || 0) > 0;
               const advPaid = Number(ord.advance_paid || ord.advance_amount || 0);
               const codBal = Number(ord.cod_balance || 0);
@@ -784,43 +1436,40 @@
               const isFullOnline = Boolean(
                 ord.free_gifts_eligible || 
                 ord.is_full_online_payment || 
-                (ord.payment_method && ord.payment_method.includes("Full Online"))
+                (ord.payment_method && ord.payment_method.includes("Full Online")) ||
+                (ord.payment_status === "paid" && !hasAdvance && !ord.payment_method?.toLowerCase().includes("cash on delivery"))
               );
               const isDeliveryOpenBox = Boolean(
                 ord.delivery_preference === "Open Box Delivery" || 
                 (ord.payment_method && ord.payment_method.includes("Open Box"))
               );
 
-              let giftItems = [];
-              try {
-                if (Array.isArray(ord.free_gifts_items)) {
-                  giftItems = ord.free_gifts_items;
-                } else if (typeof ord.free_gifts_items === "string") {
-                  giftItems = JSON.parse(ord.free_gifts_items);
-                }
-              } catch (e) {
-                giftItems = [];
-              }
-
               let badgesHtml = '';
-              if (isFullOnline && giftItems.length > 0) {
-                const giftNames = giftItems.map(g => g.name || g.gift_name).filter(Boolean).join(", ");
-                badgesHtml += `<span title="${giftNames}" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(16, 185, 129, 0.3);">🎁 ${giftItems.length} FREE GIFT${giftItems.length > 1 ? 'S' : ''}</span>`;
-              } else if (isFullOnline && ord.free_gifts_eligible) {
+              if (isOrderSarojini) {
+                badgesHtml += `<span style="background: rgba(225, 29, 72, 0.12); color: #e11d48; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(225, 29, 72, 0.3);">🛍️ SAROJINI BAZAAR</span>`;
+              }
+              if (isFullOnline && ord.free_gifts_eligible) {
                 badgesHtml += `<span style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(16, 185, 129, 0.3);">🎁 FREE GIFTS</span>`;
               }
               if (isDeliveryOpenBox) {
                 badgesHtml += `<span style="background: rgba(2, 132, 199, 0.15); color: #0284c7; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(2, 132, 199, 0.3);">📦 OPEN BOX</span>`;
               }
 
-              let giftsDetailsHtml = '';
-              if (isFullOnline && giftItems.length > 0) {
-                giftsDetailsHtml = `
-                  <div style="margin-top: 8px; padding: 8px 12px; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 0.78rem; color: #059669; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <strong>🎁 Free Gifts Included:</strong>
-                    <span>${giftItems.map(g => (g.icon || '🎁') + ' ' + (g.name || g.gift_name) + (g.quantity > 1 ? ' (' + g.quantity + 'x)' : '')).join(' • ')}</span>
-                  </div>
-                `;
+              // Active request status badges in header
+              if (cancelReq) {
+                if (cancelReq.status === "requested" || ord.order_status === "cancellation_requested") {
+                  badgesHtml += `<span style="background: rgba(245, 158, 11, 0.15); color: #d97706; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(245, 158, 11, 0.35);">⏳ Cancellation Requested</span>`;
+                } else if (cancelReq.status === "approved" || ord.order_status === "cancelled") {
+                  badgesHtml += `<span style="background: rgba(239, 68, 68, 0.12); color: #dc2626; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">✕ Order Cancelled</span>`;
+                } else if (cancelReq.status === "rejected") {
+                  badgesHtml += `<span style="background: rgba(100, 116, 139, 0.15); color: #64748b; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(100, 116, 139, 0.3);" title="${escapeHTML(cancelReq.admin_notes || 'Declined by store administrator')}">Cancellation Declined</span>`;
+                }
+              }
+
+              if (returnReqs.length > 0) {
+                returnReqs.forEach(rr => {
+                  badgesHtml += `<span style="background: rgba(79, 70, 229, 0.12); color: #4f46e5; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; border: 1px solid rgba(79, 70, 229, 0.3);">↩️ Return: ${formatReturnStatus(rr.status)}</span>`;
+                });
               }
 
               const advanceHtml = hasAdvance ? `
@@ -830,8 +1479,104 @@
                 </div>
               ` : '';
 
+              // Refund Summary Banner
+              let refundInfoHtml = '';
+              const isOrderCancelled = ord.order_status === "cancelled" || (cancelReq && cancelReq.status === "approved");
+              const hasActiveReturn = returnReqs.length > 0;
+
+              if (isOrderCancelled || hasActiveReturn) {
+                const isRefunded = ord.payment_status === "refunded" || (cancelReq && cancelReq.refund_status === "refunded") || returnReqs.some(r => r.refund_status === "refunded");
+                const isRefundProcessing = ord.payment_status === "refund_processing" || (cancelReq && cancelReq.refund_status === "refund_processing") || returnReqs.some(r => r.refund_status === "refund_processing");
+                
+                let refundStatusBadge = '';
+                if (isRefunded) {
+                  refundStatusBadge = '<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px;">✓ Refund Completed</span>';
+                } else if (isRefundProcessing) {
+                  refundStatusBadge = '<span class="badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px;">⏳ Refund Processing</span>';
+                } else {
+                  refundStatusBadge = '<span class="badge" style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px;">⏳ Pending Approval</span>';
+                }
+
+                if (hasAdvance) {
+                  refundInfoHtml = `
+                    <div style="margin-top: 10px; padding: 10px 14px; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                      <div><span style="color: #059669; font-weight: 700;">💳 Eligible Refund:</span> <strong>₹${Math.round(advPaid).toLocaleString("en-IN")}</strong> <span style="font-size:0.75rem; color:#64748b;">(Prepaid Advance)</span></div>
+                      ${refundStatusBadge}
+                    </div>
+                  `;
+                } else if (isFullOnline) {
+                  refundInfoHtml = `
+                    <div style="margin-top: 10px; padding: 10px 14px; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                      <div><span style="color: #059669; font-weight: 700;">💳 Eligible Refund:</span> <strong>₹${Math.round(ord.total).toLocaleString("en-IN")}</strong> <span style="font-size:0.75rem; color:#64748b;">(Full Online Payment)</span></div>
+                      ${refundStatusBadge}
+                    </div>
+                  `;
+                } else {
+                  refundInfoHtml = `
+                    <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.78rem; color: #64748b;">
+                      <span>ℹ️ Cash on Delivery Order — zero advance was captured. No financial refund required.</span>
+                    </div>
+                  `;
+                }
+              }
+
+              // Eligibility rules
+              const canCancel = ["placed", "confirmed", "processing", "shipped", "out_for_delivery"].includes(ord.order_status) && (!cancelReq || cancelReq.status === "rejected");
+              const isDelivered = ord.order_status === "delivered" || ord.order_status === "return_requested" || ord.order_status === "returned";
+              const isWithin30Days = (Date.now() - new Date(ord.created_at).getTime()) <= (30 * 24 * 60 * 60 * 1000);
+              const returnedItemIds = new Set(returnReqs.filter(r => r.order_item_id).map(r => r.order_item_id));
+              const hasFullReturn = returnReqs.some(r => !r.order_item_id);
+              const unreturnedItems = (ord.order_items || []).filter(item => !returnedItemIds.has(item.id));
+              const canReturn = ord.order_status === "delivered" && isWithin30Days && !hasFullReturn && unreturnedItems.length > 0;
+
+              // Action buttons HTML
+              let actionButtonsHtml = `
+                <button type="button" class="btn-track-order" data-order-id="${ord.id}" data-order-number="${ord.order_number}" data-order-status="${ord.order_status}" data-order-eta="${ord.estimated_delivery || ''}" style="background: #0f172a; color: #ffffff; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s;">
+                  <span>🚚 Track Order</span>
+                </button>
+              `;
+
+              // Cancellation button / status
+              if (cancelReq && (cancelReq.status === "requested" || ord.order_status === "cancellation_requested")) {
+                actionButtonsHtml += `
+                  <button type="button" disabled style="background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: default; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>⏳ Cancellation Requested</span>
+                  </button>
+                `;
+              } else if (isOrderCancelled) {
+                actionButtonsHtml += `
+                  <button type="button" disabled style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.25); padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: default; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>✕ Order Cancelled</span>
+                  </button>
+                `;
+              } else if (canCancel) {
+                actionButtonsHtml += `
+                  <button type="button" class="btn-cancel-order" data-order-id="${ord.id}" data-order-number="${ord.order_number}" data-order-total="${ord.total}" style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <span>✕ Cancel Order</span>
+                  </button>
+                `;
+              }
+
+              // Return button / status
+              if (returnReqs.length > 0) {
+                returnReqs.forEach(rr => {
+                  actionButtonsHtml += `
+                    <button type="button" disabled style="background: rgba(79, 70, 229, 0.1); color: #4f46e5; border: 1px solid rgba(79, 70, 229, 0.3); padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: default; display: inline-flex; align-items: center; gap: 6px;">
+                      <span>↩️ Return: ${formatReturnStatus(rr.status)}</span>
+                    </button>
+                  `;
+                });
+              }
+              if (canReturn) {
+                actionButtonsHtml += `
+                  <button type="button" class="btn-return-order" data-order-id="${ord.id}" data-order-number="${ord.order_number}" style="background: rgba(79, 70, 229, 0.08); color: #4f46e5; border: 1px solid rgba(79, 70, 229, 0.3); padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <span>↩️ Return Order</span>
+                  </button>
+                `;
+              }
+
               return `
-                <div class="order-history-card">
+                <div class="order-history-card" data-order-id="${ord.id}">
                   <div class="order-history-header">
                     <div>
                       <strong style="font-size: 0.95rem; color: var(--text-main);">${ord.order_number}</strong>
@@ -845,16 +1590,16 @@
                   <div class="order-history-items">
                     ${itemsHtml}
                   </div>
-                  ${giftsDetailsHtml}
                   ${advanceHtml}
+                  ${refundInfoHtml}
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
                     <div>
                       <span style="font-size:0.85rem; color:var(--text-secondary);">Total Order: <strong style="color:var(--text-main); font-size:1rem;">₹${Math.round(ord.total).toLocaleString("en-IN")}</strong></span>
                       <span style="font-size:0.8rem; color:var(--text-muted); margin-left: 8px;">• ${ord.payment_method}</span>
                     </div>
-                    <button type="button" class="btn-track-order" data-order-id="${ord.id}" data-order-number="${ord.order_number}" data-order-status="${ord.order_status}" data-order-eta="${ord.estimated_delivery || ''}" style="background: #0f172a; color: #ffffff; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s;">
-                      <span>🚚 Track Order</span>
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      ${actionButtonsHtml}
+                    </div>
                   </div>
                 </div>
               `;
@@ -870,7 +1615,14 @@
             `;
           }
         } catch (err) {
+          console.error("renderOrders exception:", err);
           ordersContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Could not load orders at this time.</div>';
+        } finally {
+          isRenderingOrders = false;
+          if (pendingRenderOrders) {
+            pendingRenderOrders = false;
+            renderOrders();
+          }
         }
       }
 
@@ -965,18 +1717,34 @@
           displayStatus = "Successfully Delivered";
           step = 5;
           progressPct = "100%";
+        } else if (normStatus === "cancellation_requested") {
+          displayStatus = "Cancellation Requested";
+          step = 1;
+          progressPct = "20%";
         } else if (normStatus === "cancelled") {
           displayStatus = "Order Cancelled";
           step = 0;
           progressPct = "0%";
+        } else if (normStatus === "return_requested") {
+          displayStatus = "Return Requested - Pickup Pending";
+          step = 5;
+          progressPct = "100%";
+        } else if (normStatus === "returned") {
+          displayStatus = "Returned & Refunded";
+          step = 5;
+          progressPct = "100%";
         }
 
         if (trackStatusText) {
           trackStatusText.textContent = displayStatus;
-          if (normStatus === "delivered") {
+          if (normStatus === "delivered" || normStatus === "returned") {
             trackStatusText.style.color = "#059669";
           } else if (normStatus === "cancelled") {
             trackStatusText.style.color = "#dc2626";
+          } else if (normStatus === "cancellation_requested") {
+            trackStatusText.style.color = "#d97706";
+          } else if (normStatus === "return_requested") {
+            trackStatusText.style.color = "#4f46e5";
           } else {
             trackStatusText.style.color = "#2563eb";
           }
@@ -1121,24 +1889,590 @@
         });
       }
 
+      // Toast notification helper
+      function showToast(message, type = "success") {
+        const container = document.getElementById("toast-container");
+        if (!container) {
+          alert(message);
+          return;
+        }
+        const toast = document.createElement("div");
+        toast.className = `custom-toast ${type}`;
+        toast.style.cssText = `
+          padding: 12px 18px;
+          border-radius: 8px;
+          font-size: 0.88rem;
+          font-weight: 600;
+          margin-bottom: 8px;
+          color: #fff;
+          background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#10b981'};
+          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          z-index: 10000;
+        `;
+        toast.innerHTML = `<span>${type === 'error' ? '⚠️' : type === 'warning' ? '🔔' : '✓'}</span> <span>${escapeHTML(message)}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(-10px)";
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
+
+      // ========================================================================
+      // CANCEL ORDER MODAL CONTROLLER
+      // ========================================================================
+      const cancelModal = document.getElementById("cancel-order-modal-overlay");
+      const cancelOrderNum = document.getElementById("cancel-modal-order-number");
+      const cancelShippedAlert = document.getElementById("cancel-shipped-alert");
+      const cancelEligibleContent = document.getElementById("cancel-eligible-content");
+      const cancelRefundNoticeBox = document.getElementById("cancel-refund-notice-box");
+      const cancelSummaryDetails = document.getElementById("cancel-order-summary-details");
+      const btnKeepMyOrder = document.getElementById("btn-keep-my-order");
+      const btnSubmitCancel = document.getElementById("btn-submit-cancellation");
+      const formCancel = document.getElementById("form-cancel-order");
+      const customReasonWrap = document.getElementById("cancel-custom-reason-wrap");
+      const customReasonInput = document.getElementById("cancel-custom-reason");
+      let currentCancelOrderId = null;
+
+      function openCancelModal(order) {
+        if (!cancelModal || !order) return;
+        currentCancelOrderId = order.id;
+
+        if (cancelOrderNum) cancelOrderNum.textContent = `Order #${order.order_number}`;
+
+        const isShippedOrIneligible = ["shipped", "out_for_delivery", "delivered"].includes(order.order_status);
+        if (isShippedOrIneligible) {
+          if (cancelShippedAlert) cancelShippedAlert.style.display = "block";
+          if (cancelEligibleContent) cancelEligibleContent.style.display = "none";
+          if (btnSubmitCancel) btnSubmitCancel.style.display = "none";
+          if (btnKeepMyOrder) btnKeepMyOrder.textContent = "Close";
+        } else {
+          if (cancelShippedAlert) cancelShippedAlert.style.display = "none";
+          if (cancelEligibleContent) cancelEligibleContent.style.display = "flex";
+          if (btnSubmitCancel) btnSubmitCancel.style.display = "inline-flex";
+          if (btnKeepMyOrder) btnKeepMyOrder.textContent = "Keep My Order";
+        }
+
+        const hasAdv = Number(order.advance_paid || order.advance_amount || 0) > 0;
+        const advAmt = Math.round(Number(order.advance_paid || order.advance_amount || 0));
+        const isOnline = Boolean(
+          order.free_gifts_eligible || 
+          order.is_full_online_payment || 
+          (order.payment_method && order.payment_method.includes("Full Online")) ||
+          (order.payment_status === "paid" && !hasAdv && !order.payment_method?.toLowerCase().includes("cash on delivery"))
+        );
+
+        if (cancelRefundNoticeBox) {
+          if (hasAdv) {
+            cancelRefundNoticeBox.innerHTML = `
+              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-left: 4px solid #10b981; border-radius: 8px; padding: 12px 14px; font-size: 0.84rem; color: #065f46; line-height: 1.5;">
+                <strong>💳 Prepaid Advance Refund Notice:</strong><br>
+                Your eligible prepaid advance amount of <strong>₹${advAmt.toLocaleString("en-IN")}</strong> will be refunded to your original payment method after the cancellation is approved. Refund processing may take up to 48 hours.
+              </div>
+            `;
+          } else if (isOnline) {
+            cancelRefundNoticeBox.innerHTML = `
+              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-left: 4px solid #10b981; border-radius: 8px; padding: 12px 14px; font-size: 0.84rem; color: #065f46; line-height: 1.5;">
+                <strong>💳 Online Payment Refund:</strong><br>
+                If your cancellation is approved, the eligible refund will be processed to your original payment method. Refund processing may take up to 48 hours after approval.
+              </div>
+            `;
+          } else {
+            cancelRefundNoticeBox.innerHTML = `
+              <div style="background: rgba(100, 116, 139, 0.08); border: 1px solid rgba(100, 116, 139, 0.25); border-left: 4px solid #64748b; border-radius: 8px; padding: 12px 14px; font-size: 0.84rem; color: #334155; line-height: 1.5;">
+                <strong>💵 Cash on Delivery:</strong><br>
+                No online payment was made for this order, so there is no prepaid amount to refund.
+              </div>
+            `;
+          }
+        }
+
+        if (cancelSummaryDetails) {
+          cancelSummaryDetails.innerHTML = `
+            <div><strong>Order Total:</strong> ₹${Math.round(order.total || 0).toLocaleString("en-IN")}</div>
+            <div><strong>Payment Method:</strong> ${escapeHTML(order.payment_method || (hasAdv ? 'Advance + COD' : isOnline ? 'Online Payment' : 'Cash on Delivery'))}</div>
+          `;
+        }
+
+        const defaultRadio = document.querySelector('input[name="cancel_reason"][value="Changed my mind"]');
+        if (defaultRadio) defaultRadio.checked = true;
+        if (customReasonWrap) customReasonWrap.style.display = "none";
+        if (customReasonInput) customReasonInput.value = "";
+
+        document.body.classList.add("velora-modal-open");
+        cancelModal.classList.add("active");
+        cancelModal.style.display = "flex";
+        cancelModal.style.opacity = "1";
+        cancelModal.style.visibility = "visible";
+        cancelModal.style.pointerEvents = "auto";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeCancelModal() {
+        if (cancelModal) {
+          cancelModal.classList.remove("active");
+          cancelModal.style.display = "none";
+          cancelModal.style.opacity = "0";
+          cancelModal.style.visibility = "hidden";
+          cancelModal.style.pointerEvents = "none";
+        }
+        document.body.classList.remove("velora-modal-open");
+        document.body.style.overflow = "";
+        currentCancelOrderId = null;
+      }
+
+      document.querySelectorAll('input[name="cancel_reason"]').forEach(radio => {
+        radio.addEventListener("change", () => {
+          if (customReasonWrap) {
+            const isOther = (radio.value === "Other" && radio.checked);
+            customReasonWrap.style.display = isOther ? "block" : "none";
+            if (isOther && customReasonInput) {
+              customReasonInput.focus();
+            }
+          }
+        });
+      });
+
+      // Submit Cancellation Request
+      if (formCancel) {
+        formCancel.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (!currentCancelOrderId) return;
+          const order = dbOrdersCache.find(o => o.id === currentCancelOrderId);
+          if (!order) return;
+
+          const selectedRadio = document.querySelector('input[name="cancel_reason"]:checked');
+          if (!selectedRadio) {
+            showToast("Please select a cancellation reason.", "warning");
+            return;
+          }
+          let reason = selectedRadio.value;
+          const customNotes = customReasonInput ? customReasonInput.value.trim() : "";
+          if (reason === "Other") {
+            if (!customNotes) {
+              showToast("Please tell us the reason for cancelling.", "warning");
+              if (customReasonInput) customReasonInput.focus();
+              return;
+            }
+            reason = `Other: ${customNotes}`;
+          }
+
+          const hasAdv = Number(order.advance_paid || order.advance_amount || 0) > 0;
+          const isOnline = Boolean(
+            order.free_gifts_eligible || 
+            order.is_full_online_payment || 
+            (order.payment_method && order.payment_method.includes("Full Online")) ||
+            (order.payment_status === "paid" && !hasAdv && !order.payment_method?.toLowerCase().includes("cash on delivery"))
+          );
+
+          let refundAmount = 0;
+          let refundStatus = "not_applicable";
+          if (hasAdv) {
+            refundAmount = Number(order.advance_paid || order.advance_amount || 0);
+            refundStatus = "pending";
+          } else if (isOnline) {
+            refundAmount = Number(order.total || 0);
+            refundStatus = "pending";
+          }
+
+          const submitBtn = document.getElementById("btn-submit-cancellation");
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span>Submitting...</span>`;
+          }
+
+          const reqPayload = {
+            id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : 'req_' + Date.now(),
+            order_id: order.id,
+            user_id: authUser.id,
+            request_type: "cancellation",
+            reason: reason,
+            custom_reason: customNotes || null,
+            description: customNotes || null,
+            status: "requested",
+            refund_amount: refundAmount,
+            refund_status: refundStatus,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+
+          try {
+            try {
+              const { error: insErr } = await client.from("order_requests").insert([reqPayload]);
+              if (insErr) console.warn("order_requests table insert warning:", insErr.message);
+            } catch (err) {
+              console.warn("order_requests table insert exception:", err);
+            }
+
+            try {
+              const { error: ordErr } = await client.from("orders").update({
+                order_status: "cancellation_requested",
+                updated_at: new Date().toISOString()
+              }).eq("id", order.id);
+              if (ordErr) console.warn("orders update warning:", ordErr.message);
+            } catch (err) {
+              console.warn("orders update exception:", err);
+            }
+
+            // Dual-layer fallback to store_settings and localStorage
+            try {
+              const localReqs = JSON.parse(localStorage.getItem("velora_order_requests") || "[]");
+              localReqs.push(reqPayload);
+              localStorage.setItem("velora_order_requests", JSON.stringify(localReqs));
+            } catch (_) {}
+
+            try {
+              const { data: sRow } = await client.from("store_settings").select("value").eq("key", "order_requests").maybeSingle();
+              let allReqs = (sRow && Array.isArray(sRow.value)) ? sRow.value : [];
+              allReqs.push(reqPayload);
+              await client.from("store_settings").upsert({ key: "order_requests", value: allReqs }, { onConflict: "key" });
+            } catch (_) {}
+
+            showToast("Cancellation request submitted successfully.", "success");
+            closeCancelModal();
+            await renderOrders();
+          } catch (submitErr) {
+            console.error("Cancellation submission error:", submitErr);
+            showToast("Failed to submit cancellation: " + (submitErr.message || "Please try again."), "error");
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = `<span>Submit Cancellation Request</span>`;
+            }
+          }
+        });
+      }
+
+      // ========================================================================
+      // RETURN ORDER MODAL CONTROLLER
+      // ========================================================================
+      const returnModal = document.getElementById("return-order-modal-overlay");
+      const returnOrderNum = document.getElementById("return-modal-order-number");
+      const returnItemsContainer = document.getElementById("return-items-selection-container");
+      const returnCustomWrap = document.getElementById("return-custom-reason-wrap");
+      const returnCustomInput = document.getElementById("return-custom-reason");
+      const returnNotes = document.getElementById("return-description");
+      const returnPhotoInput = document.getElementById("return-photo-input");
+      const returnPhotoPreview = document.getElementById("return-photo-preview");
+      const returnPhotoImg = document.getElementById("return-photo-img");
+      const btnSubmitReturn = document.getElementById("btn-submit-return");
+      const formReturn = document.getElementById("form-return-order");
+      let currentReturnOrderId = null;
+      let attachedReturnPhotoDataUrl = null;
+
+      function openReturnModal(order) {
+        if (!returnModal || !order) return;
+        currentReturnOrderId = order.id;
+
+        if (returnOrderNum) returnOrderNum.textContent = `Order #${order.order_number}`;
+
+        // Find which items were already returned
+        const orderReqs = userRequestsCache.filter(r => r.order_id === order.id && r.request_type === "return");
+        const returnedItemIds = new Set(orderReqs.filter(r => r.order_item_id).map(r => r.order_item_id));
+        const availableItems = (order.order_items || []).filter(item => !returnedItemIds.has(item.id));
+
+        if (returnItemsContainer) {
+          if (availableItems.length === 0) {
+            returnItemsContainer.innerHTML = '<div style="color: #64748b; font-size: 0.85rem;">All eligible items from this order have already been requested for return.</div>';
+          } else {
+            returnItemsContainer.innerHTML = availableItems.map(item => {
+              const retFallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200';
+              const retImg = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
+                ? window.VeloraImageUtils.normalizeImageUrl(item.product_image, { isAdmin: false, fallback: retFallbackSvg })
+                : (item.product_image || retFallbackSvg);
+              return `
+              <label style="display:flex; align-items:center; gap: 12px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; background: #f8fafc;">
+                <input type="checkbox" name="return_item_checkbox" value="${item.id}" data-item-price="${item.price || 0}" data-item-qty="${item.quantity || 1}" checked style="width: 16px; height: 16px; accent-color: #4f46e5;">
+                <img src="${escapeHTML(retImg)}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid #cbd5e1;" onerror="this.onerror=null; this.src='${retFallbackSvg}';">
+                <div style="flex:1; font-size: 0.85rem;">
+                  <strong style="color: #0f172a;">${escapeHTML(item.product_name)}</strong>
+                  <div style="color: #64748b; font-size: 0.76rem;">${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} • Qty: ${item.quantity || 1}</div>
+                </div>
+                <strong style="color: #0f172a; font-size: 0.88rem;">₹${Math.round(item.subtotal || (item.price * (item.quantity || 1))).toLocaleString("en-IN")}</strong>
+              </label>
+              `;
+            }).join("");
+          }
+        }
+
+        const defaultReturnRadio = document.querySelector('input[name="return_reason"][value="Wrong product received"]');
+        if (defaultReturnRadio) defaultReturnRadio.checked = true;
+        if (returnCustomWrap) returnCustomWrap.style.display = "none";
+        if (returnCustomInput) returnCustomInput.value = "";
+        if (returnNotes) returnNotes.value = "";
+        if (returnPhotoInput) returnPhotoInput.value = "";
+        if (returnPhotoPreview) returnPhotoPreview.style.display = "none";
+        attachedReturnPhotoDataUrl = null;
+
+        document.body.classList.add("velora-modal-open");
+        returnModal.classList.add("active");
+        returnModal.style.display = "flex";
+        returnModal.style.opacity = "1";
+        returnModal.style.visibility = "visible";
+        returnModal.style.pointerEvents = "auto";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeReturnModal() {
+        if (returnModal) {
+          returnModal.classList.remove("active");
+          returnModal.style.display = "none";
+          returnModal.style.opacity = "0";
+          returnModal.style.visibility = "hidden";
+          returnModal.style.pointerEvents = "none";
+        }
+        document.body.classList.remove("velora-modal-open");
+        document.body.style.overflow = "";
+        currentReturnOrderId = null;
+        attachedReturnPhotoDataUrl = null;
+      }
+
+      document.querySelectorAll('input[name="return_reason"]').forEach(radio => {
+        radio.addEventListener("change", () => {
+          if (returnCustomWrap) {
+            const isOther = (radio.value === "Other" && radio.checked);
+            returnCustomWrap.style.display = isOther ? "block" : "none";
+            if (isOther && returnCustomInput) {
+              returnCustomInput.focus();
+            }
+          }
+        });
+      });
+
+      if (returnPhotoInput) {
+        returnPhotoInput.addEventListener("change", (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+              showToast("Image size must be less than 5MB", "error");
+              returnPhotoInput.value = "";
+              attachedReturnPhotoDataUrl = null;
+              if (returnPhotoPreview) returnPhotoPreview.style.display = "none";
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = (loadEvt) => {
+              attachedReturnPhotoDataUrl = loadEvt.target.result;
+              if (returnPhotoImg) returnPhotoImg.src = attachedReturnPhotoDataUrl;
+              if (returnPhotoPreview) returnPhotoPreview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          } else {
+            attachedReturnPhotoDataUrl = null;
+            if (returnPhotoPreview) returnPhotoPreview.style.display = "none";
+          }
+        });
+      }
+
+      // Submit Return Request
+      if (formReturn) {
+        formReturn.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (!currentReturnOrderId) return;
+          const order = dbOrdersCache.find(o => o.id === currentReturnOrderId);
+          if (!order) return;
+
+          const checkedItemBoxes = Array.from(document.querySelectorAll('input[name="return_item_checkbox"]:checked'));
+          if (checkedItemBoxes.length === 0) {
+            showToast("Please select at least one item to return.", "warning");
+            return;
+          }
+
+          const selectedReturnRadio = document.querySelector('input[name="return_reason"]:checked');
+          if (!selectedReturnRadio) {
+            showToast("Please select why you want to return this item.", "warning");
+            return;
+          }
+
+          let reason = selectedReturnRadio.value;
+          const customNotes = returnCustomInput ? returnCustomInput.value.trim() : "";
+          if (reason === "Other") {
+            if (!customNotes) {
+              showToast("Please tell us the reason for your return.", "warning");
+              if (returnCustomInput) returnCustomInput.focus();
+              return;
+            }
+            reason = `Other: ${customNotes}`;
+          }
+
+          const notes = returnNotes ? returnNotes.value.trim() : "";
+          const submitBtn = document.getElementById("btn-submit-return");
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span>Submitting...</span>`;
+          }
+
+          const hasAdv = Number(order.advance_paid || order.advance_amount || 0) > 0;
+          const isOnline = Boolean(
+            order.free_gifts_eligible || 
+            order.is_full_online_payment || 
+            (order.payment_method && order.payment_method.includes("Full Online")) ||
+            (order.payment_status === "paid" && !hasAdv && !order.payment_method?.toLowerCase().includes("cash on delivery"))
+          );
+
+          let totalSelectedValue = 0;
+          checkedItemBoxes.forEach(cb => {
+            const price = Number(cb.dataset.itemPrice || 0);
+            const qty = Number(cb.dataset.itemQty || 1);
+            totalSelectedValue += (price * qty);
+          });
+
+          let returnRefundAmount = 0;
+          let returnRefundStatus = "not_applicable";
+          if (hasAdv) {
+            const ratio = Math.min(1, totalSelectedValue / (order.total || 1));
+            returnRefundAmount = Math.round((Number(order.advance_paid || order.advance_amount) * ratio) * 100) / 100;
+            returnRefundStatus = returnRefundAmount > 0 ? "pending" : "not_applicable";
+          } else if (isOnline) {
+            returnRefundAmount = Math.min(totalSelectedValue, Number(order.total || 0));
+            returnRefundStatus = "pending";
+          }
+
+          const selectedItemIds = checkedItemBoxes.map(cb => cb.value);
+
+          const newRequests = selectedItemIds.map(itemId => ({
+            id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            order_id: order.id,
+            user_id: authUser.id,
+            order_item_id: itemId,
+            request_type: "return",
+            reason: reason,
+            description: notes || null,
+            images: attachedReturnPhotoDataUrl ? [attachedReturnPhotoDataUrl] : [],
+            status: "requested",
+            refund_amount: selectedItemIds.length > 0 ? Math.round((returnRefundAmount / selectedItemIds.length) * 100) / 100 : 0,
+            refund_status: returnRefundStatus,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }));
+
+          try {
+            try {
+              const { error: insErr } = await client.from("order_requests").insert(newRequests);
+              if (insErr) console.warn("order_requests table insert warning:", insErr.message);
+            } catch (err) {
+              console.warn("order_requests table insert exception:", err);
+            }
+
+            try {
+              const { error: ordErr } = await client.from("orders").update({
+                order_status: "return_requested",
+                updated_at: new Date().toISOString()
+              }).eq("id", order.id);
+              if (ordErr) console.warn("orders update warning:", ordErr.message);
+            } catch (err) {
+              console.warn("orders update exception:", err);
+            }
+
+            // Dual-layer fallback
+            try {
+              const localReqs = JSON.parse(localStorage.getItem("velora_order_requests") || "[]");
+              newRequests.forEach(r => localReqs.push(r));
+              localStorage.setItem("velora_order_requests", JSON.stringify(localReqs));
+            } catch (_) {}
+
+            try {
+              const { data: sRow } = await client.from("store_settings").select("value").eq("key", "order_requests").maybeSingle();
+              let allReqs = (sRow && Array.isArray(sRow.value)) ? sRow.value : [];
+              newRequests.forEach(r => allReqs.push(r));
+              await client.from("store_settings").upsert({ key: "order_requests", value: allReqs }, { onConflict: "key" });
+            } catch (_) {}
+
+            showToast("Return request submitted. Our team will review your request and arrange the next steps.", "success");
+            closeReturnModal();
+            await renderOrders();
+          } catch (submitErr) {
+            console.error("Return submission error:", submitErr);
+            showToast("Failed to submit return request: " + (submitErr.message || "Please try again."), "error");
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = `<span>Submit Return Request</span>`;
+            }
+          }
+        });
+      }
+
+      // ========================================================================
+      // UNIVERSAL MODAL EVENT DELEGATION (Open, Close, Escape)
+      // ========================================================================
+
       // Universal delegated click for Track Order buttons
       document.addEventListener("click", (e) => {
-        const btn = e.target.closest(".btn-track-order");
-        if (btn) {
+        const trackBtn = e.target.closest(".btn-track-order");
+        if (trackBtn) {
           e.preventDefault();
           e.stopPropagation();
-          const ordId = btn.dataset.orderId;
-          const ordNum = btn.dataset.orderNumber;
-          const ordStatus = btn.dataset.orderStatus;
-          const ordEta = btn.dataset.orderEta;
+          const ordId = trackBtn.dataset.orderId;
+          const ordNum = trackBtn.dataset.orderNumber;
+          const ordStatus = trackBtn.dataset.orderStatus;
+          const ordEta = trackBtn.dataset.orderEta;
           openTrackingModal(ordId, ordNum, ordStatus, ordEta);
+          return;
+        }
+
+        const cancelBtn = e.target.closest(".btn-cancel-order");
+        if (cancelBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const ordId = cancelBtn.dataset.orderId;
+          const ordNum = cancelBtn.dataset.orderNumber;
+          const order = dbOrdersCache.find(o => o.id === ordId || o.order_number === ordId || o.order_number === ordNum);
+          if (order) openCancelModal(order);
+          return;
+        }
+
+        const returnBtn = e.target.closest(".btn-return-order");
+        if (returnBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const ordId = returnBtn.dataset.orderId;
+          const ordNum = returnBtn.dataset.orderNumber;
+          const order = dbOrdersCache.find(o => o.id === ordId || o.order_number === ordId || o.order_number === ordNum);
+          if (order) openReturnModal(order);
+          return;
+        }
+
+        // Close buttons
+        if (e.target.closest(".btn-close-cancel-modal, #btn-keep-my-order")) {
+          e.preventDefault();
+          closeCancelModal();
+          return;
+        }
+        if (e.target.closest(".btn-close-return-modal")) {
+          e.preventDefault();
+          closeReturnModal();
+          return;
+        }
+
+        // Backdrop clicks
+        if (e.target === cancelModal) {
+          closeCancelModal();
+          return;
+        }
+        if (e.target === returnModal) {
+          closeReturnModal();
+          return;
         }
       });
 
-      // Realtime listener for order status changes
+      // Escape key listener for all modals
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeCancelModal();
+          closeReturnModal();
+          closeTrackingModal();
+        }
+      });
+
+      // Realtime listener for order status changes with proper channel tracking & cleanup
       if (typeof client.channel === "function") {
         try {
-          client
+          orderChannel = client
             .channel(`public:user_orders_${authUser.id}`)
             .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${authUser.id}` }, () => {
               renderOrders();
@@ -1148,7 +2482,22 @@
           console.warn("Realtime order subscription notice:", e);
         }
       }
-    });
+
+      window.addEventListener("beforeunload", () => {
+        if (orderChannel && typeof client.removeChannel === "function") {
+          try { client.removeChannel(orderChannel); } catch (_) {}
+        }
+        if (authSubscription && typeof authSubscription.unsubscribe === "function") {
+          try { authSubscription.unsubscribe(); } catch (_) {}
+        }
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initAccountPage);
+    } else {
+      initAccountPage();
+    }
   </script>
 
   <!-- ========================================================================

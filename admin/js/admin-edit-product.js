@@ -432,6 +432,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         const { error } = await client.from("products").update(updates).eq("id", productId);
         if (error) throw error;
 
+        // Sync core fields to linked Sarojini product if available
+        if (window.CrossStoreService) {
+          try {
+            await window.CrossStoreService.syncProductEdits(client, productId, "main", updates);
+          } catch (syncErr) {
+            console.warn("[CrossStore] Edit sync warning:", syncErr);
+          }
+        }
+
         // Sync product specifications (delete old specs and insert current ones)
         try {
           await client.from("product_specifications").delete().eq("product_id", productId);
@@ -473,7 +482,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (window.VeloraCache) window.VeloraCache.invalidate();
         } catch (_) {}
 
-        window.showToast("Product updated successfully! Changes live across VELORA.", "success");
+        window.showToast("Product updated successfully! Changes live across VADI.", "success");
         setTimeout(() => {
           window.location.href = "products.html";
         }, 700);
