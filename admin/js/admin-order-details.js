@@ -420,7 +420,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (linkInfo.isAvailable && linkInfo.url) {
             imageHtml = `
               <a href="${escapeHTML(linkInfo.url)}" target="_blank" rel="noopener noreferrer" style="display:block; flex-shrink:0; text-decoration:none;" title="Open product in customer store (opens in new tab)">
-                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--admin-card-border); transition: transform 0.2s, border-color 0.2s;" onerror="this.onerror=null; this.src='${fallbackSvg}';" onmouseover="this.style.transform='scale(1.04)'; this.style.borderColor='var(--admin-accent, #38bdf8)';" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='var(--admin-card-border)';">
+                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.04); padding:2px; border:1px solid var(--admin-card-border); transition: transform 0.2s, border-color 0.2s;" onerror="this.onerror=null; this.src='${fallbackSvg}';" onmouseover="this.style.transform='scale(1.04)'; this.style.borderColor='var(--admin-accent, #38bdf8)';" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='var(--admin-card-border)';">
               </a>
             `;
 
@@ -439,7 +439,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           } else {
             imageHtml = `
               <div style="flex-shrink:0;">
-                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--admin-card-border); opacity: 0.85;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.04); padding:2px; border:1px solid var(--admin-card-border); opacity: 0.85;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
               </div>
             `;
 

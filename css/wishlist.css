@@ -249,20 +249,32 @@
 .wishlist-card-media {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1.05;
+  aspect-ratio: 1 / 1;
   background: var(--bg-subtle);
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .wishlist-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  padding: 8px;
+  box-sizing: border-box;
+  transition: transform 0.35s ease;
 }
 
 .wishlist-card:hover .wishlist-card-img {
-  transform: scale(1.05);
+  transform: scale(1.03);
+}
+
+.wishlist-card[data-catalog-type="sarojini"] .wishlist-card-media {
+  background: #fbf9f5;
 }
 
 /* Heart Button on Wishlist Card */

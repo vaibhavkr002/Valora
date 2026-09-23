@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   let prodToDelete = null;
   let prodToAddToMain = null;
+  let selectedProductIds = new Set();
 
   function escapeHtml(str) {
     if (!str) return "";
@@ -46,6 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (typeof window.formatINR === 'function') return window.formatINR(amount);
     const n = Math.round(Number(amount) || 0);
     return '₹' + n.toLocaleString('en-IN');
+  }
+
+  function invalidateSarojiniCache() {
+    try {
+      sessionStorage.removeItem("velora_sarojini_catalog_cache_v1");
+      localStorage.removeItem("velora_sarojini_catalog_cache_v1");
+      localStorage.setItem("sarojini_global_cache_invalidated", Date.now().toString());
+    } catch (_) {}
   }
 
   // Load Categories for dropdown & Main Categories for cross-store transfer modal
@@ -81,7 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Load Products & Cross-Store Availability
   async function loadProducts() {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 32px;"><i class="fas fa-spinner fa-spin"></i> Loading Sarojini products...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 32px;"><i class="fas fa-spinner fa-spin"></i> Loading Sarojini products...</td></tr>';
 
     try {
       if (window.CrossStoreService) {
@@ -123,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (fetchError && sarojiniItems.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; padding: 40px 20px; color: var(--admin-danger);">
+          <td colspan="10" style="text-align: center; padding: 40px 20px; color: var(--admin-danger);">
             <div style="font-size: 2.2rem; margin-bottom: 8px;">⚠️</div>
             <h4 style="margin: 0 0 6px 0;">Failed to Load Sarojini Products</h4>
             <p style="margin: 0 0 16px 0; font-size: 0.85rem; color: var(--admin-text-muted);">${escapeHtml(fetchError.message || String(fetchError))}</p>
@@ -240,29 +249,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (allProducts.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; padding: 48px 20px; color: var(--admin-text-muted);">
+          <td colspan="10" style="text-align: center; padding: 48px 20px; color: var(--admin-text-muted);">
             <div style="font-size: 2.5rem; margin-bottom: 8px;">🛍️</div>
             <h4 style="margin: 0 0 6px 0; color: #fff;">No Sarojini Products Yet</h4>
             <p style="margin: 0 0 16px 0; font-size: 0.85rem;">Add your first Sarojini Bazaar product or make Main store products available here.</p>
-            <a href="sarojini-add-product.html" class="btn-admin-primary" style="background:#e11d48; border-color:#e11d48; display:inline-flex;">
-              <i class="fas fa-plus"></i> Add First Sarojini Product
-            </a>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+              <a href="sarojini-add-product.html" class="btn-admin-primary" style="background:#e11d48; border-color:#e11d48; display:inline-flex;">
+                <i class="fas fa-plus"></i> Add First Sarojini Product
+              </a>
+              <button type="button" class="btn-admin-secondary" onclick="window.SarojiniBulkImport && window.SarojiniBulkImport.openModal()" style="display:inline-flex;">
+                <i class="fas fa-file-import"></i> Bulk Import
+              </button>
+            </div>
           </td>
         </tr>
       `;
+      updateBulkToolbar();
       return;
     }
 
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; padding: 40px 20px; color: var(--admin-text-muted);">
+          <td colspan="10" style="text-align: center; padding: 40px 20px; color: var(--admin-text-muted);">
             <div style="font-size: 2.2rem; margin-bottom: 8px;">🔍</div>
             <h4 style="margin: 0 0 6px 0; color: #fff;">No Matching Products</h4>
             <p style="margin: 0; font-size: 0.85rem;">No products match the selected filters. Try adjusting your search or filters.</p>
           </td>
         </tr>
       `;
+      updateBulkToolbar();
       return;
     }
 
@@ -284,8 +300,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const statusBadge = prod.is_active
-        ? `<button type="button" class="btn-toggle-status badge badge-success" data-id="${prod.id}" data-origin="${prod.origin_catalog}" style="cursor:pointer; border:none;">Active</button>`
-        : `<button type="button" class="btn-toggle-status badge badge-danger" data-id="${prod.id}" data-origin="${prod.origin_catalog}" style="cursor:pointer; border:none;">Disabled</button>`;
+        ? `<button type="button" class="btn-toggle-status badge badge-success" data-id="${prod.id}" data-origin="${prod.origin_catalog}" style="cursor:pointer; border:none;" title="Active on storefront (Click to Draft)">Active</button>`
+        : `<button type="button" class="btn-toggle-status badge badge-warning" data-id="${prod.id}" data-origin="${prod.origin_catalog}" style="cursor:pointer; border:none; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);" title="Unpublished Draft (Click to Publish)">Draft</button>`;
 
       const promoBadges = [];
       promoBadges.push(prod.is_featured
@@ -342,10 +358,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         : `sarojini-add-product.html?id=${encodeURIComponent(prod.id)}`;
 
       return `
-        <tr>
+        <tr data-prod-id="${prod.id}">
+          <td style="text-align: center;">
+            <input type="checkbox" class="row-select-prod" data-id="${prod.id}" ${selectedProductIds.has(String(prod.id)) ? 'checked' : ''}>
+          </td>
           <td>
             <div style="display:flex; align-items:center; gap: 12px;">
-              <img src="${firstImg}" alt="${escapeHtml(prod.name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f1f5f9;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+              <img src="${firstImg}" alt="${escapeHtml(prod.name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: contain; background: #f8fafc; padding: 2px;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
               <div>
                 <a href="${editUrl}" style="font-weight: 700; color: var(--admin-text); text-decoration: none; font-size: 0.9rem;">${escapeHtml(prod.name)}</a>
                 <div style="font-size: 0.75rem; color: var(--admin-text-muted);">${escapeHtml(prod.brand || 'Sarojini Bazaar')} • <code>${escapeHtml(prod.slug || '')}</code></div>
@@ -384,6 +403,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }).join('');
 
+    // Wire Table Selection Checkboxes
+    const thSelectAll = document.getElementById("th-select-all-prods");
+    if (thSelectAll) {
+      thSelectAll.checked = filtered.length > 0 && filtered.every(p => selectedProductIds.has(String(p.id)));
+      thSelectAll.onchange = () => {
+        const isChecked = thSelectAll.checked;
+        filtered.forEach(p => {
+          if (isChecked) selectedProductIds.add(String(p.id));
+          else selectedProductIds.delete(String(p.id));
+        });
+        tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = isChecked);
+        updateBulkToolbar();
+      };
+    }
+
+    tbody.querySelectorAll(".row-select-prod").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const id = String(cb.dataset.id);
+        if (cb.checked) selectedProductIds.add(id);
+        else selectedProductIds.delete(id);
+        updateBulkToolbar();
+      });
+    });
+
+    updateBulkToolbar();
+
     // Wire Status Toggle
     tbody.querySelectorAll(".btn-toggle-status").forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -406,6 +451,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (!newStatus) {
             await syncProductFeaturedToSection(client, item.id, false);
           }
+          invalidateSarojiniCache();
           renderProducts();
           window.showToast(`Product "${item.name}" marked ${item.is_active ? 'Active' : 'Disabled'}.`, "success");
         } catch (err) {
@@ -441,6 +487,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           item.is_featured = newFeatured;
           await syncProductFeaturedToSection(client, item.id, newFeatured);
+          invalidateSarojiniCache();
           renderProducts();
           window.showToast(`Product "${item.name}" ${newFeatured ? 'marked Featured on Homepage' : 'removed from Homepage'}.`, "success");
         } catch (err) {
@@ -496,6 +543,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           createdItem.is_in_main = false;
 
           allProducts.unshift(createdItem);
+          invalidateSarojiniCache();
           renderProducts();
           window.showToast(`Duplicated "${original.name}".`, "success");
         } catch (err) {
@@ -717,6 +765,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (error) throw error;
 
         allProducts = allProducts.filter(p => String(p.id) !== String(prodToDelete.id));
+        invalidateSarojiniCache();
 
         window.showToast(`Deleted product "${prodToDelete.name}".`, "info");
         closeDelModal();
@@ -759,6 +808,140 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn('Sync to homepage_sections error:', e);
     }
   }
+
+  // ==========================================================================
+  // BULK ACTIONS TOOLBAR CONTROLLER (Publish, Draft, Delete)
+  // ==========================================================================
+  const bulkToolbar = document.getElementById("bulk-actions-toolbar");
+  const bulkCountSpan = document.getElementById("bulk-selected-count");
+  const btnBulkPublish = document.getElementById("btn-bulk-publish");
+  const btnBulkDraft = document.getElementById("btn-bulk-draft");
+  const btnBulkDelete = document.getElementById("btn-bulk-delete");
+  const btnBulkDeselect = document.getElementById("btn-bulk-deselect");
+
+  function updateBulkToolbar() {
+    if (!bulkToolbar || !bulkCountSpan) return;
+    const count = selectedProductIds.size;
+    if (count > 0) {
+      bulkToolbar.style.display = "flex";
+      bulkCountSpan.textContent = `${count} Selected`;
+    } else {
+      bulkToolbar.style.display = "none";
+    }
+  }
+
+  btnBulkPublish?.addEventListener("click", async () => {
+    const count = selectedProductIds.size;
+    if (count === 0) return;
+    if (!confirm(`You are about to publish ${count} Sarojini products.\n\nThey will immediately become live and visible to customers on Sarojini Bazaar. Confirm?`)) {
+      return;
+    }
+
+    btnBulkPublish.disabled = true;
+    btnBulkPublish.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+
+    try {
+      const ids = Array.from(selectedProductIds);
+      const { error } = await client
+        .from("sarojini_products")
+        .update({
+          is_active: true,
+          updated_at: new Date().toISOString()
+        })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      invalidateSarojiniCache();
+      window.showToast?.(`Published ${count} Sarojini products successfully!`, "success");
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk publish error:", err);
+      window.showToast?.("Failed to publish products: " + err.message, "danger");
+    } finally {
+      btnBulkPublish.disabled = false;
+      btnBulkPublish.innerHTML = '<i class="fas fa-rocket"></i> Publish Selected';
+    }
+  });
+
+  btnBulkDraft?.addEventListener("click", async () => {
+    const count = selectedProductIds.size;
+    if (count === 0) return;
+    if (!confirm(`Move ${count} selected products to Draft (Inactive)?\n\nThey will be hidden from the customer storefront.`)) {
+      return;
+    }
+
+    btnBulkDraft.disabled = true;
+    btnBulkDraft.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+    try {
+      const ids = Array.from(selectedProductIds);
+      const { error } = await client
+        .from("sarojini_products")
+        .update({
+          is_active: false,
+          updated_at: new Date().toISOString()
+        })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      invalidateSarojiniCache();
+      window.showToast?.(`Moved ${count} products to Draft (Inactive).`, "info");
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk draft error:", err);
+      window.showToast?.("Failed to update status: " + err.message, "danger");
+    } finally {
+      btnBulkDraft.disabled = false;
+      btnBulkDraft.innerHTML = '<i class="fas fa-lock"></i> Set as Draft';
+    }
+  });
+
+  btnBulkDelete?.addEventListener("click", async () => {
+    const count = selectedProductIds.size;
+    if (count === 0) return;
+    if (!confirm(`Are you sure you want to permanently delete ${count} selected Sarojini products?\n\nThis cannot be undone.`)) {
+      return;
+    }
+
+    btnBulkDelete.disabled = true;
+    btnBulkDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+    try {
+      const ids = Array.from(selectedProductIds);
+      const { error } = await client
+        .from("sarojini_products")
+        .delete()
+        .in("id", ids);
+
+      if (error) throw error;
+
+      invalidateSarojiniCache();
+      window.showToast?.(`Permanently deleted ${count} products.`, "info");
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+      window.showToast?.("Failed to delete products: " + err.message, "danger");
+    } finally {
+      btnBulkDelete.disabled = false;
+      btnBulkDelete.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+    }
+  });
+
+  btnBulkDeselect?.addEventListener("click", () => {
+    selectedProductIds.clear();
+    const thSelectAll = document.getElementById("th-select-all-prods");
+    if (thSelectAll) thSelectAll.checked = false;
+    tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = false);
+    updateBulkToolbar();
+  });
 
   await loadCategories();
   await loadProducts();

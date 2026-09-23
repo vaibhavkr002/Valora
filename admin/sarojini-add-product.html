@@ -13,12 +13,12 @@
   <style>
     .image-preview-item {
       position: relative;
-      width: 90px;
-      height: 90px;
+      width: 96px;
+      height: 96px;
       border-radius: 8px;
       overflow: hidden;
       border: 2px solid var(--admin-border);
-      background: #f1f5f9;
+      background: #f8fafc;
     }
     .image-preview-item.primary {
       border-color: #e11d48;
@@ -26,7 +26,32 @@
     .image-preview-item img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 2px;
+    }
+    .image-dimension-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(15, 23, 42, 0.85);
+      color: #fff;
+      font-size: 0.58rem;
+      font-family: monospace;
+      padding: 1px 4px;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+    .image-dimension-badge.low-res {
+      background: #d97706;
+      color: #fff;
+      font-weight: 700;
+    }
+    .btn-zone-select.active {
+      background: rgba(225, 29, 72, 0.15) !important;
+      border-color: #e11d48 !important;
+      color: #e11d48 !important;
+      font-weight: 700;
     }
     .image-preview-item .btn-remove-img {
       position: absolute;
@@ -144,6 +169,10 @@
           <i class="fas fa-tshirt"></i>
           <span>Sarojini Products</span>
         </a>
+        <a href="sarojini-products.html?openBulk=true" class="sidebar-link">
+          <i class="fas fa-file-import" style="color: #fb7185;"></i>
+          <span>Bulk Import</span>
+        </a>
         <a href="sarojini-add-product.html" class="sidebar-link active">
           <i class="fas fa-plus-square"></i>
           <span>Add Sarojini Product</span>
@@ -219,7 +248,11 @@
             <h1 class="page-title" id="form-heading">Add Sarojini Product</h1>
             <p class="page-subtitle">Publish a new bargain fashion item to the dedicated VADI Sarojini Bazaar catalog.</p>
           </div>
-          <div class="page-actions">
+          <div class="page-actions" style="display: flex; gap: 10px; align-items: center;">
+            <a href="sarojini-products.html?openBulk=true" class="btn-admin-primary" style="background: #e11d48; border-color: #e11d48; display: inline-flex; align-items: center; gap: 8px;">
+              <i class="fas fa-file-import"></i>
+              <span>Bulk Import Products</span>
+            </a>
             <a href="sarojini-products.html" class="btn-admin-secondary">
               <i class="fas fa-arrow-left"></i>
               <span>Back to Products</span>
@@ -315,6 +348,7 @@
                   <!-- Thumbnails injected here -->
                   <span id="no-imgs-hint" style="color: var(--admin-text-muted); font-size: 0.85rem; align-self: center;">No images added yet. Click a preset above or enter a URL.</span>
                 </div>
+                <div id="image-quality-advisory" style="margin-top: 8px; display: none; font-size: 0.78rem; color: #d97706; background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 6px; padding: 6px 10px; align-items: center; gap: 6px;"></div>
               </div>
 
               <!-- Variants: Sizes & Colors -->
@@ -505,6 +539,106 @@
     </div>
   </div>
 
+  <!-- Modal: Review & Clean Sarojini Image (Original -> Detected Code Area -> Final VADI Watermarked Image) -->
+  <div id="modal-image-cleaner" class="admin-modal-overlay" style="display: none; z-index: 9999;">
+    <div class="admin-modal" style="max-width: 1080px; width: 96%;">
+      <div class="admin-modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-magic" style="color: #e11d48;"></i>
+            <span>Automatic Code Scanner &amp; Dynamic VADI STORE Watermark</span>
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--admin-text-muted);">
+            Scans for supplier codes (e.g. S-990006640), calculates exact bounding box, and places dynamic VADI STORE watermark badge.
+          </p>
+        </div>
+        <button type="button" class="btn-admin-close" id="btn-close-cleaner-modal" style="background: none; border: none; font-size: 1.25rem; color: var(--admin-text-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <div class="admin-modal-body" style="padding: 16px 20px;">
+        <!-- Status Banner -->
+        <div id="cleaner-status-banner" style="margin-bottom: 16px; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-check-circle" id="cleaner-status-icon"></i>
+            <span id="cleaner-status-text">Supplier code detected at bottom-left. Dynamic VADI STORE watermark applied.</span>
+          </div>
+          <span id="cleaner-resolution-badge" style="font-family: monospace; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; color: #fff;">1000 × 1000 px</span>
+        </div>
+
+        <!-- 3-Step Preview: Original -> Detected Code Area -> Final VADI Watermarked Image -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <!-- 1. Original Image -->
+          <div style="border: 1px solid var(--admin-border); border-radius: 8px; padding: 10px; background: var(--admin-card-bg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; font-size: 0.78rem; color: var(--admin-text-muted); text-transform: uppercase;">1. Original Image</span>
+              <span style="font-size: 0.7rem; color: #94a3b8; background: rgba(148, 163, 184, 0.1); padding: 1px 6px; border-radius: 4px;">Raw Upload</span>
+            </div>
+            <div style="position: relative; width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <img id="cleaner-img-raw" src="" alt="Raw Original" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+          </div>
+
+          <!-- 2. Detected Code Area -->
+          <div style="border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 8px; padding: 10px; background: var(--admin-card-bg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; font-size: 0.78rem; color: #f43f5e; text-transform: uppercase;">2. Detected Code Area</span>
+              <span style="font-size: 0.7rem; color: #f43f5e; background: rgba(244, 63, 94, 0.1); padding: 1px 6px; border-radius: 4px;" id="cleaner-detected-tag">Target Box</span>
+            </div>
+            <div style="position: relative; width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <img id="cleaner-img-original" src="" alt="Detected Area" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              <div id="cleaner-highlight-box" style="position: absolute; border: 2px dashed #f43f5e; background: rgba(244, 63, 94, 0.35); pointer-events: none; display: none;"></div>
+            </div>
+          </div>
+
+          <!-- 3. Final VADI Watermarked Image -->
+          <div style="border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 10px; background: var(--admin-card-bg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; font-size: 0.78rem; color: #10b981; text-transform: uppercase;">3. Final VADI Watermarked</span>
+              <span style="font-size: 0.7rem; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 1px 6px; border-radius: 4px;">Customer View ✨</span>
+            </div>
+            <div style="position: relative; width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <img id="cleaner-img-cleaned" src="" alt="Watermarked" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Zone Selection & Fine-Tuning -->
+        <div style="background: var(--admin-hover-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;">
+          <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; color: var(--admin-text);">Adjust Detection Zone / Watermark Target:</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="cleaner-zone-buttons">
+            <button type="button" class="btn-admin-secondary btn-zone-select active" data-zone="bottom-left" style="font-size: 0.78rem; padding: 4px 10px;">
+              <i class="fas fa-arrow-down-left"></i> Bottom-Left (Standard)
+            </button>
+            <button type="button" class="btn-admin-secondary btn-zone-select" data-zone="bottom-right" style="font-size: 0.78rem; padding: 4px 10px;">
+              <i class="fas fa-arrow-down-right"></i> Bottom-Right
+            </button>
+            <button type="button" class="btn-admin-secondary btn-zone-select" data-zone="bottom-center" style="font-size: 0.78rem; padding: 4px 10px;">
+              <i class="fas fa-arrow-down"></i> Bottom-Center
+            </button>
+            <button type="button" class="btn-admin-secondary btn-zone-select" data-zone="bottom-edge" style="font-size: 0.78rem; padding: 4px 10px;">
+              <i class="fas fa-arrows-alt-h"></i> Full Bottom Edge
+            </button>
+            <button type="button" class="btn-admin-secondary btn-zone-select" data-zone="none" style="font-size: 0.78rem; padding: 4px 10px;">
+              <i class="fas fa-ban"></i> None (Keep Unaltered)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--admin-border);">
+        <button type="button" class="btn-admin-secondary" id="btn-modal-cancel" style="padding: 8px 16px;">Cancel</button>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-admin-secondary" id="btn-modal-keep-original" style="padding: 8px 16px;">
+            Keep Original
+          </button>
+          <button type="button" class="btn-admin-primary" id="btn-modal-accept-clean" style="padding: 8px 20px; background: #e11d48; border-color: #e11d48;">
+            <i class="fas fa-check"></i> Accept Watermarked Image
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="admin-toast-container" class="admin-toast-container"></div>
 
   <!-- Scripts -->
@@ -513,6 +647,7 @@
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-layout.js"></script>
   <script src="../js/image-utils.js"></script>
+  <script src="../js/sarojini-image-cleaner.js"></script>
   <script src="js/cross-store-service.js"></script>
   <script src="js/admin-sarojini-add-product.js"></script>
 </body>

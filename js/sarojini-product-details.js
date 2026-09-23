@@ -125,6 +125,40 @@
     loadRelatedSarojiniProducts(item.department);
   }
 
+  function getSarojiniPromoStripHtml(isPdp = false) {
+    const extraClass = isPdp ? ' sarojini-promo-strip-pdp' : '';
+    const marqueeGroup = `
+      <span class="sarojini-promo-group">
+        <span class="sarojini-promo-item"><span class="sarojini-promo-heart">♥</span> SAROJINI</span>
+        <span class="sarojini-promo-bullet">•</span>
+        <span class="sarojini-promo-item">BAZAAR WALE PRICES</span>
+        <span class="sarojini-promo-bullet">•</span>
+        <span class="sarojini-promo-item">NEW STREET DROP</span>
+        <span class="sarojini-promo-bullet">•</span>
+        <span class="sarojini-promo-item">DELHI'S FASHION FINDS</span>
+        <span class="sarojini-promo-bullet">•</span>
+        <span class="sarojini-promo-item">STYLE UNDER ₹499</span>
+        <span class="sarojini-promo-bullet">•</span>
+        <span class="sarojini-promo-item">CURATED FOR YOU</span>
+        <span class="sarojini-promo-bullet">•</span>
+      </span>
+    `;
+
+    return `
+      <div class="sarojini-promo-strip${extraClass}" aria-hidden="true">
+        <span class="sarojini-promo-badge">
+          <span class="sarojini-promo-dot"></span>SAROJINI
+        </span>
+        <div class="sarojini-promo-ticker">
+          <div class="sarojini-promo-track">
+            ${marqueeGroup}
+            ${marqueeGroup.replace('class="sarojini-promo-group"', 'class="sarojini-promo-group" aria-hidden="true"')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function renderProductDetails() {
     const p = currentProduct;
     if (!p) return;
@@ -196,11 +230,29 @@
     const fallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : 'assets/sarojni/prod-2-graphic-tee.png';
     const images = (Array.isArray(p.images) && p.images.length > 0) ? p.images : (p.image ? [p.image] : [fallbackSvg]);
     const mainImg = document.getElementById('pdp-main-img');
-    mainImg.src = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
+    const mainWrapper = document.getElementById('pdp-image-wrapper');
+    const initialImgSrc = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
       ? window.VeloraImageUtils.normalizeImageUrl(images[0], { isAdmin: false, fallback: fallbackSvg })
       : images[0];
+    mainImg.src = initialImgSrc;
     mainImg.alt = p.name;
-    mainImg.onerror = function () { this.onerror = null; this.src = fallbackSvg; };
+    mainImg.onerror = function () { this.onerror = null; this.src = fallbackSvg; updatePdpWatermark(); };
+
+    function updatePdpWatermark() {
+      if (window.SarojiniWatermark && typeof window.SarojiniWatermark.applySarojiniWatermark === 'function') {
+        window.SarojiniWatermark.applySarojiniWatermark(mainImg, mainWrapper, { isMain: true });
+      } else if (window.SarojiniWatermark && typeof window.SarojiniWatermark.updateImageWatermark === 'function') {
+        window.SarojiniWatermark.updateImageWatermark(mainImg, mainWrapper);
+      }
+    }
+
+    // Update watermark once image source is set and on load
+    updatePdpWatermark();
+    if (mainImg.complete && mainImg.naturalWidth > 0) {
+      updatePdpWatermark();
+    } else {
+      mainImg.onload = () => updatePdpWatermark();
+    }
 
     const thumbStrip = document.getElementById('pdp-thumbnails-strip');
     if (thumbStrip) {
@@ -215,15 +267,92 @@
       `;
       }).join('');
 
+      // Apply automatic code-cover watermark to every thumbnail image
+      thumbStrip.querySelectorAll('.pdp-thumb-item').forEach(thumb => {
+        const thumbImg = thumb.querySelector('img');
+        if (thumbImg && window.SarojiniWatermark && typeof window.SarojiniWatermark.applySarojiniWatermark === 'function') {
+          window.SarojiniWatermark.applySarojiniWatermark(thumbImg, thumb, { isThumb: true });
+        }
+      });
+
       thumbStrip.querySelectorAll('.pdp-thumb-item').forEach(thumb => {
         thumb.addEventListener('click', () => {
           thumbStrip.querySelectorAll('.pdp-thumb-item').forEach(t => t.classList.remove('active'));
           thumb.classList.add('active');
           const idx = parseInt(thumb.getAttribute('data-idx'), 10);
-          mainImg.src = images[idx] || images[0];
+          const selectedUrl = images[idx] || images[0];
+          const newSrc = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
+            ? window.VeloraImageUtils.normalizeImageUrl(selectedUrl, { isAdmin: false, fallback: fallbackSvg })
+            : selectedUrl;
+          mainImg.src = newSrc;
+          updatePdpWatermark();
+          if (mainImg.complete && mainImg.naturalWidth > 0) {
+            updatePdpWatermark();
+          } else {
+            mainImg.onload = () => updatePdpWatermark();
+          }
         });
       });
     }
+
+    // Lightbox / Zoom Modal
+    const zoomModal = document.getElementById('pdp-zoom-modal');
+    const zoomImg = document.getElementById('pdp-zoom-img');
+    const zoomWrapper = document.getElementById('pdp-zoom-image-wrap');
+    const zoomClose = document.getElementById('pdp-zoom-close');
+    const zoomBackdrop = document.getElementById('pdp-zoom-backdrop');
+    const mainMediaWrap = document.querySelector('.pdp-main-media-wrap');
+
+    function openZoomModal() {
+      if (!zoomModal || !zoomImg || !zoomWrapper || !mainImg) return;
+      zoomImg.src = mainImg.src;
+      zoomModal.style.display = 'flex';
+      void zoomModal.offsetWidth;
+      zoomModal.classList.add('active');
+      zoomModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+
+      const updateZoomWatermark = () => {
+        if (window.SarojiniWatermark && typeof window.SarojiniWatermark.applySarojiniWatermark === 'function') {
+          window.SarojiniWatermark.applySarojiniWatermark(zoomImg, zoomWrapper, { isMain: true });
+        }
+      };
+
+      updateZoomWatermark();
+      if (zoomImg.complete && zoomImg.naturalWidth > 0) {
+        updateZoomWatermark();
+      } else {
+        zoomImg.onload = updateZoomWatermark;
+      }
+    }
+
+    function closeZoomModal() {
+      if (!zoomModal) return;
+      zoomModal.classList.remove('active');
+      zoomModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        if (!zoomModal.classList.contains('active')) {
+          zoomModal.style.display = 'none';
+        }
+      }, 250);
+    }
+
+    if (mainMediaWrap && !mainMediaWrap._zoomBound) {
+      mainMediaWrap._zoomBound = true;
+      mainMediaWrap.addEventListener('click', (e) => {
+        if (e.target.closest('#btn-pdp-wishlist, .sarojini-card-ad-panel, .sarojini-promo-strip')) return;
+        openZoomModal();
+      });
+    }
+
+    zoomClose?.addEventListener('click', closeZoomModal);
+    zoomBackdrop?.addEventListener('click', closeZoomModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && zoomModal?.classList.contains('active')) {
+        closeZoomModal();
+      }
+    });
 
     // Sizes
     const sizes = Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes : ['Free Size'];
@@ -279,11 +408,71 @@
     const descEl = document.getElementById('pdp-description-text');
     if (descEl) descEl.textContent = p.description || 'Authentic Sarojini Bazaar street find curated for quality and durability.';
 
-    if (p.specifications) {
-      if (p.specifications.material) document.getElementById('spec-table-material').textContent = p.specifications.material;
-      if (p.specifications.fit) document.getElementById('spec-table-fit').textContent = p.specifications.fit;
+    const specsTbody = document.getElementById('specs-table-body') || document.querySelector('.specs-mini-table tbody');
+    if (specsTbody) {
+      const rows = [];
+      const specs = p.specifications || {};
+
+      // Standard label mappings
+      const labelMap = {
+        material: 'Material',
+        fabric: 'Fabric',
+        fit: 'Fit Type',
+        fit_type: 'Fit Type',
+        pattern: 'Pattern',
+        neck: 'Neck Style',
+        sleeve: 'Sleeve Length',
+        gender: 'Gender',
+        country_of_origin: 'Country of Origin',
+        care_instructions: 'Care Instructions',
+        brand: 'Brand'
+      };
+
+      // Excluded metadata keys
+      const excludedKeys = new Set([
+        'source_url', 'detected_code', 'detected_codes', 'original_images',
+        'imported_at', 'raw_specs', 'custom'
+      ]);
+
+      // Add Department first
+      rows.push(`<tr><th>Department</th><td id="spec-table-dept">${escapeHtml(p.department || 'Sarojini Bazaar')}</td></tr>`);
+
+      // Add Material if present
+      const materialVal = specs.material || specs.fabric;
+      if (materialVal) {
+        rows.push(`<tr><th>Material</th><td id="spec-table-material">${escapeHtml(materialVal)}</td></tr>`);
+      }
+
+      // Add Fit if present
+      const fitVal = specs.fit || specs.fit_type;
+      if (fitVal) {
+        rows.push(`<tr><th>Fit Type</th><td id="spec-table-fit">${escapeHtml(fitVal)}</td></tr>`);
+      }
+
+      // Add Care if present
+      const careVal = specs.care_instructions || specs.care;
+      if (careVal) {
+        rows.push(`<tr><th>Care</th><td id="spec-table-care">${escapeHtml(careVal)}</td></tr>`);
+      }
+
+      // Add all other keys from specifications
+      Object.entries(specs).forEach(([k, v]) => {
+        if (!v || excludedKeys.has(k)) return;
+        if (k === 'material' || k === 'fabric' || k === 'fit' || k === 'fit_type' || k === 'care_instructions' || k === 'care') return;
+
+        const label = labelMap[k] || k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        rows.push(`<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(String(v))}</td></tr>`);
+      });
+
+      // If no custom rows were added, ensure fallback rows
+      if (rows.length === 1) {
+        rows.push(`<tr><th>Material</th><td id="spec-table-material">Premium Cotton Blend</td></tr>`);
+        rows.push(`<tr><th>Fit Type</th><td id="spec-table-fit">Regular Street Fit</td></tr>`);
+        rows.push(`<tr><th>Care</th><td id="spec-table-care">Machine wash cold, gentle cycle</td></tr>`);
+      }
+
+      specsTbody.innerHTML = rows.join('');
     }
-    document.getElementById('spec-table-dept').textContent = p.department || 'Sarojini Bazaar';
 
     if (p.return_policy) {
       document.getElementById('pdp-return-title').textContent = p.return_policy;
@@ -662,7 +851,7 @@
       return `
         <div class="sarojini-product-card" data-product-id="${prod.id}">
           <div class="product-card-media">
-            <a href="sarojini-product-details.html?id=${encodeURIComponent(prod.id)}">
+            <a href="sarojini-product-details.html?id=${encodeURIComponent(prod.id)}" class="sarojini-card-img-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
               <img src="${firstImg}" alt="${escapeHtml(prod.name)}" loading="lazy" onerror="this.onerror=null; this.src='${fallbackSvg}';">
             </a>
             ${discount > 0 ? `<span class="product-card-badge">${discount}% OFF</span>` : `<span class="product-card-badge" style="background: var(--bazaar-ochre);">STEAL</span>`}
@@ -679,6 +868,16 @@
         </div>
       `;
     }).join('');
+
+    // Dynamically attach and position branded code-cover watermarks on related cards
+    if (window.SarojiniWatermark && typeof window.SarojiniWatermark.attachCardWatermarks === 'function') {
+      window.SarojiniWatermark.attachCardWatermarks(grid);
+    }
+
+    // Attach premium 3D animated promotional offer stickers to related cards
+    if (window.SarojiniCardAds && typeof window.SarojiniCardAds.init === 'function') {
+      window.SarojiniCardAds.init(grid);
+    }
   }
 
   function escapeHtml(str) {

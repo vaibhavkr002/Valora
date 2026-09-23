@@ -2342,9 +2342,13 @@ input, select, textarea {
 .cart-item-img {
   width: 72px;
   height: 72px;
+  min-width: 72px;
   border-radius: var(--radius-sm);
-  object-fit: cover;
-  background: var(--bg-subtle);
+  object-fit: contain !important;
+  background: #fbf9f5;
+  padding: 3px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .cart-item-details {

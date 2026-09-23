@@ -10,6 +10,290 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/admin-styles.css">
   <link rel="stylesheet" href="css/admin-components.css">
+  <style>
+    /* Bulk Importer Custom Styling */
+    .stg-card-row {
+      border-bottom: 1px solid var(--admin-card-border);
+      transition: background 0.15s ease;
+    }
+    .stg-card-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .stg-card-row.row-missing-required {
+      background: rgba(239, 68, 68, 0.03);
+    }
+    .stg-card-row.row-duplicate {
+      opacity: 0.6;
+      background: rgba(245, 158, 11, 0.04);
+    }
+    .stg-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .stg-badge-pill.success {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .stg-badge-pill.warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .stg-badge-pill.danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .stg-badge-pill.muted {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    .btn-gallery-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(225, 29, 72, 0.15);
+      border: 1px solid rgba(225, 29, 72, 0.35);
+      color: #fb7185;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-top: 5px;
+    }
+    .btn-gallery-counter:hover {
+      background: rgba(225, 29, 72, 0.28);
+      border-color: #e11d48;
+      color: #fff;
+    }
+    .gallery-grid-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #18181b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gallery-grid-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .gallery-grid-item .btn-remove-gallery-img {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(239, 68, 68, 0.85);
+      color: #fff;
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background 0.15s ease;
+    }
+    .gallery-grid-item .btn-remove-gallery-img:hover {
+      background: #dc2626;
+    }
+    .gallery-grid-item .watermark-tag {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(18, 17, 16, 0.92);
+      color: #fff;
+      font-size: 0.58rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 2px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Thumbnail Strip & Actions */
+    .stg-gallery-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+    .stg-thumb-strip {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 2px 6px;
+      max-width: 220px;
+    }
+    .stg-thumb-strip::-webkit-scrollbar {
+      height: 4px;
+    }
+    .stg-thumb-strip::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+    }
+    .stg-thumb-box {
+      position: relative;
+      flex: 0 0 54px;
+      width: 54px;
+      height: 64px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #18181b;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stg-thumb-box.is-main {
+      border-color: #e11d48;
+      box-shadow: 0 0 0 1px #e11d48;
+    }
+    .stg-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .stg-main-badge {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      background: #e11d48;
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .stg-thumb-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.94);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 2px 1px;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 3;
+    }
+    .stg-thumb-box:hover .stg-thumb-actions {
+      opacity: 1;
+    }
+    .stg-thumb-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      font-size: 0.65rem;
+      cursor: pointer;
+      padding: 1px 2px;
+      line-height: 1;
+      transition: color 0.1s ease;
+    }
+    .stg-thumb-btn:hover {
+      color: #fff;
+    }
+    .stg-thumb-btn.btn-set-main:hover {
+      color: #fbbf24;
+    }
+    .stg-thumb-btn.btn-remove-thumb:hover {
+      color: #f87171;
+    }
+    
+    /* Specs accordion styles */
+    .stg-specs-toggle {
+      background: none;
+      border: none;
+      color: #38bdf8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s ease;
+    }
+    .stg-specs-toggle:hover {
+      color: #7dd3fc;
+      text-decoration: underline;
+    }
+    .stg-specs-container {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    .stg-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .stg-spec-item label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .stg-spec-item input {
+      width: 100%;
+      font-size: 0.75rem;
+      padding: 4px 6px;
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      color: #fff;
+    }
+    .stg-custom-specs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255,255,255,0.15);
+    }
+    .stg-custom-spec-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .stg-custom-spec-row input {
+      font-size: 0.75rem;
+      padding: 3px 6px;
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
   <div class="admin-layout">
@@ -90,6 +374,10 @@
         <a href="sarojini-products.html" class="sidebar-link active">
           <i class="fas fa-tshirt"></i>
           <span>Sarojini Products</span>
+        </a>
+        <a href="javascript:void(0)" onclick="window.SarojiniBulkImport && window.SarojiniBulkImport.openModal()" class="sidebar-link">
+          <i class="fas fa-file-import" style="color: #fb7185;"></i>
+          <span>Bulk Import</span>
         </a>
         <a href="sarojini-add-product.html" class="sidebar-link">
           <i class="fas fa-plus-square"></i>
@@ -176,9 +464,13 @@
               <i class="fas fa-layer-group"></i>
               <span>Manage Homepage Section</span>
             </a>
-            <a href="sarojini-add-product.html" class="btn-admin-primary" style="background:#e11d48; border-color:#e11d48;">
+            <button type="button" id="btn-open-bulk-import" class="btn-admin-primary" style="background: #e11d48; border-color: #e11d48; display: inline-flex; align-items: center; gap: 8px;">
+              <i class="fas fa-file-import"></i>
+              <span>Bulk Import Products</span>
+            </button>
+            <a href="sarojini-add-product.html" class="btn-admin-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
               <i class="fas fa-plus"></i>
-              <span>Add Sarojini Product</span>
+              <span>Add Single Product</span>
             </a>
           </div>
         </div>
@@ -210,10 +502,10 @@
             </select>
 
             <!-- Status Filter -->
-            <select id="filter-status" class="admin-select" style="min-width: 140px;">
+            <select id="filter-status" class="admin-select" style="min-width: 160px;">
               <option value="">All Status</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Disabled Only</option>
+              <option value="active">Active (Published)</option>
+              <option value="inactive">Draft / Inactive</option>
             </select>
 
             <!-- Stock Filter -->
@@ -243,6 +535,9 @@
               <table class="admin-table">
                 <thead>
                   <tr>
+                    <th style="width: 38px; text-align: center;">
+                      <input type="checkbox" id="th-select-all-prods" title="Select All Products">
+                    </th>
                     <th>Product</th>
                     <th>Department</th>
                     <th>Price</th>
@@ -255,11 +550,29 @@
                   </tr>
                 </thead>
                 <tbody id="products-tbody">
-                  <tr><td colspan="9" style="text-align: center; padding: 24px;">Loading Sarojini products...</td></tr>
+                  <tr><td colspan="10" style="text-align: center; padding: 24px;">Loading Sarojini products...</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
+
+        <!-- Floating Bulk Actions Toolbar (Appears when >= 1 product is checked) -->
+        <div id="bulk-actions-toolbar" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; border: 1px solid rgba(225, 29, 72, 0.4); border-radius: 50px; padding: 10px 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; align-items: center; gap: 16px; color: #fff;">
+          <span style="font-weight: 700; font-size: 0.88rem; color: #fb7185;" id="bulk-selected-count">0 Selected</span>
+          <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2);"></div>
+          <button type="button" id="btn-bulk-publish" class="btn-admin-primary" style="background: #10b981; border-color: #10b981; padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-rocket"></i> Publish Selected
+          </button>
+          <button type="button" id="btn-bulk-draft" class="btn-admin-secondary" style="border-color: rgba(255,255,255,0.3); padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-lock"></i> Set as Draft
+          </button>
+          <button type="button" id="btn-bulk-delete" class="btn-admin-danger" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-trash"></i> Delete Selected
+          </button>
+          <button type="button" id="btn-bulk-deselect" style="background: none; border: none; color: var(--admin-text-muted); cursor: pointer; font-size: 0.8rem; text-decoration: underline;">
+            Deselect All
+          </button>
         </div>
       </main>
     </div>
@@ -317,6 +630,306 @@
     </div>
   </div>
 
+  <!-- Bulk Import Products Modal -->
+  <div class="modal-backdrop" id="modal-bulk-import" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="admin-card" style="width: 95%; max-width: 1040px; max-height: 90vh; display: flex; flex-direction: column; padding: 0; border: 1px solid rgba(225, 29, 72, 0.4); background: #0f172a; border-radius: 14px; box-shadow: 0 25px 50px rgba(0,0,0,0.85); overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--admin-card-border); background: #131d35;">
+        <div>
+          <h3 style="margin: 0; font-size: 1.25rem; color: #fff; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-file-import" style="color: #e11d48;"></i> Bulk Import Sarojini Products
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 0.82rem; color: var(--admin-text-muted);">
+            Import multiple Meesho/Sarojini products into Drafts via URLs or CSV. Products remain unpublished until you review them.
+          </p>
+        </div>
+        <button type="button" class="btn-close-bulk-modal" style="background: transparent; border: none; color: var(--admin-text-muted); font-size: 1.35rem; cursor: pointer; padding: 4px 8px;">✕</button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div style="padding: 24px; overflow-y: auto; flex: 1;">
+        
+        <!-- Tabs Header -->
+        <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--admin-card-border); margin-bottom: 20px;">
+          <button type="button" id="tab-btn-urls" class="btn-admin-secondary active" style="border-bottom: 2px solid #e11d48; border-radius: 6px 6px 0 0; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fas fa-link"></i> Import from URLs
+          </button>
+          <button type="button" id="tab-btn-csv" class="btn-admin-secondary" style="border-radius: 6px 6px 0 0; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fas fa-file-csv"></i> Import CSV
+          </button>
+        </div>
+
+        <!-- Global Staging Defaults -->
+        <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-sliders-h" style="color: #e11d48;"></i> Global Defaults for Imported Items
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: flex-end;">
+            <div>
+              <label style="font-size: 0.75rem; color: var(--admin-text-muted); display: block; margin-bottom: 4px;">Department (Optional Override)</label>
+              <select id="bulk-global-dept" class="admin-select" style="width: 100%; font-size: 0.8rem;">
+                <option value="">(Auto-Detect from Product)</option>
+                <option value="WOMEN">WOMEN'S LANE</option>
+                <option value="MEN">MEN'S LANE</option>
+                <option value="FOOTWEAR">SNEAKER STREET</option>
+                <option value="BAGS">BAG CORNER</option>
+                <option value="ACCESSORIES">ACCESSORIES</option>
+                <option value="JEWELLERY">JEWELLERY</option>
+                <option value="CAPS">CAP CORNER</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: var(--admin-text-muted); display: block; margin-bottom: 4px;">Category (Optional Override)</label>
+              <select id="bulk-global-cat" class="admin-select" style="width: 100%; font-size: 0.8rem;">
+                <option value="">(Auto-Detect Category)</option>
+              </select>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <input type="checkbox" id="bulk-global-adv-toggle" checked style="cursor: pointer;">
+                <label for="bulk-global-adv-toggle" style="font-size: 0.75rem; color: #cbd5e1; cursor: pointer; font-weight: 600;">Enable Advance Payment</label>
+              </div>
+              <div id="bulk-global-adv-options" style="display: flex; gap: 6px;">
+                <select id="bulk-global-adv-type" class="admin-select" style="width: 80px; font-size: 0.78rem;">
+                  <option value="fixed">Fixed ₹</option>
+                  <option value="percentage">%</option>
+                </select>
+                <input type="number" id="bulk-global-adv-val" class="admin-input" value="80" placeholder="Amount" min="0" style="flex: 1; font-size: 0.8rem;">
+              </div>
+            </div>
+            <div>
+              <button type="button" id="btn-apply-global-settings" class="btn-admin-secondary" style="width: 100%; font-size: 0.78rem; padding: 7px 12px;">
+                <i class="fas fa-check-double"></i> Apply to Staged Items
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 1: URLs Pane -->
+        <div id="tab-pane-urls">
+          <label style="font-size: 0.85rem; font-weight: 600; color: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span>Paste Product or Supplier Image URLs <span style="font-weight: 400; color: var(--admin-text-muted);">(one URL per line)</span>:</span>
+            <span id="url-counter-label" style="font-size: 0.75rem; color: #e11d48; font-weight: 700;">0 URLs entered</span>
+          </label>
+          <textarea id="bulk-urls-input" class="admin-input" rows="5" placeholder="https://www.meesho.com/trendy-oversized-t-shirt/p/6n3h2k&#10;https://images.meesho.com/images/products/1084290722/1_1024.jpg&#10;https://images.meesho.com/images/products/990006640/8nyjx_1024.jpg" style="width: 100%; font-family: monospace; font-size: 0.82rem; line-height: 1.5; resize: vertical; margin-bottom: 12px;"></textarea>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <p style="font-size: 0.75rem; color: var(--admin-text-muted); margin: 0;">
+              💡 <em>Supports Meesho product URLs, CDN images, and direct image links. Duplicates and invalid links will automatically be flagged.</em>
+            </p>
+            <button type="button" id="btn-fetch-urls" class="btn-admin-primary" style="background: #e11d48; border-color: #e11d48; padding: 8px 20px; font-weight: 700;">
+              <i class="fas fa-search"></i> Fetch Products
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab 2: CSV Pane -->
+        <div id="tab-pane-csv" style="display: none;">
+          <div style="border: 2px dashed rgba(225, 29, 72, 0.35); border-radius: 12px; padding: 24px; text-align: center; background: rgba(30, 41, 59, 0.4); margin-bottom: 16px;">
+            <i class="fas fa-file-csv" style="font-size: 2.2rem; color: #e11d48; margin-bottom: 8px;"></i>
+            <h4 style="margin: 0 0 6px 0; color: #fff;">Upload Products CSV File</h4>
+            <p style="font-size: 0.82rem; color: var(--admin-text-muted); margin: 0 0 14px 0;">
+              Columns supported: <code>name</code>, <code>price</code>, <code>original_price</code>, <code>department</code>, <code>category</code>, <code>images</code>, <code>sizes</code>, <code>colors</code>, <code>stock</code>, <code>description</code>, <code>advance_amount</code>, <code>source_url</code>
+            </p>
+            <div style="display: flex; justify-content: center; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <input type="file" id="bulk-csv-file" accept=".csv" class="admin-input" style="max-width: 280px; font-size: 0.8rem; padding: 5px;">
+              <button type="button" id="btn-download-csv-template" class="btn-admin-secondary" style="font-size: 0.8rem;">
+                <i class="fas fa-download"></i> Download CSV Template
+              </button>
+            </div>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.8rem; color: var(--admin-text-muted); display: block; margin-bottom: 4px;">Or paste raw CSV text:</label>
+            <textarea id="bulk-csv-text" class="admin-input" rows="4" placeholder="name,price,original_price,department,category,images,sizes,colors,stock&#10;Oversized Graphic Tee,399,799,MEN,Oversized T-Shirts,https://example.com/img1.jpg,M;L;XL,Black;White,30" style="width: 100%; font-family: monospace; font-size: 0.8rem;"></textarea>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" id="btn-parse-csv" class="btn-admin-primary" style="background: #e11d48; border-color: #e11d48; padding: 8px 20px; font-weight: 700;">
+              <i class="fas fa-file-code"></i> Parse CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Staging & Preview Section -->
+        <div id="bulk-preview-section" style="display: none; margin-top: 24px; border-top: 1px solid var(--admin-card-border); padding-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+            <div id="bulk-preview-stats" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span class="badge badge-success">0 Ready</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button type="button" id="btn-clear-staging" class="btn-admin-secondary" style="font-size: 0.78rem; padding: 6px 12px;">
+                <i class="fas fa-times"></i> Clear List
+              </button>
+              <button type="button" id="btn-import-selected" class="btn-admin-primary" style="background: #e11d48; border-color: #e11d48; font-weight: 700; padding: 8px 18px;">
+                <i class="fas fa-file-import"></i> Import Selected as Drafts
+              </button>
+            </div>
+          </div>
+
+          <!-- Staging Table -->
+          <div class="table-responsive" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--admin-card-border); border-radius: 8px;">
+            <table class="admin-table" id="bulk-preview-table">
+              <thead style="position: sticky; top: 0; background: #131d35; z-index: 10;">
+                <tr>
+                  <th style="width: 38px; text-align: center;">
+                    <input type="checkbox" id="chk-bulk-select-all" checked title="Select All">
+                  </th>
+                  <th style="width: 220px; min-width: 210px;">Gallery &amp; Images</th>
+                  <th>Product Details &amp; Specifications</th>
+                  <th style="width: 170px;">Dept &amp; Category</th>
+                  <th style="width: 110px;">Selling ₹ *</th>
+                  <th style="width: 110px;">MRP ₹</th>
+                  <th style="width: 100px;">Advance ₹</th>
+                  <th style="width: 140px;">Status</th>
+                  <th style="text-align: right; width: 60px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="bulk-preview-tbody">
+                <tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--admin-text-muted);">No products staged yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-info-circle" style="color: #38bdf8;"></i> All imported products are initially saved as <strong>Drafts (Inactive)</strong>. You can publish them with one click after reviewing.
+          </div>
+        </div>
+
+        <!-- Progress Bar Section -->
+        <div id="bulk-progress-section" style="display: none; padding: 40px 20px; text-align: center;">
+          <div style="font-size: 2.2rem; color: #e11d48; margin-bottom: 12px;">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <h4 id="bulk-progress-text" style="color: #fff; margin: 0 0 16px 0; font-size: 1.15rem;">Importing products in safe batches...</h4>
+          <div style="width: 100%; max-width: 520px; height: 12px; background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; margin: 0 auto 16px;">
+            <div id="bulk-progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #e11d48, #fb7185); transition: width 0.3s ease;"></div>
+          </div>
+          <div id="bulk-progress-stats" style="font-size: 0.85rem; color: var(--admin-text-muted);">
+            Please keep this window open while products are safely batched into the database.
+          </div>
+        </div>
+
+        <!-- Result Summary Section -->
+        <div id="bulk-result-section" style="display: none; padding: 30px 20px; text-align: center;">
+          <div id="bulk-result-summary" style="margin-bottom: 20px;"></div>
+          <div id="bulk-result-failures" style="display: none; max-width: 600px; margin: 0 auto 20px; text-align: left;"></div>
+          <div style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" id="btn-retry-failed" class="btn-admin-secondary" style="display: none;">
+              <i class="fas fa-redo"></i> Retry Failed Items
+            </button>
+            <button type="button" id="btn-bulk-done-close" class="btn-admin-primary" style="background: #10b981; border-color: #10b981; padding: 8px 24px; font-weight: 700;">
+              <i class="fas fa-check"></i> View Products in Catalog
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Gallery Images (Upload from PC or Paste URLs) -->
+  <div class="modal-backdrop" id="modal-add-gallery-images" style="display: none; position: fixed; inset: 0; z-index: 100020; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);">
+    <div class="admin-modal" style="max-width: 580px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-plus-circle" style="color: #e11d48;"></i>
+          <span id="add-gallery-modal-title">Add Gallery Images</span>
+        </h3>
+        <button type="button" class="modal-close" id="btn-close-add-gallery-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <!-- Tabs: Upload from PC / Paste URLs -->
+        <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--admin-card-border); margin-bottom: 16px; padding-bottom: 8px;">
+          <button type="button" id="tab-add-upload-btn" class="btn-admin-secondary active" style="background: #e11d48; border-color: #e11d48; color: #fff; font-size: 0.8rem; padding: 6px 14px;">
+            <i class="fas fa-upload"></i> Upload from PC
+          </button>
+          <button type="button" id="tab-add-urls-btn" class="btn-admin-secondary" style="font-size: 0.8rem; padding: 6px 14px;">
+            <i class="fas fa-link"></i> Paste Image URLs
+          </button>
+        </div>
+
+        <!-- Tab 1: Upload from PC -->
+        <div id="pane-add-upload" style="display: block;">
+          <div id="drop-zone-add-gallery" style="border: 2px dashed rgba(225, 29, 72, 0.4); border-radius: 10px; padding: 24px; text-align: center; background: rgba(225, 29, 72, 0.04); cursor: pointer; transition: all 0.2s ease;">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 2.2rem; color: #fb7185; margin-bottom: 10px;"></i>
+            <p style="margin: 0 0 6px 0; font-size: 0.9rem; font-weight: 600; color: #fff;">Click or drag images here to upload</p>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--admin-text-muted);">Supports multiple JPG, PNG, WEBP, AVIF images</p>
+            <input type="file" id="input-upload-gallery-files" multiple accept="image/*" style="display: none;">
+          </div>
+          <div id="upload-previews-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin-top: 14px; max-height: 160px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- Tab 2: Paste URLs -->
+        <div id="pane-add-urls" style="display: none;">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1; display: block; margin-bottom: 6px;">Image URLs (one per line, comma or pipe-separated):</label>
+          <textarea id="textarea-add-gallery-urls" class="admin-input" rows="5" placeholder="https://images.meesho.com/.../image1.jpg&#10;https://images.meesho.com/.../image2.jpg" style="width: 100%; font-size: 0.8rem; font-family: monospace;"></textarea>
+          <div style="font-size: 0.72rem; color: var(--admin-text-muted); margin-top: 6px;">
+            <i class="fas fa-magic" style="color: #38bdf8;"></i> Meesho CDN URLs are automatically upgraded to highest 1024px resolution.
+          </div>
+        </div>
+
+        <!-- Watermark notice -->
+        <div style="margin-top: 14px; font-size: 0.74rem; color: #38bdf8; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-shield-alt" style="font-size: 1rem;"></i>
+          <span>Universal Watermark Active: Any supplier code (e.g. s-1084290722) on newly added images is automatically covered with the VADI STORE watermark.</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-admin-secondary" id="btn-cancel-add-gallery">Cancel</button>
+        <button type="button" class="btn-admin-primary" id="btn-confirm-add-gallery" style="background: #e11d48; border-color: #e11d48; font-weight: 700;">
+          <i class="fas fa-plus"></i> Add Images to Product
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Click-to-Enlarge Lightbox -->
+  <div class="modal-backdrop" id="modal-image-lightbox" style="display: none; position: fixed; inset: 0; z-index: 100030; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);">
+    <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center;">
+      <button type="button" id="btn-close-image-lightbox" style="position: absolute; top: -38px; right: 0; background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer;">&times;</button>
+      <div style="position: relative; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 20px 40px rgba(0,0,0,0.9); max-width: 700px; max-height: 80vh;">
+        <img id="lightbox-img" src="" alt="Enlarged preview" style="display: block; max-width: 100%; max-height: 75vh; object-fit: contain;">
+        <div id="lightbox-watermark-badge" style="position: absolute; bottom: 8px; right: 8px; background: rgba(18, 17, 16, 0.95); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); display: none;">
+          ● VADI STORE Watermark Applied
+        </div>
+      </div>
+      <div id="lightbox-caption" style="color: #cbd5e1; font-size: 0.82rem; margin-top: 10px; text-align: center;"></div>
+    </div>
+  </div>
+
+  <!-- Bulk Import Gallery Viewer Modal -->
+  <div class="modal-backdrop" id="modal-bulk-gallery-viewer" style="display: none; position: fixed; inset: 0; z-index: 100010; align-items: center; justify-content: center; background: rgba(0,0,0,0.8);">
+    <div class="admin-modal" style="max-width: 650px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-images" style="color: #e11d48;"></i>
+          <span>Product Gallery Images</span>
+        </h3>
+        <button type="button" class="modal-close" id="btn-close-gallery-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 14px;" id="gallery-modal-subtitle">
+          Review all imported gallery images for this product. Embedded supplier codes are automatically detected and covered.
+        </div>
+        <div id="gallery-modal-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; max-height: 340px; overflow-y: auto; padding: 4px; margin-bottom: 16px;">
+          <!-- Rendered gallery items -->
+        </div>
+        <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--admin-card-border); border-radius: 8px; padding: 12px;">
+          <label style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; display: block; margin-bottom: 6px;">Add Additional Image URL:</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="input-add-gallery-url" class="admin-input" placeholder="https://images.meesho.com/.../image.jpg" style="flex: 1; font-size: 0.8rem;">
+            <button type="button" id="btn-confirm-add-gallery-img" class="btn-admin-secondary" style="font-size: 0.8rem; padding: 6px 14px;">
+              <i class="fas fa-plus"></i> Add Image
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 14px 20px; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-admin-primary" id="btn-done-gallery-modal" style="background: #e11d48; border-color: #e11d48;">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Delete Modal -->
   <div class="modal-backdrop" id="delete-product-modal" style="display: none;">
     <div class="admin-modal" style="max-width: 420px;">
@@ -343,7 +956,9 @@
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-layout.js"></script>
   <script src="../js/image-utils.js"></script>
+  <script src="../js/sarojini-watermark.js"></script>
   <script src="js/cross-store-service.js"></script>
+  <script src="js/admin-sarojini-bulk-import.js"></script>
   <script src="js/admin-sarojini-products.js"></script>
 </body>
 </html>

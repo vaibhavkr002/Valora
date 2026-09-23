@@ -2158,8 +2158,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 9. Navbar Search
     if (elements.navSearchInput) {
       elements.navSearchInput.addEventListener("input", e => {
-        const q = e.target.value.trim().toLowerCase();
-        if (!q) {
+        const query = e.target.value.trim();
+        if (!query) {
           if (elements.searchResultsDropdown) elements.searchResultsDropdown.classList.remove("active");
           if (elements.searchClearBtn) elements.searchClearBtn.classList.remove("visible");
           return;
@@ -2167,15 +2167,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (elements.searchClearBtn) elements.searchClearBtn.classList.add("visible");
 
-        const matches = window.PRODUCTS_DATA.filter(p => 
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          (p.brand && p.brand.toLowerCase().includes(q))
-        ).slice(0, 5);
+        const q = query.toLowerCase();
+        const matches = (window.VadiSearchUtils && typeof window.VadiSearchUtils.matchesProduct === 'function')
+          ? window.PRODUCTS_DATA.filter(p => p.is_active !== false && window.VadiSearchUtils.matchesProduct(p, query)).slice(0, 5)
+          : window.PRODUCTS_DATA.filter(p => 
+              p.name.toLowerCase().includes(q) ||
+              p.category.toLowerCase().includes(q) ||
+              (p.brand && p.brand.toLowerCase().includes(q))
+            ).slice(0, 5);
 
         if (elements.searchResultsDropdown) {
           if (matches.length === 0) {
-            elements.searchResultsDropdown.innerHTML = `<div class="search-empty-state">No products found</div>`;
+            elements.searchResultsDropdown.innerHTML = `<div class="search-empty-state">No products found for "${query}"</div>`;
           } else {
             elements.searchResultsDropdown.innerHTML = matches.map(p => `
               <div class="search-result-item" data-search-result-id="${p.id}">
@@ -2189,6 +2192,26 @@ document.addEventListener("DOMContentLoaded", () => {
             `).join("");
           }
           elements.searchResultsDropdown.classList.add("active");
+        }
+      });
+
+      elements.navSearchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const q = e.target.value.trim();
+          if (q) {
+            window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
+          }
+        }
+      });
+    }
+
+    const navSearchBtn = document.querySelector(".nav-search-btn") || document.getElementById("nav-search-btn");
+    if (navSearchBtn) {
+      navSearchBtn.addEventListener("click", () => {
+        const q = elements.navSearchInput ? elements.navSearchInput.value.trim() : "";
+        if (q) {
+          window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
         }
       });
     }

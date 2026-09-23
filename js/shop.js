@@ -7,6 +7,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Currency Formatter helper
   const formatPrice = (amount) => (window.formatINR ? window.formatINR(amount) : ('₹' + Math.round(amount).toLocaleString('en-IN')));
+  const escapeHtml = (str) => (!str ? "" : String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]));
 
   // --- Global Application State ---
   const state = {
@@ -505,13 +506,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 6. Search Query Filter
       if (state.filters.searchQuery) {
-        const q = state.filters.searchQuery.toLowerCase();
-        filtered = filtered.filter(p => 
-          p.name.toLowerCase().includes(q) ||
-          (p.brand && p.brand.toLowerCase().includes(q)) ||
-          p.category.toLowerCase().includes(q) ||
-          (p.description && p.description.toLowerCase().includes(q))
-        );
+        if (window.VadiSearchUtils && typeof window.VadiSearchUtils.matchesProduct === 'function') {
+          filtered = filtered.filter(p => window.VadiSearchUtils.matchesProduct(p, state.filters.searchQuery));
+        } else {
+          const q = state.filters.searchQuery.toLowerCase();
+          filtered = filtered.filter(p => 
+            p.name.toLowerCase().includes(q) ||
+            (p.brand && p.brand.toLowerCase().includes(q)) ||
+            (p.category && p.category.toLowerCase().includes(q)) ||
+            (p.description && p.description.toLowerCase().includes(q))
+          );
+        }
       }
 
       // 7. Sort By
@@ -667,12 +672,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="empty-state-icon">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           </div>
-          <h3 class="empty-state-title">No Matching Products Found</h3>
+          <h3 class="empty-state-title">${state.filters.searchQuery ? `No products found for "${escapeHtml(state.filters.searchQuery)}"` : 'No Matching Products Found'}</h3>
           <p class="empty-state-desc">
-            We couldn't find any products matching your selected combination of filters. Try broadening your criteria or reset all filters.
+            ${state.filters.searchQuery 
+              ? `We couldn't find any products matching "${escapeHtml(state.filters.searchQuery)}". Try checking your spelling or search for broader keywords like shoes, watches, caps, or clothing.`
+              : `We couldn't find any products matching your selected combination of filters. Try broadening your criteria or reset all filters.`}
           </p>
           <button class="btn-primary clear-all-filters-action">
-            Clear All Filters
+            ${state.filters.searchQuery ? 'Clear Search' : 'Clear All Filters'}
           </button>
         </div>
       `;
@@ -1719,11 +1726,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 6. Header Nav Search Sync
     if (elements.navSearchInput) {
+      elements.navSearchInput.addEventListener("input", e => {
+        clearTimeout(shopSearchTimer);
+        const query = e.target.value.trim();
+        shopSearchTimer = setTimeout(() => {
+          state.filters.searchQuery = query;
+          if (elements.toolbarSearchInput) elements.toolbarSearchInput.value = query;
+          state.page = 1;
+          executeFilterPipeline();
+        }, 220);
+      });
       elements.navSearchInput.addEventListener("keypress", e => {
         if (e.key === "Enter") {
+          e.preventDefault();
           clearTimeout(shopSearchTimer);
           state.filters.searchQuery = e.target.value.trim();
           if (elements.toolbarSearchInput) elements.toolbarSearchInput.value = state.filters.searchQuery;
+          if (elements.searchResultsDropdown) elements.searchResultsDropdown.classList.remove("active");
           state.page = 1;
           executeFilterPipeline();
         }

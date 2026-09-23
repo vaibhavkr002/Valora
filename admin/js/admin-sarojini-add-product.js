@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const noImgsHint = document.getElementById("no-imgs-hint");
   const inputNewImgUrl = document.getElementById("input-new-img-url");
   const btnAddImgUrl = document.getElementById("btn-add-img-url");
+  const imageQualityAdvisory = document.getElementById("image-quality-advisory");
 
   // Variant states
   let selectedSizes = [];
@@ -96,16 +97,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     advanceOptions.style.display = prodAdvanceEnabled.checked ? "flex" : "none";
   });
 
-  // 4. Gallery Logic
+  // 4. Gallery Logic with Natural Dimension Measurement & Non-Blocking Quality Advisory
   function renderImagePreviews() {
     if (images.length === 0) {
       if (noImgsHint) noImgsHint.style.display = "block";
+      if (imageQualityAdvisory) imageQualityAdvisory.style.display = "none";
       imagePreviewsContainer.querySelectorAll(".image-preview-item").forEach(el => el.remove());
       return;
     }
     if (noImgsHint) noImgsHint.style.display = "none";
 
     imagePreviewsContainer.querySelectorAll(".image-preview-item").forEach(el => el.remove());
+
+    let lowResCount = 0;
 
     images.forEach((imgUrl, idx) => {
       const item = document.createElement("div");
@@ -117,10 +121,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       const fallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : '../assets/sarojni/prod-1-graphic-tee.png';
 
       item.innerHTML = `
-        <img src="${previewSrc}" onerror="this.onerror=null; this.src='${fallbackSvg}';">
-        ${idx === 0 ? '<span style="position:absolute; bottom:2px; left:2px; background:#e11d48; color:#fff; font-size:0.6rem; font-weight:800; padding:1px 4px; border-radius:3px;">PRIMARY</span>' : ''}
+        <img src="${previewSrc}" alt="Preview ${idx + 1}" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+        <span class="image-dimension-badge" id="img-dim-${idx}">...</span>
+        ${idx === 0 ? '<span style="position:absolute; top:4px; left:4px; background:#e11d48; color:#fff; font-size:0.6rem; font-weight:800; padding:1px 4px; border-radius:3px;">PRIMARY</span>' : ''}
         <button type="button" class="btn-remove-img" data-idx="${idx}" aria-label="Remove image">&times;</button>
       `;
+
+      const imgEl = item.querySelector("img");
+      const dimBadge = item.querySelector(`#img-dim-${idx}`);
+
+      function checkDimensions() {
+        if (imgEl && imgEl.naturalWidth && imgEl.naturalHeight) {
+          const w = imgEl.naturalWidth;
+          const h = imgEl.naturalHeight;
+          if (dimBadge) {
+            dimBadge.textContent = `${w}×${h}`;
+            if (w < 450 || h < 450) {
+              dimBadge.classList.add("low-res");
+              dimBadge.title = `Resolution is ${w}×${h}px. Recommended min 600px for crisp display.`;
+              lowResCount++;
+              if (imageQualityAdvisory) {
+                imageQualityAdvisory.style.display = "flex";
+                imageQualityAdvisory.innerHTML = `<i class="fas fa-info-circle"></i> <span><strong>Image Advisory:</strong> Image #${idx + 1} is under 450px (${w}×${h}px). Higher-resolution photos (600px+) are recommended for optimal customer Product Details clarity.</span>`;
+              }
+            }
+          }
+        }
+      }
+
+      if (imgEl.complete) {
+        checkDimensions();
+      } else {
+        imgEl.addEventListener("load", checkDimensions);
+      }
 
       item.querySelector(".btn-remove-img").addEventListener("click", (e) => {
         e.stopPropagation();
@@ -130,15 +163,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       imagePreviewsContainer.appendChild(item);
     });
+
+    if (lowResCount === 0 && imageQualityAdvisory) {
+      imageQualityAdvisory.style.display = "none";
+    }
   }
 
-  btnAddImgUrl.addEventListener("click", () => {
-    const val = inputNewImgUrl.value.trim();
-    if (val && !images.includes(val)) {
-      images.push(val);
-      inputNewImgUrl.value = "";
-      renderImagePreviews();
+  btnAddImgUrl.addEventListener("click", async () => {
+    let val = inputNewImgUrl.value.trim();
+    if (!val) return;
+
+    if (window.SarojiniImageCleaner) {
+      val = window.SarojiniImageCleaner.upgradeSupplierUrl(val);
     }
+
+    inputNewImgUrl.value = "";
+    await processAndShowCleanerModal(val, (acceptedImg) => {
+      if (acceptedImg && !images.includes(acceptedImg)) {
+        images.push(acceptedImg);
+        renderImagePreviews();
+      }
+    });
   });
 
   inputNewImgUrl.addEventListener("keydown", (e) => {
@@ -283,24 +328,240 @@ document.addEventListener("DOMContentLoaded", async () => {
       const files = Array.from(e.target.files || []);
       if (files.length === 0) return;
 
-      files.forEach(file => {
-        if (!file.type.startsWith("image/")) {
-          window.showToast?.("Only image files are supported.", "danger");
-          return;
-        }
+      const file = files[0];
+      if (!file.type.startsWith("image/")) {
+        window.showToast?.("Only image files are supported.", "danger");
+        return;
+      }
 
-        const reader = new FileReader();
-        reader.onload = (loadEvent) => {
-          const dataUrl = loadEvent.target.result;
-          if (dataUrl && !images.includes(dataUrl)) {
-            images.push(dataUrl);
-            renderImagePreviews();
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      const reader = new FileReader();
+      reader.onload = async (loadEvent) => {
+        const dataUrl = loadEvent.target.result;
+        if (dataUrl) {
+          await processAndShowCleanerModal(dataUrl, (acceptedImg) => {
+            if (acceptedImg && !images.includes(acceptedImg)) {
+              images.push(acceptedImg);
+              renderImagePreviews();
+            }
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // Add any additional selected files directly
+      for (let i = 1; i < files.length; i++) {
+        const extraFile = files[i];
+        if (extraFile.type.startsWith("image/")) {
+          const r = new FileReader();
+          r.onload = (ev) => {
+            const d = ev.target.result;
+            if (d && !images.includes(d)) {
+              images.push(d);
+              renderImagePreviews();
+            }
+          };
+          r.readAsDataURL(extraFile);
+        }
+      }
 
       inputFileImg.value = "";
+    });
+  }
+
+  // ==========================================================================
+  // SAROJINI SMART IMAGE CLEANER & PREVIEW CONTROLLER
+  // ==========================================================================
+  const modalCleaner = document.getElementById("modal-image-cleaner");
+  const btnCloseCleanerModal = document.getElementById("btn-close-cleaner-modal");
+  const btnModalCancel = document.getElementById("btn-modal-cancel");
+  const btnModalKeepOriginal = document.getElementById("btn-modal-keep-original");
+  const btnModalAcceptClean = document.getElementById("btn-modal-accept-clean");
+
+  const cleanerStatusBanner = document.getElementById("cleaner-status-banner");
+  const cleanerStatusIcon = document.getElementById("cleaner-status-icon");
+  const cleanerStatusText = document.getElementById("cleaner-status-text");
+  const cleanerResBadge = document.getElementById("cleaner-resolution-badge");
+  const cleanerImgRaw = document.getElementById("cleaner-img-raw");
+  const cleanerImgOriginal = document.getElementById("cleaner-img-original");
+  const cleanerDetectedTag = document.getElementById("cleaner-detected-tag");
+  const cleanerImgCleaned = document.getElementById("cleaner-img-cleaned");
+  const cleanerHighlightBox = document.getElementById("cleaner-highlight-box");
+  const cleanerZoneButtons = document.querySelectorAll(".btn-zone-select");
+
+  let currentCleanerRawSource = null;
+  let currentCleanerResult = null;
+  let currentCleanerSelectedZone = 'bottom-left';
+  let cleanerOnAcceptCallback = null;
+  const originalImagesMap = {};
+
+  async function processAndShowCleanerModal(rawSource, onAccept) {
+    if (!window.SarojiniImageCleaner) {
+      if (rawSource && !images.includes(rawSource)) {
+        images.push(rawSource);
+        renderImagePreviews();
+      }
+      return;
+    }
+
+    currentCleanerRawSource = rawSource;
+    cleanerOnAcceptCallback = onAccept;
+    currentCleanerSelectedZone = 'bottom-left';
+
+    cleanerZoneButtons.forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-zone") === 'bottom-left');
+    });
+
+    if (modalCleaner) modalCleaner.style.display = "flex";
+    if (cleanerStatusText) cleanerStatusText.textContent = "Scanning image for embedded supplier codes...";
+    await runCleaningProcess();
+  }
+
+  async function runCleaningProcess() {
+    if (!currentCleanerRawSource || !window.SarojiniImageCleaner) return;
+
+    try {
+      const result = await window.SarojiniImageCleaner.cleanSupplierImage(currentCleanerRawSource, {
+        zone: currentCleanerSelectedZone,
+        forceClean: currentCleanerSelectedZone !== 'none'
+      });
+      currentCleanerResult = result;
+
+      const rawSrc = result.originalDataUrl || currentCleanerRawSource;
+      const watermarkedSrc = result.watermarkedDataUrl || result.cleanedDataUrl || rawSrc;
+
+      // 1. Raw Upload Preview
+      if (cleanerImgRaw) cleanerImgRaw.src = rawSrc;
+
+      // 2. Detected Area Preview (with bounding box)
+      if (cleanerImgOriginal) cleanerImgOriginal.src = rawSrc;
+
+      // 3. Final VADI Watermarked Customer Preview
+      if (cleanerImgCleaned) cleanerImgCleaned.src = watermarkedSrc;
+
+      if (cleanerResBadge) {
+        cleanerResBadge.textContent = `${result.width} × ${result.height} px (100% Quality)`;
+      }
+
+      if (result.detected && currentCleanerSelectedZone !== 'none') {
+        if (cleanerStatusBanner) {
+          cleanerStatusBanner.style.background = "rgba(16, 185, 129, 0.1)";
+          cleanerStatusBanner.style.borderColor = "rgba(16, 185, 129, 0.3)";
+          cleanerStatusBanner.style.color = "#10b981";
+        }
+        if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-shield-alt";
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Code Detected:</strong> Embedded code found at <em>${result.zone}</em> (${result.boundingBox?.code || 'S-Code'}). Dynamic ● VADI STORE / SAROJINI BAZAAR badge applied.`;
+        if (cleanerDetectedTag) cleanerDetectedTag.textContent = result.boundingBox?.code ? `Code: ${result.boundingBox.code}` : `Target: ${result.zone}`;
+      } else if (currentCleanerSelectedZone === 'none') {
+        if (cleanerStatusBanner) {
+          cleanerStatusBanner.style.background = "rgba(148, 163, 184, 0.1)";
+          cleanerStatusBanner.style.borderColor = "rgba(148, 163, 184, 0.3)";
+          cleanerStatusBanner.style.color = "#94a3b8";
+        }
+        if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-info-circle";
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Unaltered:</strong> Image will be preserved in its exact original state without watermark or modifications.`;
+        if (cleanerDetectedTag) cleanerDetectedTag.textContent = "Disabled";
+      } else {
+        if (cleanerStatusBanner) {
+          cleanerStatusBanner.style.background = "rgba(16, 185, 129, 0.1)";
+          cleanerStatusBanner.style.borderColor = "rgba(16, 185, 129, 0.3)";
+          cleanerStatusBanner.style.color = "#10b981";
+        }
+        if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-magic";
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Watermark Applied:</strong> Dynamic ● VADI STORE / SAROJINI BAZAAR badge positioned at <em>${result.zone}</em>. Product details 100% preserved.`;
+        if (cleanerDetectedTag) cleanerDetectedTag.textContent = `Target: ${result.zone}`;
+      }
+
+      function updateHighlightBox() {
+        if (!cleanerHighlightBox || !cleanerImgOriginal || !result.boundingBox || currentCleanerSelectedZone === 'none') {
+          if (cleanerHighlightBox) cleanerHighlightBox.style.display = "none";
+          return;
+        }
+        const box = result.boundingBox;
+        const img = cleanerImgOriginal;
+        const imgW = img.offsetWidth || img.clientWidth;
+        const imgH = img.offsetHeight || img.clientHeight;
+        const leftOffset = img.offsetLeft;
+        const topOffset = img.offsetTop;
+
+        if (imgW && imgH && result.width && result.height) {
+          const scaleX = imgW / result.width;
+          const scaleY = imgH / result.height;
+          cleanerHighlightBox.style.left = `${(leftOffset + box.x * scaleX).toFixed(1)}px`;
+          cleanerHighlightBox.style.top = `${(topOffset + box.y * scaleY).toFixed(1)}px`;
+          cleanerHighlightBox.style.width = `${(box.w * scaleX).toFixed(1)}px`;
+          cleanerHighlightBox.style.height = `${(box.h * scaleY).toFixed(1)}px`;
+          cleanerHighlightBox.style.display = "block";
+        }
+      }
+
+      if (cleanerImgOriginal) {
+        if (cleanerImgOriginal.complete) {
+          updateHighlightBox();
+        } else {
+          cleanerImgOriginal.onload = updateHighlightBox;
+        }
+      }
+    } catch (err) {
+      console.warn("Watermark preview warning:", err);
+      if (cleanerImgRaw) cleanerImgRaw.src = currentCleanerRawSource;
+      if (cleanerImgOriginal) cleanerImgOriginal.src = currentCleanerRawSource;
+      if (cleanerImgCleaned) cleanerImgCleaned.src = currentCleanerRawSource;
+      if (cleanerHighlightBox) cleanerHighlightBox.style.display = "none";
+      if (cleanerStatusText) cleanerStatusText.textContent = "Unable to process via canvas (CORS restricted or invalid image).";
+    }
+  }
+
+  cleanerZoneButtons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      cleanerZoneButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentCleanerSelectedZone = btn.getAttribute("data-zone") || 'bottom-left';
+      await runCleaningProcess();
+    });
+  });
+
+  function closeCleanerModal() {
+    if (modalCleaner) modalCleaner.style.display = "none";
+    currentCleanerRawSource = null;
+    currentCleanerResult = null;
+    cleanerOnAcceptCallback = null;
+  }
+
+  if (btnCloseCleanerModal) btnCloseCleanerModal.addEventListener("click", closeCleanerModal);
+  if (btnModalCancel) btnModalCancel.addEventListener("click", closeCleanerModal);
+
+  if (btnModalAcceptClean) {
+    btnModalAcceptClean.addEventListener("click", () => {
+      const finalImg = (currentCleanerResult && (currentCleanerResult.watermarkedDataUrl || currentCleanerResult.cleanedDataUrl))
+        ? (currentCleanerResult.watermarkedDataUrl || currentCleanerResult.cleanedDataUrl)
+        : currentCleanerRawSource;
+
+      if (currentCleanerRawSource && finalImg !== currentCleanerRawSource) {
+        originalImagesMap[finalImg] = currentCleanerRawSource;
+      }
+
+      if (cleanerOnAcceptCallback) {
+        cleanerOnAcceptCallback(finalImg);
+      } else if (finalImg && !images.includes(finalImg)) {
+        images.push(finalImg);
+        renderImagePreviews();
+      }
+      closeCleanerModal();
+      window.showToast?.("✦ VADI STORE watermarked image added to gallery!", "success");
+    });
+  }
+
+  if (btnModalKeepOriginal) {
+    btnModalKeepOriginal.addEventListener("click", () => {
+      const rawImg = currentCleanerRawSource;
+      if (cleanerOnAcceptCallback) {
+        cleanerOnAcceptCallback(rawImg);
+      } else if (rawImg && !images.includes(rawImg)) {
+        images.push(rawImg);
+        renderImagePreviews();
+      }
+      closeCleanerModal();
+      window.showToast?.("Original raw image added to gallery without watermark.", "info");
     });
   }
 
@@ -518,7 +779,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       colors: selectedColors,
       specifications: {
         material: specMaterial.value.trim() || null,
-        fit: specFit.value.trim() || null
+        fit: specFit.value.trim() || null,
+        original_images: images.map(img => originalImagesMap[img] || img)
       },
       return_policy: specReturns.value.trim() || '7-Day Easy Returns',
       is_active: prodIsActive.checked,
@@ -575,6 +837,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           await syncProductFeaturedToSection(client, data.id, Boolean(payload.is_active && payload.is_featured));
         }
         try {
+          sessionStorage.removeItem("velora_sarojini_catalog_cache_v1");
+          localStorage.removeItem("velora_sarojini_catalog_cache_v1");
           localStorage.setItem("sarojini_global_cache_invalidated", Date.now().toString());
           localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
         } catch (_) {}

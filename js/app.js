@@ -1401,11 +1401,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     elements.searchClearBtn.classList.add("visible");
 
-    const matches = window.PRODUCTS_DATA.filter(p => 
-      p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q))
-    ).slice(0, 5); // top 5 results
+    const matches = (window.VadiSearchUtils && typeof window.VadiSearchUtils.matchesProduct === 'function')
+      ? window.PRODUCTS_DATA.filter(p => p.is_active !== false && window.VadiSearchUtils.matchesProduct(p, query)).slice(0, 5)
+      : window.PRODUCTS_DATA.filter(p => 
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q))
+        ).slice(0, 5); // top 5 results
 
     if (matches.length === 0) {
       elements.searchResultsDropdown.innerHTML = `
@@ -1613,6 +1615,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.navSearchInput) {
       elements.navSearchInput.addEventListener("input", e => {
         handleSearchInput(e.target.value);
+      });
+      elements.navSearchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const q = e.target.value.trim();
+          if (q) {
+            window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
+          }
+        }
+      });
+    }
+
+    const navSearchBtn = document.querySelector(".nav-search-btn") || document.getElementById("nav-search-btn");
+    if (navSearchBtn) {
+      navSearchBtn.addEventListener("click", () => {
+        const q = elements.navSearchInput ? elements.navSearchInput.value.trim() : "";
+        if (q) {
+          window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
+        }
       });
     }
 

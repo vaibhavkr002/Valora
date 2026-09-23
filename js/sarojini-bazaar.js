@@ -146,7 +146,7 @@
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
             </button>
-            <a href="sarojini-product-details.html?id=${encodeURIComponent(prod.id)}">
+            <a href="sarojini-product-details.html?id=${encodeURIComponent(prod.id)}" class="sarojini-card-img-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
               <img src="${firstImg}" alt="${escapeHtml(prod.name)}" class="sarojini-card-img" loading="lazy" onerror="this.onerror=null; this.src='${fallbackSvg}';">
             </a>
           </div>
@@ -163,6 +163,16 @@
         </div>
       `;
     }).join('');
+
+    // Dynamically attach and position branded code-cover watermarks on Sarojini cards
+    if (window.SarojiniWatermark && typeof window.SarojiniWatermark.attachCardWatermarks === 'function') {
+      window.SarojiniWatermark.attachCardWatermarks(track);
+    }
+
+    // Attach premium 3D animated promotional offer stickers to Sarojini cards
+    if (window.SarojiniCardAds && typeof window.SarojiniCardAds.init === 'function') {
+      window.SarojiniCardAds.init(track);
+    }
   }
 
   function setupCarouselInteraction(section) {

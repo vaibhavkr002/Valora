@@ -117,11 +117,59 @@
         <!-- LEFT: GALLERY -->
         <div class="pdp-gallery-col">
           <div class="pdp-main-media-wrap">
-            <img id="pdp-main-img" src="assets/sarojni/prod-1-graphic-tee.png" alt="Sarojini Product">
+            <!-- Exact Image Wrapper anchored directly to product image -->
+            <div class="sarojini-image-wrapper" id="pdp-image-wrapper">
+              <img id="pdp-main-img" class="sarojini-product-image" src="assets/sarojni/prod-1-graphic-tee.png" alt="Sarojini Product">
+              <!-- Watermark Overlay rendered INSIDE image-wrapper, directly over code -->
+              <div id="pdp-watermark-overlay" class="sarojini-watermark-overlay" style="display: none;" aria-label="Authentic Sarojini Bazaar Find">
+                <div class="swm-title"><span class="swm-dot">●</span> VADI STORE</div>
+                <div class="swm-sub">SAROJINI BAZAAR</div>
+              </div>
+            </div>
+
             <span class="pdp-discount-badge" id="pdp-discount-badge" style="display: none;">50% OFF</span>
             <button type="button" class="pdp-wishlist-btn" id="btn-pdp-wishlist" aria-label="Save to Wishlist">
               <i class="far fa-heart"></i>
             </button>
+          </div>
+
+          <!-- Separate Sarojini promotional marquee element placed below media wrap as an independent promotional feature -->
+          <div class="sarojini-promo-strip sarojini-promo-strip-pdp" aria-hidden="true">
+            <span class="sarojini-promo-badge">
+              <span class="sarojini-promo-dot"></span>SAROJINI
+            </span>
+            <div class="sarojini-promo-ticker">
+              <div class="sarojini-promo-track">
+                <span class="sarojini-promo-group">
+                  <span class="sarojini-promo-item"><span class="sarojini-promo-heart">♥</span> SAROJINI</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">BAZAAR WALE PRICES</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">NEW STREET DROP</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">DELHI'S FASHION FINDS</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">STYLE UNDER ₹499</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">CURATED FOR YOU</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                </span>
+                <span class="sarojini-promo-group" aria-hidden="true">
+                  <span class="sarojini-promo-item"><span class="sarojini-promo-heart">♥</span> SAROJINI</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">BAZAAR WALE PRICES</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">NEW STREET DROP</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">DELHI'S FASHION FINDS</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">STYLE UNDER ₹499</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                  <span class="sarojini-promo-item">CURATED FOR YOU</span>
+                  <span class="sarojini-promo-bullet">•</span>
+                </span>
+              </div>
+            </div>
           </div>
           <!-- Thumbnails Row -->
           <div class="pdp-thumbnails-strip" id="pdp-thumbnails-strip">
@@ -311,11 +359,11 @@
               <h3 class="accordion-header">Material &amp; Specifications</h3>
               <div class="accordion-body">
                 <table class="specs-mini-table">
-                  <tbody>
+                  <tbody id="specs-table-body">
                     <tr><th>Material</th><td id="spec-table-material">Premium Cotton Blend</td></tr>
                     <tr><th>Fit Type</th><td id="spec-table-fit">Regular Street Fit</td></tr>
                     <tr><th>Department</th><td id="spec-table-dept">Sarojini Bazaar</td></tr>
-                    <tr><th>Care</th><td>Machine wash cold, gentle cycle</td></tr>
+                    <tr><th>Care</th><td id="spec-table-care">Machine wash cold, gentle cycle</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -484,13 +532,34 @@
     </div>
   </footer>
 
+  <!-- Lightbox / Zoom Modal for PDP Images -->
+  <div id="pdp-zoom-modal" class="pdp-zoom-modal" aria-hidden="true" role="dialog" aria-label="Product Image Zoom View">
+    <div class="pdp-zoom-backdrop" id="pdp-zoom-backdrop"></div>
+    <div class="pdp-zoom-dialog">
+      <button type="button" class="pdp-zoom-close" id="pdp-zoom-close" aria-label="Close Zoom View">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="pdp-zoom-image-wrap" id="pdp-zoom-image-wrap">
+        <img id="pdp-zoom-img" src="" alt="Zoomed Product View">
+        <!-- Watermark Overlay rendered INSIDE zoom wrapper -->
+        <div id="pdp-zoom-watermark-overlay" class="sarojini-watermark-overlay" style="display: none;" aria-label="Authentic Sarojini Bazaar Find">
+          <div class="swm-title"><span class="swm-dot">●</span> VADI STORE</div>
+          <div class="swm-sub">SAROJINI BAZAAR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Core Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
   <script src="js/cart-drawer.js"></script>
   <script src="js/image-utils.js"></script>
+  <script src="js/sarojini-watermark.js"></script>
+  <script src="js/sarojini-card-ads.js" defer></script>
   <script src="js/wishlist-service.js"></script>
   <script src="js/ads-engine.js" defer></script>
+  <script src="js/search-utils.js"></script>
   <script src="js/sarojini-product-details.js" defer></script>
 </body>
 </html>

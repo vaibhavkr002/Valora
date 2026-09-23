@@ -333,23 +333,430 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1.05;
-  background: #f8fafc;
+  background: #fbf9f5;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.vadi-sarojini-bazaar .sarojini-card-media a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 .vadi-sarojini-bazaar .sarojini-card-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
+  object-position: center;
   transition: transform 0.35s ease;
-  padding: 10px;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .vadi-sarojini-bazaar .sarojini-product-card:hover .sarojini-card-img {
-  transform: scale(1.06);
+  transform: scale(1.03);
+}
+
+/* Sarojini Code-Cover Watermark Overlay (Cards) */
+.sarojini-watermark-overlay {
+  position: absolute;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  background: #121110;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 0 8px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-left: none;
+  border-bottom: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+  opacity: 1 !important;
+}
+
+.sarojini-watermark-overlay.zone-bottom-right {
+  border-radius: 8px 0 0 0;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.32);
+}
+
+.sarojini-watermark-overlay.zone-bottom-center {
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+.sarojini-watermark-overlay .swm-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.sarojini-watermark-overlay .swm-dot {
+  color: #e11d48;
+  font-size: 0.58rem;
+  line-height: 1;
+}
+
+.sarojini-watermark-overlay .swm-sub {
+  font-weight: 700;
+  font-size: 0.56rem;
+  color: #fca5a5;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* Card Watermark Typography & Precision Sizing */
+.sarojini-watermark-overlay.card-watermark {
+  padding: 1.5px 5px !important;
+  border-radius: 0 4px 0 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-left: none !important;
+  border-bottom: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+  line-height: 1.05 !important;
+  z-index: 3 !important;
+}
+
+.sarojini-watermark-overlay.card-watermark.zone-bottom-right {
+  border-radius: 4px 0 0 0 !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+.sarojini-watermark-overlay.card-watermark.zone-bottom-center {
+  border-radius: 4px 4px 0 0 !important;
+  border-bottom: none !important;
+}
+
+.sarojini-watermark-overlay.card-watermark .swm-title {
+  font-size: 0.46rem !important;
+  letter-spacing: 0.5px !important;
+  gap: 3px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+}
+
+.sarojini-watermark-overlay.card-watermark .swm-dot {
+  font-size: 0.38rem !important;
+  line-height: 1 !important;
+}
+
+.sarojini-watermark-overlay.card-watermark .swm-sub {
+  font-size: 0.38rem !important;
+  letter-spacing: 0.6px !important;
+  margin-top: 1px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================================
+   SAROJINI BAZAAR PREMIUM ROTATING 3D ANIMATED ADVERTISEMENT BOARD
+   ============================================================================ */
+.sarojini-card-3d-board {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 4;
+  pointer-events: none;
+  perspective: 700px;
+  transform-style: preserve-3d;
+  animation: sarojini3dBoardFloat 3.8s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.sarojini-card-3d-board.zone-bottom-left {
+  right: auto;
+  left: 8px;
+}
+
+.sarojini-card-3d-board.zone-bottom-right {
+  left: auto;
+  right: 8px;
+}
+
+.sarojini-card-3d-board .s3d-board-wrapper {
+  position: relative;
+  width: 104px;
+  height: 28px;
+  transform-style: preserve-3d;
+}
+
+.sarojini-card-3d-board .s3d-rotator {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.34, 1.25, 0.64, 1);
+  will-change: transform;
+}
+
+.sarojini-card-3d-board .s3d-side {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.sarojini-card-3d-board .s3d-front {
+  transform: rotateY(0deg) translateZ(2.5px);
+}
+
+.sarojini-card-3d-board .s3d-back {
+  transform: rotateY(180deg) translateZ(2.5px);
+}
+
+.sarojini-card-3d-board .s3d-face-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  padding: 2px 5px;
+  box-sizing: border-box;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+.sarojini-card-3d-board .s3d-face-title {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.sarojini-card-3d-board .s3d-face-icon {
+  font-size: 0.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.sarojini-card-3d-board .s3d-face-sub {
+  font-size: 0.42rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.92;
+  line-height: 1;
+  margin-top: 1.5px;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* 5 Distinct Delhi Street Bazaar Theme Faces */
+.sarojini-card-3d-board .face-ruby {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #991b1b 100%);
+  color: #ffffff;
+  border-color: rgba(254, 202, 202, 0.35);
+}
+.sarojini-card-3d-board .face-ruby .s3d-face-sub {
+  color: #fecaca;
+}
+
+.sarojini-card-3d-board .face-charcoal {
+  background: linear-gradient(135deg, #18181b 0%, #27272a 60%, #09090b 100%);
+  color: #ffffff;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.sarojini-card-3d-board .face-charcoal .s3d-face-title {
+  background: linear-gradient(180deg, #ffffff 0%, #fde68a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.sarojini-card-3d-board .face-charcoal .s3d-face-sub {
+  color: #fbbf24;
+}
+
+.sarojini-card-3d-board .face-terracotta {
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #9a3412 100%);
+  color: #ffffff;
+  border-color: rgba(254, 215, 170, 0.35);
+}
+.sarojini-card-3d-board .face-terracotta .s3d-face-sub {
+  color: #ffedd5;
+}
+
+.sarojini-card-3d-board .face-emerald {
+  background: linear-gradient(135deg, #047857 0%, #059669 50%, #065f46 100%);
+  color: #ffffff;
+  border-color: rgba(167, 243, 208, 0.35);
+}
+.sarojini-card-3d-board .face-emerald .s3d-face-sub {
+  color: #d1fae5;
+}
+
+.sarojini-card-3d-board .face-slate {
+  background: linear-gradient(135deg, #334155 0%, #475569 55%, #1e293b 100%);
+  color: #ffffff;
+  border-color: rgba(203, 213, 225, 0.35);
+}
+.sarojini-card-3d-board .face-slate .s3d-face-sub {
+  color: #e2e8f0;
+}
+
+/* Specular Shine Sweep across the 3D Board */
+.sarojini-card-3d-board .s3d-face-shine {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.05) 75%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: sarojini3dBoardShine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Floating Soft Elevation Shadow beneath Board */
+.sarojini-card-3d-board .s3d-board-shadow {
+  position: absolute;
+  bottom: -5px;
+  left: 10%;
+  width: 80%;
+  height: 6px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(2px);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.sarojini-card-3d-board .s3d-board-shadow.s3d-shadow-turning {
+  transform: scale(0.72);
+  opacity: 0.28;
+}
+
+/* Smooth 3D Board Floating Motion */
+@keyframes sarojini3dBoardFloat {
+  0% {
+    transform: perspective(700px) rotateX(3deg) translateY(0) translateZ(4px);
+  }
+  50% {
+    transform: perspective(700px) rotateX(-2deg) translateY(-2px) translateZ(6px);
+  }
+  100% {
+    transform: perspective(700px) rotateX(3deg) translateY(1.5px) translateZ(4px);
+  }
+}
+
+/* Subtle Specular Board Shine Sweep */
+@keyframes sarojini3dBoardShine {
+  0%, 65% {
+    left: -80%;
+  }
+  88%, 100% {
+    left: 150%;
+  }
+}
+
+/* Mobile & Small Card Responsiveness */
+@media (max-width: 768px) {
+  .sarojini-card-3d-board {
+    bottom: 6px;
+    right: 6px;
+  }
+  .sarojini-card-3d-board.zone-bottom-left {
+    left: 6px;
+  }
+  .sarojini-card-3d-board.zone-bottom-right {
+    right: 6px;
+  }
+  .sarojini-card-3d-board .s3d-board-wrapper {
+    width: 92px;
+    height: 25px;
+  }
+  .sarojini-card-3d-board .s3d-side {
+    border-radius: 5px;
+  }
+  .sarojini-card-3d-board .s3d-face-title {
+    font-size: 0.47rem;
+    gap: 2px;
+  }
+  .sarojini-card-3d-board .s3d-face-icon {
+    font-size: 0.45rem;
+  }
+  .sarojini-card-3d-board .s3d-face-sub {
+    font-size: 0.38rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sarojini-card-3d-board {
+    bottom: 5px;
+    right: 5px;
+  }
+  .sarojini-card-3d-board.zone-bottom-left {
+    left: 5px;
+  }
+  .sarojini-card-3d-board.zone-bottom-right {
+    right: 5px;
+  }
+  .sarojini-card-3d-board .s3d-board-wrapper {
+    width: 86px;
+    height: 23px;
+  }
+  .sarojini-card-3d-board .s3d-side {
+    border-radius: 4.5px;
+  }
+  .sarojini-card-3d-board .s3d-face-title {
+    font-size: 0.42rem;
+    letter-spacing: 0.3px;
+  }
+  .sarojini-card-3d-board .s3d-face-icon {
+    font-size: 0.4rem;
+  }
+  .sarojini-card-3d-board .s3d-face-sub {
+    font-size: 0.34rem;
+  }
 }
 
 .vadi-sarojini-bazaar .sarojini-card-wishlist-btn {
@@ -673,4 +1080,207 @@
     gap: 16px;
   }
 }
+
+/* ============================================================================
+   SAROJINI BAZAAR - ANIMATED PROMOTIONAL OVERLAY STRIP
+   Elevates product cards with luxury street-market branding while elegantly
+   covering unwanted supplier / bottom-edge source codes.
+   ============================================================================ */
+.sarojini-promo-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 34px;
+  background: linear-gradient(135deg, #fffdfa 0%, #fff1f3 100%);
+  border-top: 1.5px solid rgba(190, 18, 60, 0.28);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  box-shadow: 0 -3px 12px rgba(28, 25, 23, 0.08), 0 -1px 3px rgba(190, 18, 60, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 6px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.sarojini-promo-badge {
+  background: linear-gradient(135deg, #9f1239 0%, #be123c 100%);
+  color: #ffffff;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(159, 18, 57, 0.25);
+  z-index: 2;
+}
+
+.sarojini-promo-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #facc15;
+  box-shadow: 0 0 4px #facc15;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sarojini-promo-ticker {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(90deg, transparent 0%, black 8px, black calc(100% - 8px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8px, black calc(100% - 8px), transparent 100%);
+}
+
+.sarojini-promo-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: sarojiniContinuousMarquee 11s linear infinite;
+  will-change: transform;
+}
+
+.sarojini-promo-group {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sarojini-promo-item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.63rem;
+  font-weight: 750;
+  color: #1c1917;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0 2px;
+}
+
+.sarojini-promo-bullet {
+  color: #e11d48;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 0 5px;
+  opacity: 0.75;
+  display: inline-block;
+}
+
+.sarojini-promo-heart {
+  color: #e11d48;
+  font-size: 0.68rem;
+  margin-right: 3px;
+  display: inline-block;
+}
+
+/* Pause animation on card/PDP hover for pleasant readability */
+.sarojini-product-card:hover .sarojini-promo-track,
+.product-card:hover .sarojini-promo-track,
+.pdp-main-media-wrap:hover .sarojini-promo-track {
+  animation-play-state: paused;
+}
+
+/* Seamless infinite continuous horizontal marquee animation */
+@keyframes sarojiniContinuousMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* PDP Main Image Specific Sizing */
+.sarojini-promo-strip.sarojini-promo-strip-pdp {
+  height: 42px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  padding: 0 8px 0 10px;
+  gap: 8px;
+}
+
+.sarojini-promo-strip-pdp .sarojini-promo-badge {
+  font-size: 0.64rem;
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+
+.sarojini-promo-strip-pdp .sarojini-promo-item {
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+}
+
+.sarojini-promo-strip-pdp .sarojini-promo-bullet {
+  font-size: 0.8rem;
+  padding: 0 7px;
+}
+
+/* Responsive Mobile Adjustments */
+@media (max-width: 768px) {
+  .sarojini-promo-strip {
+    height: 28px;
+    gap: 4px;
+    padding: 0 4px 0 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+  }
+
+  .sarojini-promo-badge {
+    font-size: 0.48rem;
+    padding: 2px 4px;
+    letter-spacing: 0.03em;
+  }
+
+  .sarojini-promo-dot {
+    width: 3.5px;
+    height: 3.5px;
+  }
+
+  .sarojini-promo-item {
+    font-size: 0.54rem;
+    letter-spacing: 0.02em;
+  }
+
+  .sarojini-promo-bullet {
+    font-size: 0.58rem;
+    padding: 0 3px;
+  }
+
+  .sarojini-promo-strip.sarojini-promo-strip-pdp {
+    height: 34px;
+    padding: 0 6px 0 6px;
+    gap: 6px;
+  }
+
+  .sarojini-promo-strip-pdp .sarojini-promo-badge {
+    font-size: 0.54rem;
+    padding: 2.5px 5px;
+  }
+
+  .sarojini-promo-strip-pdp .sarojini-promo-item {
+    font-size: 0.62rem;
+  }
+}
+
 

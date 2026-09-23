@@ -312,7 +312,7 @@
       return `
         <div class="sarojini-product-card" data-product-id="${prod.id}">
           <div class="product-card-media">
-            <a href="sarojini-product-details.html?id=${encodeURIComponent(prod.id)}">
+            <a href="sarojini-product-details.html?id=${encodeURIComponent(prod.id)}" class="sarojini-card-img-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
               <img src="${firstImg}" alt="${escapeHtml(prod.name)}" loading="lazy" onerror="this.onerror=null; this.src='${fallbackSvg}';">
             </a>
             ${discount > 0 ? `<span class="product-card-badge">${discount}% OFF</span>` : `<span class="product-card-badge" style="background: var(--bazaar-ochre);">STEAL</span>`}
@@ -337,6 +337,16 @@
         </div>
       `;
     }).join('');
+
+    // Dynamically attach and position branded code-cover watermarks on Sarojini cards
+    if (window.SarojiniWatermark && typeof window.SarojiniWatermark.attachCardWatermarks === 'function') {
+      window.SarojiniWatermark.attachCardWatermarks(container);
+    }
+
+    // Attach premium 3D animated promotional offer stickers to Sarojini cards
+    if (window.SarojiniCardAds && typeof window.SarojiniCardAds.init === 'function') {
+      window.SarojiniCardAds.init(container);
+    }
 
     // Wire Wishlist buttons
     container.querySelectorAll('.product-card-wishlist').forEach(btn => {
@@ -438,11 +448,51 @@
   }
 
   // --------------------------------------------------------------------------
-  // 5. INITIALIZE ON DOM READY
+  // 5. ENHANCE DEPARTMENT CARDS (ELEGANT 3D TILT & PARALLAX PHYSICS)
+  // --------------------------------------------------------------------------
+  function initDepartmentCards3D() {
+    const cards = document.querySelectorAll('.dept-card, .department-card');
+    if (!cards.length) return;
+
+    // Only enable pointer-follow tilt on fine pointers (desktop mouse) to avoid scroll jank on mobile
+    if (window.matchMedia && !window.matchMedia('(pointer: fine)').matches) {
+      return;
+    }
+
+    cards.forEach(card => {
+      let rafId = null;
+
+      card.addEventListener('mousemove', (e) => {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          // Subtle tilt angle: max 3.5 degrees
+          const rotateX = ((centerY - y) / centerY) * 3.5;
+          const rotateY = ((x - centerX) / centerX) * 3.5;
+
+          card.style.transform = `perspective(1000px) translateY(-6px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale(1.01)`;
+        });
+      });
+
+      card.addEventListener('mouseleave', () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        card.style.transform = '';
+      });
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 6. INITIALIZE ON DOM READY
   // --------------------------------------------------------------------------
   document.addEventListener('DOMContentLoaded', () => {
     syncBadges();
     initAnnouncementBar();
+    initDepartmentCards3D();
     loadTrendingSarojiniProducts();
     loadBudgetSarojiniProducts();
 
