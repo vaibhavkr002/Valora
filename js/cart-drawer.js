@@ -187,15 +187,10 @@
       let itemAdv = 0;
       let itemCod = lineTotal;
 
-      if (!isItemOnline) {
-        if (isAdv) {
-          hasAdvanceItems = true;
-          itemAdv = (Number(item.advance_per_unit) || 0) * qty;
-          itemCod = Math.max(0, lineTotal - itemAdv);
-        } else {
-          itemAdv = 0;
-          itemCod = lineTotal;
-        }
+      if (!isItemOnline && isAdv) {
+        hasAdvanceItems = true;
+        itemAdv = (Number(item.advance_per_unit) || 0) * qty;
+        itemCod = Math.max(0, lineTotal - itemAdv);
         totalAdvance += itemAdv;
         totalCod += itemCod;
       }
@@ -322,25 +317,23 @@
     if (now - lastCartActionTime < 100) return;
     lastCartActionTime = now;
 
-    const opts = typeof options === 'number' ? { quantity: options } : (options || {});
     const cart = getCart();
     const pid = product.id || product.supabase_id;
-    const selectedSize = opts.size || product.size || "Standard";
-    const selectedColor = opts.color || product.color || "Default";
-    const paymentMethod = opts.selected_payment_method || product.selected_payment_method || "online";
-    const catalogType = opts.catalog_type || product.catalog_type || "main";
-    const addQty = Math.max(1, Number(opts.quantity) || Number(product.quantity) || 1);
+    const selectedSize = options.size || product.size || "Standard";
+    const selectedColor = options.color || product.color || "Default";
+    const paymentMethod = options.selected_payment_method || product.selected_payment_method || "online";
+    const catalogType = options.catalog_type || product.catalog_type || "main";
 
     const existingIdx = cart.findIndex(it => 
       (it.id === pid || it.supabase_id === pid) &&
       it.size === selectedSize &&
       it.color === selectedColor &&
+      it.selected_payment_method === paymentMethod &&
       (it.catalog_type || "main") === catalogType
     );
 
     if (existingIdx >= 0) {
-      cart[existingIdx].quantity = (Number(cart[existingIdx].quantity) || 1) + addQty;
-      cart[existingIdx].selected_payment_method = paymentMethod;
+      cart[existingIdx].quantity = (Number(cart[existingIdx].quantity) || 1) + (Number(options.quantity) || 1);
     } else {
       cart.push({
         id: pid,
@@ -350,7 +343,7 @@
         image: product.image || product.image_url || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80",
         size: selectedSize,
         color: selectedColor,
-        quantity: addQty,
+        quantity: Number(options.quantity) || 1,
         selected_payment_method: paymentMethod,
         catalog_type: catalogType,
         advance_payment_enabled: Boolean(product.advance_payment_enabled),
@@ -359,8 +352,8 @@
         advance_per_unit: Number(product.advance_per_unit) || 0,
         cod_per_unit: Number(product.cod_per_unit) || 0,
         category_id: product.category_id || null,
-        gift_bundle: opts.gift_bundle || product.gift_bundle || null,
-        gift_offer_id: opts.gift_offer_id || product.gift_offer_id || null
+        gift_bundle: options.gift_bundle || product.gift_bundle || null,
+        gift_offer_id: options.gift_offer_id || product.gift_offer_id || null
       });
     }
 
@@ -568,8 +561,7 @@
     render: renderCartDrawer,
     add: addToCart,
     addItem: (item, qty = 1) => {
-      const opts = typeof qty === 'object' && qty !== null ? qty : { quantity: Number(qty) || 1 };
-      addToCart(item, opts);
+      addToCart(item, qty);
       openCartDrawer();
     },
     sync: () => {

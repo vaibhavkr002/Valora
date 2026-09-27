@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try { localStorage.setItem("velora_cart", JSON.stringify(validCart)); } catch (_) {}
     }
 
-    elements.summaryItemsContainer.innerHTML = state.cart.map(item => {
+    elements.summaryItemsContainer.innerHTML = state.cart.map((item, index) => {
       const isFreeBogo = Boolean(item.is_free_bogo);
       const itemSub = isFreeBogo ? 0 : (item.price || 0) * (item.quantity || 1);
       subtotal += itemSub;
@@ -327,6 +327,10 @@ document.addEventListener("DOMContentLoaded", () => {
               ${advanceTag}
               <span class="summary-item-qty">Qty: <strong>${item.quantity}</strong></span>
             </div>
+            <button type="button" class="btn-checkout-remove-item" data-cart-index="${index}" title="Remove ${item.name} from checkout">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Remove
+            </button>
           </div>
           <div class="summary-item-price">
             ${priceDisplay}
@@ -395,9 +399,12 @@ document.addEventListener("DOMContentLoaded", () => {
     state.total = Math.max(0, subtotal - state.discountAmount + state.shippingFee);
     state.totalProductAdvance = totalProductAdvance;
 
-    // Evaluate Full Online Payment Eligibility
+    // Evaluate Payment Method & Advance Requirements
+    if (state.selectedPaymentMethod === "Advance + Cash on Delivery") {
+      state.selectedPaymentMethod = "Cash on Delivery";
+    }
+
     const isOnlineMethod = (state.selectedPaymentMethod === "Credit / Debit Card" || state.selectedPaymentMethod === "UPI / QR Payment" || state.selectedPaymentMethod === "Net Banking");
-    const isExplicitAdvanceCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery");
 
     if (isOnlineMethod) {
       // FULL ONLINE PAYMENT: 100% online payable • ₹0 advance required • 3 FREE gifts • Open Box eligible
@@ -406,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.advanceRequired = false;
       state.isFullOnlinePayment = true;
     } else {
-      // CASH ON DELIVERY (COD) or ADVANCE + COD: Follows admin-configured advance requirement
+      // CASH ON DELIVERY (COD): Follows admin-configured advance requirement
       state.isFullOnlinePayment = false;
       if (totalProductAdvance > 0) {
         state.advancePayableNow = Math.min(totalProductAdvance, state.total);
@@ -416,27 +423,10 @@ document.addEventListener("DOMContentLoaded", () => {
         state.advancePayableNow = 0;
         state.remainingCodAmount = state.total;
         state.advanceRequired = false;
-        if (isExplicitAdvanceCod) {
-          state.selectedPaymentMethod = "Cash on Delivery";
-        }
       }
       // For COD, preserve customer's selected delivery preference
       if (!state.selectedDeliveryPreference) {
         state.selectedDeliveryPreference = "Simple Delivery";
-      }
-    }
-
-    // Dynamic Advance + COD Card Display
-    const cardAdvCod = document.getElementById("card-method-advance-cod");
-    if (cardAdvCod) {
-      if (totalProductAdvance > 0) {
-        cardAdvCod.style.display = "block";
-        const advDepEl = document.getElementById("card-adv-deposit-amount");
-        const advCodEl = document.getElementById("card-adv-cod-amount");
-        if (advDepEl) advDepEl.textContent = formatPrice(Math.min(totalProductAdvance, state.total));
-        if (advCodEl) advCodEl.textContent = formatPrice(Math.max(0, state.total - Math.min(totalProductAdvance, state.total)));
-      } else {
-        cardAdvCod.style.display = "none";
       }
     }
 
@@ -642,6 +632,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Keep dynamic UPI section in sync
     updateUpiSection();
+  }
+
+  // --- 4B. Remove Item from Checkout & Cart ---
+  async function handleRemoveCartItem(index) {
+    if (!state.cart || index < 0 || index >= state.cart.length) return;
+    const removedItem = state.cart[index];
+
+    // Remove the selected item
+    state.cart.splice(index, 1);
+
+    // Validate and clean up any orphaned free BOGO gifts
+    state.cart = state.cart.filter(item => {
+      if (item.is_free_bogo && item.bogo_pair_id) {
+        return state.cart.some(p => p.bogo_pair_id === item.bogo_pair_id && !p.is_free_bogo);
+      }
+      return true;
+    });
+
+    // Save updated cart to localStorage
+    try {
+      localStorage.setItem("velora_cart", JSON.stringify(state.cart));
+    } catch (e) {
+      console.error("Failed to update cart storage:", e);
+    }
+
+    // Sync with window.VeloraCart if present
+    if (window.VeloraCart && typeof window.VeloraCart.saveCart === "function") {
+      try {
+        window.VeloraCart.items = state.cart;
+        window.VeloraCart.saveCart();
+      } catch (_) {}
+    }
+
+    // Dispatch global cart event for header badges, cart drawer, etc.
+    window.dispatchEvent(new CustomEvent("velora:cart-updated", { detail: { cart: state.cart } }));
+
+    // Show feedback toast
+    showToast(`Removed "${removedItem.name || 'Item'}" from cart`, "info");
+
+    // Recalculate totals, advance amounts, COD balance, and re-render checkout
+    await renderOrderSummary();
+  }
+
+  if (elements.summaryItemsContainer) {
+    elements.summaryItemsContainer.addEventListener("click", (e) => {
+      const removeBtn = e.target.closest(".btn-checkout-remove-item");
+      if (removeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(removeBtn.dataset.cartIndex, 10);
+        if (!isNaN(idx)) {
+          handleRemoveCartItem(idx);
+        }
+      }
+    });
   }
 
   // --- 5. Coupon Handling ---

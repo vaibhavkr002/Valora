@@ -78,19 +78,11 @@ async function fetchProduct(productId, isSarojini = false) {
  */
 async function fetchProductBySlugOrName(slugOrName, isSarojini = false) {
   const table = isSarojini ? 'sarojini_products' : 'products';
-  // Try exact slug first
+  // Try slug first
   let data = await supabaseRest(`${table}?slug=eq.${encodeURIComponent(slugOrName)}&select=*&limit=1`);
   if (!Array.isArray(data) || data.length === 0) {
-    // Try case-insensitive slug
-    data = await supabaseRest(`${table}?slug=ilike.${encodeURIComponent(slugOrName)}&select=*&limit=1`);
-  }
-  if (!Array.isArray(data) || data.length === 0) {
-    // Try exact name
+    // Try name
     data = await supabaseRest(`${table}?name=eq.${encodeURIComponent(slugOrName)}&select=*&limit=1`);
-  }
-  if (!Array.isArray(data) || data.length === 0) {
-    // Try case-insensitive name
-    data = await supabaseRest(`${table}?name=ilike.${encodeURIComponent(slugOrName)}&select=*&limit=1`);
   }
   return Array.isArray(data) && data.length > 0 ? data[0] : null;
 }
