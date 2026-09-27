@@ -158,7 +158,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Filter out orders archived/hidden from Admin view & ensure items fallback to snapshot if empty
     allOrders = (data || []).filter(o => {
-      if ((!o.order_items || !Array.isArray(o.order_items) || o.order_items.length === 0) && o.tracking_data && Array.isArray(o.tracking_data.items_snapshot)) {
+      const snapLen = (o.tracking_data && Array.isArray(o.tracking_data.items_snapshot)) ? o.tracking_data.items_snapshot.length : 0;
+      const dbLen = (o.order_items && Array.isArray(o.order_items)) ? o.order_items.length : 0;
+      if (snapLen > dbLen) {
         o.order_items = o.tracking_data.items_snapshot;
       }
       const isHiddenInTracking = Boolean(o.tracking_data && typeof o.tracking_data === "object" && o.tracking_data.admin_hidden);

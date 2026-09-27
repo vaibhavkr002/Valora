@@ -1401,13 +1401,19 @@
 
               const itemsHtml = (ord.order_items || []).map(item => {
                 const isItemSarojini = item.catalog_type === 'sarojini' || item.sarojini_product_id;
-                const itemAdv = Number(item.advance_amount || (ord.advance_paid ? (ord.advance_paid / (ord.order_items.length || 1)) : 0) || 0);
-                const itemCod = Number(item.cod_balance || 0);
+                const hasExplicitItemAdv = item.advance_amount !== undefined && item.advance_amount !== null && !isNaN(Number(item.advance_amount));
+                const itemAdv = hasExplicitItemAdv 
+                  ? Number(item.advance_amount) 
+                  : Number((ord.advance_paid ? (ord.advance_paid / (ord.order_items.length || 1)) : 0) || 0);
+                const itemSubtotal = Number(item.subtotal || (item.price * (item.quantity || 1))) || 0;
+                const itemCod = Number(item.cod_balance !== undefined && item.cod_balance !== null ? item.cod_balance : Math.max(0, itemSubtotal - itemAdv));
 
                 let itemSplitText = '';
                 if (itemAdv > 0) {
-                  itemSplitText = ` • <span style="color:#e11d48; font-weight:700;">Adv. Paid: ₹${Math.round(itemAdv).toLocaleString('en-IN')}</span>` + 
+                  itemSplitText = ` • <span style="color:#6366f1; font-weight:700;">⚡ Adv. Paid: ₹${Math.round(itemAdv).toLocaleString('en-IN')}</span>` + 
                     (itemCod > 0 ? ` • <span style="color:#d97706; font-weight:600;">COD Bal: ₹${Math.round(itemCod).toLocaleString('en-IN')}</span>` : '');
+                } else if (ord.payment_method && (ord.payment_method.includes('Advance') || ord.payment_method.includes('COD'))) {
+                  itemSplitText = ` • <span style="color:#059669; font-weight:600; background:rgba(16,185,129,0.1); padding:1px 5px; border-radius:4px;">💵 100% COD (₹0 Advance)</span>`;
                 }
 
                 const fallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200';

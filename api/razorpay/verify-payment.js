@@ -306,12 +306,17 @@ module.exports = async (req, res) => {
         const corePayload = itemsPayload.map(item => ({
           order_id: item.order_id,
           product_id: item.product_id,
+          sarojini_product_id: item.sarojini_product_id,
+          catalog_type: item.catalog_type,
           product_name: item.product_name,
+          product_image: item.product_image,
           quantity: item.quantity,
           price: item.price,
           subtotal: item.subtotal,
           selected_size: item.selected_size,
-          selected_color: item.selected_color
+          selected_color: item.selected_color,
+          advance_amount: item.advance_amount,
+          cod_balance: item.cod_balance
         }));
         await insertOrderItems(corePayload);
       } catch (fallbackErr) {
@@ -338,12 +343,16 @@ module.exports = async (req, res) => {
       order_id: createdOrder.id,
       order_number: createdOrder.order_number || orderNumber,
       total: calculated.total,
+      subtotal: calculated.subtotal,
+      discount: calculated.discountAmount,
+      advance_amount: advanceAmount,
       advance_paid: advancePaid,
       cod_balance: codBalance,
       payment_method: calculated.paymentMethod,
       is_full_online_payment: isFullOnline,
       free_gifts_eligible: freeGiftsEligible,
-      free_gifts_count: resolvedGifts.length
+      free_gifts_count: resolvedGifts.length,
+      items: itemsPayload
     });
   } catch (error) {
     console.error('[API verify-payment] Error:', error);

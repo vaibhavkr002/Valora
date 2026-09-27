@@ -982,6 +982,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     (window.getProductById ? window.getProductById(productId) : null);
     if (!product) return;
 
+    try {
+      state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+    } catch (_) {
+      state.cart = [];
+    }
+
     const size = selectedSize || (product.sizes ? product.sizes[0] : "Standard");
     const color = product.colors ? product.colors[0] : "Default";
 

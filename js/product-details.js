@@ -1489,6 +1489,12 @@ document.addEventListener("DOMContentLoaded", () => {
       : (window.getProductById(productId) || state.currentProduct);
     if (!product) return;
 
+    try {
+      state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+    } catch (_) {
+      state.cart = [];
+    }
+
     const existingIndex = state.cart.findIndex(item => 
       item.id === product.id && item.size === size && item.color === color
     );

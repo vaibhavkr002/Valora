@@ -307,6 +307,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const itemTotalAdvance = itemUnitAdvance * (item.quantity || 1);
         totalProductAdvance += itemTotalAdvance;
         advanceTag = `<span class="summary-variant-pill" style="color: #6366f1; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.3);">⚡ Advance: ${formatPrice(itemTotalAdvance)}</span>`;
+      } else if (!isFreeBogo) {
+        advanceTag = `<span class="summary-variant-pill" style="color: #059669; background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2);">💵 100% COD</span>`;
       }
 
       const priceDisplay = isFreeBogo 
@@ -2281,17 +2283,31 @@ document.addEventListener("DOMContentLoaded", () => {
             paymentMethod: isFull
               ? `Razorpay Online Payment (Full Paid: ${formatPrice(verifyData.total)})`
               : `Razorpay Advance (${formatPrice(verifyData.advance_paid)} Paid) + COD Balance (${formatPrice(verifyData.cod_balance)})`,
-            items: (isFull && state.resolvedCartGifts && state.resolvedCartGifts.length > 0)
-              ? [...state.cart, ...state.resolvedCartGifts.map(g => ({
-                  name: g.name,
-                  image: g.icon_or_image || g.image || "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
-                  price: 0,
-                  quantity: 1,
-                  size: "Standard",
-                  color: "Complimentary Gift",
-                  is_free_gift: true
-                }))]
-              : [...state.cart],
+            items: (verifyData.items && Array.isArray(verifyData.items) && verifyData.items.length > 0)
+              ? verifyData.items
+              : ((isFull && state.resolvedCartGifts && state.resolvedCartGifts.length > 0)
+                  ? [...state.cart.map(it => {
+                      const p = Number(it.price) || 0;
+                      const q = Number(it.quantity) || 1;
+                      const a = it.advance_payment_enabled ? (Number(it.advance_per_unit) * q || 0) : 0;
+                      return { ...it, advance_amount: isFull ? 0 : a, cod_balance: isFull ? 0 : Math.max(0, (p * q) - a) };
+                    }), ...state.resolvedCartGifts.map(g => ({
+                      name: g.name,
+                      image: g.icon_or_image || g.image || "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
+                      price: 0,
+                      quantity: 1,
+                      size: "Standard",
+                      color: "Complimentary Gift",
+                      is_free_gift: true,
+                      advance_amount: 0,
+                      cod_balance: 0
+                    }))]
+                  : state.cart.map(it => {
+                      const p = Number(it.price) || 0;
+                      const q = Number(it.quantity) || 1;
+                      const a = it.advance_payment_enabled ? (Number(it.advance_per_unit) * q || 0) : 0;
+                      return { ...it, advance_amount: isFull ? 0 : a, cod_balance: isFull ? 0 : Math.max(0, (p * q) - a) };
+                    })),
             free_gifts_eligible: isFull && Boolean(state.resolvedCartGifts && state.resolvedCartGifts.length > 0),
             free_gifts_items: isFull ? (state.resolvedCartGifts || []) : [],
             delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
@@ -2393,7 +2409,13 @@ document.addEventListener("DOMContentLoaded", () => {
           address: fullStreet
         },
         paymentMethod: "Cash on Delivery",
-        items: [...state.cart],
+        items: (verifyData.items && Array.isArray(verifyData.items) && verifyData.items.length > 0)
+          ? verifyData.items
+          : state.cart.map(it => ({
+              ...it,
+              advance_amount: 0,
+              cod_balance: (Number(it.price) || 0) * (Number(it.quantity) || 1)
+            })),
         free_gifts_eligible: false,
         free_gifts_items: [],
         delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
@@ -3322,12 +3344,44 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Check for any Sarojini items needing sync
+    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+    const sarojiniItems = state.cart.filter(item => 
+      item.catalog_type === 'sarojini' || 
+      Boolean(item.sarojini_product_id) || 
+      (typeof item.id === 'string' && item.id.startsWith('sarojini-'))
+    );
+
+    let sarojiniProductsMap = new Map();
+    if (sarojiniItems.length > 0 && client) {
+      try {
+        const { data: sProds } = await client
+          .from("sarojini_products")
+          .select("id, name, advance_payment_enabled, advance_payment_type, advance_payment_value, price");
+        if (Array.isArray(sProds)) {
+          sProds.forEach(sp => {
+            if (sp.id) sarojiniProductsMap.set(String(sp.id).toLowerCase(), sp);
+            if (sp.name) sarojiniProductsMap.set(sp.name.trim().toLowerCase(), sp);
+          });
+        }
+      } catch (sErr) {
+        console.warn("Sarojini cart advance sync error:", sErr);
+      }
+    }
+
     state.cart.forEach(item => {
-      const match = (window.PRODUCTS_DATA || []).find(p =>
-        (p.id && item.id && p.id.toLowerCase() === item.id.toLowerCase()) ||
-        (p.legacyId && item.id && p.legacyId.toLowerCase() === item.id.toLowerCase()) ||
+      let match = (window.PRODUCTS_DATA || []).find(p =>
+        (p.id && item.id && String(p.id).toLowerCase() === String(item.id).toLowerCase()) ||
+        (p.legacyId && item.id && String(p.legacyId).toLowerCase() === String(item.id).toLowerCase()) ||
         (p.name && item.name && p.name.trim().toLowerCase() === item.name.trim().toLowerCase())
       );
+
+      if (!match && sarojiniProductsMap.size > 0) {
+        const itemIdKey = item.id ? String(item.id).toLowerCase() : null;
+        const itemNameKey = item.name ? item.name.trim().toLowerCase() : null;
+        match = (itemIdKey && sarojiniProductsMap.get(itemIdKey)) || (itemNameKey && sarojiniProductsMap.get(itemNameKey));
+      }
+
       if (match) {
         if (match.advance_payment_enabled !== undefined && item.advance_payment_enabled !== match.advance_payment_enabled) {
           item.advance_payment_enabled = match.advance_payment_enabled;

@@ -958,6 +958,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     (window.getProductById ? window.getProductById(productId) : null);
     if (!product) return;
 
+    try {
+      state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+    } catch (_) {
+      state.cart = [];
+    }
+
     const existingIndex = state.cart.findIndex(item => 
       item.id === productId && 
       (!selectedSize || item.size === selectedSize)
