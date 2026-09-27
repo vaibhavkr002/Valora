@@ -223,7 +223,8 @@ module.exports = async (req, res) => {
         razorpay_signature: razorpay_signature || null,
         payment_gateway: isOnline ? 'razorpay' : 'cod',
         customer_email: delivery.email || null,
-        address_type: delivery.addressType || 'Home'
+        address_type: delivery.addressType || 'Home',
+        items_snapshot: calculated.items
       }
     };
 
@@ -240,7 +241,7 @@ module.exports = async (req, res) => {
       createdOrder = await insertOrder(fullPayload);
     } catch (dbErr) {
       console.warn('[API verify-payment] Extended insert fell back to base payload:', dbErr.message);
-      // Fallback: insert with standard columns (tracking_data stores razorpay IDs)
+      // Fallback: insert with standard columns (tracking_data stores razorpay IDs and items_snapshot)
       createdOrder = await insertOrder(basePayload);
     }
 
@@ -250,25 +251,73 @@ module.exports = async (req, res) => {
 
     // 8. Insert Order Items into public.order_items
     const orderId = createdOrder.id;
-    const itemsPayload = calculated.items.map(item => ({
-      order_id: orderId,
-      product_id: item.product_id || null,
-      sarojini_product_id: item.sarojini_product_id || null,
-      catalog_type: item.catalog_type,
-      product_name: item.product_name,
-      product_image: item.product_image,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      selected_size: item.selected_size,
-      selected_color: item.selected_color,
-      advance_amount: item.line_advance,
-      cod_balance: item.line_cod_balance
-    }));
+    const isValidUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str.trim());
+
+    const itemsPayload = calculated.items.map(item => {
+      const price = Number(item.price !== undefined ? item.price : item.unit_price) || 0;
+      const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+      const subtotal = Number(item.subtotal !== undefined ? item.subtotal : (price * qty)) || 0;
+      const advAmt = Number(item.line_advance !== undefined ? item.line_advance : (item.advance_amount || 0)) || 0;
+      const codBal = Number(item.line_cod_balance !== undefined ? item.line_cod_balance : (item.cod_balance || 0)) || 0;
+
+      return {
+        order_id: orderId,
+        product_id: isValidUUID(item.product_id) ? item.product_id : null,
+        sarojini_product_id: isValidUUID(item.sarojini_product_id) ? item.sarojini_product_id : null,
+        catalog_type: item.catalog_type || (item.sarojini_product_id ? 'sarojini' : 'main'),
+        product_name: String(item.product_name || 'Product'),
+        product_image: item.product_image || null,
+        quantity: qty,
+        price: price,
+        subtotal: subtotal,
+        selected_size: item.selected_size || null,
+        selected_color: item.selected_color || null,
+        advance_amount: advAmt,
+        cod_balance: codBal
+      };
+    });
+
+    // If free gifts eligible, also add free gift items to order_items
+    if (freeGiftsEligible && Array.isArray(resolvedGifts)) {
+      for (const gift of resolvedGifts) {
+        itemsPayload.push({
+          order_id: orderId,
+          product_id: isValidUUID(gift.id || gift.product_id) ? (gift.id || gift.product_id) : null,
+          sarojini_product_id: null,
+          catalog_type: 'main',
+          product_name: `[Free Gift] ${gift.name || gift.product_name || 'Special Gift'}`,
+          product_image: gift.image || gift.product_image || null,
+          quantity: 1,
+          price: 0,
+          subtotal: 0,
+          selected_size: null,
+          selected_color: null,
+          advance_amount: 0,
+          cod_balance: 0
+        });
+      }
+    }
 
     try {
       await insertOrderItems(itemsPayload);
     } catch (itemErr) {
-      console.error('[API verify-payment] Error inserting order items:', itemErr.message);
+      console.warn('[API verify-payment] Primary order_items insert failed, attempting fallback with core columns:', itemErr.message);
+      try {
+        const corePayload = itemsPayload.map(item => ({
+          order_id: item.order_id,
+          product_id: item.product_id,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal,
+          selected_size: item.selected_size,
+          selected_color: item.selected_color
+        }));
+        await insertOrderItems(corePayload);
+      } catch (fallbackErr) {
+        console.error('[API verify-payment] Critical: order_items fallback insertion failed:', fallbackErr.message);
+        throw new Error(`Failed to record order items: ${fallbackErr.message}`);
+      }
     }
 
     // 9. Update payment_transactions record to 'success'

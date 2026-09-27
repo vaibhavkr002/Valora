@@ -83,6 +83,111 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    // 1. Direct query fallback if joined select returned empty order_items
+    if (!order.order_items || !Array.isArray(order.order_items) || order.order_items.length === 0) {
+      try {
+        const { data: directItems, error: itemsErr } = await client
+          .from("order_items")
+          .select("*")
+          .eq("order_id", order.id);
+        if (!itemsErr && Array.isArray(directItems) && directItems.length > 0) {
+          order.order_items = directItems;
+        }
+      } catch (err) {
+        console.warn("Direct order_items fallback query error:", err);
+      }
+    }
+
+    // 2. Historical snapshot recovery if still empty (repairs orders created during previous schema mismatch)
+    if (!order.order_items || !Array.isArray(order.order_items) || order.order_items.length === 0) {
+      let recoveredItems = null;
+
+      // Check order.tracking_data.items_snapshot
+      if (order.tracking_data && Array.isArray(order.tracking_data.items_snapshot) && order.tracking_data.items_snapshot.length > 0) {
+        recoveredItems = order.tracking_data.items_snapshot;
+      }
+
+      // Check payment_transactions table for items_snapshot
+      if (!recoveredItems) {
+        try {
+          const rzpOrder = order.razorpay_order_id || (order.tracking_data && order.tracking_data.razorpay_order_id);
+          const rzpPay = order.razorpay_payment_id || (order.tracking_data && order.tracking_data.razorpay_payment_id) || order.transaction_reference;
+          
+          let ptQuery = client.from("payment_transactions").select("items_snapshot, metadata");
+          if (rzpOrder) {
+            ptQuery = ptQuery.eq("razorpay_order_id", rzpOrder);
+          } else if (order.id) {
+            ptQuery = ptQuery.eq("order_id", order.id);
+          } else if (rzpPay && typeof rzpPay === 'string' && rzpPay.startsWith('pay_')) {
+            ptQuery = ptQuery.eq("razorpay_payment_id", rzpPay);
+          }
+          const { data: ptRows, error: ptErr } = await ptQuery.limit(1);
+          if (!ptErr && ptRows && ptRows.length > 0 && Array.isArray(ptRows[0].items_snapshot) && ptRows[0].items_snapshot.length > 0) {
+            recoveredItems = ptRows[0].items_snapshot;
+          }
+        } catch (ptErr) {
+          console.warn("payment_transactions snapshot recovery error:", ptErr);
+        }
+      }
+
+      // If recovered items found, map to order_items format and auto-repair DB
+      if (Array.isArray(recoveredItems) && recoveredItems.length > 0) {
+        const isUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
+        order.order_items = recoveredItems.map(item => {
+          const price = Number(item.price !== undefined ? item.price : item.unit_price) || 0;
+          const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+          const subtotal = Number(item.subtotal !== undefined ? item.subtotal : (price * qty)) || 0;
+          const prodId = isUuid(item.product_id) ? item.product_id : (isUuid(item.id) ? item.id : null);
+          const sarojiniId = isUuid(item.sarojini_product_id) ? item.sarojini_product_id : (item.catalog_type === 'sarojini' && isUuid(item.id) ? item.id : null);
+
+          return {
+            order_id: order.id,
+            product_id: prodId,
+            sarojini_product_id: sarojiniId,
+            catalog_type: item.catalog_type || (sarojiniId ? 'sarojini' : 'main'),
+            product_name: item.product_name || item.name || 'Product',
+            product_image: item.product_image || item.image || null,
+            price: price,
+            quantity: qty,
+            subtotal: subtotal,
+            selected_size: item.selected_size || item.size || null,
+            selected_color: item.selected_color || item.color || null,
+            advance_amount: Number(item.line_advance || item.advance_amount || 0),
+            cod_balance: Number(item.line_cod_balance || item.cod_balance || 0),
+            _recovered_from_snapshot: true
+          };
+        });
+
+        // Auto-persist repaired order_items to database in background
+        try {
+          const insertPayload = order.order_items.map(it => ({
+            order_id: it.order_id,
+            product_id: it.product_id,
+            sarojini_product_id: it.sarojini_product_id,
+            catalog_type: it.catalog_type,
+            product_name: it.product_name,
+            product_image: it.product_image,
+            price: it.price,
+            quantity: it.quantity,
+            subtotal: it.subtotal,
+            selected_size: it.selected_size,
+            selected_color: it.selected_color,
+            advance_amount: it.advance_amount,
+            cod_balance: it.cod_balance
+          }));
+          client.from("order_items").insert(insertPayload).then(({ error: repErr }) => {
+            if (repErr) {
+              console.warn("Auto-repair order_items insert warning:", repErr.message);
+            } else {
+              console.log("Successfully auto-repaired missing order_items rows in Supabase!");
+            }
+          });
+        } catch (repairErr) {
+          console.warn("Auto-repair trigger error:", repairErr);
+        }
+      }
+    }
+
     if (elOrderNum) elOrderNum.textContent = order.order_number;
 
     const catInfo = getOrderCatalogInfo(order);
@@ -480,14 +585,26 @@ document.addEventListener("DOMContentLoaded", async () => {
           const linkInfo = itemLinkInfos[idx] || { isAvailable: false, url: "", isSarojini: false };
           let advBadge = "";
           const itemAdv = Number(item.advance_amount || 0);
+          const itemCod = Number(item.cod_balance || 0);
           if (itemAdv > 0) {
-            advBadge = `<span class="badge badge-indigo" style="font-size:0.72rem; margin-left:6px;">Advance: ${window.formatINR(itemAdv)}</span>`;
+            advBadge = `<span class="badge badge-indigo" style="font-size:0.72rem; margin-left:6px;" title="Advance: ${window.formatINR(itemAdv)} | Remaining COD: ${window.formatINR(itemCod)}">Advance: ${window.formatINR(itemAdv)}${itemCod > 0 ? ` | COD: ${window.formatINR(itemCod)}` : ''}</span>`;
           }
 
           const isSarojiniItem = linkInfo.isSarojini || (item.catalog_type === 'sarojini' || item.sarojini_product_id != null);
           const storeBadge = isSarojiniItem
             ? `<span class="badge" style="background: rgba(225, 29, 72, 0.15); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🛍️ SAROJINI BAZAAR</span>`
             : `<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🏪 MAIN VADI</span>`;
+
+          const recoveredBadge = item._recovered_from_snapshot
+            ? `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.68rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; margin-left: 6px;" title="Restored from secure order transaction snapshot">⚡ Recovered</span>`
+            : '';
+
+          const rawId = item.product_id || item.sarojini_product_id || '';
+          const shortId = rawId ? (rawId.length > 12 ? `${rawId.substring(0, 8)}...` : rawId) : 'N/A';
+          const productIdBadge = `<span style="font-family: monospace; font-size: 0.72rem; color: var(--admin-text-muted); background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;" title="Product ID: ${escapeHTML(rawId || 'None')}">ID: ${escapeHTML(shortId)}</span>`;
+
+          const unitPrice = Number(item.price !== undefined ? item.price : item.unit_price) || 0;
+          const lineTotal = Number(item.subtotal !== undefined ? item.subtotal : (unitPrice * item.quantity)) || 0;
 
           const fallbackSvg = window.VeloraImageUtils ? window.VeloraImageUtils.getPlaceholderSvg() : 'https://via.placeholder.com/52';
           const displayImg = (window.VeloraImageUtils && typeof window.VeloraImageUtils.normalizeImageUrl === 'function')
@@ -501,7 +618,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (linkInfo.isAvailable && linkInfo.url) {
             imageHtml = `
               <a href="${escapeHTML(linkInfo.url)}" target="_blank" rel="noopener noreferrer" style="display:block; flex-shrink:0; text-decoration:none;" title="Open product in customer store (opens in new tab)">
-                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.04); padding:2px; border:1px solid var(--admin-card-border); transition: transform 0.2s, border-color 0.2s;" onerror="this.onerror=null; this.src='${fallbackSvg}';" onmouseover="this.style.transform='scale(1.04)'; this.style.borderColor='var(--admin-accent, #38bdf8)';" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='var(--admin-card-border)';">
+                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:56px; height:56px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.04); padding:2px; border:1px solid var(--admin-card-border); transition: transform 0.2s, border-color 0.2s;" onerror="this.onerror=null; this.src='${fallbackSvg}';" onmouseover="this.style.transform='scale(1.04)'; this.style.borderColor='var(--admin-accent, #38bdf8)';" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='var(--admin-card-border)';">
               </a>
             `;
 
@@ -520,7 +637,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           } else {
             imageHtml = `
               <div style="flex-shrink:0;">
-                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:52px; height:52px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.04); padding:2px; border:1px solid var(--admin-card-border); opacity: 0.85;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+                <img src="${escapeHTML(displayImg)}" alt="${escapeHTML(item.product_name || 'Product')}" style="width:56px; height:56px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.04); padding:2px; border:1px solid var(--admin-card-border); opacity: 0.85;" onerror="this.onerror=null; this.src='${fallbackSvg}';">
               </div>
             `;
 
@@ -535,6 +652,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             `;
           }
 
+          const variantParts = [];
+          if (item.selected_size) variantParts.push(`Size: ${escapeHTML(item.selected_size)}`);
+          if (item.selected_color) variantParts.push(`Color: ${escapeHTML(item.selected_color)}`);
+          const variantText = variantParts.length > 0 ? variantParts.join(' • ') + ' • ' : '';
+
           return `
             <div style="display:flex; align-items:center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--admin-card-border);">
               ${imageHtml}
@@ -542,13 +664,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
                   ${productNameHtml}
                   ${storeBadge}
+                  ${recoveredBadge}
                   ${actionHtml}
                 </div>
-                <div style="font-size: 0.78rem; color: var(--admin-text-muted); margin-top: 4px;">
-                  ${item.selected_size ? 'Size: ' + escapeHTML(item.selected_size) : ''} ${item.selected_color ? '• Color: ' + escapeHTML(item.selected_color) : ''} • Qty: ${item.quantity} ${advBadge}
+                <div style="font-size: 0.78rem; color: var(--admin-text-muted); margin-top: 5px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                  ${productIdBadge}
+                  <span>${variantText}Qty: <strong>${item.quantity}</strong> × ${window.formatINR(unitPrice)} each</span>
+                  ${advBadge}
                 </div>
               </div>
-              <div style="font-weight:700; color:#fff; font-size: 0.95rem;">${window.formatINR(item.subtotal || (item.price * item.quantity))}</div>
+              <div style="text-align: right;">
+                <div style="font-weight:700; color:#fff; font-size: 0.95rem;">${window.formatINR(lineTotal)}</div>
+                <div style="font-size: 0.72rem; color: var(--admin-text-muted);">Line Total</div>
+              </div>
             </div>
           `;
         }).join("");

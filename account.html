@@ -1250,12 +1250,16 @@
             const canonicalKey = (resolvedNumber && resolvedNumber !== "undefined") ? resolvedNumber : resolvedId;
 
             if (!orderMap.has(canonicalKey)) {
-              // Create normalized order object
+              // Create normalized order object with fallback to items_snapshot
+              let initialItems = Array.isArray(ord.order_items) && ord.order_items.length > 0
+                ? [...ord.order_items]
+                : (ord.tracking_data && Array.isArray(ord.tracking_data.items_snapshot) ? [...ord.tracking_data.items_snapshot] : []);
+
               const normalized = {
                 ...ord,
                 id: (resolvedId && resolvedId !== "undefined") ? resolvedId : canonicalKey,
                 order_number: canonicalKey,
-                order_items: Array.isArray(ord.order_items) ? [...ord.order_items] : []
+                order_items: initialItems
               };
               orderMap.set(canonicalKey, normalized);
             } else {
