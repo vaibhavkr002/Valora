@@ -24,6 +24,15 @@
     return null;
   }
 
+  // Store Scoping Helper: Sarojini Bazaar sections belong to the Sarojini storefront
+  function isSarojiniSection(sec) {
+    if (!sec) return false;
+    if (sec.section_type === 'sarojini_trending') return true;
+    if (sec.id === '22222222-2222-4222-a222-000000000001') return true;
+    if (sec.content_config && sec.content_config.catalog_type === 'sarojini') return true;
+    return false;
+  }
+
   // --- 1. Fetch Configured Sections ---
   async function fetchHomepageSections(forceFresh = false) {
     // 1a. Try dedicated public.homepage_sections table via Supabase Client or REST
@@ -35,8 +44,9 @@
           .select('*')
           .order('display_order', { ascending: true });
         if (!error && Array.isArray(data) && data.length > 0) {
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
-          return data;
+          const mainSections = data.filter(s => !isSarojiniSection(s));
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(mainSections)); } catch (_) {}
+          return mainSections;
         }
       }
 
@@ -48,8 +58,9 @@
       if (res.ok) {
         const json = await res.json();
         if (Array.isArray(json) && json.length > 0) {
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json)); } catch (_) {}
-          return json;
+          const mainSections = json.filter(s => !isSarojiniSection(s));
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(mainSections)); } catch (_) {}
+          return mainSections;
         }
       }
     } catch (err) {
@@ -65,8 +76,9 @@
       if (res.ok) {
         const rows = await res.json();
         if (rows && rows[0] && Array.isArray(rows[0].value) && rows[0].value.length > 0) {
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows[0].value)); } catch (_) {}
-          return rows[0].value;
+          const mainSections = rows[0].value.filter(s => !isSarojiniSection(s));
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(mainSections)); } catch (_) {}
+          return mainSections;
         }
       }
     } catch (err) {
@@ -78,7 +90,9 @@
       const local = localStorage.getItem(STORAGE_KEY);
       if (local) {
         const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter(s => !isSarojiniSection(s));
+        }
       }
     } catch (_) {}
 
@@ -145,10 +159,15 @@
 
   // Determine if a section record maps to an existing static DOM unit or is dynamic
   function resolveSectionBinding(sec, domUnitMap, claimedDomKeys) {
+    // Sarojini sections belong to the Sarojini storefront, ignore for Main VADI dynamic injection
+    if (isSarojiniSection(sec)) {
+      return { isDynamic: false, key: 'ignore' };
+    }
+
     const type = sec.section_type;
 
     // Explicit dynamic types
-    if (type === 'product_grid' || type === 'sarojini_trending' || type === 'promotional_banner' || type === 'category_grid' || type === 'custom') {
+    if (type === 'product_grid' || type === 'promotional_banner' || type === 'category_grid' || type === 'custom') {
       return { isDynamic: true, key: `dynamic:${sec.id}` };
     }
 
@@ -514,6 +533,14 @@
     const mainContainer = document.getElementById('homepage-main') || document.querySelector('main');
     if (!mainContainer) return;
 
+    // Immediate cleanup of any stale, orphaned, or empty dynamic sections prepended to mainContainer
+    const staleDynamic = mainContainer.querySelectorAll('.custom-product-grid-section, #dynamic-sec-22222222-2222-4222-a222-000000000001');
+    staleDynamic.forEach(el => {
+      if (el.id === 'dynamic-sec-22222222-2222-4222-a222-000000000001' || !el.hasChildNodes() || el.children.length === 0 || el.style.display === 'none') {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }
+    });
+
     // Scan existing DOM children into logical units
     const domUnits = [];
     let activeUnit = null;
@@ -652,7 +679,8 @@
         }
 
         if (dynEl) {
-          if (!active) {
+          const hasNoContent = !dynEl.hasChildNodes() || dynEl.children.length === 0 || dynEl.style.display === 'none';
+          if (!active || hasNoContent) {
             dynEl.style.display = 'none';
             if (dynEl.parentNode && typeof dynEl.parentNode.removeChild === 'function') {
               dynEl.parentNode.removeChild(dynEl);

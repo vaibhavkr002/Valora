@@ -702,7 +702,7 @@ input, select, textarea {
    ========================================================================== */
 .hero-section {
   position: relative;
-  padding: 48px 0 64px;
+  padding: 32px 0 64px;
   background: radial-gradient(circle at 80% 20%, rgba(224, 231, 255, 0.6) 0%, rgba(248, 250, 252, 0) 60%),
               radial-gradient(circle at 10% 80%, rgba(254, 243, 199, 0.5) 0%, rgba(248, 250, 252, 0) 50%);
   overflow: hidden;
@@ -4623,6 +4623,27 @@ body.bogo-modal-open #velora-order-activity,
   width: 100%;
   position: relative;
   box-sizing: border-box;
+}
+
+/* Guard: Empty dynamic sections or ad slots must NEVER occupy space */
+.custom-product-grid-section:empty,
+.custom-promo-banner-section:empty,
+.custom-category-grid-section:empty,
+.custom-brand-strip-section:empty,
+.custom-content-block-section:empty,
+.velora-ad-slot:empty {
+  display: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  border: none !important;
+}
+
+@media (min-width: 768px) {
+  .mobile-search-bar-row {
+    display: none !important;
+  }
 }
 
 .custom-promo-card {
