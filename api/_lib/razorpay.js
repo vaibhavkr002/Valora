@@ -110,25 +110,38 @@ function verifyPaymentSignature({ orderId, paymentId, signature }) {
  * @param {string} signature - x-razorpay-signature header
  * @returns {boolean} True if authentic
  */
-function verifyWebhookSignature({ rawBody, signature }) {
-  const { webhookSecret } = getRazorpayConfig();
+function verifyWebhookSignature({ rawBody, signature, customSecret }) {
+  const webhookSecret = customSecret || process.env.RAZORPAY_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
     throw new Error('RAZORPAY_WEBHOOK_SECRET is not configured on the server.');
   }
-  if (!rawBody || !signature) {
-    throw new Error('Missing raw webhook body or signature.');
+
+  if (typeof rawBody !== 'string' || !rawBody) {
+    return false;
   }
 
-  const expectedSignature = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(rawBody)
-    .digest('hex');
+  if (typeof signature !== 'string' || !signature) {
+    return false;
+  }
 
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature, 'utf8'),
-    Buffer.from(signature, 'utf8')
-  );
+  try {
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBody)
+      .digest('hex');
+
+    const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+    const signatureBuf = Buffer.from(signature.trim(), 'utf8');
+
+    if (expectedBuf.length !== signatureBuf.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(expectedBuf, signatureBuf);
+  } catch (_) {
+    return false;
+  }
 }
 
 /**
