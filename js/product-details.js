@@ -434,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
           elements.advanceHeadline.textContent = `${formatPrice(totalAdvance)} Advance Payment Required`;
         }
         if (elements.advanceExplainer) {
-          elements.advanceExplainer.textContent = `Pay ${formatPrice(totalAdvance)} now • Remaining ${formatPrice(totalCodRem)} via COD`;
+          elements.advanceExplainer.innerHTML = `Pay ${formatPrice(totalAdvance)} now • Remaining ${formatPrice(totalCodRem)} via COD<div style="margin-top: 6px; font-size: 0.8rem; font-weight: 500; color: #475569; line-height: 1.4;">Advance payment is required to reduce fake or non-serious COD orders and help us process genuine orders smoothly.</div>`;
         }
         elements.advanceBox.style.display = "block";
       } else {
@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? Math.round(unitPrice * (advVal / 100))
           : Math.min(unitPrice, advVal);
         const remCod = Math.max(0, unitPrice - unitAdv);
-        elements.honestOfferAdvanceText.innerHTML = `<strong>Genuine Advance Terms:</strong> Pay ${formatPrice(unitAdv)} deposit to dispatch • Pay ${formatPrice(remCod)} on doorstep delivery`;
+        elements.honestOfferAdvanceText.innerHTML = `<strong>Genuine Advance Terms:</strong> Pay ${formatPrice(unitAdv)} deposit to dispatch • Pay ${formatPrice(remCod)} on doorstep delivery<div style="margin-top: 4px; font-size: 0.76rem; color: #64748b; line-height: 1.35;">Advance payment is required to reduce fake or non-serious COD orders and help us process genuine orders smoothly.</div>`;
       } else {
         elements.honestOfferAdvanceText.innerHTML = `<strong>100% Zero-Advance COD:</strong> No advance deposit required. Pay complete amount upon delivery`;
       }

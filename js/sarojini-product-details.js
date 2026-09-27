@@ -532,7 +532,7 @@
         if (selectedPaymentMethod === "cod" && totalAdvance > 0) {
           advBox.style.display = "block";
           advHeadline.textContent = `${formatINR(totalAdvance)} Advance Payment Required`;
-          advExplainer.textContent = `Pay ${formatINR(totalAdvance)} now • Remaining ${formatINR(totalCod)} via Cash on Delivery`;
+          advExplainer.innerHTML = `Pay ${formatINR(totalAdvance)} now • Remaining ${formatINR(totalCod)} via Cash on Delivery<div style="margin-top: 6px; font-size: 0.78rem; font-weight: 500; color: #475569; line-height: 1.4;">Advance payment is required to reduce fake or non-serious COD orders and help us process genuine orders smoothly.</div>`;
         } else {
           advBox.style.display = "none";
         }

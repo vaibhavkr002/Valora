@@ -603,11 +603,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.advanceSummaryNotice) {
         elements.advanceSummaryNotice.style.display = "block";
         if (elements.advanceNoticeText) {
-          elements.advanceNoticeText.textContent = `Pay ${formatPrice(state.advancePayableNow)} online deposit now to dispatch this order. The remaining ${formatPrice(state.remainingCodAmount)} balance will be collected via Cash on Delivery upon shipment handover.`;
+          elements.advanceNoticeText.innerHTML = `Pay ${formatPrice(state.advancePayableNow)} online deposit now to dispatch this order. The remaining ${formatPrice(state.remainingCodAmount)} balance will be collected via Cash on Delivery upon shipment handover.<div style="margin-top: 6px; font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">Advance payment is required to reduce fake or non-serious COD orders and help us process genuine orders smoothly.</div>`;
         }
       }
       if (codNoteEl) {
-        codNoteEl.innerHTML = `<strong>⚡ Partial COD Requirement:</strong> An advance of <strong>${formatPrice(state.advancePayableNow)}</strong> must be paid online via Card, UPI, or Net Banking before order confirmation. The remaining <strong>${formatPrice(state.remainingCodAmount)}</strong> balance will be collected upon courier delivery.`;
+        codNoteEl.innerHTML = `<strong>⚡ Partial COD Requirement:</strong> An advance of <strong>${formatPrice(state.advancePayableNow)}</strong> must be paid online via Card, UPI, or Net Banking before order confirmation. The remaining <strong>${formatPrice(state.remainingCodAmount)}</strong> balance will be collected upon courier delivery.<div style="margin-top: 6px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">Advance payment is required to reduce fake or non-serious COD orders and help us process genuine orders smoothly.</div>`;
       }
       if (elements.btnPlaceOrderText) {
         elements.btnPlaceOrderText.textContent = `Pay Advance ${formatPrice(state.advancePayableNow)} & Confirm COD Order`;
