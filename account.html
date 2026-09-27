@@ -667,6 +667,7 @@
   <script src="js/supabaseClient.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/image-utils.js"></script>
+  <script src="js/products.js"></script>
   <script>
     let isAccountInitialized = false;
 
@@ -1092,10 +1093,28 @@
 
       let isRenderingOrders = false;
       let pendingRenderOrders = false;
+      let renderOrdersSequence = 0;
 
-      // 5. Render Orders History (from public.orders and public.order_requests)
+      // Safe DB read helper with retry for transient network resilience
+      async function safeDbRead(readFn, retries = 1, delayMs = 300) {
+        let attempt = 0;
+        while (attempt <= retries) {
+          try {
+            const res = await readFn();
+            if (!res.error || attempt === retries) return res;
+          } catch (err) {
+            if (attempt === retries) throw err;
+          }
+          attempt++;
+          await new Promise(r => setTimeout(r, delayMs));
+        }
+      }
+
+      // 5. Render Orders History (from public.orders, public.order_items, and public.order_requests)
       async function renderOrders() {
         if (!ordersContainer) return;
+        const currentSequence = ++renderOrdersSequence;
+
         if (isRenderingOrders) {
           pendingRenderOrders = true;
           return;
@@ -1107,15 +1126,18 @@
         }
 
         try {
+          const isUuidFormat = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
           const orderCols = "id, order_number, total, subtotal, discount, shipping_charge, payment_method, payment_status, order_status, advance_amount, advance_paid, cod_balance, delivery_preference, free_gifts_eligible, free_gifts_items, is_full_online_payment, estimated_delivery, tracking_data, created_at, order_items(id, product_id, product_name, product_image, price, quantity, selected_size, selected_color, subtotal, catalog_type, sarojini_product_id, advance_amount, cod_balance)";
           
           let dbOrders = [];
           try {
-            const { data, error } = await client
-              .from("orders")
-              .select(orderCols)
-              .eq("user_id", authUser.id)
-              .order("created_at", { ascending: false });
+            const { data, error } = await safeDbRead(() =>
+              client
+                .from("orders")
+                .select(orderCols)
+                .eq("user_id", authUser.id)
+                .order("created_at", { ascending: false })
+            );
 
             if (error) {
               console.error("Orders fetch error:", {
@@ -1136,13 +1158,119 @@
             return;
           }
 
+          // Authoritative batch query to public.order_items to eliminate joined-select timing drops
+          const orderIds = dbOrders.map(o => o.id).filter(isUuidFormat);
+          const directItemsMap = new Map();
+
+          if (orderIds.length > 0) {
+            try {
+              const { data: directItems, error: itemsErr } = await safeDbRead(() =>
+                client
+                  .from("order_items")
+                  .select("id, order_id, product_id, sarojini_product_id, catalog_type, product_name, product_image, price, quantity, selected_size, selected_color, subtotal, advance_amount, cod_balance")
+                  .in("order_id", orderIds)
+              );
+              if (!itemsErr && Array.isArray(directItems)) {
+                directItems.forEach(it => {
+                  if (!it.order_id) return;
+                  const oId = String(it.order_id);
+                  if (!directItemsMap.has(oId)) directItemsMap.set(oId, []);
+                  directItemsMap.get(oId).push(it);
+                });
+              }
+            } catch (itemsEx) {
+              console.warn("Direct order_items batch query notice:", itemsEx);
+            }
+          }
+
+          // Merge authoritative direct order_items into each dbOrder
+          for (const ord of dbOrders) {
+            const directList = directItemsMap.get(String(ord.id)) || [];
+            const joinedList = Array.isArray(ord.order_items) ? ord.order_items : [];
+
+            if (directList.length > 0) {
+              if (joinedList.length === 0 || directList.length >= joinedList.length) {
+                ord.order_items = directList;
+              } else {
+                const directIds = new Set(directList.map(it => String(it.id)));
+                const merged = [...directList];
+                joinedList.forEach(it => {
+                  if (it.id && !directIds.has(String(it.id))) merged.push(it);
+                });
+                ord.order_items = merged;
+              }
+            }
+          }
+
+          // Historical snapshot recovery for orders still having zero order_items in database
+          const ordersNeedingSnapshots = dbOrders.filter(o => !Array.isArray(o.order_items) || o.order_items.length === 0);
+          if (ordersNeedingSnapshots.length > 0) {
+            // 4a. Check tracking_data.items_snapshot
+            for (const ord of ordersNeedingSnapshots) {
+              if (ord.tracking_data && Array.isArray(ord.tracking_data.items_snapshot) && ord.tracking_data.items_snapshot.length > 0) {
+                ord.order_items = [...ord.tracking_data.items_snapshot];
+              }
+            }
+
+            // 4b. Check payment_transactions table for items_snapshot
+            const stillEmptyOrders = ordersNeedingSnapshots.filter(o => !Array.isArray(o.order_items) || o.order_items.length === 0);
+            if (stillEmptyOrders.length > 0) {
+              const ptOrderIds = stillEmptyOrders.map(o => o.id).filter(isUuidFormat);
+              if (ptOrderIds.length > 0) {
+                try {
+                  const { data: ptRows } = await safeDbRead(() =>
+                    client
+                      .from("payment_transactions")
+                      .select("order_id, items_snapshot, metadata")
+                      .in("order_id", ptOrderIds)
+                  );
+                  if (Array.isArray(ptRows)) {
+                    for (const pt of ptRows) {
+                      if (Array.isArray(pt.items_snapshot) && pt.items_snapshot.length > 0) {
+                        const matched = stillEmptyOrders.find(o => 
+                          o.id === pt.order_id || 
+                          (pt.metadata && pt.metadata.order_number && (o.order_number === pt.metadata.order_number || o.id === pt.metadata.order_number))
+                        );
+                        if (matched && (!Array.isArray(matched.order_items) || matched.order_items.length === 0)) {
+                          matched.order_items = [...pt.items_snapshot];
+                        }
+                      }
+                    }
+                  }
+                } catch (_) {}
+              }
+            }
+
+            // 4c. Check velora_user_orders_<userId>
+            try {
+              const userOrdersKey = "velora_user_orders_" + authUser.id;
+              const localUserOrders = JSON.parse(localStorage.getItem(userOrdersKey) || "[]");
+              if (Array.isArray(localUserOrders) && localUserOrders.length > 0) {
+                for (const ord of ordersNeedingSnapshots) {
+                  if (!Array.isArray(ord.order_items) || ord.order_items.length === 0) {
+                    const matchedLocal = localUserOrders.find(lo =>
+                      (lo.id && ord.id && lo.id === ord.id) ||
+                      (lo.order_number && ord.order_number && lo.order_number === ord.order_number) ||
+                      (lo.orderId && ord.order_number && (lo.orderId === ord.order_number || lo.orderId === ord.id))
+                    );
+                    if (matchedLocal && Array.isArray(matchedLocal.items) && matchedLocal.items.length > 0) {
+                      ord.order_items = [...matchedLocal.items];
+                    }
+                  }
+                }
+              }
+            } catch (_) {}
+          }
+
           // Fetch cancellation and return requests for this customer
           let userRequests = [];
           try {
-            const { data: reqs } = await client
-              .from("order_requests")
-              .select("*")
-              .eq("user_id", authUser.id);
+            const { data: reqs } = await safeDbRead(() =>
+              client
+                .from("order_requests")
+                .select("*")
+                .eq("user_id", authUser.id)
+            );
             if (reqs && Array.isArray(reqs)) userRequests = reqs;
           } catch (e) {
             console.warn("order_requests table fetch notice:", e);
@@ -1170,11 +1298,6 @@
           } catch (_) {}
 
           // --- ORDER RECONCILIATION & DEDUPLICATION ENGINE ---
-          // Rule 1: Authoritative source of truth is the Supabase database.
-          // Rule 2: Exactly ONE order card per physical order (by canonical order_number / primary key id).
-          // Rule 3: No card is EVER rendered with undefined/missing order ID.
-          // Rule 4: If an order has multiple products, they MUST render as multiple items inside ONE card.
-
           let rawOrders = [...dbOrders];
 
           // Check if there is a pending recent order in localStorage not yet synced/persisted to Supabase
@@ -1184,19 +1307,23 @@
               const rawOrdNum = (lastOrd.order_number || lastOrd.orderNumber || lastOrd.orderId || "").toString().trim();
               const rawOrdId = (lastOrd.id || rawOrdNum || "").toString().trim();
 
-              // Check if already present in database orders list by order_number or primary key id
-              const isAlreadyInDb = rawOrders.some(o => {
+              const existingInDb = rawOrders.find(o => {
                 const oNum = (o.order_number || o.orderNumber || o.orderId || "").toString().trim();
                 const oId = (o.id || "").toString().trim();
                 return (rawOrdNum && (oNum === rawOrdNum || oId === rawOrdNum)) ||
                        (rawOrdId && (oNum === rawOrdId || oId === rawOrdId));
               });
 
-              if (isAlreadyInDb) {
-                // Authoritative database already contains this order; clean up the local snapshot
-                try { localStorage.removeItem("velora_last_order"); } catch (_) {}
+              if (existingInDb) {
+                // If DB order had empty items, backfill from lastOrd
+                if ((!Array.isArray(existingInDb.order_items) || existingInDb.order_items.length === 0) && Array.isArray(lastOrd.items) && lastOrd.items.length > 0) {
+                  existingInDb.order_items = [...lastOrd.items];
+                }
+                // Only clean up local snapshot if authoritative order has confirmed items
+                if (Array.isArray(existingInDb.order_items) && existingInDb.order_items.length > 0) {
+                  try { localStorage.removeItem("velora_last_order"); } catch (_) {}
+                }
               } else if (rawOrdNum && rawOrdNum !== "undefined" && rawOrdId && rawOrdId !== "undefined") {
-                // Only prepend if it has a REAL, VALID, NON-EMPTY order ID not found in the database
                 rawOrders.unshift({
                   id: rawOrdId,
                   order_number: rawOrdNum,
@@ -1214,15 +1341,15 @@
                   created_at: lastOrd.date || new Date().toISOString(),
                   order_items: (lastOrd.items || []).map(it => ({
                     id: it.id || `local-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                    product_name: it.name,
-                    product_image: it.image,
+                    product_name: it.name || it.product_name,
+                    product_image: it.image || it.product_image,
                     price: it.price,
                     quantity: it.quantity || 1,
-                    selected_size: it.size || null,
-                    selected_color: it.color || null,
+                    selected_size: it.size || it.selected_size || null,
+                    selected_color: it.color || it.selected_color || null,
                     subtotal: (it.price || 0) * (it.quantity || 1),
                     catalog_type: it.catalog_type || "main",
-                    sarojini_product_id: it.catalog_type === "sarojini" ? it.id : null,
+                    sarojini_product_id: it.catalog_type === "sarojini" ? (it.sarojini_product_id || it.id) : null,
                     advance_amount: (it.advance_per_unit || 0) * (it.quantity || 1),
                     cod_balance: (it.cod_per_unit || 0) * (it.quantity || 1)
                   }))
@@ -1237,11 +1364,9 @@
           for (const ord of rawOrders) {
             if (!ord) continue;
 
-            // Resolve canonical order number and primary key
             const resolvedNumber = (ord.order_number || ord.orderNumber || ord.orderId || "").toString().trim();
             const resolvedId = (ord.id || "").toString().trim();
 
-            // Strictly reject malformed records with missing or "undefined" order ID
             if ((!resolvedNumber || resolvedNumber === "undefined") && (!resolvedId || resolvedId === "undefined")) {
               console.warn("Skipping malformed order record with missing or undefined order ID:", ord);
               continue;
@@ -1250,7 +1375,6 @@
             const canonicalKey = (resolvedNumber && resolvedNumber !== "undefined") ? resolvedNumber : resolvedId;
 
             if (!orderMap.has(canonicalKey)) {
-              // Create normalized order object with fallback to items_snapshot
               let initialItems = Array.isArray(ord.order_items) && ord.order_items.length > 0
                 ? [...ord.order_items]
                 : (ord.tracking_data && Array.isArray(ord.tracking_data.items_snapshot) ? [...ord.tracking_data.items_snapshot] : []);
@@ -1263,10 +1387,8 @@
               };
               orderMap.set(canonicalKey, normalized);
             } else {
-              // Reconcile and consolidate duplicate records for the same order into ONE card
               const existing = orderMap.get(canonicalKey);
 
-              // Update fields if the incoming record has authoritative database data
               if (resolvedId && (!existing.id || existing.id.startsWith("local-"))) {
                 existing.id = resolvedId;
               }
@@ -1274,7 +1396,6 @@
               if (ord.payment_status && existing.payment_status === "pending") existing.payment_status = ord.payment_status;
               if (ord.created_at && !existing.created_at) existing.created_at = ord.created_at;
 
-              // Consolidate order items so all items appear inside this one order card without duplicating
               if (Array.isArray(ord.order_items)) {
                 const existingSignatures = new Set(
                   existing.order_items.map(it => it.id || `${it.product_name}::${it.selected_size}::${it.selected_color}::${it.price}`)
@@ -1293,15 +1414,40 @@
 
           const consolidatedOrders = Array.from(orderMap.values());
 
-          // --- HISTORICAL & REALTIME ORDER ITEM IMAGE RESOLUTION PASS ---
+          // In-memory product details pass using window.PRODUCTS_DATA
+          if (Array.isArray(window.PRODUCTS_DATA) && window.PRODUCTS_DATA.length > 0) {
+            for (const ord of consolidatedOrders) {
+              for (const item of (ord.order_items || [])) {
+                if (!item.product_name && item.name) item.product_name = item.name;
+                const hasImg = item.product_image && item.product_image !== 'null' && item.product_image !== 'undefined' && item.product_image.trim().length > 5;
+                if (!hasImg || !item.product_name) {
+                  const match = window.PRODUCTS_DATA.find(p =>
+                    (item.product_id && (p.id === item.product_id || p.legacyId === item.product_id)) ||
+                    (item.product_name && p.name && p.name.trim().toLowerCase() === item.product_name.trim().toLowerCase())
+                  );
+                  if (match) {
+                    if (!item.product_name) item.product_name = match.name;
+                    if (!hasImg && match.images && match.images.length > 0) {
+                      item.product_image = match.images[0];
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Image & name resolution pass for any remaining items
           const itemsNeedingResolution = [];
           for (const ord of consolidatedOrders) {
             for (const item of (ord.order_items || [])) {
+              if (!item.product_name && item.name) {
+                item.product_name = item.name;
+              }
               let clean = (window.VeloraImageUtils && typeof window.VeloraImageUtils.extractImageUrl === 'function')
                 ? window.VeloraImageUtils.extractImageUrl(item.product_image)
                 : (item.product_image || "");
 
-              if (!clean || clean === 'undefined' || clean === 'null') {
+              if (!clean || clean === 'undefined' || clean === 'null' || !item.product_name) {
                 itemsNeedingResolution.push(item);
               } else {
                 item.product_image = clean;
@@ -1310,7 +1456,6 @@
           }
 
           if (itemsNeedingResolution.length > 0) {
-            const isUuidFormat = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
             const sarojiniIds = Array.from(new Set(itemsNeedingResolution
               .filter(it => it.catalog_type === 'sarojini' || it.sarojini_product_id != null)
               .map(it => it.sarojini_product_id || it.product_id)
@@ -1324,15 +1469,15 @@
 
             if (sarojiniIds.length > 0) {
               try {
-                const { data: sProds } = await client.from("sarojini_products").select("id, name, images").in("id", sarojiniIds);
+                const { data: sProds } = await client.from("sarojini_products").select("id, name, images, image_url").in("id", sarojiniIds);
                 if (Array.isArray(sProds)) {
                   sProds.forEach(p => {
                     const img = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function')
                       ? window.VeloraImageUtils.resolveProductImage(p, { isAdmin: false })
-                      : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image || ""));
+                      : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image_url || p.image || ""));
                     if (img) {
                       imageLookup.set('sarojini:' + p.id, img);
-                      if (p.name) imageLookup.set('sarojini_name:' + p.name, img);
+                      if (p.name) imageLookup.set('sarojini_name:' + p.name.trim().toLowerCase(), img);
                     }
                   });
                 }
@@ -1341,15 +1486,15 @@
 
             if (mainIds.length > 0) {
               try {
-                const { data: mProds } = await client.from("products").select("id, name, images").in("id", mainIds);
+                const { data: mProds } = await client.from("products").select("id, name, images, image_url").in("id", mainIds);
                 if (Array.isArray(mProds)) {
                   mProds.forEach(p => {
                     const img = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function')
                       ? window.VeloraImageUtils.resolveProductImage(p, { isAdmin: false })
-                      : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image || ""));
+                      : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image_url || p.image || ""));
                     if (img) {
                       imageLookup.set('main:' + p.id, img);
-                      if (p.name) imageLookup.set('main_name:' + p.name, img);
+                      if (p.name) imageLookup.set('main_name:' + p.name.trim().toLowerCase(), img);
                     }
                   });
                 }
@@ -1360,12 +1505,17 @@
               const isSar = item.catalog_type === 'sarojini' || item.sarojini_product_id != null;
               const targetId = isSar ? (item.sarojini_product_id || item.product_id) : item.product_id;
               const prefix = isSar ? 'sarojini:' : 'main:';
-              const namePrefix = isSar ? 'sarojini_name:' : 'main_name:';
-              const found = (targetId && imageLookup.get(prefix + targetId)) || (item.product_name && imageLookup.get(namePrefix + item.product_name));
+              const nameKey = item.product_name ? (isSar ? 'sarojini_name:' : 'main_name:') + item.product_name.trim().toLowerCase() : null;
+              const found = (targetId && imageLookup.get(prefix + targetId)) || (nameKey && imageLookup.get(nameKey));
               if (found) {
                 item.product_image = found;
               }
             }
+          }
+
+          // Anti-race condition guard: only proceed if this is the newest render invocation
+          if (currentSequence !== renderOrdersSequence) {
+            return;
           }
 
           dbOrdersCache = consolidatedOrders;
@@ -1795,55 +1945,30 @@
           timelineProgressBar.style.width = progressPct;
         }
 
-        // Initial default view while fetching
-        if (trackCourierName) trackCourierName.textContent = "Assigned Fulfillment Partner";
-        if (trackCourierBadge) {
-          trackCourierBadge.textContent = "In Transit";
-          trackCourierBadge.style.background = "#e0e7ff";
-          trackCourierBadge.style.color = "#4338ca";
-        }
-        if (trackAwb) trackAwb.textContent = "AWB will be assigned upon dispatch";
-        if (trackEtaText) trackEtaText.textContent = fallbackEta || "3-5 Business Days";
-        if (trackPortalLink) trackPortalLink.style.display = "none";
+        // Instant UI population from cached order if available
+        const cachedOrder = (dbOrdersCache || []).find(o => o.id === orderId || o.order_number === orderId || (orderNum && o.order_number === orderNum));
+        const initialTrackingData = (cachedOrder && cachedOrder.tracking_data && typeof cachedOrder.tracking_data === "object" && Object.keys(cachedOrder.tracking_data).length > 0)
+          ? cachedOrder.tracking_data
+          : null;
+        const initialEta = (initialTrackingData && initialTrackingData.estimated_delivery) || (cachedOrder && cachedOrder.estimated_delivery) || fallbackEta || "3-5 Business Days";
 
-        // Instantly display the modal overlay
-        trackingOverlay.classList.add("active");
-        trackingOverlay.style.display = "flex";
-        trackingOverlay.style.opacity = "1";
-        trackingOverlay.style.visibility = "visible";
-        trackingOverlay.style.pointerEvents = "auto";
-        document.body.style.overflow = "hidden";
-
-        // Asynchronously fetch specific courier tracking details strictly for this user's order
-        try {
-          const { data: ordRow } = await client
-            .from("orders")
-            .select("tracking_data, estimated_delivery")
-            .eq("id", orderId)
-            .eq("user_id", authUser.id)
-            .maybeSingle();
-
-          let trackingData = null;
-          if (ordRow && ordRow.tracking_data && typeof ordRow.tracking_data === "object" && Object.keys(ordRow.tracking_data).length > 0) {
-            trackingData = ordRow.tracking_data;
-          }
-
-          if (trackingData && trackingData.tracking_id) {
-            if (trackCourierName) trackCourierName.textContent = trackingData.courier_name || "Express Courier Partner";
+        const applyTrackingUI = (td, eta) => {
+          if (td && td.tracking_id) {
+            if (trackCourierName) trackCourierName.textContent = td.courier_name || "Express Courier Partner";
             if (trackCourierBadge) {
               trackCourierBadge.textContent = "Verified Live Tracking";
               trackCourierBadge.style.background = "#dcfce7";
               trackCourierBadge.style.color = "#15803d";
             }
-            if (trackAwb) trackAwb.textContent = trackingData.tracking_id;
-            if (trackEtaText) trackEtaText.textContent = trackingData.estimated_delivery || "3-5 Business Days";
+            if (trackAwb) trackAwb.textContent = td.tracking_id;
+            if (trackEtaText) trackEtaText.textContent = td.estimated_delivery || eta || "3-5 Business Days";
 
             if (trackPortalLink) {
-              if (trackingData.tracking_url) {
-                trackPortalLink.href = trackingData.tracking_url;
+              if (td.tracking_url) {
+                trackPortalLink.href = td.tracking_url;
                 trackPortalLink.style.display = "inline-flex";
               } else {
-                trackPortalLink.href = `https://www.google.com/search?q=${encodeURIComponent((trackingData.courier_name || 'Courier') + ' ' + trackingData.tracking_id)}`;
+                trackPortalLink.href = `https://www.google.com/search?q=${encodeURIComponent((td.courier_name || 'Courier') + ' ' + td.tracking_id)}`;
                 trackPortalLink.style.display = "inline-flex";
               }
             }
@@ -1861,6 +1986,51 @@
               trackPortalLink.href = `https://www.google.com/search?q=${encodeURIComponent(fallbackEta)}`;
               trackPortalLink.style.display = "inline-flex";
             }
+          } else {
+            if (trackCourierName) trackCourierName.textContent = "Assigned Fulfillment Partner";
+            if (trackCourierBadge) {
+              trackCourierBadge.textContent = "In Transit";
+              trackCourierBadge.style.background = "#e0e7ff";
+              trackCourierBadge.style.color = "#4338ca";
+            }
+            if (trackAwb) trackAwb.textContent = "AWB will be assigned upon dispatch";
+            if (trackEtaText) trackEtaText.textContent = eta || "3-5 Business Days";
+            if (trackPortalLink) trackPortalLink.style.display = "none";
+          }
+        };
+
+        // Render from cached data immediately
+        applyTrackingUI(initialTrackingData, initialEta);
+
+        // Instantly display the modal overlay
+        trackingOverlay.classList.add("active");
+        trackingOverlay.style.display = "flex";
+        trackingOverlay.style.opacity = "1";
+        trackingOverlay.style.visibility = "visible";
+        trackingOverlay.style.pointerEvents = "auto";
+        document.body.style.overflow = "hidden";
+
+        // Asynchronously fetch specific courier tracking details strictly for this user's order
+        try {
+          const isUuid = (val) => typeof val === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+          let trackingQuery = client
+            .from("orders")
+            .select("tracking_data, estimated_delivery");
+
+          if (isUuid(orderId)) {
+            trackingQuery = trackingQuery.eq("id", orderId);
+          } else {
+            trackingQuery = trackingQuery.eq("order_number", orderNum || orderId);
+          }
+
+          if (authUser && authUser.id) {
+            trackingQuery = trackingQuery.eq("user_id", authUser.id);
+          }
+
+          const { data: ordRow } = await trackingQuery.maybeSingle();
+
+          if (ordRow && ordRow.tracking_data && typeof ordRow.tracking_data === "object" && Object.keys(ordRow.tracking_data).length > 0) {
+            applyTrackingUI(ordRow.tracking_data, ordRow.estimated_delivery || fallbackEta);
           }
         } catch (e) {
           console.warn("Order tracking fetch notice:", e);
