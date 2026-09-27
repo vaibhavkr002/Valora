@@ -55,17 +55,17 @@ async function getRawBody(req) {
   if (Buffer.isBuffer(req.rawBody)) return req.rawBody.toString('utf8');
 
   // 2. Read from Node.js stream if readable and not ended
-  if (typeof req.on === 'function') {
+  if (typeof req.on === 'function' && !req.readableEnded && !req.complete) {
     try {
       const streamData = await new Promise((resolve, reject) => {
         const chunks = [];
         req.on('data', chunk => {
           chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
         });
-        req.on('end', () => {
+        req.once('end', () => {
           resolve(Buffer.concat(chunks).toString('utf8'));
         });
-        req.on('error', err => reject(err));
+        req.once('error', reject);
       });
       if (typeof streamData === 'string' && streamData.length > 0) {
         return streamData;
@@ -74,7 +74,7 @@ async function getRawBody(req) {
   }
 
   // 3. Fallback for async iterable streams
-  if (typeof req[Symbol.asyncIterator] === 'function') {
+  if (typeof req[Symbol.asyncIterator] === 'function' && !req.readableEnded) {
     try {
       const chunks = [];
       for await (const chunk of req) {
@@ -110,78 +110,109 @@ async function handler(req, res) {
     return res.status(200).end();
   }
 
+  const contentType = req.headers['content-type'] || 'unknown';
+  const signature = req.headers['x-razorpay-signature'] || req.headers['X-Razorpay-Signature'] || '';
+  const eventIdHeader = req.headers['x-razorpay-event-id'] || req.headers['X-Razorpay-Event-Id'] || 'none';
+  const hasSignatureHeader = Boolean(signature && signature.trim().length > 0);
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const hasWebhookSecret = Boolean(webhookSecret && webhookSecret.trim().length > 0);
+
+  // 1. Method check
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
+    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=${hasSignatureHeader} rawBodyLength=0 hasWebhookSecret=${hasWebhookSecret} eventId=${eventIdHeader} eventType=unknown verified=false error=WEBHOOK_METHOD_NOT_ALLOWED`);
+    return res.status(405).json({
+      success: false,
+      error_code: 'WEBHOOK_METHOD_NOT_ALLOWED',
+      error: 'Method not allowed'
+    });
   }
 
-  // Extract signature and event id headers (case-insensitive check)
-  const signature = req.headers['x-razorpay-signature'] || req.headers['X-Razorpay-Signature'];
-  const eventIdHeader = req.headers['x-razorpay-event-id'] || req.headers['X-Razorpay-Event-Id'] || null;
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  // 2. Secret presence check
+  if (!hasWebhookSecret) {
+    console.error(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=${hasSignatureHeader} rawBodyLength=0 hasWebhookSecret=false eventId=${eventIdHeader} eventType=unknown verified=false error=WEBHOOK_SECRET_MISSING`);
+    return res.status(400).json({
+      success: false,
+      error_code: 'WEBHOOK_SECRET_MISSING',
+      error: 'Server webhook secret is not configured.'
+    });
+  }
 
-  // Extract the EXACT raw request body
+  // 3. Extract raw request body
   let rawBody = '';
   try {
     rawBody = await getRawBody(req);
   } catch (readErr) {
     console.error('[Razorpay Webhook] Failed to read request body stream:', readErr.message);
-    return res.status(400).json({ success: false, error: 'Failed to read request body stream.' });
   }
 
   const rawBodyLength = rawBody ? Buffer.byteLength(rawBody, 'utf8') : 0;
-  const hasSignature = Boolean(signature && signature.trim().length > 0);
 
-  // Requirement: return HTTP 400 for empty or missing body
+  // 4. Body empty check
   if (!rawBody || rawBody.trim().length === 0) {
-    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} hasSignatureHeader=${hasSignature} rawBodyLength=0 eventId=${eventIdHeader || 'none'} eventType=none verified=false error=empty_body`);
-    return res.status(400).json({ success: false, error: 'Empty or missing request body.' });
+    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=${hasSignatureHeader} rawBodyLength=0 hasWebhookSecret=${hasWebhookSecret} eventId=${eventIdHeader} eventType=unknown verified=false error=WEBHOOK_BODY_EMPTY`);
+    return res.status(400).json({
+      success: false,
+      error_code: 'WEBHOOK_BODY_EMPTY',
+      error: 'Empty or missing request body.'
+    });
   }
 
-  // Requirement: return HTTP 400 for missing signature
-  if (!hasSignature) {
-    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} hasSignatureHeader=false rawBodyLength=${rawBodyLength} eventId=${eventIdHeader || 'none'} eventType=none verified=false error=missing_signature`);
-    return res.status(400).json({ success: false, error: 'Missing x-razorpay-signature header.' });
+  // 5. Signature header check
+  if (!hasSignatureHeader) {
+    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=false rawBodyLength=${rawBodyLength} hasWebhookSecret=${hasWebhookSecret} eventId=${eventIdHeader} eventType=unknown verified=false error=WEBHOOK_SIGNATURE_MISSING`);
+    return res.status(400).json({
+      success: false,
+      error_code: 'WEBHOOK_SIGNATURE_MISSING',
+      error: 'Missing x-razorpay-signature header.'
+    });
   }
 
-  // Check if webhook secret is configured on server
-  if (!webhookSecret) {
-    console.error('[Razorpay Webhook] RAZORPAY_WEBHOOK_SECRET is not configured in server environment.');
-    return res.status(500).json({ success: false, error: 'Webhook secret is not configured on server.' });
-  }
-
-  // Verify HMAC-SHA256 signature using the exact raw body string
+  // 6. Signature verification check
   let isSignatureValid = false;
   try {
     isSignatureValid = verifyWebhookSignature({ rawBody, signature: signature.trim() });
   } catch (sigErr) {
-    console.error('[Razorpay Webhook] Signature verification exception:', sigErr.message);
+    console.error('[Razorpay Webhook] Signature verification error:', sigErr.message);
     isSignatureValid = false;
   }
 
   if (!isSignatureValid) {
-    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} hasSignatureHeader=true rawBodyLength=${rawBodyLength} eventId=${eventIdHeader || 'none'} eventType=none verified=false error=invalid_signature`);
-    return res.status(400).json({ success: false, error: 'Invalid webhook signature.' });
+    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=true rawBodyLength=${rawBodyLength} hasWebhookSecret=${hasWebhookSecret} eventId=${eventIdHeader} eventType=unknown verified=false error=WEBHOOK_SIGNATURE_INVALID`);
+    return res.status(400).json({
+      success: false,
+      error_code: 'WEBHOOK_SIGNATURE_INVALID',
+      error: 'Invalid webhook signature.'
+    });
   }
 
-  // Parse raw body JSON AFTER signature verification passes
+  // 7. JSON parse check (strictly after signature verification passes)
   let eventPayload;
   try {
     eventPayload = JSON.parse(rawBody);
   } catch (parseErr) {
-    console.error('[Razorpay Webhook] JSON parse error after signature verification:', parseErr.message);
-    return res.status(400).json({ success: false, error: 'Malformed JSON payload.' });
+    console.error(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=true rawBodyLength=${rawBodyLength} hasWebhookSecret=${hasWebhookSecret} eventId=${eventIdHeader} eventType=unknown verified=true error=WEBHOOK_JSON_INVALID`);
+    return res.status(400).json({
+      success: false,
+      error_code: 'WEBHOOK_JSON_INVALID',
+      error: 'Malformed JSON payload.'
+    });
   }
 
+  // 8. Event payload structure check
   if (!eventPayload || typeof eventPayload !== 'object' || !eventPayload.event) {
-    console.warn('[Razorpay Webhook] Malformed webhook event payload structure.');
-    return res.status(400).json({ success: false, error: 'Invalid webhook payload structure.' });
+    console.warn(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=true rawBodyLength=${rawBodyLength} hasWebhookSecret=${hasWebhookSecret} eventId=${eventIdHeader} eventType=unknown verified=true error=WEBHOOK_EVENT_INVALID`);
+    return res.status(400).json({
+      success: false,
+      error_code: 'WEBHOOK_EVENT_INVALID',
+      error: 'Invalid webhook payload structure.'
+    });
   }
 
   const eventName = eventPayload.event;
-  const canonicalEventId = eventIdHeader || eventPayload.event_id || eventPayload.id || `evt_${Date.now()}`;
+  const canonicalEventId = eventIdHeader !== 'none' ? eventIdHeader : (eventPayload.event_id || eventPayload.id || `evt_${Date.now()}`);
 
-  // Safe server-side diagnostic log (never prints secret, signature, or payment secrets)
-  console.log(`[Razorpay Webhook Diagnostic] method=${req.method} hasSignatureHeader=true rawBodyLength=${rawBodyLength} eventId=${canonicalEventId} eventType=${eventName} verified=true`);
+  // Safe success diagnostic log
+  console.log(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=true rawBodyLength=${rawBodyLength} hasWebhookSecret=true eventId=${canonicalEventId} eventType=${eventName} verified=true status=200`);
 
   // Idempotency check: if already processed, return 200 immediately
   if (isEventAlreadyProcessed(canonicalEventId)) {
@@ -345,10 +376,11 @@ async function handler(req, res) {
       event_id: canonicalEventId
     });
   } catch (procErr) {
-    console.error('[Razorpay Webhook] Processing error:', procErr.message);
-    return res.status(500).json({
+    console.error(`[Razorpay Webhook Diagnostic] method=${req.method} contentType=${contentType} hasSignatureHeader=true rawBodyLength=${rawBodyLength} hasWebhookSecret=true eventId=${canonicalEventId} eventType=${eventName} verified=true error=WEBHOOK_PROCESSING_ERROR`);
+    return res.status(400).json({
       success: false,
-      error: 'Error processing webhook event'
+      error_code: 'WEBHOOK_PROCESSING_ERROR',
+      error: 'Error processing webhook event.'
     });
   }
 }
