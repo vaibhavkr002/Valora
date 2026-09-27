@@ -237,10 +237,9 @@
       if (!productId) throw new Error("Product ID required for removal.");
       const mapping = await this.getMapping(client);
 
-      const isRemovingFromSarojini = (targetStore === "sarojini") || (originCatalog === "main");
-      const isRemovingFromMain = (targetStore === "main") || (originCatalog === "sarojini");
+      const target = (targetStore || "").toLowerCase();
 
-      if (isRemovingFromSarojini) {
+      if (target === "sarojini") {
         delete mapping.main_available_in_sarojini[productId];
 
         // Clean up from homepage_sections if present
@@ -264,7 +263,7 @@
         return { success: true, message: "Product availability removed from Sarojini Bazaar." };
       }
 
-      if (isRemovingFromMain) {
+      if (target === "main") {
         delete mapping.sarojini_available_in_main[productId];
 
         await this.saveMapping(client, mapping);
@@ -272,7 +271,23 @@
         return { success: true, message: "Product availability removed from Main VADI Store." };
       }
 
-      throw new Error(`Unsupported removal request: origin=${originCatalog}, target=${targetStore}`);
+      // If no specific target, remove from any cross-store mapping where it is present
+      let changed = false;
+      if (mapping.main_available_in_sarojini && mapping.main_available_in_sarojini[productId]) {
+        delete mapping.main_available_in_sarojini[productId];
+        changed = true;
+      }
+      if (mapping.sarojini_available_in_main && mapping.sarojini_available_in_main[productId]) {
+        delete mapping.sarojini_available_in_main[productId];
+        changed = true;
+      }
+      if (changed) {
+        await this.saveMapping(client, mapping);
+        this.invalidateCaches();
+        return { success: true, message: "Product cross-store availability removed." };
+      }
+
+      return { success: true, message: "No cross-store mapping found to remove." };
     },
 
     /**

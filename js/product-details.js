@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let dbP = null;
 
     if (client) {
-      const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,categories(id,name,slug)";
+      const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,is_active,categories(id,name,slug)";
       try {
         let query = client.from("products").select(detailCols);
         if (isUUID) {
@@ -216,7 +216,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const res = await query.maybeSingle();
         if (res && !res.error && res.data) {
-          dbP = res.data;
+          if (res.data.is_active !== false) {
+            dbP = res.data;
+          }
         }
       } catch (err) {
         console.warn("Client query notice:", err);
@@ -228,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
-        const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,categories(id,name,slug)";
+        const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,is_active,categories(id,name,slug)";
         let restUrl = '';
         if (isUUID) {
           restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&id=eq.${productId}`;
@@ -246,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         if (r.ok) {
           const list = await r.json();
-          if (list && list.length > 0) {
+          if (list && list.length > 0 && list[0].is_active !== false) {
             dbP = list[0];
           }
         }
@@ -255,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Cross-store check: If product not found in products table, check sarojini_products
+    // Cross-store check: If product not found in products table, check sarojini_products if available in Main
     if (!dbP && client) {
       try {
         let sQuery = client.from("sarojini_products").select("*");
@@ -266,11 +268,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const sRes = await sQuery.maybeSingle();
         if (sRes && !sRes.error && sRes.data) {
-          dbP = {
-            ...sRes.data,
-            brand: sRes.data.brand || "Sarojini Bazaar",
-            categories: { id: sRes.data.category_id, name: sRes.data.department || "Sarojini Bazaar", slug: "sarojini" }
-          };
+          const { data: csRow } = await client.from('store_settings').select('value').eq('key', 'cross_store_mapping').maybeSingle();
+          const sMap = csRow?.value?.sarojini_available_in_main;
+          if (sMap && sMap[sRes.data.id]?.available) {
+            dbP = {
+              ...sRes.data,
+              brand: sRes.data.brand || "Sarojini Bazaar",
+              categories: { id: sRes.data.category_id, name: sRes.data.department || "Sarojini Bazaar", slug: "sarojini" }
+            };
+          }
         }
       } catch (err) {
         console.warn("Cross-store sarojini lookup notice:", err);

@@ -972,7 +972,7 @@ if (typeof window !== "undefined") {
             const sIds = Object.keys(sMap).filter(id => sMap[id]?.available);
             if (sIds.length > 0) {
               const sarCols = "id,name,brand,slug,category_id,description,specifications,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,is_featured,is_new,is_deal,advance_payment_enabled,advance_payment_type,advance_payment_value,is_active,created_at";
-              const sRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=${sarCols}&id=in.(${sIds.join(',')})&is_active=eq.true`, { headers: reqHeaders });
+              const sRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=${sarCols}&id=in.(${sIds.join(',')})`, { headers: reqHeaders });
               if (sRes.ok) {
                 const sProds = await sRes.json();
                 if (Array.isArray(sProds) && sProds.length > 0) {

@@ -35,7 +35,7 @@
             .eq('id', prodId)
             .maybeSingle();
 
-          if (!error && data) item = data;
+          if (!error && data && data.is_active !== false) item = data;
         } else {
           // Try slug first
           const { data: slugData, error: slugErr } = await client
@@ -44,7 +44,7 @@
             .eq('slug', prodId)
             .maybeSingle();
 
-          if (!slugErr && slugData) {
+          if (!slugErr && slugData && slugData.is_active !== false) {
             item = slugData;
           } else {
             // Try id string
@@ -53,7 +53,7 @@
               .select('*')
               .eq('id', prodId)
               .maybeSingle();
-            if (idData) item = idData;
+            if (idData && idData.is_active !== false) item = idData;
           }
         }
       } catch (_) {}
@@ -61,12 +61,21 @@
       // Check cross-store Main products table if not found in sarojini_products
       if (!item) {
         try {
+          const { data: csRow } = await client.from('store_settings').select('value').eq('key', 'cross_store_mapping').maybeSingle();
+          const sMap = csRow?.value?.main_available_in_sarojini;
+
           if (isUUID) {
             const { data: mData } = await client.from('products').select('*').eq('id', prodId).maybeSingle();
-            if (mData) item = { ...mData, department: mData.department || 'MEN', brand: mData.brand || 'Sarojini Bazaar' };
+            if (mData && sMap && sMap[mData.id]?.available) {
+              const conf = sMap[mData.id] || {};
+              item = { ...mData, department: conf.department || mData.department || 'MEN', brand: mData.brand || 'Sarojini Bazaar' };
+            }
           } else {
             const { data: mData } = await client.from('products').select('*').eq('slug', prodId).maybeSingle();
-            if (mData) item = { ...mData, department: mData.department || 'MEN', brand: mData.brand || 'Sarojini Bazaar' };
+            if (mData && sMap && sMap[mData.id]?.available) {
+              const conf = sMap[mData.id] || {};
+              item = { ...mData, department: conf.department || mData.department || 'MEN', brand: mData.brand || 'Sarojini Bazaar' };
+            }
           }
         } catch (_) {}
       }
@@ -81,7 +90,8 @@
             .maybeSingle();
 
           if (sRow && Array.isArray(sRow.value)) {
-            item = sRow.value.find(p => String(p.id) === String(prodId) || String(p.slug) === String(prodId));
+            const found = sRow.value.find(p => String(p.id) === String(prodId) || String(p.slug) === String(prodId));
+            if (found && found.is_active !== false) item = found;
           }
         } catch (_) {}
       }

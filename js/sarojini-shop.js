@@ -281,8 +281,7 @@
                   const { data: crossMain } = await client
                     .from('products')
                     .select(mainFields)
-                    .in('id', mainIds)
-                    .eq('is_active', true);
+                    .in('id', mainIds);
 
                   if (Array.isArray(crossMain)) {
                     crossMain.forEach(mp => {

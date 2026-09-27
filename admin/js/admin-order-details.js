@@ -98,42 +98,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    // 2. Historical snapshot recovery if empty or missing items (repairs orders created during previous multi-product bug)
-    let recoveredItems = null;
+    // 2. Historical snapshot recovery if still empty (repairs orders created during previous schema mismatch)
+    if (!order.order_items || !Array.isArray(order.order_items) || order.order_items.length === 0) {
+      let recoveredItems = null;
 
-    // Check order.tracking_data.items_snapshot
-    if (order.tracking_data && Array.isArray(order.tracking_data.items_snapshot) && order.tracking_data.items_snapshot.length > 0) {
-      recoveredItems = order.tracking_data.items_snapshot;
-    }
-
-    // Check payment_transactions table for items_snapshot
-    if (!recoveredItems) {
-      try {
-        const rzpOrder = order.razorpay_order_id || (order.tracking_data && order.tracking_data.razorpay_order_id);
-        const rzpPay = order.razorpay_payment_id || (order.tracking_data && order.tracking_data.razorpay_payment_id) || order.transaction_reference;
-        
-        let ptQuery = client.from("payment_transactions").select("items_snapshot, metadata");
-        if (rzpOrder) {
-          ptQuery = ptQuery.eq("razorpay_order_id", rzpOrder);
-        } else if (order.id) {
-          ptQuery = ptQuery.eq("order_id", order.id);
-        } else if (rzpPay && typeof rzpPay === 'string' && rzpPay.startsWith('pay_')) {
-          ptQuery = ptQuery.eq("razorpay_payment_id", rzpPay);
-        }
-        const { data: ptRows, error: ptErr } = await ptQuery.limit(1);
-        if (!ptErr && ptRows && ptRows.length > 0 && Array.isArray(ptRows[0].items_snapshot) && ptRows[0].items_snapshot.length > 0) {
-          recoveredItems = ptRows[0].items_snapshot;
-        }
-      } catch (ptErr) {
-        console.warn("payment_transactions snapshot recovery error:", ptErr);
+      // Check order.tracking_data.items_snapshot
+      if (order.tracking_data && Array.isArray(order.tracking_data.items_snapshot) && order.tracking_data.items_snapshot.length > 0) {
+        recoveredItems = order.tracking_data.items_snapshot;
       }
-    }
 
-    const currentItemsCount = (order.order_items && Array.isArray(order.order_items)) ? order.order_items.length : 0;
-    const hasMoreInSnapshot = Array.isArray(recoveredItems) && recoveredItems.length > currentItemsCount;
+      // Check payment_transactions table for items_snapshot
+      if (!recoveredItems) {
+        try {
+          const rzpOrder = order.razorpay_order_id || (order.tracking_data && order.tracking_data.razorpay_order_id);
+          const rzpPay = order.razorpay_payment_id || (order.tracking_data && order.tracking_data.razorpay_payment_id) || order.transaction_reference;
+          
+          let ptQuery = client.from("payment_transactions").select("items_snapshot, metadata");
+          if (rzpOrder) {
+            ptQuery = ptQuery.eq("razorpay_order_id", rzpOrder);
+          } else if (order.id) {
+            ptQuery = ptQuery.eq("order_id", order.id);
+          } else if (rzpPay && typeof rzpPay === 'string' && rzpPay.startsWith('pay_')) {
+            ptQuery = ptQuery.eq("razorpay_payment_id", rzpPay);
+          }
+          const { data: ptRows, error: ptErr } = await ptQuery.limit(1);
+          if (!ptErr && ptRows && ptRows.length > 0 && Array.isArray(ptRows[0].items_snapshot) && ptRows[0].items_snapshot.length > 0) {
+            recoveredItems = ptRows[0].items_snapshot;
+          }
+        } catch (ptErr) {
+          console.warn("payment_transactions snapshot recovery error:", ptErr);
+        }
+      }
 
-    // If empty or missing items, recover all from snapshot and auto-repair DB
-    if (currentItemsCount === 0 || hasMoreInSnapshot) {
+      // If recovered items found, map to order_items format and auto-repair DB
       if (Array.isArray(recoveredItems) && recoveredItems.length > 0) {
         const isUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
         order.order_items = recoveredItems.map(item => {
@@ -155,13 +152,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             subtotal: subtotal,
             selected_size: item.selected_size || item.size || null,
             selected_color: item.selected_color || item.color || null,
-            advance_amount: Number(item.line_advance !== undefined ? item.line_advance : (item.advance_amount || 0)),
-            cod_balance: Number(item.line_cod_balance !== undefined ? item.line_cod_balance : (item.cod_balance || 0)),
+            advance_amount: Number(item.line_advance || item.advance_amount || 0),
+            cod_balance: Number(item.line_cod_balance || item.cod_balance || 0),
             _recovered_from_snapshot: true
           };
         });
 
-        // Auto-persist repaired order_items to database in background without duplicates
+        // Auto-persist repaired order_items to database in background
         try {
           const insertPayload = order.order_items.map(it => ({
             order_id: it.order_id,
@@ -178,22 +175,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             advance_amount: it.advance_amount,
             cod_balance: it.cod_balance
           }));
-
-          let itemsToInsert = insertPayload;
-          if (Array.isArray(directItems) && directItems.length > 0) {
-            const existingNames = new Set(directItems.map(di => (di.product_name || '').toLowerCase().trim()));
-            itemsToInsert = insertPayload.filter(it => !existingNames.has((it.product_name || '').toLowerCase().trim()));
-          }
-
-          if (itemsToInsert.length > 0) {
-            client.from("order_items").insert(itemsToInsert).then(({ error: repErr }) => {
-              if (repErr) {
-                console.warn("Auto-repair order_items insert warning:", repErr.message);
-              } else {
-                console.log("Successfully auto-repaired missing order_items rows in Supabase!");
-              }
-            });
-          }
+          client.from("order_items").insert(insertPayload).then(({ error: repErr }) => {
+            if (repErr) {
+              console.warn("Auto-repair order_items insert warning:", repErr.message);
+            } else {
+              console.log("Successfully auto-repaired missing order_items rows in Supabase!");
+            }
+          });
         } catch (repairErr) {
           console.warn("Auto-repair trigger error:", repairErr);
         }
@@ -599,9 +587,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const itemAdv = Number(item.advance_amount || 0);
           const itemCod = Number(item.cod_balance || 0);
           if (itemAdv > 0) {
-            advBadge = `<span class="badge badge-indigo" style="font-size:0.72rem; margin-left:6px;" title="Advance: ${window.formatINR(itemAdv)} | Remaining COD: ${window.formatINR(itemCod)}">⚡ Adv: ${window.formatINR(itemAdv)}${itemCod > 0 ? ` | COD: ${window.formatINR(itemCod)}` : ''}</span>`;
-          } else if (order.payment_method && (order.payment_method.includes('Advance') || order.payment_method.includes('COD'))) {
-            advBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size:0.72rem; margin-left:6px;" title="100% Cash on Delivery (₹0 Advance Required)">💵 100% COD</span>`;
+            advBadge = `<span class="badge badge-indigo" style="font-size:0.72rem; margin-left:6px;" title="Advance: ${window.formatINR(itemAdv)} | Remaining COD: ${window.formatINR(itemCod)}">Advance: ${window.formatINR(itemAdv)}${itemCod > 0 ? ` | COD: ${window.formatINR(itemCod)}` : ''}</span>`;
           }
 
           const isSarojiniItem = linkInfo.isSarojini || (item.catalog_type === 'sarojini' || item.sarojini_product_id != null);

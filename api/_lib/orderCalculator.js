@@ -54,16 +54,6 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
     // If product is still not found in designated catalog, attempt fallback check in other catalog
     if (!dbProduct && targetId) {
       dbProduct = await fetchProduct(targetId, !isSarojini);
-      if (dbProduct) {
-        isSarojini = !isSarojini;
-      }
-    }
-
-    if (!dbProduct && (item.slug || item.name)) {
-      dbProduct = await fetchProductBySlugOrName(item.slug || item.name, !isSarojini);
-      if (dbProduct) {
-        isSarojini = !isSarojini;
-      }
     }
 
     if (!dbProduct) {

@@ -148,16 +148,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Map native Sarojini products
-    const mapped = sarojiniItems.map(p => {
-      const isAvailableInMain = Boolean(crossStoreMapping.sarojini_available_in_main?.[p.id]?.available);
-      return {
-        ...p,
-        origin_catalog: 'sarojini',
-        is_in_sarojini: true,
-        is_in_main: isAvailableInMain
-      };
-    });
+    // Map native Sarojini products (exclude inactive/deleted)
+    const mapped = sarojiniItems
+      .filter(p => p.is_active !== false)
+      .map(p => {
+        const isAvailableInMain = Boolean(crossStoreMapping.sarojini_available_in_main?.[p.id]?.available);
+        return {
+          ...p,
+          origin_catalog: 'sarojini',
+          is_in_sarojini: true,
+          is_in_main: isAvailableInMain
+        };
+      });
 
     // 2. Fetch any Main VADI products that are made available in Sarojini Bazaar
     const mainAvailableIds = Object.keys(crossStoreMapping.main_available_in_sarojini || {})
@@ -556,23 +558,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Wire Delete / Remove
     tbody.querySelectorAll(".btn-delete-prod").forEach(btn => {
       btn.addEventListener("click", async () => {
+        if (btn.disabled) return;
         const prodId = btn.getAttribute("data-id");
         const origin = btn.getAttribute("data-origin");
         const prodName = btn.getAttribute("data-name");
 
         if (origin === "main") {
           if (confirm(`"${prodName}" is a Main VADI product available in Sarojini Bazaar. Remove availability from Sarojini Bazaar? The product will remain active in Main VADI Store.`)) {
+            btn.disabled = true;
             try {
               await window.CrossStoreService.removeFromStore(client, {
                 originCatalog: "main",
                 productId: prodId,
                 targetStore: "sarojini"
               });
+              allProducts = allProducts.filter(p => String(p.id) !== String(prodId));
+              renderProducts();
               window.showToast(`Removed "${prodName}" from Sarojini Bazaar.`, "info");
-              await loadProducts();
             } catch (err) {
               console.error("Remove from Sarojini failed:", err);
-              alert("Failed to remove product from Sarojini: " + err.message);
+              alert("Failed to remove product from Sarojini: " + (err.message || "Failed"));
+              btn.disabled = false;
             }
           }
           return;
@@ -751,28 +757,72 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnConfirmDel.disabled = true;
       btnConfirmDel.textContent = "Deleting...";
 
+      const targetId = prodToDelete.id;
+      const targetName = prodToDelete.name;
+      const isCrossInMain = Boolean(crossStoreMapping?.sarojini_available_in_main?.[targetId]?.available);
+
       try {
-        // Also remove from cross_store_mapping if present
+        // Prune from Sarojini homepage sections if present
         try {
-          await window.CrossStoreService.removeFromStore(client, {
-            originCatalog: "sarojini",
-            productId: prodToDelete.id,
-            targetStore: "main"
-          });
+          const SAROJINI_SEC_ID = '22222222-2222-4222-a222-000000000001';
+          const { data: sec } = await client.from('homepage_sections').select('*').eq('id', SAROJINI_SEC_ID).maybeSingle();
+          if (sec && sec.content_config && Array.isArray(sec.content_config.product_ids)) {
+            const filteredPids = sec.content_config.product_ids.filter(id => String(id) !== String(targetId));
+            if (filteredPids.length !== sec.content_config.product_ids.length) {
+              sec.content_config.product_ids = filteredPids;
+              await client.from('homepage_sections').update({
+                content_config: sec.content_config,
+                updated_at: new Date().toISOString()
+              }).eq('id', SAROJINI_SEC_ID);
+            }
+          }
         } catch (_) {}
 
-        const { error } = await client.from("sarojini_products").delete().eq("id", prodToDelete.id);
-        if (error) throw error;
+        if (isCrossInMain) {
+          // Cross-listed to Main VADI: Do NOT destroy underlying product row!
+          // Deactivate for Sarojini catalog while leaving active for Main Store.
+          const { error: updErr } = await client
+            .from("sarojini_products")
+            .update({
+              is_active: false,
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", targetId);
+          if (updErr) throw updErr;
+        } else {
+          // Native Sarojini-only product: clean up any stale cross-store mapping reference
+          try {
+            await window.CrossStoreService.removeFromStore(client, {
+              originCatalog: "sarojini",
+              productId: targetId,
+              targetStore: "main"
+            });
+          } catch (_) {}
 
-        allProducts = allProducts.filter(p => String(p.id) !== String(prodToDelete.id));
+          // Attempt hard delete, fall back to deactivation if constrained by orders or relations
+          const { error: delErr } = await client.from("sarojini_products").delete().eq("id", targetId);
+          if (delErr) {
+            console.warn("Sarojini hard delete note, falling back to safe deactivation:", delErr);
+            const { error: updErr } = await client
+              .from("sarojini_products")
+              .update({
+                is_active: false,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", targetId);
+            if (updErr) throw updErr;
+          }
+        }
+
+        allProducts = allProducts.filter(p => String(p.id) !== String(targetId));
         invalidateSarojiniCache();
 
-        window.showToast(`Deleted product "${prodToDelete.name}".`, "info");
+        window.showToast(`Deleted product "${targetName}".`, "info");
         closeDelModal();
         renderProducts();
       } catch (err) {
         console.error("Delete product error:", err);
-        window.showToast("Failed to delete product: " + err.message, "danger");
+        window.showToast("Failed to delete product: " + (err.message || "Operation failed"), "danger");
       } finally {
         btnConfirmDel.disabled = false;
         btnConfirmDel.textContent = "Delete";
@@ -905,7 +955,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   btnBulkDelete?.addEventListener("click", async () => {
     const count = selectedProductIds.size;
     if (count === 0) return;
-    if (!confirm(`Are you sure you want to permanently delete ${count} selected Sarojini products?\n\nThis cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete ${count} selected products from Sarojini Bazaar?\n\nProducts cross-listed from/to other catalogs will have their availability updated safely.`)) {
       return;
     }
 
@@ -914,15 +964,71 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       const ids = Array.from(selectedProductIds);
-      const { error } = await client
-        .from("sarojini_products")
-        .delete()
-        .in("id", ids);
+      const SAROJINI_SEC_ID = '22222222-2222-4222-a222-000000000001';
 
-      if (error) throw error;
+      // Prune all selected IDs from Sarojini homepage sections
+      try {
+        const { data: sec } = await client.from('homepage_sections').select('*').eq('id', SAROJINI_SEC_ID).maybeSingle();
+        if (sec && sec.content_config && Array.isArray(sec.content_config.product_ids)) {
+          const selectedSet = new Set(ids.map(String));
+          const filteredPids = sec.content_config.product_ids.filter(id => !selectedSet.has(String(id)));
+          if (filteredPids.length !== sec.content_config.product_ids.length) {
+            sec.content_config.product_ids = filteredPids;
+            await client.from('homepage_sections').update({
+              content_config: sec.content_config,
+              updated_at: new Date().toISOString()
+            }).eq('id', SAROJINI_SEC_ID);
+          }
+        }
+      } catch (_) {}
+
+      for (const id of ids) {
+        const prod = allProducts.find(p => String(p.id) === String(id));
+        const isMainOrigin = prod ? (prod.origin === "main") : false;
+
+        if (isMainOrigin) {
+          // Remove cross-store availability from Sarojini
+          try {
+            await window.CrossStoreService.removeFromStore(client, {
+              originCatalog: "main",
+              productId: id,
+              targetStore: "sarojini"
+            });
+          } catch (e) {
+            console.warn(`Failed to remove cross-listed Main item ${id} from Sarojini:`, e);
+          }
+        } else {
+          // Native Sarojini
+          const isCrossInMain = Boolean(crossStoreMapping?.sarojini_available_in_main?.[id]?.available);
+          if (isCrossInMain) {
+            // Keep DB row for Main store, deactivate in Sarojini
+            await client.from("sarojini_products").update({
+              is_active: false,
+              updated_at: new Date().toISOString()
+            }).eq("id", id);
+          } else {
+            try {
+              await window.CrossStoreService.removeFromStore(client, {
+                originCatalog: "sarojini",
+                productId: id,
+                targetStore: "main"
+              });
+            } catch (_) {}
+
+            const { error: delErr } = await client.from("sarojini_products").delete().eq("id", id);
+            if (delErr) {
+              console.warn(`Sarojini bulk delete fallback to deactivate for ${id}:`, delErr);
+              await client.from("sarojini_products").update({
+                is_active: false,
+                updated_at: new Date().toISOString()
+              }).eq("id", id);
+            }
+          }
+        }
+      }
 
       invalidateSarojiniCache();
-      window.showToast?.(`Permanently deleted ${count} products.`, "info");
+      window.showToast?.(`Deleted ${count} products successfully.`, "info");
       selectedProductIds.clear();
       updateBulkToolbar();
       await loadProducts();

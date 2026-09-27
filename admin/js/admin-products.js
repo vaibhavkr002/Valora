@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const { data: mainProductsData, error } = await client
       .from("products")
       .select("*, categories(name)")
+      .eq("is_active", true)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -273,6 +274,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Attach delete listeners
     document.querySelectorAll(".btn-delete-product").forEach(btn => {
       btn.addEventListener("click", async () => {
+        if (btn.disabled) return;
         const id = btn.dataset.id;
         const origin = btn.dataset.origin;
         const name = btn.dataset.name;
@@ -280,47 +282,74 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (origin === "sarojini") {
           if (confirm(`"${name}" is a Sarojini Bazaar product available in Main VADI Store. Remove availability from Main VADI Store? The product will remain active in Sarojini Bazaar.`)) {
             btn.disabled = true;
+            const origText = btn.textContent;
+            btn.textContent = "Removing...";
             try {
               await window.CrossStoreService.removeFromStore(client, {
                 originCatalog: "sarojini",
                 productId: id,
                 targetStore: "main"
               });
+              allProducts = allProducts.filter(p => String(p.id) !== String(id));
+              renderProducts();
               window.showToast(`Removed "${name}" from Main VADI Store.`, "info");
-              await loadProducts();
             } catch (err) {
               console.error("Remove from Main failed:", err);
-              alert("Could not remove product from Main Store: " + err.message);
+              alert("Could not remove product from Main Store: " + (err.message || "Operation failed."));
               btn.disabled = false;
+              btn.textContent = origText;
             }
           }
           return;
         }
 
         // Native Main product
-        if (confirm(`Are you sure you want to delete "${name}"? This will remove it from the Main catalog.`)) {
-          btn.disabled = true;
-          // Also remove from cross_store_mapping if present
-          try {
-            await window.CrossStoreService.removeFromStore(client, {
-              originCatalog: "main",
-              productId: id,
-              targetStore: "sarojini"
-            });
-          } catch (_) {}
+        const isCrossInSarojini = Boolean(crossStoreMapping?.main_available_in_sarojini?.[id]?.available);
+        const confirmMsg = isCrossInSarojini
+          ? `"${name}" is active in both Main VADI and Sarojini Bazaar. Remove it from the Main VADI catalog? It will remain active in Sarojini Bazaar.`
+          : `Are you sure you want to delete "${name}"? This will remove it from the Main catalog.`;
 
-          const { error } = await client.from("products").delete().eq("id", id);
-          if (error) {
-            alert("Could not delete product: " + error.message);
-            btn.disabled = false;
-          } else {
+        if (confirm(confirmMsg)) {
+          btn.disabled = true;
+          const origText = btn.textContent;
+          btn.textContent = "Deleting...";
+
+          try {
+            if (!isCrossInSarojini) {
+              // If not cross-listed, prune any stale mapping reference
+              try {
+                await window.CrossStoreService.removeFromStore(client, {
+                  originCatalog: "main",
+                  productId: id,
+                  targetStore: "sarojini"
+                });
+              } catch (_) {}
+            }
+
+            // Deactivate in Main VADI catalog (safe, non-destructive to historical orders)
+            const { error: updErr } = await client
+              .from("products")
+              .update({
+                is_active: false,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", id);
+
+            if (updErr) throw updErr;
+
             try {
               localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
               if (window.VeloraCache) window.VeloraCache.invalidate();
             } catch (_) {}
 
-            window.showToast(`"${name}" removed successfully.`, "success");
-            await loadProducts();
+            allProducts = allProducts.filter(p => String(p.id) !== String(id));
+            renderProducts();
+            window.showToast(`"${name}" removed successfully from Main catalog.`, "success");
+          } catch (err) {
+            console.error("Main product delete error:", err);
+            alert("Could not delete product: " + (err.message || "Operation failed."));
+            btn.disabled = false;
+            btn.textContent = origText;
           }
         }
       });
