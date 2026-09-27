@@ -291,6 +291,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           paymentBadgesHtml += `<span class="badge" title="${giftNames}" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); font-size:0.68rem; font-weight:700;">🎁 ${giftCount} FREE GIFT${giftCount > 1 ? 'S' : ''}</span>`;
         }
       }
+      const rzpId = o.razorpay_payment_id || (typeof o.transaction_reference === "string" && o.transaction_reference.startsWith("pay_") ? o.transaction_reference : null);
+      if (rzpId) {
+        paymentBadgesHtml += `<span class="badge" style="background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.3); font-size:0.65rem; font-family:monospace;" title="Razorpay Payment ID: ${rzpId}">⚡ RZP: ${rzpId.slice(-8)}</span>`;
+      }
       paymentBadgesHtml += `<span class="badge" style="background: ${isOpenBox ? 'rgba(2, 132, 199, 0.2)' : 'rgba(100, 116, 139, 0.15)'}; color: ${isOpenBox ? '#38bdf8' : '#94a3b8'}; border: 1px solid ${isOpenBox ? 'rgba(2, 132, 199, 0.4)' : 'transparent'}; font-size:0.68rem; font-weight:700;">${isOpenBox ? '📦 OPEN BOX' : 'SIMPLE DELIVERY'}</span>`;
       paymentBadgesHtml += `</div>`;
 

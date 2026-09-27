@@ -297,6 +297,20 @@
               <div style="font-size: 0.9rem; line-height: 1.8;">
                 <p><strong>Method:</strong> <span id="detail-payment-method" style="text-transform: uppercase;">-</span></p>
                 <p><strong>Payment Status:</strong> <span id="detail-payment-status" class="badge badge-success">-</span></p>
+                <p id="row-rzp-payment-id" style="display: none;"><strong>Razorpay Payment ID:</strong> <code id="detail-rzp-payment-id" style="color: #60a5fa; background: rgba(37,99,235,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">-</code></p>
+                <p id="row-rzp-order-id" style="display: none;"><strong>Razorpay Order ID:</strong> <code id="detail-rzp-order-id" style="color: #94a3b8; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">-</code></p>
+                <div id="row-refund-info" style="display: none; margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px;">
+                  <div style="font-weight: 700; color: #f87171; font-size: 0.82rem; margin-bottom: 4px;">Refund Processed</div>
+                  <div style="font-size: 0.78rem; color: var(--admin-text-muted);">
+                    Refund ID: <span id="detail-refund-id" style="color: #fff;">-</span><br>
+                    Refund Amount: <strong id="detail-refund-amount" style="color: #4ade80;">₹0</strong>
+                  </div>
+                </div>
+                <div id="row-refund-action" style="display: none; margin-top: 12px;">
+                  <button type="button" id="btn-initiate-refund" class="btn-admin-danger" style="width: 100%; font-size: 0.8rem; padding: 7px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="fas fa-undo"></i> Issue Razorpay Online Refund
+                  </button>
+                </div>
               </div>
 
               <!-- Advance Status Details -->

@@ -204,6 +204,87 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("detail-shipping").textContent = (!order.shipping_charge || order.shipping_charge === 0) ? "FREE (₹0)" : window.formatINR(order.shipping_charge);
     document.getElementById("detail-total").textContent = window.formatINR(order.total);
 
+    // Razorpay Transaction and Refund Data
+    const rzpPaymentId = order.razorpay_payment_id || 
+      (typeof order.transaction_reference === "string" && order.transaction_reference.startsWith("pay_") ? order.transaction_reference : null) || 
+      (order.tracking_data && order.tracking_data.razorpay_payment_id) || null;
+    const rzpOrderId = order.razorpay_order_id || 
+      (order.tracking_data && order.tracking_data.razorpay_order_id) || null;
+
+    const rowRzpPaymentId = document.getElementById("row-rzp-payment-id");
+    const elRzpPaymentId = document.getElementById("detail-rzp-payment-id");
+    if (rowRzpPaymentId && elRzpPaymentId) {
+      if (rzpPaymentId) {
+        rowRzpPaymentId.style.display = "block";
+        elRzpPaymentId.textContent = rzpPaymentId;
+      } else {
+        rowRzpPaymentId.style.display = "none";
+      }
+    }
+
+    const rowRzpOrderId = document.getElementById("row-rzp-order-id");
+    const elRzpOrderId = document.getElementById("detail-rzp-order-id");
+    if (rowRzpOrderId && elRzpOrderId) {
+      if (rzpOrderId) {
+        rowRzpOrderId.style.display = "block";
+        elRzpOrderId.textContent = rzpOrderId;
+      } else {
+        rowRzpOrderId.style.display = "none";
+      }
+    }
+
+    // Refund Display and Action
+    const rowRefundInfo = document.getElementById("row-refund-info");
+    const elRefundId = document.getElementById("detail-refund-id");
+    const elRefundAmount = document.getElementById("detail-refund-amount");
+    const rowRefundAction = document.getElementById("row-refund-action");
+    const btnRefund = document.getElementById("btn-initiate-refund");
+
+    if (order.refund_status === "processed" || order.refund_id) {
+      if (rowRefundInfo) rowRefundInfo.style.display = "block";
+      if (elRefundId) elRefundId.textContent = order.refund_id || "Completed";
+      if (elRefundAmount) elRefundAmount.textContent = window.formatINR(order.refund_amount || order.total);
+      if (rowRefundAction) rowRefundAction.style.display = "none";
+    } else {
+      if (rowRefundInfo) rowRefundInfo.style.display = "none";
+      if (rzpPaymentId && rowRefundAction) {
+        rowRefundAction.style.display = "block";
+        if (btnRefund) {
+          btnRefund.onclick = async () => {
+            const maxRefund = (order.is_full_online_payment || advancePaidVal === 0) ? Number(order.total) : advancePaidVal;
+            const reason = prompt(`Confirm initiating real Razorpay refund of ${window.formatINR(maxRefund)} for Order ${order.order_number}:\nEnter reason:`, "Customer cancellation / return");
+            if (reason === null) return;
+            btnRefund.disabled = true;
+            btnRefund.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Razorpay Refund...';
+
+            try {
+              const resp = await fetch("/api/razorpay/refund", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  order_id: order.id,
+                  amount: maxRefund,
+                  reason: reason
+                })
+              });
+              const resData = await resp.json();
+              if (!resp.ok || !resData.success) {
+                throw new Error(resData.error || "Refund failed.");
+              }
+              window.showToast(`Refund processed successfully! Refund ID: ${resData.refund_id}`, "success");
+              await loadOrder();
+            } catch (err) {
+              alert("Refund Error: " + err.message);
+              btnRefund.disabled = false;
+              btnRefund.innerHTML = '<i class="fas fa-undo"></i> Issue Razorpay Online Refund';
+            }
+          };
+        }
+      } else if (rowRefundAction) {
+        rowRefundAction.style.display = "none";
+      }
+    }
+
     // Advance Payment Details
     const advancePaidVal = Number(order.advance_paid || order.advance_amount || 0);
     const codBalVal = Number(order.cod_balance || 0);

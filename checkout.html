@@ -526,6 +526,39 @@
                 </div>
               </div>
 
+              <!-- Method 1B: Advance Deposit + Cash on Delivery -->
+              <div class="payment-method-card" data-method="Advance + Cash on Delivery" id="card-method-advance-cod" style="display: none;">
+                <div class="payment-method-header">
+                  <div class="pm-left">
+                    <div class="pm-radio-circle">
+                      <div class="pm-radio-dot"></div>
+                    </div>
+                    <div class="pm-info">
+                      <div class="pm-title">
+                        Advance Deposit + Cash on Delivery
+                        <span class="pm-badge" style="background: rgba(99, 102, 241, 0.15); color: #6366f1; border-color: rgba(99, 102, 241, 0.3);">⚡ Item-Specific Deposit</span>
+                      </div>
+                      <div class="pm-desc" id="pm-advance-cod-desc">Pay small deposit online now via Razorpay • Remaining balance on delivery.</div>
+                    </div>
+                  </div>
+                  <div class="pm-icons">
+                    <span class="pm-brand-badge">⚡ Advance + COD</span>
+                  </div>
+                </div>
+                <div class="payment-details-body">
+                  <div class="pm-note-box cod-note" style="border-left-color: #6366f1; background: rgba(99, 102, 241, 0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <span>Online Advance Deposit:</span>
+                      <strong id="card-adv-deposit-amount" style="color: #6366f1;">₹0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span>Remaining Balance upon Delivery:</span>
+                      <strong id="card-adv-cod-amount" style="color: #d97706;">₹0</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Method 2: Credit / Debit Card -->
               <div class="payment-method-card" data-method="Credit / Debit Card">
                 <div class="payment-method-header">
@@ -1203,6 +1236,7 @@
   <script src="js/auth.js"></script>
   <script src="js/gift-engine.js"></script>
   <script src="js/pincode-engine.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="js/image-utils.js"></script>
   <script src="js/checkout.js"></script>

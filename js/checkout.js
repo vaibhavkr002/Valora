@@ -395,6 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Evaluate Full Online Payment Eligibility
     const isOnlineMethod = (state.selectedPaymentMethod === "Credit / Debit Card" || state.selectedPaymentMethod === "UPI / QR Payment" || state.selectedPaymentMethod === "Net Banking");
+    const isExplicitAdvanceCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery");
 
     if (isOnlineMethod) {
       // FULL ONLINE PAYMENT: 100% online payable • ₹0 advance required • 3 FREE gifts • Open Box eligible
@@ -403,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.advanceRequired = false;
       state.isFullOnlinePayment = true;
     } else {
-      // CASH ON DELIVERY (COD): Follows admin-configured advance requirement
+      // CASH ON DELIVERY (COD) or ADVANCE + COD: Follows admin-configured advance requirement
       state.isFullOnlinePayment = false;
       if (totalProductAdvance > 0) {
         state.advancePayableNow = Math.min(totalProductAdvance, state.total);
@@ -413,10 +414,27 @@ document.addEventListener("DOMContentLoaded", () => {
         state.advancePayableNow = 0;
         state.remainingCodAmount = state.total;
         state.advanceRequired = false;
+        if (isExplicitAdvanceCod) {
+          state.selectedPaymentMethod = "Cash on Delivery";
+        }
       }
       // For COD, preserve customer's selected delivery preference
       if (!state.selectedDeliveryPreference) {
         state.selectedDeliveryPreference = "Simple Delivery";
+      }
+    }
+
+    // Dynamic Advance + COD Card Display
+    const cardAdvCod = document.getElementById("card-method-advance-cod");
+    if (cardAdvCod) {
+      if (totalProductAdvance > 0) {
+        cardAdvCod.style.display = "block";
+        const advDepEl = document.getElementById("card-adv-deposit-amount");
+        const advCodEl = document.getElementById("card-adv-cod-amount");
+        if (advDepEl) advDepEl.textContent = formatPrice(Math.min(totalProductAdvance, state.total));
+        if (advCodEl) advCodEl.textContent = formatPrice(Math.max(0, state.total - Math.min(totalProductAdvance, state.total)));
+      } else {
+        cardAdvCod.style.display = "none";
       }
     }
 
@@ -2015,8 +2033,8 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.btnDesktopVerifyOrder.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const isAdvCod = (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
-      startUpiPaymentFlow(isAdvCod ? "advance_cod" : "full_online");
+      const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online");
     });
   }
 
@@ -2025,8 +2043,8 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.btnUpiPay.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const isAdvCod = (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
-      startUpiPaymentFlow(isAdvCod ? "advance_cod" : "full_online");
+      const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online");
     });
   }
 
@@ -2060,346 +2078,366 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.btnConfirmPayment.addEventListener("click", () => verifyActiveUpiPayment(false));
   }
 
-  // UPI Payment Initiation Flow
-  async function startUpiPaymentFlow(paymentType = "full_online") {
+  // =========================================================================
+  // RAZORPAY PAYMENT GATEWAY INTEGRATION (SERVER-AUTHORITATIVE)
+  // =========================================================================
+  function getDeliveryPayload() {
+    return {
+      fullName: elements.inputFullName ? elements.inputFullName.value.trim() : "",
+      phone: elements.inputPhone ? elements.inputPhone.value.trim() : "",
+      email: elements.inputEmail ? elements.inputEmail.value.trim() : "",
+      house: elements.inputHouse ? elements.inputHouse.value.trim() : "",
+      street: elements.inputStreet ? elements.inputStreet.value.trim() : "",
+      landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : "",
+      city: elements.inputCity ? elements.inputCity.value.trim() : "",
+      state: elements.inputState ? elements.inputState.value.trim() : "",
+      zip: elements.inputZip ? elements.inputZip.value.trim() : "",
+      country: (elements.selectCountry && elements.selectCountry.value) ? elements.selectCountry.value : "India",
+      addressType: state.selectedAddressType || "Home"
+    };
+  }
+
+  async function ensureRazorpayLoaded() {
+    if (typeof window.Razorpay === "function") return true;
+    return new Promise((resolve) => {
+      const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(typeof window.Razorpay === "function"));
+        existing.addEventListener("error", () => resolve(false));
+        setTimeout(() => resolve(typeof window.Razorpay === "function"), 2500);
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = "https://checkout.razorpay.com/v1/checkout.js";
+      s.onload = () => resolve(typeof window.Razorpay === "function");
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+      setTimeout(() => resolve(typeof window.Razorpay === "function"), 3000);
+    });
+  }
+
+  async function startRazorpayCheckout(paymentType = "full_online") {
+    if (isSubmittingOrder) {
+      console.warn("Order submission already in progress.");
+      return;
+    }
+
     const isValid = validateCheckoutForm();
     if (!isValid) return;
 
-    if (state.cart.length === 0) {
+    if (!state.cart || state.cart.length === 0) {
       showToast("Your cart is empty. Please add items before checking out.", "error");
       return;
     }
+
+    isSubmittingOrder = true;
+    const originalBtnText = elements.btnPlaceOrderText ? elements.btnPlaceOrderText.textContent : "Complete Order";
+    if (elements.btnPlaceOrder) {
+      elements.btnPlaceOrder.classList.add("loading");
+      elements.btnPlaceOrder.disabled = true;
+      if (elements.btnPlaceOrderText) {
+        elements.btnPlaceOrderText.textContent = (paymentType === "advance_cod")
+          ? "Initializing Razorpay Advance..."
+          : "Initializing Razorpay Checkout...";
+      }
+    }
+
+    const resetBtn = () => {
+      isSubmittingOrder = false;
+      if (elements.btnPlaceOrder) {
+        elements.btnPlaceOrder.classList.remove("loading");
+        elements.btnPlaceOrder.disabled = false;
+        if (elements.btnPlaceOrderText) elements.btnPlaceOrderText.textContent = originalBtnText;
+      }
+    };
 
     try {
       await syncAddressToSupabase();
     } catch (_) {}
 
-    const isAdvCod = (paymentType === "advance_cod");
-    const amount = isAdvCod ? state.advancePayableNow : state.total;
-    if (amount <= 0) {
-      showToast("Invalid payment amount.", "error");
+    const deliveryPayload = getDeliveryPayload();
+
+    // 1. Authoritative order calculation and Razorpay Order creation on server
+    let orderRes = null;
+    try {
+      const resp = await fetch("/api/razorpay/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: state.cart,
+          payment_method: paymentType,
+          coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+          delivery_details: deliveryPayload
+        })
+      });
+
+      orderRes = await resp.json();
+      if (!resp.ok || !orderRes.success) {
+        throw new Error(orderRes?.error || "Failed to initialize payment.");
+      }
+    } catch (err) {
+      console.error("[Razorpay Checkout] create-order error:", err);
+      resetBtn();
+      showToast(err.message || "Failed to initialize payment. Please try again.", "error");
       return;
     }
 
-    const activeApp = state.selectedUpiApp || "Google Pay";
-    const appLabel = activeApp;
-
-    // Resolve merchant settings
-    const merchantVpa = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || state.merchantVpa || "vadi.lifestyle@okhdfcbank";
-    const merchantName = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || state.merchantName || "VADI Lifestyle Studio";
-    state.merchantVpa = merchantVpa;
-    state.merchantName = merchantName;
-
-    // Reset Modal State
-    if (elements.modalUpiAmount) elements.modalUpiAmount.textContent = formatPrice(amount);
-    if (elements.modalMerchantVpa) elements.modalMerchantVpa.textContent = merchantVpa;
-    if (elements.modalAppName) elements.modalAppName.textContent = appLabel;
-
-    if (elements.upiStatusBox) {
-      elements.upiStatusBox.className = "upi-status-box";
-    }
-    if (elements.upiSpinner) {
-      elements.upiSpinner.style.display = "block";
-    }
-    if (elements.upiStatusHeading) {
-      elements.upiStatusHeading.textContent = "Awaiting Payment Verification";
-    }
-    if (elements.upiStatusDesc) {
-      elements.upiStatusDesc.textContent = `Complete payment in ${appLabel} or scan the QR code. Do not close or refresh this page.`;
-    }
-
-    if (elements.btnConfirmPayment) {
-      elements.btnConfirmPayment.style.display = "";
-      elements.btnConfirmPayment.disabled = false;
-      elements.btnConfirmPayment.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>I Have Completed Payment</span>`;
-    }
-    if (elements.btnCancelPayment) {
-      elements.btnCancelPayment.style.display = "";
-    }
-
-    // Call server-side authoritative RPC if Supabase is connected
-    let txData = null;
-    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
-    if (client) {
-      try {
-        const fullDeliveryAddr = [elements.inputHouse.value.trim(), elements.inputStreet.value.trim(), (elements.inputLandmark ? elements.inputLandmark.value.trim() : "")].filter(Boolean).join(", ");
-        const { data, error } = await client.rpc("initiate_upi_transaction", {
-          p_payment_type: isAdvCod ? "advance_cod" : "full_online",
-          p_customer_name: elements.inputFullName.value.trim(),
-          p_customer_phone: elements.inputPhone.value.trim(),
-          p_customer_email: elements.inputEmail.value.trim(),
-          p_cart_items: state.cart,
-          p_coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
-          p_delivery_details: {
-            full_name: elements.inputFullName.value.trim(),
-            phone: elements.inputPhone.value.trim(),
-            house: elements.inputHouse.value.trim(),
-            street: elements.inputStreet.value.trim(),
-            landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : "",
-            post_office: (elements.selectPostOffice && elements.selectPostOffice.value) ? elements.selectPostOffice.value.trim() : "",
-            address: fullDeliveryAddr,
-            city: elements.inputCity.value.trim(),
-            state: elements.inputState.value.trim(),
-            country: elements.selectCountry.value || "India",
-            pincode: elements.inputZip.value.trim()
-          },
-          p_delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
-          p_upi_app: activeApp
-        });
-
-        if (!error && data && data.success) {
-          txData = data;
-        }
-      } catch (e) {
-        console.warn("initiate_upi_transaction RPC fallback:", e);
-      }
-    }
-
-    // Fallback to local cryptographic reference if RPC is pending migration
-    if (!txData) {
-      const refId = "VEL-TXN-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000);
-      const links = generateUpiLinks(merchantVpa, merchantName, refId, amount);
-      txData = {
-        success: true,
-        transaction_id: "local_" + refId,
-        reference_id: refId,
-        amount: amount,
-        currency: "INR",
-        payment_type: isAdvCod ? "advance_cod" : "full_online",
-        upi_uri: links.generic,
-        deep_links: links,
-        merchant_vpa: merchantVpa,
-        merchant_name: merchantName
-      };
-    }
-
-    state.activeUpiTransaction = txData;
-    if (elements.modalUpiRef) elements.modalUpiRef.textContent = txData.reference_id;
-
-    // Resolve app link
-    const appLinks = txData.deep_links || generateUpiLinks(txData.merchant_vpa, txData.merchant_name, txData.reference_id, txData.amount);
-    let chosenLink = appLinks.generic;
-    const cleanApp = activeApp.toLowerCase();
-    if (cleanApp.includes("google") || cleanApp.includes("gpay")) {
-      chosenLink = appLinks.gpay || appLinks.generic;
-    } else if (cleanApp.includes("phonepe")) {
-      chosenLink = appLinks.phonepe || appLinks.generic;
-    } else if (cleanApp.includes("paytm")) {
-      chosenLink = appLinks.paytm || appLinks.generic;
-    } else if (cleanApp.includes("bhim")) {
-      chosenLink = appLinks.bhim || appLinks.generic;
-    }
-
-    if (elements.btnLaunchUpiApp) elements.btnLaunchUpiApp.href = chosenLink;
-    if (elements.btnLaunchAnyApp) elements.btnLaunchAnyApp.href = appLinks.generic || txData.upi_uri;
-
-    // Render Desktop QR
-    renderUpiQrCode(elements.upiQrContainer, txData.upi_uri || appLinks.generic);
-
-    // Open Modal
-    if (elements.upiModal) {
-      elements.upiModal.classList.add("active");
-      elements.upiModal.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-    }
-
-    // Auto-launch deep link on mobile browsers
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    if (isMobile && chosenLink && !chosenLink.startsWith("#")) {
-      try {
-        window.location.href = chosenLink;
-      } catch (err) {
-        console.warn("Mobile deep link launch notice:", err);
-      }
-    }
-
-    // Start background status polling
-    startUpiStatusPolling(txData.reference_id);
-  }
-
-  function startUpiStatusPolling(refId) {
-    if (state.upiPollingInterval) {
-      clearInterval(state.upiPollingInterval);
-      state.upiPollingInterval = null;
-    }
-    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
-    if (!client) return;
-
-    let pollCount = 0;
-    const maxPolls = 45;
-
-    state.upiPollingInterval = setInterval(async () => {
-      pollCount++;
-      if (pollCount > maxPolls || !state.activeUpiTransaction || state.activeUpiTransaction.reference_id !== refId) {
-        clearInterval(state.upiPollingInterval);
-        state.upiPollingInterval = null;
-        return;
-      }
-
-      try {
-        const { data, error } = await client
-          .from("payment_transactions")
-          .select("status, transaction_reference, amount, payment_type")
-          .eq("transaction_reference", refId)
-          .maybeSingle();
-
-        if (!error && data && (data.status === "completed" || data.status === "verified")) {
-          clearInterval(state.upiPollingInterval);
-          state.upiPollingInterval = null;
-          await onPaymentVerifiedSuccess(state.activeUpiTransaction);
-        } else if (!error && data && data.status === "failed") {
-          clearInterval(state.upiPollingInterval);
-          state.upiPollingInterval = null;
-          showToast("Payment declined or failed at bank.", "error");
-        }
-      } catch (e) {}
-    }, 4000);
-  }
-
-  async function verifyActiveUpiPayment(isBackgroundPoll = false) {
-    if (!state.activeUpiTransaction) {
-      showToast("No active payment found.", "error");
+    // Pure COD check from server
+    if (orderRes.is_cod) {
+      await executeCodOrderPlacement(deliveryPayload, resetBtn);
       return;
     }
 
-    const tx = state.activeUpiTransaction;
-
-    if (elements.btnConfirmPayment) {
-      elements.btnConfirmPayment.disabled = true;
-      elements.btnConfirmPayment.innerHTML = `
-        <span class="upi-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;margin-right:8px;vertical-align:middle;"></span>
-        <span>Verifying Payment...</span>`;
+    // 2. Ensure Razorpay SDK is loaded
+    const loaded = await ensureRazorpayLoaded();
+    if (!loaded || typeof window.Razorpay !== "function") {
+      resetBtn();
+      showToast("Payment gateway SDK failed to load. Please check your connection and try again.", "error");
+      return;
     }
 
-    if (elements.upiStatusHeading) {
-      elements.upiStatusHeading.textContent = "Verifying Transaction...";
-    }
-    if (elements.upiStatusDesc) {
-      elements.upiStatusDesc.textContent = "Confirming payment with banking network. Please do not close...";
-    }
-
-    const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
-    let verified = false;
-
-    if (client) {
-      try {
-        const { data, error } = await client.rpc("verify_and_complete_upi_payment", {
-          p_transaction_reference: tx.reference_id,
-          p_provider_ref: "MANUAL_VERIFY_" + Date.now()
-        });
-        if (!error && data && data.success) {
-          verified = true;
+    // 3. Open Razorpay Checkout modal
+    const options = {
+      key: orderRes.key_id,
+      amount: orderRes.amount,
+      currency: orderRes.currency || "INR",
+      name: "VADI",
+      description: paymentType === "advance_cod"
+        ? `Advance Deposit (${formatPrice(orderRes.amount_in_inr)}) • Balance on Delivery`
+        : `Order Payment (${formatPrice(orderRes.amount_in_inr)}) • 3 Free Gifts Unlocked`,
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200",
+      order_id: orderRes.razorpay_order_id,
+      prefill: {
+        name: deliveryPayload.fullName,
+        email: deliveryPayload.email,
+        contact: deliveryPayload.phone
+      },
+      notes: {
+        payment_type: paymentType,
+        platform: "VADI E-Commerce"
+      },
+      theme: {
+        color: "#0f172a"
+      },
+      modal: {
+        ondismiss: function () {
+          resetBtn();
+          showToast("Payment window closed. Your cart was preserved.", "info");
         }
-      } catch (e) {
-        console.warn("verify_and_complete_upi_payment RPC notice:", e);
-      }
-    }
+      },
+      handler: async function (paymentResponse) {
+        if (elements.btnPlaceOrderText) {
+          elements.btnPlaceOrderText.textContent = "Verifying payment with bank...";
+        }
 
-    // In local dev/fallback: simulate brief bank confirmation check
-    if (!verified) {
-      await new Promise(r => setTimeout(r, 1200));
-      verified = true;
-    }
-
-    if (verified) {
-      await onPaymentVerifiedSuccess(tx);
-    } else {
-      if (elements.btnConfirmPayment) {
-        elements.btnConfirmPayment.disabled = false;
-        elements.btnConfirmPayment.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>Retry Verification</span>`;
-      }
-      if (elements.upiStatusBox) {
-        elements.upiStatusBox.classList.add("error");
-      }
-      if (elements.upiStatusHeading) {
-        elements.upiStatusHeading.textContent = "Payment Not Confirmed Yet";
-      }
-      if (elements.upiStatusDesc) {
-        elements.upiStatusDesc.textContent = "We could not verify your payment with the bank yet. Please complete the transfer in your UPI app and retry.";
-      }
-      showToast("Payment confirmation pending from bank. Please retry after completing payment in your app.", "warning");
-    }
-  }
-
-  async function onPaymentVerifiedSuccess(tx) {
-    if (state.upiPollingInterval) {
-      clearInterval(state.upiPollingInterval);
-      state.upiPollingInterval = null;
-    }
-
-    if (elements.upiStatusBox) {
-      elements.upiStatusBox.classList.remove("error");
-      elements.upiStatusBox.classList.add("success");
-    }
-    if (elements.upiSpinner) {
-      elements.upiSpinner.style.display = "none";
-    }
-    if (elements.upiStatusHeading) {
-      elements.upiStatusHeading.textContent = "Payment Verified Successfully! 🎉";
-    }
-    if (elements.upiStatusDesc) {
-      elements.upiStatusDesc.textContent = "Your transaction has been securely confirmed. Creating order...";
-    }
-    if (elements.btnConfirmPayment) {
-      elements.btnConfirmPayment.style.display = "none";
-    }
-    if (elements.btnCancelPayment) {
-      elements.btnCancelPayment.style.display = "none";
-    }
-
-    const isAdvCod = (tx.payment_type === "advance_cod");
-    await executeOrderPlacement({
-      isUpiVerified: true,
-      transactionReference: tx.reference_id,
-      upiApp: state.selectedUpiApp,
-      isAdvanceCod: isAdvCod,
-      paidAmount: tx.amount
-    });
-  }
-
-  async function cancelActiveUpiPayment(reason = "Cancelled by customer") {
-    if (state.upiPollingInterval) {
-      clearInterval(state.upiPollingInterval);
-      state.upiPollingInterval = null;
-    }
-
-    if (state.activeUpiTransaction) {
-      const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
-      if (client) {
         try {
-          await client.rpc("cancel_upi_transaction", {
-            p_transaction_reference: state.activeUpiTransaction.reference_id,
-            p_reason: reason
+          const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+          const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+          const resolvedUserId = currentUser ? currentUser.id : null;
+
+          const verifyResp = await fetch("/api/razorpay/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature,
+              payment_method: paymentType,
+              items: state.cart,
+              coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+              delivery_details: deliveryPayload,
+              delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+              free_gifts_items: (paymentType === "full_online" && state.resolvedCartGifts) ? state.resolvedCartGifts : [],
+              user_id: resolvedUserId
+            })
           });
-        } catch (e) {}
+
+          const verifyData = await verifyResp.json();
+          if (!verifyResp.ok || !verifyData.success) {
+            throw new Error(verifyData.error || "Payment signature verification failed.");
+          }
+
+          const isFull = (paymentType === "full_online");
+          const fullStreet = [deliveryPayload.house, deliveryPayload.street, deliveryPayload.landmark].filter(Boolean).join(", ");
+          const now = new Date();
+          const deliveryStart = new Date(now);
+          deliveryStart.setDate(now.getDate() + 3);
+          const deliveryEnd = new Date(now);
+          deliveryEnd.setDate(now.getDate() + 5);
+          const dateOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+          const etaFormatted = `${deliveryStart.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - ${deliveryEnd.toLocaleDateString('en-IN', dateOptions)}`;
+
+          const orderSnapshot = {
+            orderId: verifyData.order_number,
+            order_number: verifyData.order_number,
+            orderNumber: verifyData.order_number,
+            id: verifyData.order_id,
+            orderDate: now.toLocaleDateString('en-IN', { ...dateOptions, hour: '2-digit', minute: '2-digit' }),
+            estimatedDelivery: etaFormatted,
+            customer: {
+              ...deliveryPayload,
+              address: fullStreet
+            },
+            paymentMethod: isFull
+              ? `Razorpay Online Payment (Full Paid: ${formatPrice(verifyData.total)})`
+              : `Razorpay Advance (${formatPrice(verifyData.advance_paid)} Paid) + COD Balance (${formatPrice(verifyData.cod_balance)})`,
+            items: (isFull && state.resolvedCartGifts && state.resolvedCartGifts.length > 0)
+              ? [...state.cart, ...state.resolvedCartGifts.map(g => ({
+                  name: g.name,
+                  image: g.icon_or_image || g.image || "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=200",
+                  price: 0,
+                  quantity: 1,
+                  size: "Standard",
+                  color: "Complimentary Gift",
+                  is_free_gift: true
+                }))]
+              : [...state.cart],
+            free_gifts_eligible: isFull && Boolean(state.resolvedCartGifts && state.resolvedCartGifts.length > 0),
+            free_gifts_items: isFull ? (state.resolvedCartGifts || []) : [],
+            delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+            is_full_online_payment: isFull,
+            subtotal: state.subtotal,
+            discount: state.discountAmount,
+            discountCode: state.appliedCoupon ? state.appliedCoupon.code : null,
+            shipping: 0,
+            total: verifyData.total,
+            advance_amount: isFull ? 0 : verifyData.advance_paid,
+            advance_paid: verifyData.advance_paid,
+            cod_balance: verifyData.cod_balance,
+            advance_payment_status: isFull ? "not_required" : (verifyData.advance_paid > 0 ? "paid" : "not_required"),
+            cod_payment_status: verifyData.cod_balance > 0 ? "pending" : "not_applicable",
+            payment_status: isFull ? "paid" : "pending",
+            transaction_reference: paymentResponse.razorpay_payment_id
+          };
+
+          localStorage.setItem("velora_last_order", JSON.stringify(orderSnapshot));
+          localStorage.removeItem("velora_cart");
+
+          if (resolvedUserId) {
+            try {
+              const userOrdKey = "velora_user_orders_" + resolvedUserId;
+              const pastList = JSON.parse(localStorage.getItem(userOrdKey) || "[]");
+              pastList.unshift(orderSnapshot);
+              localStorage.setItem(userOrdKey, JSON.stringify(pastList.slice(0, 50)));
+            } catch (_) {}
+          }
+
+          showToast("Payment verified! Redirecting...", "success");
+          setTimeout(() => {
+            window.location.href = `order-success.html?order_id=${verifyData.order_id}&order_number=${verifyData.order_number}`;
+          }, 600);
+        } catch (err) {
+          console.error("[Razorpay Verify] Error:", err);
+          resetBtn();
+          showToast(err.message || "Payment verification failed. Please contact support.", "error");
+        }
       }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on("payment.failed", function (response) {
+      console.error("[Razorpay Payment Failed]", response.error);
+      resetBtn();
+      showToast(response.error.description || "Payment failed or declined.", "error");
+    });
+    rzp.open();
+  }
+
+  async function executeCodOrderPlacement(deliveryPayload, resetPlaceOrderBtn) {
+    if (elements.btnPlaceOrderText) {
+      elements.btnPlaceOrderText.textContent = "Securing Cash on Delivery Order...";
     }
 
-    state.activeUpiTransaction = null;
+    try {
+      const client = window.VeloraAuth ? window.VeloraAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+      const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
+      const resolvedUserId = currentUser ? currentUser.id : null;
 
-    if (elements.upiModal) {
-      elements.upiModal.classList.remove("active");
-      elements.upiModal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    }
+      const verifyResp = await fetch("/api/razorpay/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payment_method: "cod",
+          items: state.cart,
+          coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+          delivery_details: deliveryPayload,
+          delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+          free_gifts_items: [],
+          user_id: resolvedUserId
+        })
+      });
 
-    if (elements.btnPlaceOrder) {
-      elements.btnPlaceOrder.disabled = false;
-      elements.btnPlaceOrder.classList.remove("loading");
-    }
-    if (elements.btnConfirmPayment) {
-      elements.btnConfirmPayment.style.display = "";
-      elements.btnConfirmPayment.disabled = false;
-    }
-    if (elements.btnCancelPayment) {
-      elements.btnCancelPayment.style.display = "";
-    }
+      const verifyData = await verifyResp.json();
+      if (!verifyResp.ok || !verifyData.success) {
+        throw new Error(verifyData.error || "Failed to confirm COD order.");
+      }
 
-    showToast("Payment cancelled. Your cart and checkout details have been preserved.", "info");
+      const fullStreet = [deliveryPayload.house, deliveryPayload.street, deliveryPayload.landmark].filter(Boolean).join(", ");
+      const now = new Date();
+      const deliveryStart = new Date(now);
+      deliveryStart.setDate(now.getDate() + 3);
+      const deliveryEnd = new Date(now);
+      deliveryEnd.setDate(now.getDate() + 5);
+      const dateOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+      const etaFormatted = `${deliveryStart.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - ${deliveryEnd.toLocaleDateString('en-IN', dateOptions)}`;
+
+      const orderSnapshot = {
+        orderId: verifyData.order_number,
+        order_number: verifyData.order_number,
+        orderNumber: verifyData.order_number,
+        id: verifyData.order_id,
+        orderDate: now.toLocaleDateString('en-IN', { ...dateOptions, hour: '2-digit', minute: '2-digit' }),
+        estimatedDelivery: etaFormatted,
+        customer: {
+          ...deliveryPayload,
+          address: fullStreet
+        },
+        paymentMethod: "Cash on Delivery",
+        items: [...state.cart],
+        free_gifts_eligible: false,
+        free_gifts_items: [],
+        delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+        is_full_online_payment: false,
+        subtotal: state.subtotal,
+        discount: state.discountAmount,
+        discountCode: state.appliedCoupon ? state.appliedCoupon.code : null,
+        shipping: 0,
+        total: verifyData.total,
+        advance_amount: 0,
+        advance_paid: 0,
+        cod_balance: verifyData.total,
+        advance_payment_status: "not_required",
+        cod_payment_status: "pending",
+        payment_status: "pending",
+        transaction_reference: `COD-${Date.now()}`
+      };
+
+      localStorage.setItem("velora_last_order", JSON.stringify(orderSnapshot));
+      localStorage.removeItem("velora_cart");
+
+      if (resolvedUserId) {
+        try {
+          const userOrdKey = "velora_user_orders_" + resolvedUserId;
+          const pastList = JSON.parse(localStorage.getItem(userOrdKey) || "[]");
+          pastList.unshift(orderSnapshot);
+          localStorage.setItem(userOrdKey, JSON.stringify(pastList.slice(0, 50)));
+        } catch (_) {}
+      }
+
+      showToast("Order placed successfully!", "success");
+      setTimeout(() => {
+        window.location.href = `order-success.html?order_id=${verifyData.order_id}&order_number=${verifyData.order_number}`;
+      }, 600);
+    } catch (err) {
+      console.error("[COD Placement] Error:", err);
+      resetPlaceOrderBtn();
+      showToast(err.message || "Failed to confirm COD order.", "error");
+    }
+  }
+
+  // Legacy UPI Flow wrapper -> redirects to Razorpay Checkout
+  async function startUpiPaymentFlow(paymentType = "full_online") {
+    return startRazorpayCheckout(paymentType);
   }
 
   // --- 8. Input Validation Helper ---
@@ -2570,41 +2608,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (state.cart.length === 0) {
+    if (!state.cart || state.cart.length === 0) {
       showToast("Your cart is empty. Please add items before checking out.", "error");
-      return;
-    }
-
-    // Payment validation for Card method
-    if (state.selectedPaymentMethod === "Credit / Debit Card") {
-      const cleanCard = (elements.inputCardNum ? elements.inputCardNum.value : "").replace(/\s/g, "");
-      const cleanExp = (elements.inputCardExp ? elements.inputCardExp.value : "").trim();
-      const cleanCvv = (elements.inputCardCvv ? elements.inputCardCvv.value : "").trim();
-      if (cleanCard.length < 15 || cleanExp.length < 5 || cleanCvv.length < 3) {
-        showToast("Please enter complete card details (Card Number, Expiry MM/YY, and CVV).", "error");
-        const cardEl = document.querySelector('[data-method="Credit / Debit Card"]');
-        if (cardEl) cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      if (cleanCvv === "000") {
-        showToast("Payment authorization declined by card issuer. Order was not confirmed.", "error");
-        return;
-      }
-    }
-
-    // For UPI / QR Payment, launch the app-based UPI payment flow
-    if (state.selectedPaymentMethod === "UPI / QR Payment") {
-      const isValid = validateCheckoutForm();
-      if (!isValid) return;
-      startUpiPaymentFlow("full_online");
-      return;
-    }
-
-    // For Cash on Delivery requiring an advance deposit, initiate UPI advance payment flow
-    if (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired) {
-      const isValid = validateCheckoutForm();
-      if (!isValid) return;
-      startUpiPaymentFlow("advance_cod");
       return;
     }
 
@@ -2615,7 +2620,26 @@ document.addEventListener("DOMContentLoaded", () => {
       await syncAddressToSupabase();
     } catch (_) {}
 
-    await executeOrderPlacement();
+    const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+    if (isAdvCod) {
+      await startRazorpayCheckout("advance_cod");
+      return;
+    }
+
+    if (state.selectedPaymentMethod === "Cash on Delivery") {
+      const resetBtn = () => {
+        isSubmittingOrder = false;
+        if (elements.btnPlaceOrder) {
+          elements.btnPlaceOrder.classList.remove("loading");
+          elements.btnPlaceOrder.disabled = false;
+        }
+      };
+      await executeCodOrderPlacement(getDeliveryPayload(), resetBtn);
+      return;
+    }
+
+    // Default: Full Online Payment via Razorpay (UPI, Credit/Debit Cards, Net Banking)
+    await startRazorpayCheckout("full_online");
   }
 
   async function executeOrderPlacement(overrides = {}) {
