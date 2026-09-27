@@ -148,7 +148,7 @@
     const type = sec.section_type;
 
     // Explicit dynamic types
-    if (type === 'product_grid' || type === 'promotional_banner' || type === 'category_grid' || type === 'custom') {
+    if (type === 'product_grid' || type === 'sarojini_trending' || type === 'promotional_banner' || type === 'category_grid' || type === 'custom') {
       return { isDynamic: true, key: `dynamic:${sec.id}` };
     }
 
@@ -637,7 +637,7 @@
         let dynEl = null;
         const type = sec.section_type;
 
-        if (type === 'product_grid') {
+        if (type === 'product_grid' || type === 'sarojini_trending') {
           dynEl = buildProductGridSection(sec);
         } else if (type === 'promotional_banner') {
           dynEl = buildPromotionalBannerSection(sec);
@@ -648,7 +648,6 @@
         } else if (type === 'custom') {
           dynEl = buildCustomSection(sec);
         } else {
-          console.error("Unsupported homepage section type: " + type, sec);
           return;
         }
 

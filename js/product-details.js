@@ -172,9 +172,9 @@ document.addEventListener("DOMContentLoaded", () => {
       bindCommonEvents();
       window.addEventListener("velora:gift-offers-updated", () => updatePaymentSelectionUI());
 
-    // 1. Parse Product ID from URL (?id=...)
+    // 1. Parse Product ID from URL (?id=... or ?slug=...)
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get("id");
+    const productId = urlParams.get("id") || urlParams.get("slug");
 
     if (!productId) {
       showNotFoundState();
