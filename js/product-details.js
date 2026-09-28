@@ -964,164 +964,447 @@ document.addEventListener("DOMContentLoaded", () => {
       }[tag] || tag));
     }
 
-    try {
-      const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/reviews?product_id=eq.${productId}&status=eq.approved&select=id,user_name,rating,comment,created_at&order=created_at.desc`, {
-        headers: {
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+    // Safely resolve database UUID to prevent Postgres 22P02 invalid input syntax error
+    const isUUID = Boolean(productId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId));
+    let targetUuid = isUUID ? productId : null;
+    if (!targetUuid) {
+      const pObj = (state.currentProduct && state.currentProduct.supabase_id)
+        ? state.currentProduct
+        : (window.getProductById ? window.getProductById(productId) : null);
+      if (pObj && pObj.supabase_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pObj.supabase_id)) {
+        targetUuid = pObj.supabase_id;
+      } else if (pObj && pObj.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pObj.id)) {
+        targetUuid = pObj.id;
+      }
+    }
+
+    // Top Rating Header Click Handler -> Navigates smoothly to Customer Reviews Tab
+    const ratingRow = document.querySelector(".detail-rating-row") || elements.reviewsCount;
+    if (ratingRow && !ratingRow.dataset.reviewsBound) {
+      ratingRow.dataset.reviewsBound = "true";
+      ratingRow.style.cursor = "pointer";
+      ratingRow.addEventListener("click", () => {
+        const tabReviewsBtn = document.querySelector(`.tab-nav-btn[data-tab-target="tab-reviews"]`);
+        if (tabReviewsBtn) {
+          tabReviewsBtn.click();
+          const tabSec = document.querySelector(".product-tabs-section") || document.getElementById("tab-reviews");
+          if (tabSec) tabSec.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
+    }
 
-      if (res.ok) {
-        const reviews = await res.json();
+    let reviews = [];
 
-        // Enforce single source of truth: deduplicate by database UUID
-        const seenIds = new Set();
-        const uniqueReviews = [];
-        if (Array.isArray(reviews)) {
-          for (const r of reviews) {
-            if (r && r.id && !seenIds.has(r.id)) {
+    if (targetUuid) {
+      const client = (window.VeloraAuth && window.VeloraAuth.getClient()) || window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+      if (client) {
+        try {
+          const { data, error } = await client
+            .from("reviews")
+            .select("id,user_name,rating,comment,created_at,user_id,catalog_type")
+            .eq("product_id", targetUuid)
+            .eq("status", "approved")
+            .order("created_at", { ascending: false });
+
+          if (!error && Array.isArray(data)) {
+            reviews = data;
+          }
+        } catch (clientErr) {
+          console.warn("Client review fetch notice:", clientErr);
+        }
+      }
+
+      if (reviews.length === 0 && typeof fetch !== "undefined") {
+        try {
+          const queryUrl = `${SUPABASE_PROJECT_URL}/rest/v1/reviews?product_id=eq.${targetUuid}&status=eq.approved&select=id,user_name,rating,comment,created_at,user_id,catalog_type&order=created_at.desc`;
+          const res = await fetch(queryUrl, {
+            headers: {
+              "apikey": SUPABASE_ANON_KEY,
+              "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
+
+          if (res.ok) {
+            const fetched = await res.json();
+            if (Array.isArray(fetched)) {
+              reviews = fetched;
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("REST review fetch error:", fetchErr);
+        }
+      }
+    }
+
+    try {
+      // Enforce single source of truth: deduplicate by database UUID and isolate catalog
+      const seenIds = new Set();
+      const uniqueReviews = [];
+      if (Array.isArray(reviews)) {
+        for (const r of reviews) {
+          if (r && r.id && !seenIds.has(r.id)) {
+            // Strict catalog isolation: exclude sarojini reviews from Main VADI products
+            if (r.catalog_type !== 'sarojini') {
               seenIds.add(r.id);
               uniqueReviews.push(r);
             }
           }
         }
+      }
 
-        const totalReviews = uniqueReviews.length;
-        let avgRating = 0.0;
-        const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      const totalReviews = uniqueReviews.length;
+      let avgRating = 0.0;
+      let likedPct = null;
+      const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
-        if (totalReviews > 0) {
-          let sum = 0;
-          for (const r of uniqueReviews) {
-            const star = Math.max(1, Math.min(5, Math.round(Number(r.rating) || 5)));
-            counts[star] = (counts[star] || 0) + 1;
-            sum += Number(r.rating) || 5;
+      if (totalReviews > 0) {
+        let sum = 0;
+        let positiveCount = 0;
+        for (const r of uniqueReviews) {
+          const star = Math.max(1, Math.min(5, Math.round(Number(r.rating) || 5)));
+          counts[star] = (counts[star] || 0) + 1;
+          sum += Number(r.rating) || 5;
+          if (star >= 4) {
+            positiveCount++;
           }
-          avgRating = Number((sum / totalReviews).toFixed(1));
         }
+        avgRating = Number((sum / totalReviews).toFixed(1));
+        likedPct = Math.round((positiveCount / totalReviews) * 100);
+      }
 
-        // 1. Update Tab Reviews Count Badge
-        if (countBadge) {
-          countBadge.textContent = totalReviews;
-        }
+      // 1. Update Tab Reviews Count Badge
+      if (countBadge) {
+        countBadge.textContent = totalReviews;
+      }
 
-        // 2. Update Header/Top Rating Elements
-        if (elements.reviewsCount) {
-          elements.reviewsCount.textContent = totalReviews > 0
-            ? `(${totalReviews} customer review${totalReviews === 1 ? '' : 's'})`
-            : `(0 reviews)`;
-        }
+      // 2. Update Header/Top Rating Elements
+      if (elements.reviewsCount) {
+        elements.reviewsCount.textContent = totalReviews > 0
+          ? `(${totalReviews} customer review${totalReviews === 1 ? '' : 's'})`
+          : `(0 reviews)`;
+      }
 
-        const starsWrap = document.getElementById("detail-stars-wrap") || document.querySelector(".detail-stars");
-        if (elements.ratingScore) {
-          elements.ratingScore.textContent = totalReviews > 0 ? avgRating.toFixed(1) : "—";
-        }
-        if (starsWrap) {
-          starsWrap.innerHTML = renderStarsVisual(totalReviews > 0 ? avgRating : 0, 16);
-        }
+      const starsWrap = document.getElementById("detail-stars-wrap") || document.querySelector(".detail-stars");
+      if (elements.ratingScore) {
+        elements.ratingScore.textContent = totalReviews > 0 ? avgRating.toFixed(1) : "—";
+      }
+      if (starsWrap) {
+        starsWrap.innerHTML = renderStarsVisual(totalReviews > 0 ? avgRating : 0, 16);
+      }
 
-        // 3. Render Premium Rating Summary / Review Breakdown Section
+      // 3. Render Empty State or Enhanced Rating Hero & Distribution
+      if (totalReviews === 0) {
         if (summaryContainer) {
-          if (totalReviews === 0) {
-            summaryContainer.innerHTML = `
-              <div class="rating-summary-empty">
-                <div class="rating-summary-empty-icon">★</div>
-                <h4 class="rating-summary-empty-title">No reviews yet</h4>
-                <p class="rating-summary-empty-desc">Be the first to share your experience with fellow buyers.</p>
-                <button type="button" onclick="document.getElementById('btn-toggle-review-form')?.click();" class="btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; font-size: 0.85rem;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                  Write the First Review
-                </button>
-              </div>
+          summaryContainer.innerHTML = `
+            <div class="reviews-empty-state">
+              <div class="reviews-empty-state-icon">★</div>
+              <h4 class="reviews-empty-state-title">No customer reviews yet</h4>
+              <p class="reviews-empty-state-desc">Be the first to review this product and share your thoughts with fellow shoppers.</p>
+              <button type="button" class="btn-hero-write-review" style="width: auto; padding: 10px 24px; margin: 0 auto;" onclick="document.getElementById('btn-toggle-review-form')?.click();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Write the First Review
+              </button>
+            </div>
+          `;
+        }
+        if (container) {
+          container.innerHTML = "";
+        }
+      } else {
+        // Render 3-Column Rating Hero Card
+        if (summaryContainer) {
+          const rowsHtml = [5, 4, 3, 2, 1].map(star => {
+            const c = counts[star] || 0;
+            const pct = Math.round((c / totalReviews) * 100);
+            return `
+              <button type="button" class="rating-dist-row-btn" data-star="${star}" title="Filter ${star} Star reviews (${c})">
+                <span class="rating-dist-label">${star} <span class="star-icon">★</span></span>
+                <div class="rating-dist-track">
+                  <div class="rating-dist-fill star-${star}" style="width: ${pct}%;"></div>
+                </div>
+                <div class="rating-dist-meta">
+                  <span class="rating-dist-count">${c}</span>
+                  <span class="rating-dist-pct">(${pct}%)</span>
+                </div>
+              </button>
             `;
-          } else {
-            const starSvgTiny = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-            
-            const rowsHtml = [5, 4, 3, 2, 1].map(star => {
-              const c = counts[star] || 0;
-              const pct = Math.round((c / totalReviews) * 100);
-              return `
-                <div class="rating-dist-row">
-                  <span class="dist-label">${star} ${starSvgTiny}</span>
-                  <div class="dist-track" title="${star} Stars: ${c} review${c === 1 ? '' : 's'} (${pct}%)">
-                    <div class="dist-fill" style="width: ${pct}%;"></div>
-                  </div>
-                  <div class="dist-meta">
-                    <span class="dist-percentage">${pct}%</span>
-                    <span class="dist-count">(${c})</span>
-                  </div>
-                </div>
-              `;
-            }).join("");
+          }).join("");
 
-            summaryContainer.innerHTML = `
-              <div class="rating-summary-layout">
-                <!-- Left: Overall Rating Score & Stars -->
-                <div class="rating-summary-left">
-                  <div class="rating-summary-score">${avgRating.toFixed(1)}</div>
-                  <div class="rating-summary-stars" aria-label="${avgRating.toFixed(1)} out of 5 stars">
-                    ${renderStarsVisual(avgRating, 20)}
+          summaryContainer.innerHTML = `
+            <div class="rating-hero-card">
+              <div class="rating-hero-layout">
+                <!-- Left: Big Rating Score & Stars -->
+                <div class="rating-hero-score-col">
+                  <div class="rating-hero-big-number">${avgRating.toFixed(1)} <small>★</small></div>
+                  <div class="rating-hero-stars-row" aria-label="${avgRating.toFixed(1)} out of 5 stars">
+                    ${renderStarsVisual(avgRating, 22)}
                   </div>
-                  <div class="rating-summary-orders">Based on ${totalReviews} verified order${totalReviews === 1 ? '' : 's'}</div>
+                  <div class="rating-hero-reviews-total">${totalReviews} Customer Review${totalReviews === 1 ? '' : 's'}</div>
+                  ${likedPct !== null ? `
+                    <div class="rating-hero-recommend-badge">
+                      <span>✓</span>
+                      <span><strong>${likedPct}%</strong> recommend this product</span>
+                    </div>
+                  ` : ''}
                 </div>
 
-                <!-- Right: Star Distribution Progress Bars -->
-                <div class="rating-summary-distribution">
+                <!-- Center: Star Distribution Breakdown -->
+                <div class="rating-hero-dist-col" id="rating-dist-rows-wrap">
                   ${rowsHtml}
                 </div>
+
+                <!-- Right: High-Trust CTA -->
+                <div class="rating-hero-cta-col">
+                  <h4 class="rating-hero-cta-title">Share Your Experience</h4>
+                  <p class="rating-hero-cta-desc">Help verified buyers make confident choices by sharing your thoughts.</p>
+                  <button type="button" class="btn-hero-write-review" onclick="document.getElementById('btn-toggle-review-form')?.click();">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Write a Review
+                  </button>
+                </div>
               </div>
-            `;
-          }
+            </div>
+          `;
         }
 
-        // 4. Render Individual Customer Review Cards
+        // Render Toolbar, Filter Chips, Sort Dropdown & Review Cards
         if (container) {
-          if (totalReviews === 0) {
-            container.innerHTML = '';
-          } else {
-            container.innerHTML = uniqueReviews.map(r => {
+          let activeFilter = 'all';
+          let activeSort = 'recent';
+          let displayLimit = 5;
+
+          container.innerHTML = `
+            <div class="reviews-toolbar">
+              <div class="reviews-filter-chips" id="pdp-reviews-filter-chips">
+                <button type="button" class="review-filter-chip active" data-filter="all">
+                  All <span class="chip-count">(${totalReviews})</span>
+                </button>
+                <button type="button" class="review-filter-chip" data-filter="5">
+                  5 ★ <span class="chip-count">(${counts[5]})</span>
+                </button>
+                <button type="button" class="review-filter-chip" data-filter="4">
+                  4 ★ <span class="chip-count">(${counts[4]})</span>
+                </button>
+                <button type="button" class="review-filter-chip" data-filter="3">
+                  3 ★ <span class="chip-count">(${counts[3]})</span>
+                </button>
+                <button type="button" class="review-filter-chip" data-filter="2">
+                  2 ★ <span class="chip-count">(${counts[2]})</span>
+                </button>
+                <button type="button" class="review-filter-chip" data-filter="1">
+                  1 ★ <span class="chip-count">(${counts[1]})</span>
+                </button>
+              </div>
+              <div class="reviews-sort-wrap">
+                <label for="pdp-reviews-sort-select">Sort by:</label>
+                <select id="pdp-reviews-sort-select" class="reviews-sort-select">
+                  <option value="recent">Most Recent</option>
+                  <option value="highest">Highest Rating</option>
+                  <option value="lowest">Lowest Rating</option>
+                </select>
+              </div>
+            </div>
+            <div class="customer-reviews-list" id="pdp-reviews-cards-list"></div>
+            <div class="btn-view-all-reviews-wrap" id="pdp-reviews-pagination-wrap"></div>
+          `;
+
+          const cardsListEl = document.getElementById("pdp-reviews-cards-list");
+          const paginationWrapEl = document.getElementById("pdp-reviews-pagination-wrap");
+          const sortSelectEl = document.getElementById("pdp-reviews-sort-select");
+          const filterChipsWrap = document.getElementById("pdp-reviews-filter-chips");
+          const distRowsWrap = document.getElementById("rating-dist-rows-wrap");
+
+          function renderReviewsList() {
+            if (!cardsListEl) return;
+
+            // 1. Filter
+            let filtered = uniqueReviews.slice();
+            if (activeFilter !== 'all') {
+              const starTarget = parseInt(activeFilter, 10);
+              filtered = filtered.filter(r => Math.max(1, Math.min(5, Math.round(Number(r.rating) || 5))) === starTarget);
+            }
+
+            // 2. Sort
+            if (activeSort === 'highest') {
+              filtered.sort((a, b) => (Number(b.rating) || 5) - (Number(a.rating) || 5) || new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            } else if (activeSort === 'lowest') {
+              filtered.sort((a, b) => (Number(a.rating) || 5) - (Number(b.rating) || 5) || new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            } else {
+              filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            }
+
+            // 3. Slice for pagination
+            const visible = filtered.slice(0, displayLimit);
+
+            if (visible.length === 0) {
+              cardsListEl.innerHTML = `
+                <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 0.9rem;">
+                  No ${activeFilter}-star reviews found for this product.
+                </div>
+              `;
+              if (paginationWrapEl) paginationWrapEl.innerHTML = "";
+              return;
+            }
+
+            cardsListEl.innerHTML = visible.map(r => {
               const ratingVal = Math.max(1, Math.min(5, Number(r.rating) || 5));
               const stars = renderStarsVisual(ratingVal, 14);
-              const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) : "";
-              const authorName = escapeHTML(r.user_name || "Verified Customer");
+              const dateStr = r.created_at
+                ? new Date(r.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })
+                : "Recent";
+              const isSeed = String(r.id || '').startsWith('00005eed-');
+              const authorName = escapeHTML(r.user_name || "Customer");
               const commentText = escapeHTML(r.comment || "");
+              const isVerified = (!isSeed && (r.user_id || r.is_verified));
+              const verifiedBadge = isVerified
+                ? `<span class="review-verified-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified Purchase</span>`
+                : '';
+              const initials = (authorName.trim() || 'C')
+                .split(' ')
+                .map(n => n[0])
+                .filter(Boolean)
+                .slice(0, 2)
+                .join('')
+                .toUpperCase();
 
               return `
-                <div class="customer-review-card" data-review-id="${escapeHTML(r.id)}" style="padding: 16px 0; border-bottom: 1px solid var(--border-color);">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <strong class="review-author" style="font-size: 0.95rem; color: var(--text-main);">${authorName}</strong>
-                      <span class="verified-buyer" style="font-size: 0.72rem; color: var(--color-success); background: rgba(34, 197, 94, 0.1); padding: 1px 6px; border-radius: 4px; font-weight: 600;">✓ Verified Buyer</span>
+                <div class="customer-review-card" data-review-id="${escapeHTML(r.id)}">
+                  <div class="review-card-top-row">
+                    <div class="review-author-info">
+                      <div class="review-author-avatar">${initials}</div>
+                      <div>
+                        <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                          <strong class="review-author-name">${authorName}</strong>
+                          ${verifiedBadge}
+                        </div>
+                      </div>
                     </div>
-                    <span class="review-date" style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
+                    <span class="review-card-date">${dateStr}</span>
                   </div>
-                  <div class="review-stars" style="display: flex; align-items: center; gap: 3px; margin-bottom: 6px;">${stars}</div>
-                  <p class="review-comment" style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0; word-break: break-word;">${commentText}</p>
+                  <div class="review-card-stars">${stars}</div>
+                  <p class="review-card-text">${commentText}</p>
                 </div>
               `;
             }).join("");
-          }
-        }
 
-        // 5. Managed Supabase Realtime Subscription for instant cross-device updates
-        if (setupRealtime && !reviewsRealtimeChannel) {
-          const client = window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
-          if (client && typeof client.channel === "function") {
-            try {
-              reviewsRealtimeChannel = client.channel(`reviews-${productId}`)
-                .on('postgres_changes', {
-                  event: '*',
-                  schema: 'public',
-                  table: 'reviews',
-                  filter: `product_id=eq.${productId}`
-                }, () => {
-                  loadProductReviews(productId, false);
-                })
-                .subscribe();
-            } catch (realtimeErr) {
-              console.warn("Reviews realtime subscription notice:", realtimeErr);
+            // 4. Update Pagination Button
+            if (paginationWrapEl) {
+              if (filtered.length > 5) {
+                if (displayLimit < filtered.length) {
+                  paginationWrapEl.innerHTML = `
+                    <button type="button" class="btn-view-all-reviews" id="btn-expand-reviews">
+                      View All Reviews (${filtered.length})
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                  `;
+                  const expandBtn = document.getElementById("btn-expand-reviews");
+                  if (expandBtn) {
+                    expandBtn.addEventListener("click", () => {
+                      displayLimit = filtered.length;
+                      renderReviewsList();
+                    });
+                  }
+                } else {
+                  paginationWrapEl.innerHTML = `
+                    <button type="button" class="btn-view-all-reviews" id="btn-collapse-reviews">
+                      Show Fewer Reviews
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    </button>
+                  `;
+                  const collapseBtn = document.getElementById("btn-collapse-reviews");
+                  if (collapseBtn) {
+                    collapseBtn.addEventListener("click", () => {
+                      displayLimit = 5;
+                      renderReviewsList();
+                      container.scrollIntoView({ behavior: "smooth", block: "start" });
+                    });
+                  }
+                }
+              } else {
+                paginationWrapEl.innerHTML = "";
+              }
             }
+          }
+
+          function syncFilterUI() {
+            // Sync filter chips
+            if (filterChipsWrap) {
+              filterChipsWrap.querySelectorAll(".review-filter-chip").forEach(chip => {
+                if (chip.getAttribute("data-filter") === activeFilter) {
+                  chip.classList.add("active");
+                } else {
+                  chip.classList.remove("active");
+                }
+              });
+            }
+            // Sync distribution rows
+            if (distRowsWrap) {
+              distRowsWrap.querySelectorAll(".rating-dist-row-btn").forEach(btn => {
+                if (btn.getAttribute("data-star") === activeFilter) {
+                  btn.classList.add("active");
+                } else {
+                  btn.classList.remove("active");
+                }
+              });
+            }
+          }
+
+          // Wire filter chip clicks
+          if (filterChipsWrap) {
+            filterChipsWrap.addEventListener("click", (e) => {
+              const chip = e.target.closest(".review-filter-chip");
+              if (!chip) return;
+              const filterVal = chip.getAttribute("data-filter") || 'all';
+              activeFilter = filterVal;
+              displayLimit = 5;
+              syncFilterUI();
+              renderReviewsList();
+            });
+          }
+
+          // Wire star distribution row clicks
+          if (distRowsWrap) {
+            distRowsWrap.addEventListener("click", (e) => {
+              const btn = e.target.closest(".rating-dist-row-btn");
+              if (!btn) return;
+              const starVal = btn.getAttribute("data-star");
+              // Toggle: if clicking the active star, reset to all
+              activeFilter = (activeFilter === starVal) ? 'all' : starVal;
+              displayLimit = 5;
+              syncFilterUI();
+              renderReviewsList();
+            });
+          }
+
+          // Wire sort dropdown
+          if (sortSelectEl) {
+            sortSelectEl.addEventListener("change", () => {
+              activeSort = sortSelectEl.value;
+              renderReviewsList();
+            });
+          }
+
+          // Initial render of reviews list
+          renderReviewsList();
+        }
+      }
+
+      // 5. Managed Supabase Realtime Subscription for instant cross-device updates
+      if (setupRealtime && !reviewsRealtimeChannel && targetUuid) {
+        const client = window.supabaseClient || (typeof window.getSupabase === "function" ? window.getSupabase() : null);
+        if (client && typeof client.channel === "function") {
+          try {
+            reviewsRealtimeChannel = client.channel(`reviews-${targetUuid}`)
+              .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'reviews'
+              }, () => {
+                loadProductReviews(targetUuid, false);
+              })
+              .subscribe();
+          } catch (realtimeErr) {
+            console.warn("Reviews realtime subscription notice:", realtimeErr);
           }
         }
       }
@@ -1206,14 +1489,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
+          const prodUuid = (state.currentProduct?.supabase_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(state.currentProduct.supabase_id))
+            ? state.currentProduct.supabase_id
+            : (state.currentProduct && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(state.currentProduct.id) ? state.currentProduct.id : null);
+          const isSarojini = Boolean(state.currentProduct?.department || state.currentProduct?.catalog_type === 'sarojini');
+
           const reviewPayload = {
-            product_id: state.currentProduct.id,
+            product_id: isSarojini ? null : prodUuid,
+            sarojini_product_id: isSarojini ? prodUuid : null,
             user_id: currentUserId,
             user_name: nameInput.value.trim(),
             rating: parseInt(ratingInput.value, 10),
             comment: commentInput.value.trim(),
             status: "approved",
-            catalog_type: "main"
+            catalog_type: isSarojini ? "sarojini" : "main"
           };
 
           const { error } = await client.from("reviews").insert([reviewPayload]);
@@ -1226,14 +1515,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (box) box.style.display = "none";
 
             // Sync aggregate statistics on products table via database RPC
-            try {
-              await client.rpc("sync_product_review_stats", { p_product_id: state.currentProduct.id });
-            } catch (rpcErr) {
-              console.warn("Product stats sync notice:", rpcErr);
+            if (prodUuid && !isSarojini) {
+              try {
+                await client.rpc("sync_product_review_stats", { p_product_id: prodUuid });
+              } catch (rpcErr) {
+                console.warn("Product stats sync notice:", rpcErr);
+              }
             }
 
             // Immediately reload and re-render the rating summary and list
-            await loadProductReviews(state.currentProduct.id, false);
+            await loadProductReviews(prodUuid || state.currentProduct.id, false);
           }
         } catch (err) {
           console.error("Review submission error:", err);
@@ -1464,11 +1755,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <a href="product.html?id=${item.id}">${item.name}</a>
             </h4>
 
-            <div class="product-card-rating">
-              <span class="stars-list">${icons.star}</span>
-              <span class="stars-score">${item.rating}</span>
-              <span class="reviews-count">(${item.reviewsCount})</span>
-            </div>
+            ${typeof window.renderProductCardRating === 'function' 
+              ? window.renderProductCardRating(item.rating, item.reviewsCount || item.review_count)
+              : (() => {
+                  const r = Number(item.rating) || 0;
+                  const c = Number(item.reviewsCount || item.review_count) || 0;
+                  if (c <= 0 || r <= 0) return '<div class="product-card-rating product-card-rating-empty"><span class="stars-stars stars-stars-empty">☆☆☆☆☆</span> <span class="no-reviews-label">No reviews yet</span></div>';
+                  const rounded = Math.round(r);
+                  let s = ''; for (let i = 1; i <= 5; i++) s += (i <= rounded) ? '★' : '☆';
+                  return `<div class="product-card-rating"><span class="stars-stars">${s}</span> <span class="stars-score">${r.toFixed(1)}</span> <span class="reviews-count">(${c})</span></div>`;
+                })()}
 
             <div class="product-card-price-row">
               <span class="price-current">${formatPrice(item.price)}</span>

@@ -66,6 +66,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     detailProductRating: document.getElementById("detail-product-rating"),
     detailProductReviewCount: document.getElementById("detail-product-review-count"),
     btnOpenAddReview: document.getElementById("btn-open-add-review"),
+    btnSeedReviews: document.getElementById("btn-seed-test-reviews"),
+    btnClearSeedReviews: document.getElementById("btn-clear-seed-reviews"),
 
     searchReviewsText: document.getElementById("search-reviews-text"),
     filterReviewStatus: document.getElementById("filter-review-status"),
@@ -704,6 +706,66 @@ document.addEventListener("DOMContentLoaded", async () => {
   dom.btnOpenAddReview?.addEventListener("click", openAddReviewModal);
   dom.btnCancelAddReview?.addEventListener("click", closeAddReviewModal);
   dom.btnCloseAddModal?.addEventListener("click", closeAddReviewModal);
+
+  dom.btnSeedReviews?.addEventListener("click", async () => {
+    if (!state.currentProduct) return;
+    const prod = state.currentProduct;
+    const catType = prod.catalog_type || (prod.department ? "sarojini" : "main");
+
+    const countExisting = state.currentReviews.filter(r => r.id && r.id.startsWith("00005eed-")).length;
+    if (countExisting > 0) {
+      const reConfirm = confirm(`This product already has ${countExisting} seeded test reviews. Do you want to replace them with a fresh set of 14 reviews?`);
+      if (!reConfirm) return;
+      await window.AdminReviewSeeder.clearSeededReviews(prod.id, catType);
+    }
+
+    dom.btnSeedReviews.disabled = true;
+    dom.btnSeedReviews.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Seeding...';
+
+    try {
+      const stats = await window.AdminReviewSeeder.seedProduct(prod, catType, 14);
+      window.showToast(`Successfully seeded 14 reviews! Rating: ${stats.rating} ★ (${stats.count} total)`, "success");
+      await syncProductStats(prod.id);
+      await loadProductReviewsList(prod.id);
+    } catch (err) {
+      console.error("Seeding failed:", err);
+      window.showToast(`Failed to seed reviews: ${err.message || err}`, "error");
+    } finally {
+      dom.btnSeedReviews.disabled = false;
+      dom.btnSeedReviews.innerHTML = '<i class="fas fa-magic"></i> Seed Reviews (12–15)';
+    }
+  });
+
+  dom.btnClearSeedReviews?.addEventListener("click", async () => {
+    if (!state.currentProduct) return;
+    const prod = state.currentProduct;
+    const catType = prod.catalog_type || (prod.department ? "sarojini" : "main");
+
+    const seededList = state.currentReviews.filter(r => r.id && r.id.startsWith("00005eed-"));
+    if (seededList.length === 0) {
+      window.showToast("No seeded test reviews found for this product.", "info");
+      return;
+    }
+
+    const conf = confirm(`Are you sure you want to remove ${seededList.length} seeded test reviews? Genuine customer reviews will NOT be affected.`);
+    if (!conf) return;
+
+    dom.btnClearSeedReviews.disabled = true;
+    dom.btnClearSeedReviews.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
+
+    try {
+      const stats = await window.AdminReviewSeeder.clearSeededReviews(prod.id, catType);
+      window.showToast(`Cleaned ${seededList.length} test reviews! Rating: ${stats.rating} ★ (${stats.count} total)`, "info");
+      await syncProductStats(prod.id);
+      await loadProductReviewsList(prod.id);
+    } catch (err) {
+      console.error("Clean test reviews failed:", err);
+      window.showToast(`Failed to clean reviews: ${err.message || err}`, "error");
+    } finally {
+      dom.btnClearSeedReviews.disabled = false;
+      dom.btnClearSeedReviews.innerHTML = '<i class="fas fa-broom"></i> Clean Test Reviews';
+    }
+  });
 
   dom.btnSaveAddReview?.addEventListener("click", async () => {
     const author = dom.addReviewAuthor.value.trim();

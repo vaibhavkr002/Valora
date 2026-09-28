@@ -1126,6 +1126,13 @@
         }
 
         try {
+          // Link past guest orders matching verified email before querying
+          if (window.VeloraAuth && typeof window.VeloraAuth.linkGuestOrders === "function") {
+            try {
+              await window.VeloraAuth.linkGuestOrders();
+            } catch (_) {}
+          }
+
           const isUuidFormat = (id) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
           const orderCols = "id, order_number, total, subtotal, discount, shipping_charge, payment_method, payment_status, order_status, advance_amount, advance_paid, cod_balance, delivery_preference, free_gifts_eligible, free_gifts_items, is_full_online_payment, estimated_delivery, tracking_data, created_at, order_items(id, product_id, product_name, product_image, price, quantity, selected_size, selected_color, subtotal, catalog_type, sarojini_product_id, advance_amount, cod_balance)";
           

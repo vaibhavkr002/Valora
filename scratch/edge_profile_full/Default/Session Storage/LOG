@@ -1,0 +1,61 @@
+2026/09/29-02:14:28.103 d90 Reusing MANIFEST C:\Users\saanv\OneDrive\Desktop\Website\webu\scratch\edge_profile_full\Default\Session Storage/MANIFEST-000001
+2026/09/29-02:14:28.113 d90 Recovering log #13
+2026/09/29-02:14:28.117 d90 Level-0 table #16: started
+2026/09/29-02:14:28.143 d90 Level-0 table #16: 183927 bytes OK
+2026/09/29-02:14:28.159 d90 Delete type=0 #13
+2026/09/29-02:14:28.167 60a4 Compacting 4@0 + 1@1 files
+2026/09/29-02:14:28.423 60a4 Generated table #18@0: 16 keys, 1470031 bytes
+2026/09/29-02:14:28.424 60a4 Compacted 4@0 + 1@1 files => 1470031 bytes
+2026/09/29-02:14:28.427 60a4 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/09/29-02:14:28.437 60a4 Delete type=2 #7
+2026/09/29-02:14:28.437 60a4 Delete type=2 #9
+2026/09/29-02:14:28.437 60a4 Delete type=2 #12
+2026/09/29-02:14:28.439 60a4 Delete type=2 #14
+2026/09/29-02:14:28.439 60a4 Delete type=2 #16
+2026/09/29-02:14:44.402 60a4 Level-0 table #20: started
+2026/09/29-02:14:44.427 60a4 Level-0 table #20: 204674 bytes OK
+2026/09/29-02:14:44.431 60a4 Delete type=0 #17
+2026/09/29-02:14:52.656 60a4 Level-0 table #22: started
+2026/09/29-02:14:52.717 60a4 Level-0 table #22: 603053 bytes OK
+2026/09/29-02:14:52.723 60a4 Delete type=0 #19
+2026/09/29-02:14:59.094 60a4 Level-0 table #24: started
+2026/09/29-02:14:59.132 60a4 Level-0 table #24: 585492 bytes OK
+2026/09/29-02:14:59.140 60a4 Delete type=0 #21
+2026/09/29-02:15:04.161 60a4 Level-0 table #26: started
+2026/09/29-02:15:04.203 60a4 Level-0 table #26: 384631 bytes OK
+2026/09/29-02:15:04.292 60a4 Delete type=0 #23
+2026/09/29-02:15:04.408 d90 Compacting 4@0 + 1@1 files
+2026/09/29-02:15:04.635 d90 Generated table #27@0: 15 keys, 2109740 bytes
+2026/09/29-02:15:04.721 d90 Generated table #28@0: 22 keys, 1137005 bytes
+2026/09/29-02:15:04.721 d90 Compacted 4@0 + 1@1 files => 3246745 bytes
+2026/09/29-02:15:04.724 d90 compacted to: files[ 0 2 1 0 0 0 0 ]
+2026/09/29-02:15:04.734 d90 Delete type=2 #18
+2026/09/29-02:15:04.734 d90 Delete type=2 #20
+2026/09/29-02:15:04.734 d90 Delete type=2 #22
+2026/09/29-02:15:04.734 d90 Delete type=2 #24
+2026/09/29-02:15:04.734 d90 Delete type=2 #26
+2026/09/29-02:15:08.977 60a4 Level-0 table #30: started
+2026/09/29-02:15:09.038 60a4 Level-0 table #30: 568355 bytes OK
+2026/09/29-02:15:09.058 60a4 Delete type=0 #25
+2026/09/29-02:15:13.105 60a4 Level-0 table #32: started
+2026/09/29-02:15:13.128 60a4 Level-0 table #32: 384773 bytes OK
+2026/09/29-02:15:13.133 60a4 Delete type=0 #29
+2026/09/29-02:15:20.577 60a4 Level-0 table #34: started
+2026/09/29-02:15:20.610 60a4 Level-0 table #34: 401781 bytes OK
+2026/09/29-02:15:20.627 60a4 Delete type=0 #31
+2026/09/29-02:15:25.727 60a4 Level-0 table #36: started
+2026/09/29-02:15:25.750 60a4 Level-0 table #36: 200993 bytes OK
+2026/09/29-02:15:25.758 60a4 Delete type=0 #33
+2026/09/29-02:15:25.760 d90 Compacting 4@0 + 1@1 files
+2026/09/29-02:15:25.875 d90 Generated table #37@0: 11 keys, 2122857 bytes
+2026/09/29-02:15:25.928 d90 Generated table #38@0: 24 keys, 569244 bytes
+2026/09/29-02:15:25.928 d90 Compacted 4@0 + 1@1 files => 2692101 bytes
+2026/09/29-02:15:25.931 d90 compacted to: files[ 0 3 1 0 0 0 0 ]
+2026/09/29-02:15:25.937 d90 Delete type=2 #28
+2026/09/29-02:15:25.937 d90 Delete type=2 #30
+2026/09/29-02:15:25.937 d90 Delete type=2 #32
+2026/09/29-02:15:25.937 d90 Delete type=2 #34
+2026/09/29-02:15:25.937 d90 Delete type=2 #36
+2026/09/29-02:15:35.552 60a4 Level-0 table #40: started
+2026/09/29-02:15:35.580 60a4 Level-0 table #40: 401712 bytes OK
+2026/09/29-02:15:35.594 60a4 Delete type=0 #35

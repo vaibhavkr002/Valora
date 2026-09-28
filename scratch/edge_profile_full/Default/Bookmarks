@@ -1,0 +1,94 @@
+{
+   "checksum": "9ad85dd8d22f0e2e6d6c114f04c83bd8",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "children": [ {
+               "date_added": "13415232124737846",
+               "date_last_used": "0",
+               "guid": "81f64d9c-bacb-4181-9684-2d37ca437048",
+               "id": "8",
+               "name": "Dell Auction",
+               "show_icon": false,
+               "source": "sync",
+               "type": "url",
+               "url": "http://www.dellauction.com/",
+               "visit_count": 0
+            }, {
+               "date_added": "13415232124748323",
+               "date_last_used": "0",
+               "guid": "b2ca0deb-8112-46e1-8583-bcc755884faf",
+               "id": "9",
+               "name": "Dell",
+               "show_icon": false,
+               "source": "sync",
+               "type": "url",
+               "url": "http://www1.ap.dell.com/content/default.aspx?c=in&l=en&s=gen",
+               "visit_count": 0
+            }, {
+               "date_added": "13415232124753269",
+               "date_last_used": "0",
+               "guid": "82963267-0d59-434d-9997-82fcf9c0e558",
+               "id": "10",
+               "name": "Support.Dell.Com",
+               "show_icon": false,
+               "source": "sync",
+               "type": "url",
+               "url": "http://www.dell.com/support/home",
+               "visit_count": 0
+            } ],
+            "date_added": "13415232838385738",
+            "date_last_used": "0",
+            "date_modified": "0",
+            "guid": "96bc0707-a48b-4a3f-a510-635127254657",
+            "id": "7",
+            "name": "Dell",
+            "source": "unknown",
+            "type": "folder"
+         } ],
+         "date_added": "13435101268444723",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Favorites bar",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13435101268444723",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13435101268444723",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13435101268444723",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "Workspaces",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "CkEKHgiIgQISCNPktemgAQAAKg4QABgBIAAoBDAAOABAABIAKhhuMzN1RWt1dXZmT2l0c1g1UEo0aE5nPT1IA6AGDBKMAQgFEocBChx3UkJyWkwrNlBBOWF2S2dqTlA3SlhETGNmdnM9EiRmNDg1NmRmYS0xYjFmLTU4OWQtODQ4MC0xYjBiNmM2ZDgxYWQYACAAKAAwsuPGy8QzOL/lxsvEM0C/5cbLxDNKHG5teDY1c1FEdnhJOFRnRWV2K0ErbnR0b1NuND1lAAAAAMI+AmAAEq0BCAkSqAEKHGg5QXBLT3U0aVJjZU0vazVsVUgyaWdIOWdGOD0SJGIyY2EwZGViLTgxMTItNDZlMS04NTgzLWJjYzc1NTg4NGZhZhgAIAAoADC7+ubLxDM45/zmy8QzQOf85svEM0ocVHg3S24zbFpwWkJyb2h5aW1PU3IrMFp3M1pjPVofIh2jOGYwL0Y5aC94dy9HSnJFSTRrcEF0T1RXemdZPWUAAAAAwj4CYAUSrAEIBxKnAQocVllSZ0hmTDBqL0d3bk9JeDhlNUZHaFBVWnFjPRIkOTZiYzA3MDctYTQ4Yi00YTNmLWE1MTAtNjM1MTI3MjU0NjU3GAAgACgAMLn65svEMzip/ObLxDNAqfzmy8QzShxIMXc2ZkE0TE5xY1hUakpUaDZzV3R2ME9zblk9Wh4iHHBXTUw5a2NyUTc1TXZzNkNEbHpSNmNCcm95bz1lAAAAAMI+AmAAEowBCAEShwEKHHl4Si82ZnZrZWNyN2twNUVRekI0dFdMcGRiRT0SJDY5YTExMmJiLWM1ZjUtNWM4NC04YjI4LTI2MWFmNTU1YTcyZRgAIAAoADD55ZOctTE4qumTnLUxQKrpk5y1MUocYVJDV0xnaEY5YjVJbnFLSUR2dUovanZRa0ZjPWUAAAAAwj4CYAASjAEIAhKHAQocWWNTVG9udkVTUHdxQ3M0TDJjclZodjY4TDk4PRIkZjhmMDE1MjYtMDcxOC01M2ZhLWJhYjEtZmQ1NDMyMjA4MGM5GAAgACgAMPrlk5y1MTjA6ZOctTFAwOmTnLUxShxvUFZraHdCUmJWNjVLQ1dSMitJT05IV29PdTg9ZQAAAADCPgJgABKsAQgIEqcBChw1ZjRGMFVQaWFUZGl1WWFHMWdxcUkycGpSdnM9EiQ4MWY2NGQ5Yy1iYWNiLTQxODEtOTY4NC0yZDM3Y2E0MzcwNDgYACAAKAAwuvrmy8QzOMf85svEM0DH/ObLxDNKHDdqK0JxditzZElqRFBBUDlrRS9Dc0xtdmdqYz1aHiIcRk1JREVwdnFBZTIxOFNJdzRvZkdHNHRYck9VPWUAAAAAwj4CYAUSrQEIChKoAQocOUNYQXVxNlhzZ1BaWWhqWDUxSWk3SlVwU0s4PRIkODI5NjMyNjctMGQ1OS00MzRkLTk5OTctODJmY2Y5YzBlNTU4GAAgACgAMLz65svEMziG/ebLxDNAhv3my8QzShxQS1VMNmplVGRCUHVTR0tnT0VXMkdhSFhSRnc9Wh8iHdExOUsxOHVReTh1OU8xSjBPODUxb292bkVEMnc9ZQAAAADCPgJgBRKMAQgDEocBChxuamdEdTg4ZUNydlhwODZwRDdmSEdjcUZwODg9EiQ4YTRmMDlkMy0yODMwLTUzYzAtYTFmNS00ZGVhMDUyNWVkZTEYACAAKAAw/+WTnLUxOO3pk5y1MUDt6ZOctTFKHHl6TkIwMWNuNTRBN2NSVTB1VCsvUGdtVHRVbz1lAAAAAMI+AmAAMAA4AA==",
+   "version": 1
+}

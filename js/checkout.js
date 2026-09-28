@@ -2132,7 +2132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return {
       fullName: elements.inputFullName ? elements.inputFullName.value.trim() : "",
       phone: elements.inputPhone ? elements.inputPhone.value.trim() : "",
-      email: elements.inputEmail ? elements.inputEmail.value.trim() : "",
+      email: elements.inputEmail ? elements.inputEmail.value.trim().toLowerCase() : "",
       house: elements.inputHouse ? elements.inputHouse.value.trim() : "",
       street: elements.inputStreet ? elements.inputStreet.value.trim() : "",
       landmark: elements.inputLandmark ? elements.inputLandmark.value.trim() : "",
@@ -2381,6 +2381,12 @@ document.addEventListener("DOMContentLoaded", () => {
               pastList.unshift(orderSnapshot);
               localStorage.setItem(userOrdKey, JSON.stringify(pastList.slice(0, 50)));
             } catch (_) {}
+          } else {
+            try {
+              const guestList = JSON.parse(localStorage.getItem("velora_guest_orders") || "[]");
+              guestList.unshift(orderSnapshot);
+              localStorage.setItem("velora_guest_orders", JSON.stringify(guestList.slice(0, 50)));
+            } catch (_) {}
           }
 
           showToast("Payment verified! Redirecting...", "success");
@@ -2488,6 +2494,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const pastList = JSON.parse(localStorage.getItem(userOrdKey) || "[]");
           pastList.unshift(orderSnapshot);
           localStorage.setItem(userOrdKey, JSON.stringify(pastList.slice(0, 50)));
+        } catch (_) {}
+      } else {
+        try {
+          const guestList = JSON.parse(localStorage.getItem("velora_guest_orders") || "[]");
+          guestList.unshift(orderSnapshot);
+          localStorage.setItem("velora_guest_orders", JSON.stringify(guestList.slice(0, 50)));
         } catch (_) {}
       }
 
@@ -3050,6 +3062,14 @@ document.addEventListener("DOMContentLoaded", () => {
         pastList.unshift(orderData);
         localStorage.setItem(userOrdKey, JSON.stringify(pastList.slice(0, 50)));
       } catch (_) {}
+    } else {
+      orderData.user_id = null;
+      localStorage.setItem("velora_last_order", JSON.stringify(orderData));
+      try {
+        const guestList = JSON.parse(localStorage.getItem("velora_guest_orders") || "[]");
+        guestList.unshift(orderData);
+        localStorage.setItem("velora_guest_orders", JSON.stringify(guestList.slice(0, 50)));
+      } catch (_) {}
     }
 
     let dbOrder = null;
@@ -3058,6 +3078,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const baseOrderPayload = {
           user_id: resolvedUserId || null,
+          customer_email: elements.inputEmail ? elements.inputEmail.value.trim().toLowerCase() : null,
           order_number: orderId,
           subtotal: state.subtotal,
           discount: state.discountAmount,

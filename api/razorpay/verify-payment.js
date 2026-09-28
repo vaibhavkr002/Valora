@@ -184,10 +184,12 @@ module.exports = async (req, res) => {
       delivery.street,
       delivery.landmark
     ].filter(Boolean).join(', ') || delivery.address || '';
+    const normalizedCustomerEmail = delivery.email ? String(delivery.email).trim().toLowerCase() : null;
 
     // 7. Insert Master Order into public.orders
     const basePayload = {
       user_id: user_id || null,
+      customer_email: normalizedCustomerEmail,
       order_number: orderNumber,
       subtotal: calculated.subtotal,
       discount: calculated.discountAmount,
@@ -222,7 +224,7 @@ module.exports = async (req, res) => {
         razorpay_payment_id: razorpay_payment_id || null,
         razorpay_signature: razorpay_signature || null,
         payment_gateway: isOnline ? 'razorpay' : 'cod',
-        customer_email: delivery.email || null,
+        customer_email: normalizedCustomerEmail,
         address_type: delivery.addressType || 'Home',
         items_snapshot: calculated.items
       }
@@ -233,6 +235,7 @@ module.exports = async (req, res) => {
       // Attempt insert with extended Razorpay columns
       const fullPayload = {
         ...basePayload,
+        customer_email: normalizedCustomerEmail,
         razorpay_order_id: razorpay_order_id || null,
         razorpay_payment_id: razorpay_payment_id || null,
         razorpay_signature: razorpay_signature || null,

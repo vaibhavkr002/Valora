@@ -47,22 +47,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     const totalCart = cart.reduce((sum, it) => sum + (it.quantity || 1), 0);
 
     if (elements.navWishlistCount) elements.navWishlistCount.textContent = totalWish;
-    if (elements.countBadge) elements.countBadge.textContent = `${totalWish} ${totalWish === 1 ? 'Item' : 'Items'}`;
+    if (elements.countBadge) {
+      elements.countBadge.textContent = `${totalWish} ${totalWish === 1 ? 'Item' : 'Items'}`;
+    }
     if (elements.navCartCount) elements.navCartCount.textContent = totalCart;
     if (elements.drawerCartCount) elements.drawerCartCount.textContent = totalCart;
+    const mobileCartBadge = document.getElementById("mobile-drawer-cart-count");
+    if (mobileCartBadge) mobileCartBadge.textContent = totalCart;
   }
 
-  // Load and sort products
+  // Load and sort products with re-entrance guard
+  let isInitialLoad = true;
+  let isRefreshing = false;
   async function refreshWishlistData() {
-    if (window.VadiWishlist && typeof window.VadiWishlist.getAllProducts === 'function') {
-      loadedProducts = await window.VadiWishlist.getAllProducts();
-    } else {
-      // Fallback
-      loadedProducts = [];
-    }
+    if (isRefreshing) return;
+    isRefreshing = true;
 
-    applySorting();
-    renderWishlist();
+    try {
+      if (isInitialLoad && elements.countBadge) {
+        elements.countBadge.textContent = "Loading items...";
+      }
+
+      if (window.VadiWishlist && typeof window.VadiWishlist.getAllProducts === 'function') {
+        loadedProducts = await window.VadiWishlist.getAllProducts();
+      } else {
+        // Fallback
+        loadedProducts = [];
+      }
+
+      applySorting();
+      renderWishlist();
+      updateBadges();
+      isInitialLoad = false;
+    } catch (err) {
+      console.warn("[VadiWishlist] Failed to refresh wishlist data:", err);
+    } finally {
+      isRefreshing = false;
+    }
   }
 
   function applySorting() {
@@ -291,13 +312,155 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Mobile drawer handling
+  const mobileToggleBtn = document.getElementById("mobile-toggle-btn");
+  const mobileDrawer = document.getElementById("mobile-drawer");
+  const mobileDrawerClose = document.getElementById("mobile-drawer-close");
+  const mobileDrawerBackdrop = document.getElementById("mobile-drawer-backdrop");
+
+  function openMobileDrawer() {
+    if (!mobileDrawer) return;
+    mobileDrawer.classList.add("active");
+    mobileDrawer.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeMobileDrawer() {
+    if (!mobileDrawer) return;
+    mobileDrawer.classList.remove("active");
+    mobileDrawer.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  if (mobileToggleBtn) {
+    mobileToggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openMobileDrawer();
+    });
+  }
+  if (mobileDrawerClose) {
+    mobileDrawerClose.addEventListener("click", closeMobileDrawer);
+  }
+  if (mobileDrawerBackdrop) {
+    mobileDrawerBackdrop.addEventListener("click", closeMobileDrawer);
+  }
+
+  // Live Search & Autocomplete
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  function handleSearchQuery(query) {
+    const q = query.trim().toLowerCase();
+    if (!elements.searchResultsDropdown) return;
+
+    if (!q) {
+      elements.searchResultsDropdown.classList.remove("active");
+      if (elements.searchClearBtn) elements.searchClearBtn.classList.remove("visible");
+      return;
+    }
+
+    if (elements.searchClearBtn) elements.searchClearBtn.classList.add("visible");
+
+    const catalog = Array.isArray(window.PRODUCTS_DATA) ? window.PRODUCTS_DATA : [];
+    const matches = (window.VadiSearchUtils && typeof window.VadiSearchUtils.matchesProduct === 'function')
+      ? catalog.filter(p => p.is_active !== false && window.VadiSearchUtils.matchesProduct(p, query)).slice(0, 5)
+      : catalog.filter(p => 
+          (p.name && p.name.toLowerCase().includes(q)) ||
+          (p.category && p.category.toLowerCase().includes(q)) ||
+          (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q))
+        ).slice(0, 5);
+
+    if (matches.length === 0) {
+      elements.searchResultsDropdown.innerHTML = `
+        <div class="search-empty-state" style="padding: 16px; text-align: center; color: var(--color-text-muted); font-size: 0.9rem;">
+          No products found for "<strong>${escapeHtml(query)}</strong>"
+        </div>
+      `;
+    } else {
+      elements.searchResultsDropdown.innerHTML = matches.map(p => {
+        const pImg = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function')
+          ? window.VeloraImageUtils.resolveProductImage(p, { isAdmin: false })
+          : (p.image || '');
+        return `
+          <div class="search-result-item" data-search-result-id="${p.id}" style="cursor: pointer;">
+            <img class="search-result-thumb" src="${pImg}" alt="${escapeHtml(p.name)}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px;">
+            <div class="search-result-info">
+              <div class="search-result-title" style="font-weight: 600; font-size: 0.88rem; color: var(--color-text);">${escapeHtml(p.name)}</div>
+              <div class="search-result-meta" style="font-size: 0.78rem; color: var(--color-text-muted);">${escapeHtml(p.categoryLabel || p.category || '')} • ★ ${p.rating || '4.8'}</div>
+            </div>
+            <div class="search-result-price" style="font-weight: 700; font-size: 0.9rem; color: var(--color-primary); margin-left: auto;">${formatPrice(p.price)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    elements.searchResultsDropdown.classList.add("active");
+  }
+
+  if (elements.navSearchInput) {
+    elements.navSearchInput.addEventListener("input", (e) => {
+      handleSearchQuery(e.target.value);
+    });
+    elements.navSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const q = e.target.value.trim();
+        if (q) {
+          window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
+        }
+      }
+    });
+  }
+
+  if (elements.searchClearBtn) {
+    elements.searchClearBtn.addEventListener("click", () => {
+      if (elements.navSearchInput) elements.navSearchInput.value = "";
+      elements.searchClearBtn.classList.remove("visible");
+      if (elements.searchResultsDropdown) elements.searchResultsDropdown.classList.remove("active");
+    });
+  }
+
+  if (elements.searchResultsDropdown) {
+    elements.searchResultsDropdown.addEventListener("click", (e) => {
+      const item = e.target.closest(".search-result-item");
+      if (item && item.dataset.searchResultId) {
+        window.location.href = `product.html?id=${item.dataset.searchResultId}`;
+      }
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (elements.searchResultsDropdown && !e.target.closest(".nav-search-container")) {
+      elements.searchResultsDropdown.classList.remove("active");
+    }
+  });
+
+  // Mobile search input inside drawer
+  const mobileSearchInput = document.getElementById("mobile-search-input");
+  if (mobileSearchInput) {
+    mobileSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const q = mobileSearchInput.value.trim();
+        if (q) {
+          window.location.href = `shop.html?search=${encodeURIComponent(q)}`;
+        }
+      }
+    });
+  }
+
   // Listen for realtime or cross-store wishlist updates
-  window.addEventListener("vadi:wishlist-updated", async () => {
-    await refreshWishlistData();
-  });
-  window.addEventListener("velora:wishlist-updated", async () => {
-    await refreshWishlistData();
-  });
+  let updateDebounceTimer = null;
+  const onWishlistUpdate = () => {
+    clearTimeout(updateDebounceTimer);
+    updateDebounceTimer = setTimeout(() => {
+      refreshWishlistData();
+    }, 150);
+  };
+  window.addEventListener("vadi:wishlist-updated", onWishlistUpdate);
+  window.addEventListener("velora:wishlist-updated", onWishlistUpdate);
 
   // Initial load
   await refreshWishlistData();

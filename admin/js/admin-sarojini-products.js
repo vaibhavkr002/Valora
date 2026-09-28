@@ -312,6 +312,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       if (prod.is_deal) promoBadges.push('<span class="badge badge-pink" style="font-size:0.65rem;">Deal</span>');
       if (prod.is_new) promoBadges.push('<span class="badge badge-cyan" style="font-size:0.65rem;">New</span>');
+      if (prod.specifications && (prod.specifications.show_in_combo_offers === true || prod.specifications.show_in_combo_offers === 'true')) {
+        const comboLabel = prod.specifications.combo_offer_label || 'Buy 1 Get 1';
+        promoBadges.push(`<span class="badge" style="font-size:0.65rem; background: rgba(225, 29, 72, 0.18); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.35); font-weight:700;" title="${escapeHtml(comboLabel)}">🎁 ${escapeHtml(comboLabel)}</span>`);
+      }
 
       const catObj = allCategories.find(c => String(c.id) === String(prod.category_id));
 

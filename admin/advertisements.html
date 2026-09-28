@@ -116,6 +116,38 @@
       cursor: pointer;
       accent-color: var(--admin-accent);
     }
+    .store-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .store-badge.store-vadi {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .store-badge.store-sarojini {
+      background: rgba(225, 29, 72, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(225, 29, 72, 0.35);
+    }
+    .cross-promo-pill {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -218,7 +250,11 @@
           <i class="fas fa-chart-bar"></i>
           <span>Sarojini Analytics</span>
         </a>
-      </nav>
+              <a href="sarojini-homepage-sections.html" class="sidebar-link">
+          <i class="fas fa-layer-group" style="color: #e11d48;"></i>
+          <span>Homepage Sections</span>
+        </a>
+</nav>
       <div class="sidebar-footer">
         <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
           <i class="fas fa-external-link-alt"></i>
@@ -282,7 +318,7 @@
             <div class="metric-data">
               <span class="metric-title">Total Ads</span>
               <span class="metric-value" id="kpi-total-ads">0</span>
-              <span class="metric-sub">Across catalog</span>
+              <span class="metric-sub">Across both stores</span>
             </div>
             <div class="metric-icon-box indigo"><i class="fas fa-bullhorn"></i></div>
           </div>
@@ -296,19 +332,19 @@
           </div>
           <div class="metric-card">
             <div class="metric-data">
-              <span class="metric-title">Top Bar Ads</span>
-              <span class="metric-value" id="kpi-top-bar-ads">0</span>
-              <span class="metric-sub">Rotating announcement</span>
+              <span class="metric-title">Main VADI Ads</span>
+              <span class="metric-value" id="kpi-vadi-ads">0</span>
+              <span class="metric-sub">Main store campaigns</span>
             </div>
-            <div class="metric-icon-box amber"><i class="fas fa-window-maximize"></i></div>
+            <div class="metric-icon-box amber"><i class="fas fa-gem"></i></div>
           </div>
           <div class="metric-card">
             <div class="metric-data">
-              <span class="metric-title">Contextual & Floating</span>
-              <span class="metric-value" id="kpi-floating-ads">0</span>
-              <span class="metric-sub">Cart, PDP & popups</span>
+              <span class="metric-title">Sarojini Bazaar Ads</span>
+              <span class="metric-value" id="kpi-sarojini-ads">0</span>
+              <span class="metric-sub">Delhi street campaigns</span>
             </div>
-            <div class="metric-icon-box cyan"><i class="fas fa-layer-group"></i></div>
+            <div class="metric-icon-box cyan" style="background: rgba(225,29,72,0.15); color: #fb7185;"><i class="fas fa-store-alt"></i></div>
           </div>
         </div>
 
@@ -319,20 +355,22 @@
               <i class="fas fa-search"></i>
               <input type="text" id="filter-search" class="admin-search-input" placeholder="Search by title, badge, page...">
             </div>
+            <select id="filter-store" class="admin-select" style="font-weight: 700;">
+              <option value="all">All Stores (VADI & Sarojini)</option>
+              <option value="vadi">Main VADI Store</option>
+              <option value="sarojini">Sarojini Bazaar</option>
+              <option value="cross_promo">Cross-Store Promotions Only</option>
+            </select>
             <select id="filter-placement" class="admin-select">
               <option value="all">All Placements</option>
               <option value="top_announcement">Top Announcement Bar</option>
-              <option value="below_hero">Homepage Below Hero</option>
-              <option value="above_trending">Homepage Above Trending</option>
-              <option value="below_trending">Homepage Below Trending</option>
-              <option value="above_new_arrivals">Homepage Above New Arrivals</option>
-              <option value="below_new_arrivals">Homepage Below New Arrivals</option>
-              <option value="above_deals">Homepage Above Deals</option>
-              <option value="shop_top">Shop Page Top</option>
-              <option value="product_contextual">Product Page Contextual</option>
-              <option value="wishlist_promo">Wishlist Page Promo</option>
-              <option value="cart_drawer">Cart Drawer Promo</option>
-              <option value="checkout_secure">Checkout Page Offer</option>
+              <option value="hero">Hero / Main Promotional Banner</option>
+              <option value="between_sections_1">Between Sections (Slot 1: after Flash Deals/Trending)</option>
+              <option value="between_sections_2">Between Sections (Slot 2: after BOGO/New Arrivals)</option>
+              <option value="product_grid">Product Grid Promotional Card</option>
+              <option value="category_page">Category / Shop Page Top</option>
+              <option value="product_page">Product Page Contextual</option>
+              <option value="cart_checkout">Cart Drawer / Checkout Offer</option>
               <option value="floating">Floating Promo Card</option>
               <option value="auth_visual">Authentication — 3D Visual Card</option>
             </select>
@@ -340,6 +378,7 @@
               <option value="all">All Statuses</option>
               <option value="active">Active Only</option>
               <option value="inactive">Inactive Only</option>
+              <option value="scheduled">Scheduled / Running Only</option>
             </select>
           </div>
         </div>
@@ -356,6 +395,7 @@
               <thead>
                 <tr>
                   <th style="width: 50px;">Sort</th>
+                  <th style="width: 110px;">Store</th>
                   <th>Campaign & Copy</th>
                   <th>Placement</th>
                   <th>Target Pages</th>
@@ -393,6 +433,38 @@
         <div class="admin-modal-body">
           <div class="form-grid">
             
+            <!-- Advertisement Store Identity -->
+            <div class="admin-form-group form-group-full">
+              <label class="admin-label">Advertisement Store / Catalog *</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px;">
+                <label id="card-store-vadi" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; border: 1.5px solid #6366f1; background: rgba(99,102,241,0.1); cursor: pointer;">
+                  <input type="radio" name="ad_store" id="ad-store-vadi" value="vadi" checked style="accent-color: #6366f1; width: 16px; height: 16px;">
+                  <div>
+                    <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">Main VADI Store</div>
+                    <div style="font-size: 0.74rem; color: #94a3b8;">Luxury fashion, footwear & lifestyle</div>
+                  </div>
+                </label>
+                <label id="card-store-sarojini" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 8px; border: 1.5px solid var(--admin-card-border); background: #0f172a; cursor: pointer;">
+                  <input type="radio" name="ad_store" id="ad-store-sarojini" value="sarojini" style="accent-color: #e11d48; width: 16px; height: 16px;">
+                  <div>
+                    <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">Sarojini Bazaar</div>
+                    <div style="font-size: 0.74rem; color: #94a3b8;">Delhi street fashion, surplus & combos</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Optional Cross-Store Promotion -->
+            <div class="admin-form-group form-group-full" style="background: rgba(245, 158, 11, 0.05); border: 1px dashed rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px 16px;">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #f8fafc; font-weight: 600; font-size: 0.85rem;">
+                <input type="checkbox" id="ad-is-cross-promo" style="accent-color: #f59e0b; width: 16px; height: 16px;">
+                <span>Cross-Store Promotion (Display on opposite storefront to promote this store)</span>
+              </label>
+              <p style="font-size: 0.75rem; color: #94a3b8; margin: 4px 0 0 26px;">
+                e.g. Promote "🔥 Discover Sarojini Bazaar" on the Main VADI site, or "✨ Explore VADI Premium" on Sarojini.
+              </p>
+            </div>
+
             <!-- Title -->
             <div class="admin-form-group form-group-full">
               <label class="admin-label">Campaign Title *</label>
@@ -418,7 +490,7 @@
                 <option value="top_announcement">Top Announcement Bar</option>
                 <option value="hero_banner">Hero Showcase Banner</option>
                 <option value="section_banner">Category / Section Banner</option>
-                <option value="product_ad">Product Page Ad</option>
+                <option value="product_ad">Product Page Contextual Ad</option>
                 <option value="cart_checkout">Cart / Checkout Offer Banner</option>
                 <option value="floating_card">Floating Promo Card</option>
               </select>
@@ -429,19 +501,15 @@
               <label class="admin-label">Target Placement Location *</label>
               <select id="ad-placement" class="admin-input" required>
                 <option value="top_announcement">Top Announcement Bar (Single Rotating Bar)</option>
-                <option value="below_hero">Homepage — Below Hero Banner</option>
-                <option value="above_trending">Homepage — Above Trending Collection</option>
-                <option value="below_trending">Homepage — Below Trending Collection</option>
-                <option value="above_new_arrivals">Homepage — Above New Arrivals</option>
-                <option value="below_new_arrivals">Homepage — Below New Arrivals</option>
-                <option value="above_deals">Homepage — Above Deals & Offers</option>
-                <option value="shop_top">Shop Page — Top Promotional Header</option>
-                <option value="product_contextual">Product Details — Contextual Offer Banner</option>
-                <option value="wishlist_promo">Wishlist Page — Top Strip</option>
-                <option value="cart_drawer">Cart Drawer — Promo Inset</option>
-                <option value="checkout_secure">Checkout Page — Secure Offer Banner</option>
+                <option value="hero">Hero / Main Promotional Banner</option>
+                <option value="between_sections_1">Between Homepage Sections — Slot 1 (after Flash Deals / Trending)</option>
+                <option value="between_sections_2">Between Homepage Sections — Slot 2 (after BOGO & Combos / New Arrivals)</option>
+                <option value="product_grid">Product Grid Promotional Card</option>
+                <option value="category_page">Category / Shop Page Top Banner</option>
+                <option value="product_page">Product Details Contextual Offer Strip</option>
+                <option value="cart_checkout">Cart Drawer / Checkout Subtle Offer</option>
                 <option value="floating">Floating Promo Card (Bottom Corner)</option>
-                <option value="auth_visual">Authentication — Left Visual 3D Card (Sign In / Sign Up)</option>
+                <option value="auth_visual">Authentication — 3D Visual Card (Sign In / Sign Up)</option>
               </select>
             </div>
 
@@ -515,10 +583,56 @@
               <input type="text" id="ad-cta-text" class="admin-input" placeholder="e.g. Shop Now, Claim BOGO">
             </div>
 
-            <!-- CTA Link -->
-            <div class="admin-form-group">
-              <label class="admin-label">Button / CTA Link Target</label>
-              <input type="text" id="ad-cta-link" class="admin-input" placeholder="e.g. shop.html?tag=bogo or shop.html">
+            <!-- Destination Link Builder -->
+            <div class="admin-form-group form-group-full">
+              <label class="admin-label">Destination Link Target *</label>
+              <div style="display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap;">
+                <label style="font-size: 0.82rem; color: #cbd5e1; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="radio" name="ad_dest_type" id="dest-type-custom" value="custom" checked> Custom Page URL
+                </label>
+                <label style="font-size: 0.82rem; color: #cbd5e1; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="radio" name="ad_dest_type" id="dest-type-product" value="product"> Specific Product
+                </label>
+                <label style="font-size: 0.82rem; color: #cbd5e1; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="radio" name="ad_dest_type" id="dest-type-category" value="category"> Specific Category / Department
+                </label>
+                <label style="font-size: 0.82rem; color: #cbd5e1; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="radio" name="ad_dest_type" id="dest-type-style" value="style"> Curated Style / Vibe
+                </label>
+              </div>
+
+              <!-- Dynamic Product Picker -->
+              <div id="dest-picker-product-wrap" style="display: none; margin-bottom: 8px;">
+                <select id="ad-target-product" class="admin-input">
+                  <option value="">Select a product to promote...</option>
+                </select>
+                <span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-top: 2px;">Automatically links using the unique database Product UUID.</span>
+              </div>
+
+              <!-- Dynamic Category Picker -->
+              <div id="dest-picker-category-wrap" style="display: none; margin-bottom: 8px;">
+                <select id="ad-target-category" class="admin-input">
+                  <option value="">Select a category / department to promote...</option>
+                </select>
+              </div>
+
+              <!-- Dynamic Style Picker -->
+              <div id="dest-picker-style-wrap" style="display: none; margin-bottom: 8px;">
+                <select id="ad-target-style" class="admin-input">
+                  <option value="">Select curated style / vibe...</option>
+                  <option value="Cute & Girly">🌸 Cute &amp; Girly</option>
+                  <option value="Streetwear">🖤 Street Style</option>
+                  <option value="Party Wear">✨ Party Wear</option>
+                  <option value="Minimal">🤍 Minimal</option>
+                  <option value="Y2K">🔥 Y2K</option>
+                  <option value="Premium Look">💎 Premium Look</option>
+                </select>
+              </div>
+
+              <!-- Final Link Input -->
+              <div id="dest-picker-custom-wrap">
+                <input type="text" id="ad-cta-link" class="admin-input" placeholder="e.g. shop.html or sarojini-shop.html?tag=bogo" required>
+              </div>
             </div>
 
             <!-- Priority -->

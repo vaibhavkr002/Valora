@@ -611,13 +611,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <a href="product.html?id=${product.id}">${product.name}</a>
             </h4>
 
-            <div class="product-card-rating">
-              <span class="stars-list">
-                ${icons.star}
-              </span>
-              <span class="stars-score">${product.rating}</span>
-              <span class="reviews-count">(${product.reviewsCount})</span>
-            </div>
+            ${typeof window.renderProductCardRating === 'function' 
+              ? window.renderProductCardRating(product.rating, product.reviewsCount || product.review_count)
+              : (() => {
+                  const r = Number(product.rating) || 0;
+                  const c = Number(product.reviewsCount || product.review_count) || 0;
+                  if (c <= 0 || r <= 0) return '<div class="product-card-rating product-card-rating-empty"><span class="stars-stars stars-stars-empty">☆☆☆☆☆</span> <span class="no-reviews-label">No reviews yet</span></div>';
+                  const rounded = Math.round(r);
+                  let s = ''; for (let i = 1; i <= 5; i++) s += (i <= rounded) ? '★' : '☆';
+                  return `<div class="product-card-rating"><span class="stars-stars">${s}</span> <span class="stars-score">${r.toFixed(1)}</span> <span class="reviews-count">(${c})</span></div>`;
+                })()}
 
             <div class="product-card-price-row">
               <span class="price-current">${formatPrice(product.price)}</span>

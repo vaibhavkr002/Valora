@@ -44,6 +44,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const specMaterial = document.getElementById("spec-material");
   const specFit = document.getElementById("spec-fit");
   const specReturns = document.getElementById("spec-returns");
+  const specStyle = document.getElementById("spec-style");
+
+  // Combo Offer promotion controls
+  const prodShowComboOffer = document.getElementById("prod-show-combo-offer");
+  const prodComboLabel = document.getElementById("prod-combo-label");
+  const comboOfferLabelWrap = document.getElementById("combo-offer-label-wrap");
+  let existingItemSpecifications = {};
+
+  if (prodShowComboOffer && comboOfferLabelWrap) {
+    prodShowComboOffer.addEventListener("change", () => {
+      comboOfferLabelWrap.style.display = prodShowComboOffer.checked ? "block" : "none";
+    });
+  }
 
   // Gallery state
   let images = [];
@@ -718,9 +731,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateAdvancePreview();
     }
 
-    if (item.specifications) {
+    if (item.specifications && typeof item.specifications === 'object') {
+      existingItemSpecifications = { ...item.specifications };
       specMaterial.value = item.specifications.material || "";
       specFit.value = item.specifications.fit || "";
+      if (specStyle) specStyle.value = item.specifications.style || "";
+
+      if (prodShowComboOffer) {
+        const showCombo = Boolean(item.specifications.show_in_combo_offers === true || item.specifications.show_in_combo_offers === "true");
+        prodShowComboOffer.checked = showCombo;
+        if (comboOfferLabelWrap) comboOfferLabelWrap.style.display = showCombo ? "block" : "none";
+        if (prodComboLabel) {
+          prodComboLabel.value = item.specifications.combo_offer_label || "Buy 1 Get 1 Free";
+        }
+      }
+    } else {
+      existingItemSpecifications = {};
+      if (prodShowComboOffer) prodShowComboOffer.checked = false;
+      if (comboOfferLabelWrap) comboOfferLabelWrap.style.display = "none";
     }
     if (item.return_policy) {
       specReturns.value = item.return_policy;
@@ -778,9 +806,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       sizes: selectedSizes.length > 0 ? selectedSizes : ['Free Size'],
       colors: selectedColors,
       specifications: {
+        ...(existingItemSpecifications || {}),
         material: specMaterial.value.trim() || null,
         fit: specFit.value.trim() || null,
-        original_images: images.map(img => originalImagesMap[img] || img)
+        style: (specStyle && specStyle.value) ? specStyle.value : (existingItemSpecifications?.style || null),
+        original_images: images.map(img => originalImagesMap[img] || img),
+        show_in_combo_offers: Boolean(prodShowComboOffer && prodShowComboOffer.checked),
+        combo_offer_label: (prodShowComboOffer && prodShowComboOffer.checked && prodComboLabel) ? (prodComboLabel.value.trim() || "Buy 1 Get 1 Free") : null
       },
       return_policy: specReturns.value.trim() || '7-Day Easy Returns',
       is_active: prodIsActive.checked,

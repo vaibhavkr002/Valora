@@ -1,0 +1,466 @@
+/**
+ * VADI - Dedicated Sarojini Bazaar Search Engine & UI Controller
+ * File: js/sarojini-search.js
+ * 
+ * Exclusively queries and filters Sarojini Bazaar products (sarojini_products).
+ * Never touches or returns Main VADI luxury store products.
+ *
+ * Capabilities:
+ * - Scoped fetching from Supabase 'sarojini_products' (is_active = true)
+ * - Multi-field fuzzy matching: title, description, category, subcategory, department,
+ *   style, brand, colors, sizes, tags, specifications.
+ * - Dynamic: Newly added products in database are automatically searchable without code changes.
+ * - Desktop live autocomplete dropdown with keyboard navigation and instant preview.
+ * - Mobile full-screen search sheet/modal with quick popular filter pills and instant results.
+ * - Client-side caching (stale-while-revalidate, 3-min TTL) for 0ms sub-searches.
+ */
+
+(function () {
+  'use strict';
+
+  const CACHE_KEY = 'vadi_sarojini_search_cache_v2';
+  const CACHE_TTL_MS = 180000; // 3 minutes
+
+  function formatINR(val) {
+    if (typeof window.formatINR === 'function') return window.formatINR(val);
+    const n = Math.round(Number(val) || 0);
+    return '₹' + n.toLocaleString('en-IN');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function resolveImg(prod) {
+    if (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function') {
+      return window.VeloraImageUtils.resolveProductImage(prod, { isAdmin: false });
+    }
+    if (Array.isArray(prod.images) && prod.images.length > 0 && prod.images[0]) {
+      return prod.images[0];
+    }
+    return prod.image || 'assets/sarojni/prod-2-graphic-tee.png';
+  }
+
+  class SarojiniSearchEngine {
+    constructor() {
+      this.products = [];
+      this.isLoaded = false;
+      this.fetchPromise = null;
+      this.desktopInput = null;
+      this.desktopDropdown = null;
+      this.mobileModal = null;
+      this.mobileInput = null;
+      this.modalResults = null;
+      this.debounceTimer = null;
+    }
+
+    async init() {
+      this.bindDOM();
+      // Pre-warm cache in background without blocking initial paint
+      setTimeout(() => {
+        this.loadProducts().catch(() => {});
+      }, 500);
+    }
+
+    bindDOM() {
+      // Desktop elements
+      this.desktopInput = document.getElementById('sarojini-desktop-search-input');
+      this.desktopDropdown = document.getElementById('sarojini-search-dropdown');
+      const desktopForm = document.getElementById('sarojini-desktop-search-form');
+
+      if (this.desktopInput && this.desktopDropdown) {
+        this.desktopInput.addEventListener('input', (e) => {
+          this.handleDesktopInput(e.target.value);
+        });
+
+        this.desktopInput.addEventListener('focus', (e) => {
+          if (e.target.value.trim().length >= 2) {
+            this.handleDesktopInput(e.target.value);
+          }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!this.desktopInput.contains(e.target) && !this.desktopDropdown.contains(e.target)) {
+            this.desktopDropdown.classList.remove('active');
+          }
+        });
+      }
+
+      if (desktopForm) {
+        desktopForm.addEventListener('submit', (e) => {
+          const q = this.desktopInput ? this.desktopInput.value.trim() : '';
+          if (!q) {
+            e.preventDefault();
+            this.desktopInput && this.desktopInput.focus();
+          }
+        });
+      }
+
+      // Mobile elements
+      const mobileBtn = document.getElementById('sarojini-mobile-search-btn');
+      this.mobileModal = document.getElementById('sarojini-search-modal');
+      this.mobileInput = document.getElementById('sarojini-modal-search-input');
+      this.modalResults = document.getElementById('sarojini-modal-results');
+      const clearBtn = document.getElementById('sarojini-modal-clear-btn');
+      const closeBtn = document.getElementById('sarojini-modal-close-btn');
+      const overlay = document.getElementById('sarojini-modal-overlay');
+      const mobileForm = document.getElementById('sarojini-modal-search-form');
+
+      if (mobileBtn && this.mobileModal) {
+        mobileBtn.addEventListener('click', () => {
+          this.openMobileSearch();
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          this.closeMobileSearch();
+        });
+      }
+
+      if (overlay) {
+        overlay.addEventListener('click', () => {
+          this.closeMobileSearch();
+        });
+      }
+
+      if (clearBtn && this.mobileInput) {
+        clearBtn.addEventListener('click', () => {
+          this.mobileInput.value = '';
+          this.mobileInput.focus();
+          this.renderModalDefaultState();
+        });
+      }
+
+      if (this.mobileInput) {
+        this.mobileInput.addEventListener('input', (e) => {
+          this.handleMobileInput(e.target.value);
+        });
+      }
+
+      if (mobileForm) {
+        mobileForm.addEventListener('submit', (e) => {
+          const q = this.mobileInput ? this.mobileInput.value.trim() : '';
+          if (!q) {
+            e.preventDefault();
+            this.mobileInput && this.mobileInput.focus();
+          }
+        });
+      }
+
+      // Quick Suggestion Tag Pills
+      document.querySelectorAll('.sarojini-tag-pill, [data-sarojini-tag]').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const tag = pill.getAttribute('data-sarojini-tag') || pill.textContent.trim();
+          if (this.mobileInput) {
+            this.mobileInput.value = tag;
+            this.handleMobileInput(tag);
+          } else if (this.desktopInput) {
+            this.desktopInput.value = tag;
+            this.handleDesktopInput(tag);
+          }
+        });
+      });
+
+      // Escape key closes modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          this.closeMobileSearch();
+          if (this.desktopDropdown) this.desktopDropdown.classList.remove('active');
+        }
+      });
+    }
+
+    openMobileSearch() {
+      if (!this.mobileModal) return;
+      this.mobileModal.classList.add('active');
+      this.mobileModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+
+      // Load products if not loaded
+      this.loadProducts();
+
+      // Initial focus & render default state
+      setTimeout(() => {
+        if (this.mobileInput) {
+          this.mobileInput.focus();
+          if (this.mobileInput.value.trim()) {
+            this.handleMobileInput(this.mobileInput.value);
+          } else {
+            this.renderModalDefaultState();
+          }
+        }
+      }, 100);
+    }
+
+    closeMobileSearch() {
+      if (!this.mobileModal) return;
+      this.mobileModal.classList.remove('active');
+      this.mobileModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    async loadProducts() {
+      if (this.isLoaded && this.products.length > 0) return this.products;
+      if (this.fetchPromise) return this.fetchPromise;
+
+      // Try local session cache first
+      try {
+        const cachedStr = sessionStorage.getItem(CACHE_KEY);
+        if (cachedStr) {
+          const parsed = JSON.parse(cachedStr);
+          if (Date.now() - parsed.ts < CACHE_TTL_MS && Array.isArray(parsed.data) && parsed.data.length > 0) {
+            this.products = parsed.data;
+            this.isLoaded = true;
+            // Background revalidation
+            setTimeout(() => this.fetchFromSupabase(true), 2000);
+            return this.products;
+          }
+        }
+      } catch (e) {}
+
+      this.fetchPromise = this.fetchFromSupabase(false);
+      return this.fetchPromise;
+    }
+
+    async fetchFromSupabase(isBackground = false) {
+      const client = window.supabase || (typeof getSupabaseClient === 'function' ? getSupabaseClient() : null);
+      if (!client) {
+        console.warn('[Sarojini Search] Supabase client not available yet');
+        return [];
+      }
+
+      try {
+        // Query strictly sarojini_products where is_active is true
+        const { data, error } = await client
+          .from('sarojini_products')
+          .select('id, title, name, description, price, original_price, discount_percentage, images, image, department, category, subcategory, brand, style, colors, sizes, tags, specifications, is_active')
+          .eq('is_active', true)
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        if (Array.isArray(data)) {
+          this.products = data;
+          this.isLoaded = true;
+          try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+          } catch (e) {}
+        }
+        return this.products;
+      } catch (err) {
+        console.error('[Sarojini Search] Failed to fetch sarojini_products:', err);
+        return this.products;
+      } finally {
+        if (!isBackground) this.fetchPromise = null;
+      }
+    }
+
+    search(query) {
+      if (!query || typeof query !== 'string') return [];
+      const clean = query.trim().toLowerCase();
+      if (!clean) return [];
+
+      const terms = clean.split(/\s+/).filter(t => t.length > 0);
+
+      return this.products.filter(prod => {
+        // Build searchable corpus strictly from this Sarojini product
+        const title = (prod.title || prod.name || '').toLowerCase();
+        const desc = (prod.description || '').toLowerCase();
+        const dept = (prod.department || '').toLowerCase();
+        const cat = (prod.category || '').toLowerCase();
+        const subcat = (prod.subcategory || '').toLowerCase();
+        const brand = (prod.brand || '').toLowerCase();
+        const style = (prod.style || '').toLowerCase();
+        const colors = Array.isArray(prod.colors) ? prod.colors.join(' ').toLowerCase() : (prod.colors || '').toLowerCase();
+        const sizes = Array.isArray(prod.sizes) ? prod.sizes.join(' ').toLowerCase() : (prod.sizes || '').toLowerCase();
+        const tags = Array.isArray(prod.tags) ? prod.tags.join(' ').toLowerCase() : (prod.tags || '').toLowerCase();
+        const specs = typeof prod.specifications === 'object' ? JSON.stringify(prod.specifications).toLowerCase() : (prod.specifications || '').toLowerCase();
+
+        const corpus = `${title} ${desc} ${dept} ${cat} ${subcat} ${brand} ${style} ${colors} ${sizes} ${tags} ${specs}`;
+
+        // Every search term must match somewhere in the product corpus
+        return terms.every(term => corpus.includes(term));
+      });
+    }
+
+    handleDesktopInput(val) {
+      clearTimeout(this.debounceTimer);
+      const query = val.trim();
+
+      if (query.length < 2) {
+        if (this.desktopDropdown) this.desktopDropdown.classList.remove('active');
+        return;
+      }
+
+      this.debounceTimer = setTimeout(async () => {
+        await this.loadProducts();
+        const results = this.search(query);
+        this.renderDesktopDropdown(results, query);
+      }, 150);
+    }
+
+    renderDesktopDropdown(results, query) {
+      if (!this.desktopDropdown) return;
+
+      if (!results || results.length === 0) {
+        this.desktopDropdown.innerHTML = `
+          <div style="padding: 24px 16px; text-align: center; color: #64748b; font-size: 0.88rem;">
+            <i class="fas fa-search" style="font-size: 1.5rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+            No Sarojini finds matching "<strong>${escapeHtml(query)}</strong>"
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #94a3b8;">
+              Try searching: <em>oversized, cargo, t-shirt, hoodie, sneaker</em>
+            </div>
+          </div>
+        `;
+        this.desktopDropdown.classList.add('active');
+        return;
+      }
+
+      const topResults = results.slice(0, 6);
+      const itemsHtml = topResults.map(p => {
+        const title = p.title || p.name || 'Sarojini Find';
+        const img = resolveImg(p);
+        const price = formatINR(p.price);
+        const origPrice = p.original_price ? formatINR(p.original_price) : '';
+        const dept = p.department ? `${p.department}'s Lane` : 'Bazaar Find';
+        const pdpUrl = `sarojini-product-details.html?id=${p.id}`;
+
+        return `
+          <a href="${pdpUrl}" class="sarojini-result-item" style="border: none; border-bottom: 1px solid #f8fafc; border-radius: 0;">
+            <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" class="sarojini-result-thumb" loading="lazy">
+            <div class="sarojini-result-info">
+              <div class="sarojini-result-dept">${escapeHtml(dept)}</div>
+              <h4 class="sarojini-result-title">${escapeHtml(title)}</h4>
+              <div class="sarojini-result-price-row">
+                <span class="sarojini-result-price">${price}</span>
+                ${origPrice ? `<span class="sarojini-result-orig-price">${origPrice}</span>` : ''}
+              </div>
+            </div>
+            <i class="fas fa-chevron-right sarojini-result-arrow"></i>
+          </a>
+        `;
+      }).join('');
+
+      const viewAllHtml = `
+        <div style="padding: 10px 14px; background: #fafaf9; border-top: 1px solid #f1f5f9; text-align: center;">
+          <a href="sarojini-shop.html?search=${encodeURIComponent(query)}" style="font-size: 0.82rem; font-weight: 700; color: #ea580c; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span>View all ${results.length} bazaar results</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      `;
+
+      this.desktopDropdown.innerHTML = itemsHtml + viewAllHtml;
+      this.desktopDropdown.classList.add('active');
+    }
+
+    handleMobileInput(val) {
+      clearTimeout(this.debounceTimer);
+      const query = val.trim();
+
+      if (query.length === 0) {
+        this.renderModalDefaultState();
+        return;
+      }
+
+      this.debounceTimer = setTimeout(async () => {
+        await this.loadProducts();
+        const results = this.search(query);
+        this.renderModalResults(results, query);
+      }, 150);
+    }
+
+    renderModalDefaultState() {
+      if (!this.modalResults) return;
+
+      this.modalResults.innerHTML = `
+        <div style="padding: 24px 12px; text-align: center; color: #64748b;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">
+            Explore Authentic Sarojini Street Fashion
+          </div>
+          <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 16px 0;">
+            Search over hundreds of hand-picked Delhi street finds at bazaar-wale prices.
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <a href="sarojini-shop.html?department=WOMEN" class="sarojini-tag-pill" style="text-decoration:none;">Women's Lane</a>
+            <a href="sarojini-shop.html?department=MEN" class="sarojini-tag-pill" style="text-decoration:none;">Men's Lane</a>
+            <a href="sarojini-shop.html?department=FOOTWEAR" class="sarojini-tag-pill" style="text-decoration:none;">Sneaker Street</a>
+            <a href="sarojini-shop.html?department=BAGS" class="sarojini-tag-pill" style="text-decoration:none;">Bags Corner</a>
+          </div>
+        </div>
+      `;
+    }
+
+    renderModalResults(results, query) {
+      if (!this.modalResults) return;
+
+      if (!results || results.length === 0) {
+        this.modalResults.innerHTML = `
+          <div style="padding: 30px 16px; text-align: center; color: #64748b;">
+            <i class="fas fa-search" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0 0 6px 0;">No Sarojini finds found</h4>
+            <p style="font-size: 0.82rem; color: #94a3b8; margin: 0 0 16px 0;">
+              We couldn't find any products matching "<strong>${escapeHtml(query)}</strong>".
+            </p>
+            <div style="font-size: 0.78rem; color: #64748b;">
+              Try popular tags above or <a href="sarojini-shop.html" style="color: #ea580c; font-weight: 700; text-decoration: underline;">view all finds</a>.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const itemsHtml = results.slice(0, 10).map(p => {
+        const title = p.title || p.name || 'Sarojini Find';
+        const img = resolveImg(p);
+        const price = formatINR(p.price);
+        const origPrice = p.original_price ? formatINR(p.original_price) : '';
+        const dept = p.department ? `${p.department}'s Lane` : 'Bazaar Find';
+        const pdpUrl = `sarojini-product-details.html?id=${p.id}`;
+
+        return `
+          <a href="${pdpUrl}" class="sarojini-result-item">
+            <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" class="sarojini-result-thumb" loading="lazy">
+            <div class="sarojini-result-info">
+              <div class="sarojini-result-dept">${escapeHtml(dept)}</div>
+              <h4 class="sarojini-result-title">${escapeHtml(title)}</h4>
+              <div class="sarojini-result-price-row">
+                <span class="sarojini-result-price">${price}</span>
+                ${origPrice ? `<span class="sarojini-result-orig-price">${origPrice}</span>` : ''}
+              </div>
+            </div>
+            <i class="fas fa-chevron-right sarojini-result-arrow"></i>
+          </a>
+        `;
+      }).join('');
+
+      const viewAllHtml = `
+        <div style="padding: 14px 0; text-align: center;">
+          <a href="sarojini-shop.html?search=${encodeURIComponent(query)}" style="display: inline-block; padding: 10px 24px; background: #1c1917; color: #fff; font-size: 0.84rem; font-weight: 700; border-radius: 50px; text-decoration: none;">
+            View all ${results.length} results in Catalog &rarr;
+          </a>
+        </div>
+      `;
+
+      this.modalResults.innerHTML = itemsHtml + viewAllHtml;
+    }
+  }
+
+  // Expose global instance
+  window.VadiSarojiniSearch = new SarojiniSearchEngine();
+
+  // Auto-init on DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.VadiSarojiniSearch.init());
+  } else {
+    window.VadiSarojiniSearch.init();
+  }
+})();

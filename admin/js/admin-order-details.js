@@ -198,11 +198,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     document.getElementById("detail-order-date").textContent = new Date(order.created_at).toLocaleString("en-IN");
-    document.getElementById("detail-customer-name").textContent = order.delivery_full_name;
-    document.getElementById("detail-customer-phone").textContent = order.delivery_phone;
+    document.getElementById("detail-customer-name").textContent = order.delivery_full_name || "Guest Customer";
+    document.getElementById("detail-customer-phone").textContent = order.delivery_phone || "—";
+
+    const custEmail = order.customer_email || (order.tracking_data && order.tracking_data.customer_email) || order.delivery_email || "Not specified";
+    const elCustEmail = document.getElementById("detail-customer-email");
+    if (elCustEmail) elCustEmail.textContent = custEmail;
+
+    const elCustTypeBadge = document.getElementById("detail-customer-type-badge");
+    if (elCustTypeBadge) {
+      if (order.user_id) {
+        elCustTypeBadge.textContent = "REGISTERED MEMBER";
+        elCustTypeBadge.className = "badge badge-indigo";
+        elCustTypeBadge.style.cssText = "font-size: 0.65rem; margin-left: 6px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 700;";
+      } else {
+        elCustTypeBadge.textContent = "GUEST CHECKOUT";
+        elCustTypeBadge.className = "badge badge-muted";
+        elCustTypeBadge.style.cssText = "font-size: 0.65rem; margin-left: 6px; background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25); font-weight: 700;";
+      }
+    }
+
     document.getElementById("detail-customer-address").innerHTML = `
-      ${order.delivery_address}<br>
-      ${order.delivery_city}, ${order.delivery_state} ${order.delivery_pincode}, ${order.delivery_country}
+      ${order.delivery_address || '—'}<br>
+      ${[order.delivery_city, order.delivery_state, order.delivery_pincode].filter(Boolean).join(", ")}, ${order.delivery_country || 'India'}
     `;
 
     // Fetch store_settings order_metadata fallback if needed
