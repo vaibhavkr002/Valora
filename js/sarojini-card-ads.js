@@ -59,7 +59,7 @@
       theme: 'face-slate',
       icon: '✦',
       title: 'BAZAAR PRICE',
-      sub: 'VADI QUALITY'
+      sub: 'VALORA QUALITY'
     }
   ];
 

@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
       });
 
-    // 2. Fetch any Main VADI products that are made available in Sarojini Bazaar
+    // 2. Fetch any Main VALORA products that are made available in Sarojini Bazaar
     const mainAvailableIds = Object.keys(crossStoreMapping.main_available_in_sarojini || {})
       .filter(id => crossStoreMapping.main_available_in_sarojini[id]?.available);
 
@@ -329,13 +329,13 @@ document.addEventListener("DOMContentLoaded", async () => {
               <span class="badge badge-pink" style="font-size: 0.72rem; background: rgba(225, 29, 72, 0.15); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.3); display: inline-flex; align-items: center; gap: 4px;">
                 <i class="fas fa-store"></i> Sarojini Bazaar ✓
               </span>
-              <span class="badge badge-success" style="font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px;" title="Connected to Main VADI Store">
+              <span class="badge badge-success" style="font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px;" title="Connected to Main VALORA Store">
                 <i class="fas fa-check-circle"></i> Main Store ✓
               </span>
             </div>
             <div>
               ${prod.origin_catalog === 'sarojini'
-                ? `<button type="button" class="btn-admin-danger btn-remove-from-main" data-id="${prod.id}" data-name="${escapeHtml(prod.name)}" style="padding: 2px 7px; font-size: 0.68rem;" title="Remove availability from Main VADI Store">
+                ? `<button type="button" class="btn-admin-danger btn-remove-from-main" data-id="${prod.id}" data-name="${escapeHtml(prod.name)}" style="padding: 2px 7px; font-size: 0.68rem;" title="Remove availability from Main VALORA Store">
                      <i class="fas fa-times"></i> Remove from Main Store
                    </button>`
                 : `<button type="button" class="btn-admin-danger btn-remove-from-sarojini" data-id="${prod.id}" data-name="${escapeHtml(prod.name)}" style="padding: 2px 7px; font-size: 0.68rem;" title="Remove availability from Sarojini Bazaar">
@@ -568,7 +568,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const prodName = btn.getAttribute("data-name");
 
         if (origin === "main") {
-          if (confirm(`"${prodName}" is a Main VADI product available in Sarojini Bazaar. Remove availability from Sarojini Bazaar? The product will remain active in Main VADI Store.`)) {
+          if (confirm(`"${prodName}" is a Main VALORA product available in Sarojini Bazaar. Remove availability from Sarojini Bazaar? The product will remain active in Main VALORA Store.`)) {
             btn.disabled = true;
             try {
               await window.CrossStoreService.removeFromStore(client, {
@@ -609,7 +609,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const prodId = btn.getAttribute("data-id");
         const prodName = btn.getAttribute("data-name");
-        if (confirm(`Remove "${prodName}" from Main VADI Store? The product will remain active in Sarojini Bazaar.`)) {
+        if (confirm(`Remove "${prodName}" from Main VALORA Store? The product will remain active in Sarojini Bazaar.`)) {
           btn.disabled = true;
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
           try {
@@ -618,7 +618,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               productId: prodId,
               targetStore: "main"
             });
-            window.showToast(`Removed "${prodName}" from Main VADI Store.`, "info");
+            window.showToast(`Removed "${prodName}" from Main VALORA Store.`, "info");
             await loadProducts();
           } catch (err) {
             console.error("Remove from Main failed:", err);
@@ -635,7 +635,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const prodId = btn.getAttribute("data-id");
         const prodName = btn.getAttribute("data-name");
-        if (confirm(`Remove "${prodName}" from Sarojini Bazaar? The product will remain active in Main VADI Store.`)) {
+        if (confirm(`Remove "${prodName}" from Sarojini Bazaar? The product will remain active in Main VALORA Store.`)) {
           btn.disabled = true;
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
           try {
@@ -658,7 +658,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================================================
-  // Cross-Store Transfer Modal to Main VADI Store
+  // Cross-Store Transfer Modal to Main VALORA Store
   // ==========================================================================
   const mainModal = document.getElementById("modal-add-to-main");
   const btnCloseMainModal = document.getElementById("btn-close-main-modal");
@@ -727,7 +727,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await loadProducts();
       } catch (err) {
         console.error("Add to Main error:", err);
-        alert("Failed to make product available in Main VADI Store: " + (err.message || err));
+        alert("Failed to make product available in Main VALORA Store: " + (err.message || err));
       } finally {
         btnConfirmAddToMain.disabled = false;
         btnConfirmAddToMain.innerHTML = '<i class="fas fa-check"></i> Confirm &amp; Add to Main Store';
@@ -783,7 +783,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch (_) {}
 
         if (isCrossInMain) {
-          // Cross-listed to Main VADI: Do NOT destroy underlying product row!
+          // Cross-listed to Main VALORA: Do NOT destroy underlying product row!
           // Deactivate for Sarojini catalog while leaving active for Main Store.
           const { error: updErr } = await client
             .from("sarojini_products")

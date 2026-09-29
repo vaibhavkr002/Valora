@@ -65,7 +65,7 @@ function extractProductAttributes(product) {
   const desc = String(product.description || '').trim();
   const dept = String(product.department || '').trim();
   const cat = String(product.categories?.name || product.category || product.category_id || '').trim();
-  const brand = String(product.brand || 'VADI').trim();
+  const brand = String(product.brand || 'VALORA').trim();
   const price = Number(product.price) || 0;
   const colors = Array.isArray(product.colors) ? product.colors : [];
   const sizes = Array.isArray(product.sizes) ? product.sizes : [];

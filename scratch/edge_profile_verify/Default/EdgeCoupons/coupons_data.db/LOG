@@ -1,0 +1,5 @@
+2026/09/29-11:16:36.442 4d64 Creating DB C:\Users\saanv\OneDrive\Desktop\Website\webu\scratch\edge_profile_verify\Default\EdgeCoupons/coupons_data.db since it was missing.
+2026/09/29-11:16:36.485 4d64 Reusing MANIFEST C:\Users\saanv\OneDrive\Desktop\Website\webu\scratch\edge_profile_verify\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/09/29-11:16:39.099 22d0 Level-0 table #5: started
+2026/09/29-11:16:39.107 22d0 Level-0 table #5: 683273 bytes OK
+2026/09/29-11:16:39.110 22d0 Delete type=0 #3

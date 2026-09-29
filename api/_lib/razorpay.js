@@ -46,7 +46,7 @@ async function createRazorpayOrder({ amountInPaise, currency = 'INR', receipt, n
     payment_capture: 1, // Auto-capture payment upon authorization
     notes: {
       ...notes,
-      platform: 'VADI E-Commerce'
+      platform: 'VALORA E-Commerce'
     }
   };
 
@@ -163,7 +163,7 @@ async function createRazorpayRefund({ paymentId, amountInPaise, notes = {} }) {
   const payload = {
     notes: {
       ...notes,
-      platform: 'VADI E-Commerce'
+      platform: 'VALORA E-Commerce'
     }
   };
 

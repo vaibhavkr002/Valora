@@ -1,6 +1,6 @@
 /**
  * VELORA Admin Panel - Products Controller
- * Manages Main VADI catalog, search, stock/category/availability filters,
+ * Manages Main VALORA catalog, search, stock/category/availability filters,
  * BOGO deals modal, and cross-store availability to Sarojini Bazaar.
  */
 document.addEventListener("DOMContentLoaded", async () => {
@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ? `<button type="button" class="btn-admin-danger btn-remove-from-sarojini" data-id="${p.id}" data-name="${escapeHtml(p.name)}" style="padding: 2px 7px; font-size: 0.68rem;" title="Remove availability from Sarojini Bazaar">
                      <i class="fas fa-times"></i> Remove from Sarojini
                    </button>`
-                : `<button type="button" class="btn-admin-danger btn-remove-from-main" data-id="${p.id}" data-name="${escapeHtml(p.name)}" style="padding: 2px 7px; font-size: 0.68rem;" title="Remove availability from Main VADI Store">
+                : `<button type="button" class="btn-admin-danger btn-remove-from-main" data-id="${p.id}" data-name="${escapeHtml(p.name)}" style="padding: 2px 7px; font-size: 0.68rem;" title="Remove availability from Main VALORA Store">
                      <i class="fas fa-times"></i> Remove from Main Store
                    </button>`
               }
@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <img src="${primaryImage}" alt="${escapeHtml(p.name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid var(--admin-card-border);" onerror="this.src='https://via.placeholder.com/60';">
               <div>
                 <a href="${editUrl}" style="font-weight: 700; color: #fff; text-decoration: none; font-size: 0.92rem;">${escapeHtml(p.name)}</a>
-                <div style="font-size: 0.75rem; color: var(--admin-text-muted);">${escapeHtml(p.brand || 'VADI')}</div>
+                <div style="font-size: 0.75rem; color: var(--admin-text-muted);">${escapeHtml(p.brand || 'VALORA')}</div>
               </div>
             </div>
           </td>
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const name = btn.dataset.name;
 
         if (origin === "sarojini") {
-          if (confirm(`"${name}" is a Sarojini Bazaar product available in Main VADI Store. Remove availability from Main VADI Store? The product will remain active in Sarojini Bazaar.`)) {
+          if (confirm(`"${name}" is a Sarojini Bazaar product available in Main VALORA Store. Remove availability from Main VALORA Store? The product will remain active in Sarojini Bazaar.`)) {
             btn.disabled = true;
             const origText = btn.textContent;
             btn.textContent = "Removing...";
@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               });
               allProducts = allProducts.filter(p => String(p.id) !== String(id));
               renderProducts();
-              window.showToast(`Removed "${name}" from Main VADI Store.`, "info");
+              window.showToast(`Removed "${name}" from Main VALORA Store.`, "info");
             } catch (err) {
               console.error("Remove from Main failed:", err);
               alert("Could not remove product from Main Store: " + (err.message || "Operation failed."));
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Native Main product
         const isCrossInSarojini = Boolean(crossStoreMapping?.main_available_in_sarojini?.[id]?.available);
         const confirmMsg = isCrossInSarojini
-          ? `"${name}" is active in both Main VADI and Sarojini Bazaar. Remove it from the Main VADI catalog? It will remain active in Sarojini Bazaar.`
+          ? `"${name}" is active in both Main VALORA and Sarojini Bazaar. Remove it from the Main VALORA catalog? It will remain active in Sarojini Bazaar.`
           : `Are you sure you want to delete "${name}"? This will remove it from the Main catalog.`;
 
         if (confirm(confirmMsg)) {
@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               } catch (_) {}
             }
 
-            // Deactivate in Main VADI catalog (safe, non-destructive to historical orders)
+            // Deactivate in Main VALORA catalog (safe, non-destructive to historical orders)
             const { error: updErr } = await client
               .from("products")
               .update({
@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const prodId = btn.dataset.id;
         const prodName = btn.dataset.name;
-        if (confirm(`Remove "${prodName}" from Sarojini Bazaar? The product will remain active in Main VADI Store.`)) {
+        if (confirm(`Remove "${prodName}" from Sarojini Bazaar? The product will remain active in Main VALORA Store.`)) {
           btn.disabled = true;
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
           try {
@@ -395,7 +395,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const prodId = btn.dataset.id;
         const prodName = btn.dataset.name;
-        if (confirm(`Remove "${prodName}" from Main VADI Store? The product will remain active in Sarojini Bazaar.`)) {
+        if (confirm(`Remove "${prodName}" from Main VALORA Store? The product will remain active in Sarojini Bazaar.`)) {
           btn.disabled = true;
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
           try {
@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               productId: prodId,
               targetStore: "main"
             });
-            window.showToast(`Removed "${prodName}" from Main VADI Store.`, "info");
+            window.showToast(`Removed "${prodName}" from Main VALORA Store.`, "info");
             await loadProducts();
           } catch (err) {
             console.error("Remove from Main failed:", err);

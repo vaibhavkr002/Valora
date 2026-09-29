@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (window.VeloraCache) window.VeloraCache.invalidate();
         } catch (_) {}
 
-        window.showToast("Product updated successfully! Changes live across VADI.", "success");
+        window.showToast("Product updated successfully! Changes live across VALORA.", "success");
         setTimeout(() => {
           window.location.href = "products.html";
         }, 700);

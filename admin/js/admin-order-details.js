@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       return {
         type: 'main',
-        label: 'Main VADI',
+        label: 'Main VALORA',
         icon: '🏪',
         style: 'background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);'
       };
@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <span style="color:#10b981; font-weight:700;">FREE (₹0)</span>
               </div>
               <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:5px 8px; border-radius:6px;">
-                <span>🔑 <strong>Signature VADI Keychain</strong></span>
+                <span>🔑 <strong>Signature VALORA Keychain</strong></span>
                 <span style="color:#10b981; font-weight:700;">FREE (₹0)</span>
               </div>
             `;
@@ -611,7 +611,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const isSarojiniItem = linkInfo.isSarojini || (item.catalog_type === 'sarojini' || item.sarojini_product_id != null);
           const storeBadge = isSarojiniItem
             ? `<span class="badge" style="background: rgba(225, 29, 72, 0.15); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🛍️ SAROJINI BAZAAR</span>`
-            : `<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🏪 MAIN VADI</span>`;
+            : `<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🏪 MAIN VALORA</span>`;
 
           const recoveredBadge = item._recovered_from_snapshot
             ? `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.68rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; margin-left: 6px;" title="Restored from secure order transaction snapshot">⚡ Recovered</span>`

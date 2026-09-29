@@ -261,7 +261,7 @@ async function main() {
   }
 
   console.log('================================================================');
-  console.log('=== VADI & SAROJINI BAZAAR REVIEW SEEDING SYSTEM ===');
+  console.log('=== VALORA & SAROJINI BAZAAR REVIEW SEEDING SYSTEM ===');
   console.log('================================================================');
 
   // Case 1: Global cleanup

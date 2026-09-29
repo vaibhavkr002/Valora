@@ -203,7 +203,7 @@
           success: true,
           alreadyExists: true,
           targetId: sarojiniProduct.id,
-          message: `Product "${sarojiniProduct.name}" is already available in Main VADI Store.`
+          message: `Product "${sarojiniProduct.name}" is already available in Main VALORA Store.`
         };
       }
 
@@ -225,7 +225,7 @@
         success: true,
         alreadyExists: false,
         targetId: sarojiniProduct.id,
-        message: `Successfully made "${sarojiniProduct.name}" available in Main VADI Store!`
+        message: `Successfully made "${sarojiniProduct.name}" available in Main VALORA Store!`
       };
     },
 
@@ -268,7 +268,7 @@
 
         await this.saveMapping(client, mapping);
         this.invalidateCaches();
-        return { success: true, message: "Product availability removed from Main VADI Store." };
+        return { success: true, message: "Product availability removed from Main VALORA Store." };
       }
 
       // If no specific target, remove from any cross-store mapping where it is present

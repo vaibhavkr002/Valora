@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     { id: '11111111-1111-4111-a111-000000000003', section_type: 'categories', title: 'Shop By Category', subtitle: 'Curated Collections', is_active: true, display_order: 3, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
     { id: '11111111-1111-4111-a111-000000000004', section_type: 'brands', title: 'Shop by Brands', subtitle: 'Curated Labels', is_active: true, display_order: 4, background_config: { theme: 'dark', padding: 'compact' }, content_config: { autoplay: true } },
     { id: '11111111-1111-4111-a111-000000000005', section_type: 'advertisement', title: 'Ad Slot Above Trending', subtitle: 'Dynamic Advertisement Slot', is_active: true, display_order: 5, background_config: {}, content_config: { placement: 'above_trending' } },
-    { id: '11111111-1111-4111-a111-000000000006', section_type: 'trending', title: 'Trending Now & Customer Favorites', subtitle: 'Discover the standout styles captivating nationwide attention this week', is_active: true, display_order: 6, background_config: { theme: 'dark', padding: 'standard' }, content_config: { badge: '⚡ VADI CURATED RADAR', limit: 8, columns: 4 } },
+    { id: '11111111-1111-4111-a111-000000000006', section_type: 'trending', title: 'Trending Now & Customer Favorites', subtitle: 'Discover the standout styles captivating nationwide attention this week', is_active: true, display_order: 6, background_config: { theme: 'dark', padding: 'standard' }, content_config: { badge: '⚡ VALORA CURATED RADAR', limit: 8, columns: 4 } },
     { id: '11111111-1111-4111-a111-000000000007', section_type: 'advertisement', title: 'Ad Slot Below Trending', subtitle: 'Dynamic Advertisement Slot', is_active: true, display_order: 7, background_config: {}, content_config: { placement: 'below_trending' } },
     { id: '11111111-1111-4111-a111-000000000008', section_type: 'advertisement', title: 'Ad Slot Above New Arrivals', subtitle: 'Dynamic Advertisement Slot', is_active: true, display_order: 8, background_config: {}, content_config: { placement: 'above_new_arrivals' } },
     { id: '11111111-1111-4111-a111-000000000009', section_type: 'new_arrivals', title: 'New Arrivals', subtitle: 'Fresh silhouettes and elevated essentials just added to the catalog', is_active: true, display_order: 9, background_config: { theme: 'dark', padding: 'standard' }, content_config: { limit: 8, columns: 4 } },
@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     { id: '11111111-1111-4111-a111-000000000011', section_type: 'deals', title: "Today's Flash Deals", subtitle: 'Limited-quantity private tier discounts updating in real time', is_active: true, display_order: 11, background_config: { theme: 'dark', padding: 'standard' }, content_config: { show_timer: true, limit: 8, columns: 4 } },
     { id: '11111111-1111-4111-a111-000000000012', section_type: 'bogo', title: 'Buy 1 Get 1 Free (BOGO)', subtitle: 'Curated promotional pairing festival', is_active: true, display_order: 12, background_config: { theme: 'dark', padding: 'standard' }, content_config: { limit: 6 } },
     { id: '11111111-1111-4111-a111-000000000013', section_type: 'advertisement', title: 'Ad Slot Below BOGO', subtitle: 'Dynamic Advertisement Slot', is_active: true, display_order: 13, background_config: {}, content_config: { placement: 'below_bogo' } },
-    { id: '11111111-1111-4111-a111-000000000014', section_type: 'customer_stories', title: 'REAL CUSTOMERS. REAL LOVE.', subtitle: 'From a simple DM to a VADI experience — every order has a story', is_active: true, display_order: 14, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
-    { id: '11111111-1111-4111-a111-000000000015', section_type: 'features', title: 'Why Shop With Us?', subtitle: 'The VADI Standard', is_active: true, display_order: 15, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
+    { id: '11111111-1111-4111-a111-000000000014', section_type: 'customer_stories', title: 'REAL CUSTOMERS. REAL LOVE.', subtitle: 'From a simple DM to a VALORA experience — every order has a story', is_active: true, display_order: 14, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
+    { id: '11111111-1111-4111-a111-000000000015', section_type: 'features', title: 'Why Shop With Us?', subtitle: 'The VALORA Standard', is_active: true, display_order: 15, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
     { id: '11111111-1111-4111-a111-000000000016', section_type: 'delivery_partners', title: 'Express Shipping Network', subtitle: 'Trusted Logistics Partners', is_active: true, display_order: 16, background_config: { theme: 'dark', padding: 'compact' }, content_config: {} },
     { id: '11111111-1111-4111-a111-000000000017', section_type: 'newsletter', title: 'Unlock 15% Off Your Next Order', subtitle: 'Join The Collective', is_active: true, display_order: 17, background_config: { theme: 'dark', padding: 'compact' }, content_config: {} }
   ];
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         dom.tabStoreSarojini.classList.remove('active');
         dom.tabStoreSarojini.style.background = 'var(--admin-card-bg)';
         dom.tabStoreSarojini.style.color = 'var(--admin-text-muted)';
-        if (dom.storeScopeLabel) dom.storeScopeLabel.textContent = 'Main VADI Store';
+        if (dom.storeScopeLabel) dom.storeScopeLabel.textContent = 'Main VALORA Store';
       }
     }
     renderSectionsTable();
@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     dom.metricActive.textContent = active;
     dom.metricGrids.textContent = grids;
     dom.metricScheduled.textContent = scheduled;
-    dom.sectionCountBadge.textContent = `${total} Sections (${state.currentStore === 'sarojini' ? 'Sarojini Bazaar' : 'Main VADI'})`;
+    dom.sectionCountBadge.textContent = `${total} Sections (${state.currentStore === 'sarojini' ? 'Sarojini Bazaar' : 'Main VALORA'})`;
   }
 
   // --- Render Sections Table ---
@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <tr>
           <td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">
             <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 8px; opacity: 0.5; display: block;"></i>
-            No sections configured for ${state.currentStore === 'sarojini' ? 'Sarojini Bazaar' : 'Main VADI Store'}.
+            No sections configured for ${state.currentStore === 'sarojini' ? 'Sarojini Bazaar' : 'Main VALORA Store'}.
           </td>
         </tr>`;
       return;
@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
           <div class="form-group" id="wrap-grid-brand" style="${src === 'brand' ? '' : 'display:none;'}">
             <label class="form-label">Enter Brand Name</label>
-            <input type="text" id="cfg-grid-brand" class="admin-input" value="${escapeHtml(selBrand)}" placeholder="e.g. Nike, Jordan, VADI Atelier" style="width: 100%;">
+            <input type="text" id="cfg-grid-brand" class="admin-input" value="${escapeHtml(selBrand)}" placeholder="e.g. Nike, Jordan, VALORA Atelier" style="width: 100%;">
           </div>
         </div>
 
@@ -761,7 +761,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <img src="${p.image}" class="product-pick-thumb" alt="">
                 <div style="flex: 1; min-width: 0;">
                   <div style="font-size: 0.85rem; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(p.name)}</div>
-                  <div style="font-size: 0.75rem; color: #94a3b8;">${formatPrice(p.price)} • ${p.brand || 'VADI'}</div>
+                  <div style="font-size: 0.75rem; color: #94a3b8;">${formatPrice(p.price)} • ${p.brand || 'VALORA'}</div>
                 </div>
               </label>
             `).join('')}
@@ -952,7 +952,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       dom.dynamicConfigPanel.innerHTML = `
         <div style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-check-circle" style="color: #10b981;"></i>
-          <span>This is a core VADI storefront section. Its layout, dynamic queries, and responsive design are fully managed.</span>
+          <span>This is a core VALORA storefront section. Its layout, dynamic queries, and responsive design are fully managed.</span>
         </div>`;
     }
   }
@@ -1461,7 +1461,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <div style="background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; padding: 12px;">
               <img src="${p.image}" style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px;" alt="">
               <div style="margin-top: 10px;">
-                <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">${p.brand || 'VADI'}</div>
+                <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">${p.brand || 'VALORA'}</div>
                 <div style="font-size: 0.88rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(p.name)}</div>
                 <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-top: 4px;">${formatPrice(p.price)}</div>
               </div>

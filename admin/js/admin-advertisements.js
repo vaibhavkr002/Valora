@@ -74,7 +74,7 @@
       id: "ad-vadi-2",
       store: "vadi",
       is_cross_promotion: false,
-      title: "VADI ROYAL BOGO FESTIVAL",
+      title: "VALORA ROYAL BOGO FESTIVAL",
       subtitle: "Select any 2 pieces from our master artisanal collection — the second piece is complimentary.",
       badge_text: "ROYAL PRIVILEGE",
       ad_type: "hero_banner",
@@ -403,7 +403,7 @@
 
     if (prodSelect) {
       const items = (store === 'sarojini') ? sarojiniProducts : vadiProducts;
-      prodSelect.innerHTML = `<option value="">Select a ${store === 'sarojini' ? 'Sarojini' : 'VADI'} product to link...</option>` +
+      prodSelect.innerHTML = `<option value="">Select a ${store === 'sarojini' ? 'Sarojini' : 'VALORA'} product to link...</option>` +
         items.map(p => {
           const name = p.name || p.title || 'Product';
           const price = p.price ? ` — ₹${p.price}` : '';
@@ -416,7 +416,7 @@
         catSelect.innerHTML = `<option value="">Select a Sarojini department...</option>` +
           SAROJINI_DEPARTMENTS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
       } else {
-        catSelect.innerHTML = `<option value="">Select a VADI category...</option>` +
+        catSelect.innerHTML = `<option value="">Select a VALORA category...</option>` +
           vadiCategories.map(c => `<option value="${c.slug || c.id}">${escapeHtml(c.name)}</option>`).join('');
       }
     }
@@ -592,7 +592,7 @@
       const placementText = PLACEMENT_LABELS[ad.placement] || ad.placement;
       const isSarojini = (ad.store === 'sarojini');
       const storeBadgeClass = isSarojini ? 'store-sarojini' : 'store-vadi';
-      const storeName = isSarojini ? 'SAROJINI' : 'VADI';
+      const storeName = isSarojini ? 'SAROJINI' : 'VALORA';
       const crossPromoHtml = ad.is_cross_promotion ? `<div class="cross-promo-pill">CROSS-PROMO</div>` : '';
 
       const pagesHtml = (ad.target_pages && ad.target_pages.length > 0)
@@ -798,7 +798,7 @@
     const accentText = isSarojini ? '#fff' : '#000';
     const storePill = isSarojini
       ? `<span style="background: rgba(225,29,72,0.25); color: #fb7185; border: 1px solid rgba(225,29,72,0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.62rem; text-transform: uppercase;">SAROJINI BAZAAR</span>`
-      : `<span style="background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.62rem; text-transform: uppercase;">MAIN VADI</span>`;
+      : `<span style="background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.62rem; text-transform: uppercase;">MAIN VALORA</span>`;
     const crossTag = isCrossPromo
       ? `<span style="background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); padding: 1px 5px; border-radius: 3px; font-size: 0.6rem; font-weight: 800;">CROSS-PROMO</span>`
       : '';

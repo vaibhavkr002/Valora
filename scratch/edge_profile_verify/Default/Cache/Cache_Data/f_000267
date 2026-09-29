@@ -1,0 +1,1298 @@
+/* ============================================================================
+   VADI - SAROJINI BAZAAR SECTION STYLESHEET
+   Scoped strictly under .vadi-sarojini-bazaar
+   Delhi street shopping aesthetic + modern premium VADI e-commerce
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.vadi-sarojini-bazaar {
+  position: relative;
+  width: 100%;
+  background: #fdfdfd;
+  color: #111827;
+  padding: 40px 0 50px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.vadi-sarojini-bazaar * {
+  box-sizing: border-box;
+}
+
+.vadi-sarojini-bazaar .sarojini-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ----------------------------------------------------------------------------
+   1. TOP BANNER
+   ---------------------------------------------------------------------------- */
+.vadi-sarojini-bazaar .sarojini-banner-wrap {
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  background: #f3f4f6;
+  margin-bottom: 36px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-banner-wrap:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+}
+
+.vadi-sarojini-bazaar .sarojini-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 1536 / 386;
+}
+
+/* ----------------------------------------------------------------------------
+   2. CATEGORIES ROW
+   ---------------------------------------------------------------------------- */
+.vadi-sarojini-bazaar .sarojini-categories-section {
+  position: relative;
+  margin-bottom: 36px;
+}
+
+.vadi-sarojini-bazaar .sarojini-decor-star-left,
+.vadi-sarojini-bazaar .sarojini-decor-star-right {
+  position: absolute;
+  top: 36px;
+  width: 24px;
+  height: 24px;
+  color: #111827;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.8;
+}
+
+.vadi-sarojini-bazaar .sarojini-decor-star-left {
+  left: -8px;
+}
+
+.vadi-sarojini-bazaar .sarojini-decor-star-right {
+  right: -8px;
+}
+
+.vadi-sarojini-bazaar .sarojini-categories-track {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding: 8px 4px 12px;
+}
+
+.vadi-sarojini-bazaar .sarojini-categories-track::-webkit-scrollbar {
+  display: none;
+}
+
+.vadi-sarojini-bazaar .sarojini-category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  flex: 0 0 calc(12.5% - 14px);
+  min-width: 100px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vadi-sarojini-bazaar .sarojini-category-item:hover {
+  transform: translateY(-4px);
+}
+
+.vadi-sarojini-bazaar .sarojini-category-avatar-wrap {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
+  border: 2px solid #fecdd3; /* Soft pink accent border */
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.12);
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.25s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-category-item:hover .sarojini-category-avatar-wrap {
+  border-color: #f43f5e;
+  box-shadow: 0 8px 20px rgba(244, 63, 94, 0.25);
+  transform: scale(1.04);
+}
+
+.vadi-sarojini-bazaar .sarojini-category-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vadi-sarojini-bazaar .sarojini-category-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  line-height: 1.25;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.vadi-sarojini-bazaar .sarojini-category-price {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #4b5563;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.vadi-sarojini-bazaar .sarojini-floating-heart {
+  position: absolute;
+  top: 8px;
+  left: 17%;
+  width: 18px;
+  height: 18px;
+  fill: #f43f5e;
+  color: #f43f5e;
+  transform: rotate(-15deg);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ----------------------------------------------------------------------------
+   3. MIDDLE PROMOTIONAL HIGHLIGHT
+   ---------------------------------------------------------------------------- */
+.vadi-sarojini-bazaar .sarojini-mid-highlight-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 12px 0 32px;
+  padding: 0 4px;
+}
+
+.vadi-sarojini-bazaar .sarojini-mid-quote-wrap {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+}
+
+.vadi-sarojini-bazaar .sarojini-mid-quote-bg {
+  position: absolute;
+  inset: -6px -16px;
+  background: rgba(254, 240, 138, 0.85); /* Soft yellow brush/marker highlight */
+  border-radius: 999px;
+  z-index: 1;
+  transform: rotate(-0.6deg) skewX(-4deg);
+}
+
+.vadi-sarojini-bazaar .sarojini-mid-quote {
+  position: relative;
+  z-index: 2;
+  font-family: 'Caveat', cursive, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+
+.vadi-sarojini-bazaar .sarojini-mid-quote .quote-heart {
+  color: #f43f5e;
+  font-size: 1.8rem;
+  display: inline-block;
+  transform: scale(1.1);
+}
+
+.vadi-sarojini-bazaar .sarojini-view-all-btn {
+  position: absolute;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #111827;
+  color: #ffffff;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.2);
+}
+
+.vadi-sarojini-bazaar .sarojini-view-all-btn:hover {
+  background: #1f2937;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.3);
+}
+
+.vadi-sarojini-bazaar .sarojini-view-all-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-view-all-btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* ----------------------------------------------------------------------------
+   4. PRODUCT CAROUSEL
+   ---------------------------------------------------------------------------- */
+.vadi-sarojini-bazaar .sarojini-carousel-wrapper {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.vadi-sarojini-bazaar .sarojini-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111827;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-carousel-btn:hover {
+  background: #111827;
+  color: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.vadi-sarojini-bazaar .sarojini-carousel-btn.btn-prev {
+  left: -20px;
+}
+
+.vadi-sarojini-bazaar .sarojini-carousel-btn.btn-next {
+  right: -20px;
+}
+
+.vadi-sarojini-bazaar .sarojini-carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 6px 2px 14px;
+}
+
+.vadi-sarojini-bazaar .sarojini-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.vadi-sarojini-bazaar .sarojini-product-card {
+  flex: 0 0 calc(16.666% - 14px); /* 6 cards per row on desktop */
+  min-width: 190px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1.05;
+  background: #fbf9f5;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-media a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.35s ease;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.vadi-sarojini-bazaar .sarojini-product-card:hover .sarojini-card-img {
+  transform: scale(1.03);
+}
+
+/* Sarojini Code-Cover Watermark Overlay (Cards) */
+.sarojini-watermark-overlay {
+  position: absolute;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  background: #121110;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 0 8px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-left: none;
+  border-bottom: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+  opacity: 1 !important;
+}
+
+.sarojini-watermark-overlay.zone-bottom-right {
+  border-radius: 8px 0 0 0;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.32);
+}
+
+.sarojini-watermark-overlay.zone-bottom-center {
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+.sarojini-watermark-overlay .swm-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.sarojini-watermark-overlay .swm-dot {
+  color: #e11d48;
+  font-size: 0.58rem;
+  line-height: 1;
+}
+
+.sarojini-watermark-overlay .swm-sub {
+  font-weight: 700;
+  font-size: 0.56rem;
+  color: #fca5a5;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* Card Watermark Typography & Precision Sizing */
+.sarojini-watermark-overlay.card-watermark {
+  padding: 1.5px 5px !important;
+  border-radius: 0 4px 0 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-left: none !important;
+  border-bottom: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+  line-height: 1.05 !important;
+  z-index: 3 !important;
+}
+
+.sarojini-watermark-overlay.card-watermark.zone-bottom-right {
+  border-radius: 4px 0 0 0 !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+.sarojini-watermark-overlay.card-watermark.zone-bottom-center {
+  border-radius: 4px 4px 0 0 !important;
+  border-bottom: none !important;
+}
+
+.sarojini-watermark-overlay.card-watermark .swm-title {
+  font-size: 0.46rem !important;
+  letter-spacing: 0.5px !important;
+  gap: 3px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+}
+
+.sarojini-watermark-overlay.card-watermark .swm-dot {
+  font-size: 0.38rem !important;
+  line-height: 1 !important;
+}
+
+.sarojini-watermark-overlay.card-watermark .swm-sub {
+  font-size: 0.38rem !important;
+  letter-spacing: 0.6px !important;
+  margin-top: 1px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================================
+   SAROJINI BAZAAR PREMIUM ROTATING 3D ANIMATED ADVERTISEMENT BOARD
+   ============================================================================ */
+.sarojini-card-3d-board {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 4;
+  pointer-events: none;
+  perspective: 700px;
+  transform-style: preserve-3d;
+  animation: sarojini3dBoardFloat 3.8s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.sarojini-card-3d-board.zone-bottom-left {
+  right: auto;
+  left: 8px;
+}
+
+.sarojini-card-3d-board.zone-bottom-right {
+  left: auto;
+  right: 8px;
+}
+
+.sarojini-card-3d-board .s3d-board-wrapper {
+  position: relative;
+  width: 104px;
+  height: 28px;
+  transform-style: preserve-3d;
+}
+
+.sarojini-card-3d-board .s3d-rotator {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.34, 1.25, 0.64, 1);
+  will-change: transform;
+}
+
+.sarojini-card-3d-board .s3d-side {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.sarojini-card-3d-board .s3d-front {
+  transform: rotateY(0deg) translateZ(2.5px);
+}
+
+.sarojini-card-3d-board .s3d-back {
+  transform: rotateY(180deg) translateZ(2.5px);
+}
+
+.sarojini-card-3d-board .s3d-face-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  padding: 2px 5px;
+  box-sizing: border-box;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+.sarojini-card-3d-board .s3d-face-title {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.sarojini-card-3d-board .s3d-face-icon {
+  font-size: 0.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.sarojini-card-3d-board .s3d-face-sub {
+  font-size: 0.42rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.92;
+  line-height: 1;
+  margin-top: 1.5px;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* 5 Distinct Delhi Street Bazaar Theme Faces */
+.sarojini-card-3d-board .face-ruby {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #991b1b 100%);
+  color: #ffffff;
+  border-color: rgba(254, 202, 202, 0.35);
+}
+.sarojini-card-3d-board .face-ruby .s3d-face-sub {
+  color: #fecaca;
+}
+
+.sarojini-card-3d-board .face-charcoal {
+  background: linear-gradient(135deg, #18181b 0%, #27272a 60%, #09090b 100%);
+  color: #ffffff;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.sarojini-card-3d-board .face-charcoal .s3d-face-title {
+  background: linear-gradient(180deg, #ffffff 0%, #fde68a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.sarojini-card-3d-board .face-charcoal .s3d-face-sub {
+  color: #fbbf24;
+}
+
+.sarojini-card-3d-board .face-terracotta {
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #9a3412 100%);
+  color: #ffffff;
+  border-color: rgba(254, 215, 170, 0.35);
+}
+.sarojini-card-3d-board .face-terracotta .s3d-face-sub {
+  color: #ffedd5;
+}
+
+.sarojini-card-3d-board .face-emerald {
+  background: linear-gradient(135deg, #047857 0%, #059669 50%, #065f46 100%);
+  color: #ffffff;
+  border-color: rgba(167, 243, 208, 0.35);
+}
+.sarojini-card-3d-board .face-emerald .s3d-face-sub {
+  color: #d1fae5;
+}
+
+.sarojini-card-3d-board .face-slate {
+  background: linear-gradient(135deg, #334155 0%, #475569 55%, #1e293b 100%);
+  color: #ffffff;
+  border-color: rgba(203, 213, 225, 0.35);
+}
+.sarojini-card-3d-board .face-slate .s3d-face-sub {
+  color: #e2e8f0;
+}
+
+/* Specular Shine Sweep across the 3D Board */
+.sarojini-card-3d-board .s3d-face-shine {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.05) 75%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: sarojini3dBoardShine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Floating Soft Elevation Shadow beneath Board */
+.sarojini-card-3d-board .s3d-board-shadow {
+  position: absolute;
+  bottom: -5px;
+  left: 10%;
+  width: 80%;
+  height: 6px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(2px);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.sarojini-card-3d-board .s3d-board-shadow.s3d-shadow-turning {
+  transform: scale(0.72);
+  opacity: 0.28;
+}
+
+/* Smooth 3D Board Floating Motion */
+@keyframes sarojini3dBoardFloat {
+  0% {
+    transform: perspective(700px) rotateX(3deg) translateY(0) translateZ(4px);
+  }
+  50% {
+    transform: perspective(700px) rotateX(-2deg) translateY(-2px) translateZ(6px);
+  }
+  100% {
+    transform: perspective(700px) rotateX(3deg) translateY(1.5px) translateZ(4px);
+  }
+}
+
+/* Subtle Specular Board Shine Sweep */
+@keyframes sarojini3dBoardShine {
+  0%, 65% {
+    left: -80%;
+  }
+  88%, 100% {
+    left: 150%;
+  }
+}
+
+/* Mobile & Small Card Responsiveness */
+@media (max-width: 768px) {
+  .sarojini-card-3d-board {
+    bottom: 6px;
+    right: 6px;
+  }
+  .sarojini-card-3d-board.zone-bottom-left {
+    left: 6px;
+  }
+  .sarojini-card-3d-board.zone-bottom-right {
+    right: 6px;
+  }
+  .sarojini-card-3d-board .s3d-board-wrapper {
+    width: 92px;
+    height: 25px;
+  }
+  .sarojini-card-3d-board .s3d-side {
+    border-radius: 5px;
+  }
+  .sarojini-card-3d-board .s3d-face-title {
+    font-size: 0.47rem;
+    gap: 2px;
+  }
+  .sarojini-card-3d-board .s3d-face-icon {
+    font-size: 0.45rem;
+  }
+  .sarojini-card-3d-board .s3d-face-sub {
+    font-size: 0.38rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sarojini-card-3d-board {
+    bottom: 5px;
+    right: 5px;
+  }
+  .sarojini-card-3d-board.zone-bottom-left {
+    left: 5px;
+  }
+  .sarojini-card-3d-board.zone-bottom-right {
+    right: 5px;
+  }
+  .sarojini-card-3d-board .s3d-board-wrapper {
+    width: 86px;
+    height: 23px;
+  }
+  .sarojini-card-3d-board .s3d-side {
+    border-radius: 4.5px;
+  }
+  .sarojini-card-3d-board .s3d-face-title {
+    font-size: 0.42rem;
+    letter-spacing: 0.3px;
+  }
+  .sarojini-card-3d-board .s3d-face-icon {
+    font-size: 0.4rem;
+  }
+  .sarojini-card-3d-board .s3d-face-sub {
+    font-size: 0.34rem;
+  }
+}
+
+.vadi-sarojini-bazaar .sarojini-card-wishlist-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.2s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-wishlist-btn:hover {
+  transform: scale(1.15);
+  color: #ef4444;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-wishlist-btn.active {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vadi-sarojini-bazaar .sarojini-card-price-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.vadi-sarojini-bazaar .sarojini-price-current {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.vadi-sarojini-bazaar .sarojini-price-original {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.vadi-sarojini-bazaar .sarojini-discount-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: #ffe4e6;
+  color: #e11d48;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* ----------------------------------------------------------------------------
+   5. BENEFITS STRIP
+   ---------------------------------------------------------------------------- */
+.vadi-sarojini-bazaar .sarojini-benefits-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 24px;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefits-list {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefit-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111827;
+  flex-shrink: 0;
+  font-size: 1.15rem;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefit-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefit-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefit-sub {
+  font-size: 0.76rem;
+  color: #6b7280;
+  line-height: 1.25;
+}
+
+.vadi-sarojini-bazaar .sarojini-benefits-badge-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.vadi-sarojini-bazaar .sarojini-badge-img {
+  height: 46px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transform: rotate(-1.5deg);
+  transition: transform 0.25s ease;
+}
+
+.vadi-sarojini-bazaar .sarojini-badge-img:hover {
+  transform: rotate(0deg) scale(1.04);
+}
+
+/* ----------------------------------------------------------------------------
+   6. RESPONSIVE MOBILE ADAPTATIONS (<= 767px: 320px - 430px)
+   ---------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .vadi-sarojini-bazaar {
+    padding: 0 0 20px !important;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-container {
+    padding: 0 10px !important;
+  }
+
+  /* Banner: slightly larger width/presentation, balanced with top ad, zero distortion */
+  .vadi-sarojini-bazaar .sarojini-banner-wrap {
+    width: 100% !important;
+    border-radius: 14px !important;
+    margin-bottom: 16px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+    display: block !important;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-banner-img {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1536 / 386 !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  /* Category Circles Mobile */
+  .vadi-sarojini-bazaar .sarojini-decor-star-left,
+  .vadi-sarojini-bazaar .sarojini-decor-star-right {
+    display: none;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-categories-track {
+    gap: 12px;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-category-item {
+    flex: 0 0 84px;
+    min-width: 84px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-category-avatar-wrap {
+    width: 74px;
+    height: 74px;
+    margin-bottom: 6px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-category-title {
+    font-size: 0.78rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-category-price {
+    font-size: 0.7rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-floating-heart {
+    left: 10%;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Mid Quote Mobile */
+  .vadi-sarojini-bazaar .sarojini-mid-highlight-row {
+    flex-direction: column;
+    gap: 16px;
+    margin: 16px 0 24px;
+    text-align: center;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-mid-quote-wrap {
+    width: 100%;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-mid-quote {
+    font-size: 1.55rem;
+    justify-content: center;
+    line-height: 1.15;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-view-all-btn {
+    position: static;
+    display: inline-flex;
+  }
+
+  /* Carousel Mobile */
+  .vadi-sarojini-bazaar .sarojini-carousel-btn {
+    display: none; /* Swipe on mobile */
+  }
+
+  .vadi-sarojini-bazaar .sarojini-carousel-track {
+    gap: 12px;
+    padding: 4px 0 14px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-product-card {
+    flex: 0 0 160px;
+    min-width: 160px;
+    border-radius: 12px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-card-body {
+    padding: 10px 10px 12px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-card-title {
+    font-size: 0.82rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-price-current {
+    font-size: 0.95rem;
+  }
+
+  /* Benefits Strip Mobile */
+  .vadi-sarojini-bazaar .sarojini-benefits-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    padding-top: 20px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefits-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 12px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefit-item {
+    gap: 8px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefit-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefit-title {
+    font-size: 0.76rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefit-sub {
+    font-size: 0.68rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefits-badge-wrap {
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-badge-img {
+    height: 40px;
+  }
+}
+
+/* Tablet adjustments (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .vadi-sarojini-bazaar .sarojini-product-card {
+    flex: 0 0 calc(33.333% - 12px);
+  }
+
+  .vadi-sarojini-bazaar .sarojini-mid-quote {
+    font-size: 1.8rem;
+  }
+
+  .vadi-sarojini-bazaar .sarojini-benefits-list {
+    gap: 16px;
+  }
+}
+
+/* ============================================================================
+   SAROJINI BAZAAR - ANIMATED PROMOTIONAL OVERLAY STRIP
+   Elevates product cards with luxury street-market branding while elegantly
+   covering unwanted supplier / bottom-edge source codes.
+   ============================================================================ */
+.sarojini-promo-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 34px;
+  background: linear-gradient(135deg, #fffdfa 0%, #fff1f3 100%);
+  border-top: 1.5px solid rgba(190, 18, 60, 0.28);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  box-shadow: 0 -3px 12px rgba(28, 25, 23, 0.08), 0 -1px 3px rgba(190, 18, 60, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 6px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.sarojini-promo-badge {
+  background: linear-gradient(135deg, #9f1239 0%, #be123c 100%);
+  color: #ffffff;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(159, 18, 57, 0.25);
+  z-index: 2;
+}
+
+.sarojini-promo-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #facc15;
+  box-shadow: 0 0 4px #facc15;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sarojini-promo-ticker {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(90deg, transparent 0%, black 8px, black calc(100% - 8px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8px, black calc(100% - 8px), transparent 100%);
+}
+
+.sarojini-promo-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: sarojiniContinuousMarquee 11s linear infinite;
+  will-change: transform;
+}
+
+.sarojini-promo-group {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sarojini-promo-item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.63rem;
+  font-weight: 750;
+  color: #1c1917;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0 2px;
+}
+
+.sarojini-promo-bullet {
+  color: #e11d48;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 0 5px;
+  opacity: 0.75;
+  display: inline-block;
+}
+
+.sarojini-promo-heart {
+  color: #e11d48;
+  font-size: 0.68rem;
+  margin-right: 3px;
+  display: inline-block;
+}
+
+/* Pause animation on card/PDP hover for pleasant readability */
+.sarojini-product-card:hover .sarojini-promo-track,
+.product-card:hover .sarojini-promo-track,
+.pdp-main-media-wrap:hover .sarojini-promo-track {
+  animation-play-state: paused;
+}
+
+/* Seamless infinite continuous horizontal marquee animation */
+@keyframes sarojiniContinuousMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* PDP Main Image Specific Sizing */
+.sarojini-promo-strip.sarojini-promo-strip-pdp {
+  height: 42px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  padding: 0 8px 0 10px;
+  gap: 8px;
+}
+
+.sarojini-promo-strip-pdp .sarojini-promo-badge {
+  font-size: 0.64rem;
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+
+.sarojini-promo-strip-pdp .sarojini-promo-item {
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+}
+
+.sarojini-promo-strip-pdp .sarojini-promo-bullet {
+  font-size: 0.8rem;
+  padding: 0 7px;
+}
+
+/* Responsive Mobile Adjustments */
+@media (max-width: 768px) {
+  .sarojini-promo-strip {
+    height: 28px;
+    gap: 4px;
+    padding: 0 4px 0 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+  }
+
+  .sarojini-promo-badge {
+    font-size: 0.48rem;
+    padding: 2px 4px;
+    letter-spacing: 0.03em;
+  }
+
+  .sarojini-promo-dot {
+    width: 3.5px;
+    height: 3.5px;
+  }
+
+  .sarojini-promo-item {
+    font-size: 0.54rem;
+    letter-spacing: 0.02em;
+  }
+
+  .sarojini-promo-bullet {
+    font-size: 0.58rem;
+    padding: 0 3px;
+  }
+
+  .sarojini-promo-strip.sarojini-promo-strip-pdp {
+    height: 34px;
+    padding: 0 6px 0 6px;
+    gap: 6px;
+  }
+
+  .sarojini-promo-strip-pdp .sarojini-promo-badge {
+    font-size: 0.54rem;
+    padding: 2.5px 5px;
+  }
+
+  .sarojini-promo-strip-pdp .sarojini-promo-item {
+    font-size: 0.62rem;
+  }
+}
+
+

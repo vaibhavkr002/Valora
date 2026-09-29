@@ -467,7 +467,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const productPayload = {
         name,
-        brand: brand || "VADI Atelier",
+        brand: brand || "VALORA Atelier",
         slug,
         category_id: categoryId || null,
         description,

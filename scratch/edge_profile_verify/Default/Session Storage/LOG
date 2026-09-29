@@ -1,0 +1,38 @@
+2026/09/29-11:22:39.993 2f10 Reusing MANIFEST C:\Users\saanv\OneDrive\Desktop\Website\webu\scratch\edge_profile_verify\Default\Session Storage/MANIFEST-000001
+2026/09/29-11:22:39.999 2f10 Recovering log #23
+2026/09/29-11:22:40.010 2f10 Level-0 table #26: started
+2026/09/29-11:22:40.028 2f10 Level-0 table #26: 786283 bytes OK
+2026/09/29-11:22:40.040 2f10 Delete type=0 #23
+2026/09/29-11:22:40.042 3f3c Compacting 4@0 + 2@1 files
+2026/09/29-11:22:40.125 3f3c Generated table #28@0: 35 keys, 2168513 bytes
+2026/09/29-11:22:40.174 3f3c Generated table #29@0: 39 keys, 1427271 bytes
+2026/09/29-11:22:40.174 3f3c Compacted 4@0 + 2@1 files => 3595784 bytes
+2026/09/29-11:22:40.175 3f3c compacted to: files[ 0 2 1 0 0 0 0 ]
+2026/09/29-11:22:40.177 3f3c Delete type=2 #17
+2026/09/29-11:22:40.177 3f3c Delete type=2 #18
+2026/09/29-11:22:40.177 3f3c Delete type=2 #20
+2026/09/29-11:22:40.177 3f3c Delete type=2 #22
+2026/09/29-11:22:40.177 3f3c Delete type=2 #24
+2026/09/29-11:22:40.177 3f3c Delete type=2 #26
+2026/09/29-11:22:51.658 3f3c Level-0 table #31: started
+2026/09/29-11:22:51.691 3f3c Level-0 table #31: 511444 bytes OK
+2026/09/29-11:22:51.695 3f3c Delete type=0 #27
+2026/09/29-11:22:57.122 3f3c Level-0 table #33: started
+2026/09/29-11:22:57.139 3f3c Level-0 table #33: 337098 bytes OK
+2026/09/29-11:22:57.142 3f3c Delete type=0 #30
+2026/09/29-11:23:00.483 3f3c Level-0 table #35: started
+2026/09/29-11:23:00.503 3f3c Level-0 table #35: 298137 bytes OK
+2026/09/29-11:23:00.506 3f3c Delete type=0 #32
+2026/09/29-11:23:07.755 3f3c Level-0 table #37: started
+2026/09/29-11:23:07.761 3f3c Level-0 table #37: 40213 bytes OK
+2026/09/29-11:23:07.764 3f3c Delete type=0 #34
+2026/09/29-11:23:07.764 3f3c Compacting 4@0 + 1@1 files
+2026/09/29-11:23:07.803 3f3c Generated table #38@0: 42 keys, 2105875 bytes
+2026/09/29-11:23:07.817 3f3c Generated table #39@0: 38 keys, 507588 bytes
+2026/09/29-11:23:07.817 3f3c Compacted 4@0 + 1@1 files => 2613463 bytes
+2026/09/29-11:23:07.819 3f3c compacted to: files[ 0 3 1 0 0 0 0 ]
+2026/09/29-11:23:07.820 3f3c Delete type=2 #29
+2026/09/29-11:23:07.820 3f3c Delete type=2 #31
+2026/09/29-11:23:07.820 3f3c Delete type=2 #33
+2026/09/29-11:23:07.820 3f3c Delete type=2 #35
+2026/09/29-11:23:07.820 3f3c Delete type=2 #37

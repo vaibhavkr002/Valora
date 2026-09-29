@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (items.length === 0) {
       return {
         type: "main",
-        label: "MAIN VADI",
+        label: "MAIN VALORA",
         icon: "🏪",
         color: "#94a3b8",
         bg: "rgba(255, 255, 255, 0.05)",
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       return {
         type: "main",
-        label: "MAIN VADI",
+        label: "MAIN VALORA",
         icon: "🏪",
         color: "#94a3b8",
         bg: "rgba(255, 255, 255, 0.05)",

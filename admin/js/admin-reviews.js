@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     dom.productsGrid.innerHTML = filtered.map(product => {
       const stats = state.reviewsSummary[product.id] || { approvedCount: 0, approvedAvg: 0 };
       const categoryName = product.categories?.name || "Apparel";
-      const brand = product.brand || "VADI";
+      const brand = product.brand || "VALORA";
       const imageSrc = getProductPrimaryImage(product);
       const priceFormatted = `₹${(product.price || 0).toLocaleString("en-IN")}`;
       const starsDisplay = renderStarVisual(stats.approvedAvg);
@@ -479,7 +479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     dom.detailProductImg.src = getProductPrimaryImage(product);
     dom.detailProductName.textContent = product.name;
     dom.detailProductCategory.textContent = product.categories?.name || "General";
-    dom.detailProductBrand.textContent = product.brand || "VADI";
+    dom.detailProductBrand.textContent = product.brand || "VALORA";
     dom.detailProductPrice.textContent = `₹${(product.price || 0).toLocaleString("en-IN")}`;
     dom.detailProductRating.textContent = `${stats.approvedAvg.toFixed(1)} ★`;
     dom.detailProductReviewCount.textContent = stats.approvedCount;

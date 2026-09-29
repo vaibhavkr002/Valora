@@ -1,0 +1,27 @@
+2026/09/29-11:20:03.308 50a0 Reusing MANIFEST C:\Users\saanv\OneDrive\Desktop\Website\webu\scratch\edge_profile_verify\Default\Session Storage/MANIFEST-000001
+2026/09/29-11:20:03.313 50a0 Recovering log #10
+2026/09/29-11:20:03.420 50a0 Level-0 table #13: started
+2026/09/29-11:20:03.501 50a0 Level-0 table #13: 786178 bytes OK
+2026/09/29-11:20:03.513 50a0 Delete type=0 #10
+2026/09/29-11:20:15.310 3148 Level-0 table #16: started
+2026/09/29-11:20:15.332 3148 Level-0 table #16: 507480 bytes OK
+2026/09/29-11:20:15.336 3148 Delete type=0 #14
+2026/09/29-11:20:15.338 50a0 Compacting 4@0 + 1@1 files
+2026/09/29-11:20:15.481 50a0 Generated table #17@0: 36 keys, 2134126 bytes
+2026/09/29-11:20:15.490 50a0 Generated table #18@0: 11 keys, 686 bytes
+2026/09/29-11:20:15.491 50a0 Compacted 4@0 + 1@1 files => 2134812 bytes
+2026/09/29-11:20:15.501 50a0 compacted to: files[ 0 2 1 0 0 0 0 ]
+2026/09/29-11:20:15.503 50a0 Delete type=2 #7
+2026/09/29-11:20:15.503 50a0 Delete type=2 #9
+2026/09/29-11:20:15.503 50a0 Delete type=2 #11
+2026/09/29-11:20:15.503 50a0 Delete type=2 #13
+2026/09/29-11:20:15.503 50a0 Delete type=2 #16
+2026/09/29-11:20:20.291 3148 Level-0 table #20: started
+2026/09/29-11:20:20.311 3148 Level-0 table #20: 463681 bytes OK
+2026/09/29-11:20:20.319 3148 Delete type=0 #15
+2026/09/29-11:20:24.412 3148 Level-0 table #22: started
+2026/09/29-11:20:24.419 3148 Level-0 table #22: 171661 bytes OK
+2026/09/29-11:20:24.422 3148 Delete type=0 #19
+2026/09/29-11:20:29.630 3148 Level-0 table #24: started
+2026/09/29-11:20:29.645 3148 Level-0 table #24: 40216 bytes OK
+2026/09/29-11:20:29.649 3148 Delete type=0 #21

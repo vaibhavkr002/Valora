@@ -462,7 +462,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           cleanerStatusBanner.style.color = "#10b981";
         }
         if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-shield-alt";
-        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Code Detected:</strong> Embedded code found at <em>${result.zone}</em> (${result.boundingBox?.code || 'S-Code'}). Dynamic ● VADI STORE / SAROJINI BAZAAR badge applied.`;
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Code Detected:</strong> Embedded code found at <em>${result.zone}</em> (${result.boundingBox?.code || 'S-Code'}). Dynamic ● VALORA STORE / SAROJINI BAZAAR badge applied.`;
         if (cleanerDetectedTag) cleanerDetectedTag.textContent = result.boundingBox?.code ? `Code: ${result.boundingBox.code}` : `Target: ${result.zone}`;
       } else if (currentCleanerSelectedZone === 'none') {
         if (cleanerStatusBanner) {
@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           cleanerStatusBanner.style.color = "#10b981";
         }
         if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-magic";
-        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Watermark Applied:</strong> Dynamic ● VADI STORE / SAROJINI BAZAAR badge positioned at <em>${result.zone}</em>. Product details 100% preserved.`;
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Watermark Applied:</strong> Dynamic ● VALORA STORE / SAROJINI BAZAAR badge positioned at <em>${result.zone}</em>. Product details 100% preserved.`;
         if (cleanerDetectedTag) cleanerDetectedTag.textContent = `Target: ${result.zone}`;
       }
 
@@ -560,7 +560,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderImagePreviews();
       }
       closeCleanerModal();
-      window.showToast?.("✦ VADI STORE watermarked image added to gallery!", "success");
+      window.showToast?.("✦ VALORA STORE watermarked image added to gallery!", "success");
     });
   }
 

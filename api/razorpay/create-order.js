@@ -100,7 +100,7 @@ module.exports = async (req, res) => {
     await recordPaymentTransaction({
       transaction_reference: rzpOrder.id,
       merchant_vpa: 'razorpay',
-      merchant_name: 'VADI E-Commerce',
+      merchant_name: 'VALORA E-Commerce',
       amount: calculated.payableNow,
       currency: 'INR',
       payment_type: isAdvCod ? 'advance' : 'full',

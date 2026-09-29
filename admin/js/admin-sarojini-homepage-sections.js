@@ -284,7 +284,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     {
       id: "22222222-2222-4222-a222-000000000017",
       section_type: "sarojini_spotlight",
-      title: "Sarojini Style / VADI Looks",
+      title: "Sarojini Style / VALORA Looks",
       subtitle: "New Street Drops Every Friday",
       management_type: "manual",
       is_active: true,
@@ -315,7 +315,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     {
       id: "22222222-2222-4222-a222-000000000019",
       section_type: "sarojini_why_vadi",
-      title: "Why Shop With VADI",
+      title: "Why Shop With VALORA",
       subtitle: "The Sarojini Bazaar Authenticity Promise",
       management_type: "config",
       is_active: true,
