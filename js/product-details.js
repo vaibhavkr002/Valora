@@ -580,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showNotFoundState() {
     if (elements.mainView) elements.mainView.style.display = "none";
     if (elements.notFoundView) elements.notFoundView.style.display = "flex";
-    document.title = "Product Not Found | VALORA - Everything. Simply Yours.";
+    document.title = "Product Not Found | VALORA — Everything. Simply Yours.";
     if (elements.breadcrumbProductTitle) elements.breadcrumbProductTitle.textContent = "Product Not Found";
   }
 
@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.notFoundView) elements.notFoundView.style.display = "none";
 
     // Set page title
-    document.title = `${product.name} | VALORA - Everything. Simply Yours.`;
+    document.title = `${product.name} | VALORA — Everything. Simply Yours.`;
 
     // 1. Breadcrumbs
     const catName = product.categoryLabel || (product.category.charAt(0).toUpperCase() + product.category.slice(1));
@@ -1043,7 +1043,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (Array.isArray(reviews)) {
         for (const r of reviews) {
           if (r && r.id && !seenIds.has(r.id)) {
-            // Strict catalog isolation: exclude sarojini reviews from Main VADI products
+            // Strict catalog isolation: exclude sarojini reviews from Main VALORA products
             if (r.catalog_type !== 'sarojini') {
               seenIds.add(r.id);
               uniqueReviews.push(r);

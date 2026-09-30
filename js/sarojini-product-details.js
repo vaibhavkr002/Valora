@@ -498,7 +498,7 @@
     }
 
     // ========================================================================
-    // PAYMENT OPTIONS & ADVANCE CALCULATION (MAIN VADI PARITY)
+    // PAYMENT OPTIONS & ADVANCE CALCULATION (Main VALORA PARITY)
     // ========================================================================
     let selectedPaymentMethod = "online"; // "online" | "cod"
     let selectedDeliveryPref = "Simple Delivery";
@@ -1324,7 +1324,7 @@
   function initPage() {
     loadProduct();
 
-    // Initialize Pincode Delivery Availability Checker (reusing VeloraPincodeEngine from Main VADI)
+    // Initialize Pincode Delivery Availability Checker (reusing VeloraPincodeEngine from Main VALORA)
     if (window.VeloraPincodeEngine && typeof window.VeloraPincodeEngine.attachUI === 'function') {
       window.VeloraPincodeEngine.attachUI('#pincode-checker-card');
     }

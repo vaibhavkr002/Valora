@@ -448,7 +448,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // 2. Detected Area Preview (with bounding box)
       if (cleanerImgOriginal) cleanerImgOriginal.src = rawSrc;
 
-      // 3. Final VADI Watermarked Customer Preview
+      // 3. Final VALORA Watermarked Customer Preview
       if (cleanerImgCleaned) cleanerImgCleaned.src = watermarkedSrc;
 
       if (cleanerResBadge) {
@@ -462,7 +462,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           cleanerStatusBanner.style.color = "#10b981";
         }
         if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-shield-alt";
-        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Code Detected:</strong> Embedded code found at <em>${result.zone}</em> (${result.boundingBox?.code || 'S-Code'}). Dynamic ● VALORA STORE / SAROJINI BAZAAR badge applied.`;
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Code Detected:</strong> Embedded code found at <em>${result.zone}</em> (${result.boundingBox?.code || 'S-Code'}). Dynamic ● VALORA Store / SAROJINI BAZAAR badge applied.`;
         if (cleanerDetectedTag) cleanerDetectedTag.textContent = result.boundingBox?.code ? `Code: ${result.boundingBox.code}` : `Target: ${result.zone}`;
       } else if (currentCleanerSelectedZone === 'none') {
         if (cleanerStatusBanner) {
@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           cleanerStatusBanner.style.color = "#10b981";
         }
         if (cleanerStatusIcon) cleanerStatusIcon.className = "fas fa-magic";
-        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Watermark Applied:</strong> Dynamic ● VALORA STORE / SAROJINI BAZAAR badge positioned at <em>${result.zone}</em>. Product details 100% preserved.`;
+        if (cleanerStatusText) cleanerStatusText.innerHTML = `<strong>Watermark Applied:</strong> Dynamic ● VALORA Store / SAROJINI BAZAAR badge positioned at <em>${result.zone}</em>. Product details 100% preserved.`;
         if (cleanerDetectedTag) cleanerDetectedTag.textContent = `Target: ${result.zone}`;
       }
 
@@ -560,7 +560,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderImagePreviews();
       }
       closeCleanerModal();
-      window.showToast?.("✦ VALORA STORE watermarked image added to gallery!", "success");
+      window.showToast?.("✦ VALORA Store watermarked image added to gallery!", "success");
     });
   }
 
@@ -579,7 +579,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================================================
-  // ADVANCE PAYMENT CONFIGURATION & DYNAMIC LIVE PREVIEW (Main VADI Parity)
+  // ADVANCE PAYMENT CONFIGURATION & DYNAMIC LIVE PREVIEW (Main VALORA Parity)
   // ==========================================================================
   const advLabelValue = document.getElementById("label-advance-value");
   const advPreviewText = document.getElementById("advance-preview-text");
@@ -837,7 +837,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (error) throw error;
 
-        // Sync core fields to linked Main VADI product if available
+        // Sync core fields to linked Main VALORA product if available
         if (window.CrossStoreService) {
           try {
             await window.CrossStoreService.syncProductEdits(client, editId, "sarojini", payload);

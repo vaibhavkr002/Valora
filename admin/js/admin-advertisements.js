@@ -52,7 +52,7 @@
   };
 
   const DEFAULT_SEED_ADS = [
-    // --- MAIN VADI STORE ADS ---
+    // --- MAIN VALORA Store ADS ---
     {
       id: "ad-vadi-1",
       store: "vadi",
@@ -798,7 +798,7 @@
     const accentText = isSarojini ? '#fff' : '#000';
     const storePill = isSarojini
       ? `<span style="background: rgba(225,29,72,0.25); color: #fb7185; border: 1px solid rgba(225,29,72,0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.62rem; text-transform: uppercase;">SAROJINI BAZAAR</span>`
-      : `<span style="background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.62rem; text-transform: uppercase;">MAIN VALORA</span>`;
+      : `<span style="background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.62rem; text-transform: uppercase;">Main VALORA</span>`;
     const crossTag = isCrossPromo
       ? `<span style="background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); padding: 1px 5px; border-radius: 3px; font-size: 0.6rem; font-weight: 800;">CROSS-PROMO</span>`
       : '';

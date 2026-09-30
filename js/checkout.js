@@ -32,8 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedUpiApp: "Google Pay",
     activeUpiTransaction: null,
     upiPollingInterval: null,
-    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "vadi.lifestyle@okhdfcbank",
-    merchantName: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || "VALORA Lifestyle Studio"
+    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "vadii@ptaxis",
+    merchantName: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || "VALORA"
   };
 
   // Database is the sole source of truth for all promo and coupon codes
@@ -1970,7 +1970,7 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.desktopScanAmountType.textContent = isAdvCod ? "Advance Payment" : "Total Payable Online";
     }
     if (elements.desktopMerchantVpa) {
-      elements.desktopMerchantVpa.textContent = state.merchantVpa || "vadi.lifestyle@okhdfcbank";
+      elements.desktopMerchantVpa.textContent = state.merchantVpa || "vadii@ptaxis";
     }
     if (elements.desktopUpiRef) {
       if (!state.desktopTxRef) {
@@ -1980,8 +1980,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (elements.desktopUpiQrContainer && upiAmount > 0) {
-      const vpa = state.merchantVpa || "vadi.lifestyle@okhdfcbank";
-      const name = state.merchantName || "VALORA Lifestyle Studio";
+      const vpa = state.merchantVpa || "vadii@ptaxis";
+      const name = state.merchantName || "VALORA";
       const ref = state.desktopTxRef || ("VEL-TXN-" + Date.now().toString().slice(-6));
       const links = generateUpiLinks(vpa, name, ref, upiAmount);
       renderUpiQrCode(elements.desktopUpiQrContainer, links.generic);
@@ -1989,8 +1989,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function generateUpiLinks(vpa, name, ref, amount, note) {
-    const cleanVpa = (vpa || "vadi.lifestyle@okhdfcbank").trim();
-    const cleanName = encodeURIComponent((name || "VALORA Lifestyle Studio").trim());
+    const cleanVpa = (vpa || "vadii@ptaxis").trim();
+    const cleanName = encodeURIComponent((name || "VALORA").trim());
     const cleanNote = encodeURIComponent(note || `Order ${ref}`);
     const amtStr = Number(amount || 0).toFixed(2);
     const baseQuery = `pa=${cleanVpa}&pn=${cleanName}&tr=${ref}&tn=${cleanNote}&am=${amtStr}&cu=INR`;
@@ -2061,7 +2061,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Copy UPI ID Button
   if (elements.btnDesktopCopyUpi) {
     elements.btnDesktopCopyUpi.addEventListener("click", () => {
-      const vpa = (elements.desktopMerchantVpa ? elements.desktopMerchantVpa.textContent : state.merchantVpa || "vadi.lifestyle@okhdfcbank").trim();
+      const vpa = (elements.desktopMerchantVpa ? elements.desktopMerchantVpa.textContent : state.merchantVpa || "vadii@ptaxis").trim();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(vpa).then(() => {
           elements.btnDesktopCopyUpi.textContent = "Copied!";
@@ -2098,7 +2098,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Copy Merchant VPA to Clipboard
   if (elements.btnCopyUpi) {
     elements.btnCopyUpi.addEventListener("click", () => {
-      const vpa = (elements.modalMerchantVpa ? elements.modalMerchantVpa.textContent : state.merchantVpa || "vadi.lifestyle@okhdfcbank").trim();
+      const vpa = (elements.modalMerchantVpa ? elements.modalMerchantVpa.textContent : state.merchantVpa || "vadii@ptaxis").trim();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(vpa).then(() => {
           elements.btnCopyUpi.textContent = "Copied!";
@@ -2207,7 +2207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Authoritative order calculation and Razorpay Order creation on server
     let orderRes = null;
     try {
-      const resp = await fetch("/api/razorpay/create-order", {
+      let resp = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2217,6 +2217,19 @@ document.addEventListener("DOMContentLoaded", () => {
           delivery_details: deliveryPayload
         })
       });
+
+      if (resp.status === 404) {
+        resp = await fetch("/api/razorpay/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: state.cart,
+            payment_method: paymentType,
+            coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+            delivery_details: deliveryPayload
+          })
+        });
+      }
 
       orderRes = await resp.json();
       if (!resp.ok || !orderRes.success) {
@@ -2282,7 +2295,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
           const resolvedUserId = currentUser ? currentUser.id : null;
 
-          const verifyResp = await fetch("/api/razorpay/verify-payment", {
+          let verifyResp = await fetch("/api/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -2298,6 +2311,25 @@ document.addEventListener("DOMContentLoaded", () => {
               user_id: resolvedUserId
             })
           });
+
+          if (verifyResp.status === 404) {
+            verifyResp = await fetch("/api/razorpay/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_signature: paymentResponse.razorpay_signature,
+                payment_method: paymentType,
+                items: state.cart,
+                coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+                delivery_details: deliveryPayload,
+                delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+                free_gifts_items: (paymentType === "full_online" && state.resolvedCartGifts) ? state.resolvedCartGifts : [],
+                user_id: resolvedUserId
+              })
+            });
+          }
 
           const verifyData = await verifyResp.json();
           if (!verifyResp.ok || !verifyData.success) {
@@ -2420,7 +2452,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
       const resolvedUserId = currentUser ? currentUser.id : null;
 
-      const verifyResp = await fetch("/api/razorpay/verify-payment", {
+      let verifyResp = await fetch("/api/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2433,6 +2465,22 @@ document.addEventListener("DOMContentLoaded", () => {
           user_id: resolvedUserId
         })
       });
+
+      if (verifyResp.status === 404) {
+        verifyResp = await fetch("/api/razorpay/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            payment_method: "cod",
+            items: state.cart,
+            coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
+            delivery_details: deliveryPayload,
+            delivery_preference: state.selectedDeliveryPreference || "Simple Delivery",
+            free_gifts_items: [],
+            user_id: resolvedUserId
+          })
+        });
+      }
 
       const verifyData = await verifyResp.json();
       if (!verifyResp.ok || !verifyData.success) {

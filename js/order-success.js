@@ -51,6 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
     deliveryPreference: document.getElementById("receipt-delivery-preference"),
     giftsRow: document.getElementById("receipt-gifts-row"),
     giftsCard: document.getElementById("receipt-gifts-card"),
+    statusPill: document.getElementById("receipt-status-pill"),
+    verificationBanner: document.getElementById("receipt-verification-banner"),
 
     // Buttons
     btnPrintReceipt: document.getElementById("btn-print-receipt"),
@@ -90,6 +92,63 @@ document.addEventListener("DOMContentLoaded", () => {
     const firstName = orderData.customer.fullName ? orderData.customer.fullName.split(" ")[0] : "Valued Customer";
     if (elements.heroTitle) {
       elements.heroTitle.textContent = `Thank You, ${firstName}!`;
+    }
+
+    // Dynamic Status Pill & Verification Banner
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = (urlParams.get("status") || "").toLowerCase();
+    const isVerificationPending = statusParam === "verification_pending" ||
+      orderData.order_status === 'PAYMENT_VERIFICATION_PENDING' || 
+      orderData.payment_status === 'customer_submitted' ||
+      orderData.payment_verification_status === 'verification_pending' ||
+      (orderData.tracking_data && orderData.tracking_data.payment_verification_status === 'verification_pending') ||
+      Boolean(orderData.customer_utr);
+    const isRejected = orderData.payment_status === 'rejected' || orderData.payment_status === 'failed' || (orderData.tracking_data && orderData.tracking_data.payment_verification_status === 'rejected');
+    const isCod = orderData.paymentMethod && orderData.paymentMethod.toLowerCase().includes("cash on delivery") && !orderData.advance_amount;
+
+    if (elements.statusPill) {
+      if (isVerificationPending) {
+        elements.statusPill.innerHTML = `<span>⏳ Payment Submitted — Verification Pending</span>`;
+        elements.statusPill.style.background = '#fef3c7';
+        elements.statusPill.style.color = '#b45309';
+        elements.statusPill.style.border = '1px solid #fcd34d';
+      } else if (isRejected) {
+        elements.statusPill.innerHTML = `<span>✕ Payment Verification Rejected</span>`;
+        elements.statusPill.style.background = '#fee2e2';
+        elements.statusPill.style.color = '#dc2626';
+        elements.statusPill.style.border = '1px solid #fca5a5';
+      } else if (isCod) {
+        elements.statusPill.innerHTML = `<span>✓ Order Placed — Cash on Delivery</span>`;
+      } else {
+        elements.statusPill.innerHTML = `<span>✓ Order Placed & Confirmed</span>`;
+      }
+    }
+
+    if (elements.verificationBanner) {
+      if (isVerificationPending) {
+        elements.verificationBanner.style.display = "block";
+        elements.verificationBanner.innerHTML = `
+          <div style="background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);">
+            <div style="display:flex; align-items:flex-start; gap:14px;">
+              <div style="width:40px; height:40px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">⏳</div>
+              <div style="flex:1;">
+                <h3 style="margin:0 0 6px 0; font-size:1.05rem; font-weight:700; color:#92400e;">Payment Verification in Progress</h3>
+                <p style="margin:0 0 10px 0; font-size:0.88rem; line-height:1.5; color:#78350f;">
+                  We have received your payment submission. Our admin team will verify the payment against our official merchant account (<strong>vadii@ptaxis</strong>) before your order is confirmed and dispatched.
+                </p>
+                <div style="display:flex; flex-wrap:wrap; gap:16px; font-size:0.82rem; color:#92400e; background:rgba(254, 243, 199, 0.6); padding:10px 14px; border-radius:8px;">
+                  <div>Merchant UPI ID: <strong style="font-family:monospace; color:#1e293b;">vadii@ptaxis</strong></div>
+                  ${orderData.customer_utr ? `<div>Submitted UTR: <strong style="font-family:monospace; color:#1e293b;">${orderData.customer_utr}</strong></div>` : ''}
+                  ${orderData.advance_amount ? `<div>Advance Paid: <strong>${formatPrice(orderData.advance_amount)}</strong></div>` : ''}
+                  ${orderData.cod_balance ? `<div>Remaining COD on Delivery: <strong>${formatPrice(orderData.cod_balance)}</strong></div>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        elements.verificationBanner.style.display = "none";
+      }
     }
 
     if (elements.orderId) elements.orderId.textContent = orderData.orderId;

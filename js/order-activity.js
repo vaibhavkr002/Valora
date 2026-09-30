@@ -3,7 +3,7 @@
  * 
  * Fully dynamic social-proof notification engine connected directly to Supabase.
  * Automatically ingests currently active products AND all future products added by Admin
- * for both Main VADI and Sarojini Bazaar catalogs with ZERO manual configuration.
+ * for both Main VALORA and Sarojini Bazaar catalogs with ZERO manual configuration.
  * 
  * CORE ARCHITECTURAL INVARIANTS:
  * 1. STRICT ID-BASED IDENTITY: Every product is identified strictly by its unique database ID
@@ -12,7 +12,7 @@
  * 2. AUTOMATIC FUTURE ELIGIBILITY: Queries Supabase directly for active catalog products
  *    (is_active = true, ordered by created_at DESC). New products uploaded tomorrow or next week
  *    automatically become eligible without any code or manual Live Sales changes.
- * 3. CATALOG SEPARATION: Main VADI products route to product.html?id=... with Main branding;
+ * 3. CATALOG SEPARATION: Main VALORA products route to product.html?id=... with Main branding;
  *    Sarojini Bazaar products route to sarojini-product-details.html?id=... with Sarojini branding.
  * 4. REAL-TIME DELETION / DEACTIVATION: Deactivated or deleted products automatically drop out
  *    of the active Live Sales pool.
@@ -188,7 +188,7 @@
   }
 
   // ==========================================================================
-  // 6. DYNAMIC DATABASE FETCHING ENGINE (MAIN VADI + SAROJINI BAZAAR)
+  // 6. DYNAMIC DATABASE FETCHING ENGINE (Main VALORA + SAROJINI BAZAAR)
   // ==========================================================================
 
   /**
@@ -209,7 +209,7 @@
         ? window.AdminAuth.getClient()
         : (window.supabaseClient || (typeof window.getSupabase === 'function' ? window.getSupabase() : null));
 
-      // 1. Fetch Main VADI Products (active only)
+      // 1. Fetch Main VALORA Products (active only)
       let mainData = null;
       try {
         if (client) {
@@ -288,7 +288,7 @@
       }
 
       // ----------------------------------------------------------------------
-      // PROCESS MAIN VADI POOL (Deduplicated Strictly by product.id)
+      // PROCESS Main VALORA POOL (Deduplicated Strictly by product.id)
       // ----------------------------------------------------------------------
       if (mainData && Array.isArray(mainData) && mainData.length > 0) {
         const seenMainIds = new Set();

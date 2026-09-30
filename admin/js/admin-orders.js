@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (items.length === 0) {
       return {
         type: "main",
-        label: "MAIN VALORA",
+        label: "Main VALORA",
         icon: "🏪",
         color: "#94a3b8",
         bg: "rgba(255, 255, 255, 0.05)",
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       return {
         type: "main",
-        label: "MAIN VALORA",
+        label: "Main VALORA",
         icon: "🏪",
         color: "#94a3b8",
         bg: "rgba(255, 255, 255, 0.05)",
@@ -294,12 +294,41 @@ document.addEventListener("DOMContentLoaded", async () => {
           paymentBadgesHtml += `<span class="badge" title="${giftNames}" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); font-size:0.68rem; font-weight:700;">🎁 ${giftCount} FREE GIFT${giftCount > 1 ? 'S' : ''}</span>`;
         }
       }
+      const custUtr = o.customer_utr || (meta && meta.customer_utr);
+      if (custUtr) {
+        paymentBadgesHtml += `<span class="badge" style="background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.3); font-size:0.65rem; font-family:monospace;" title="Customer UTR: ${custUtr}">UTR: ${custUtr}</span>`;
+      }
       const rzpId = o.razorpay_payment_id || (typeof o.transaction_reference === "string" && o.transaction_reference.startsWith("pay_") ? o.transaction_reference : null);
       if (rzpId) {
-        paymentBadgesHtml += `<span class="badge" style="background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.3); font-size:0.65rem; font-family:monospace;" title="Razorpay Payment ID: ${rzpId}">⚡ RZP: ${rzpId.slice(-8)}</span>`;
+        paymentBadgesHtml += `<span class="badge" style="background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.3); font-size:0.65rem; font-family:monospace;" title="Historical Razorpay ID: ${rzpId}">⚡ RZP: ${rzpId.slice(-8)}</span>`;
       }
       paymentBadgesHtml += `<span class="badge" style="background: ${isOpenBox ? 'rgba(2, 132, 199, 0.2)' : 'rgba(100, 116, 139, 0.15)'}; color: ${isOpenBox ? '#38bdf8' : '#94a3b8'}; border: 1px solid ${isOpenBox ? 'rgba(2, 132, 199, 0.4)' : 'transparent'}; font-size:0.68rem; font-weight:700;">${isOpenBox ? '📦 OPEN BOX' : 'SIMPLE DELIVERY'}</span>`;
       paymentBadgesHtml += `</div>`;
+
+      let paymentStatusBadgeClass = 'badge-warning';
+      let paymentStatusLabel = o.payment_status || 'pending';
+      const isPaymentVerified = o.payment_status === 'verified' || o.payment_status === 'paid' || o.order_status === 'confirmed' || (o.tracking_data && (o.tracking_data.payment_verified || o.tracking_data.payment_verification_status === 'verified'));
+      const isPaymentRejected = o.payment_status === 'rejected' || o.payment_status === 'failed' || o.order_status === 'payment_rejected' || (o.tracking_data && o.tracking_data.payment_verification_status === 'rejected');
+      const isVerificationPending = !isPaymentVerified && !isPaymentRejected && (
+        o.payment_status === 'customer_submitted' || 
+        o.order_status === 'PAYMENT_VERIFICATION_PENDING' || 
+        (o.tracking_data && o.tracking_data.payment_verification_status === 'verification_pending') ||
+        Boolean(o.tracking_data && o.tracking_data.customer_utr)
+      );
+
+      if (isPaymentVerified) {
+        paymentStatusBadgeClass = 'badge-success';
+        paymentStatusLabel = '✓ VERIFIED';
+      } else if (isVerificationPending) {
+        paymentStatusBadgeClass = 'badge-warning';
+        paymentStatusLabel = '⏳ VERIFY PENDING';
+      } else if (isPaymentRejected) {
+        paymentStatusBadgeClass = 'badge-danger';
+        paymentStatusLabel = '✕ REJECTED';
+      } else if (o.payment_method && o.payment_method.toLowerCase().includes("cash on delivery") && !o.payment_method.toLowerCase().includes("advance")) {
+        paymentStatusBadgeClass = 'badge-info';
+        paymentStatusLabel = 'COD PENDING';
+      }
 
       const isChecked = selectedOrderIds.has(o.id) ? "checked" : "";
 
@@ -322,7 +351,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </td>
           <td>${dateStr}</td>
           <td>${paymentBadgesHtml}</td>
-          <td><span class="badge ${o.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}">${o.payment_status}</span></td>
+          <td><span class="badge ${paymentStatusBadgeClass}">${paymentStatusLabel}</span></td>
           <td>${advCodHtml}</td>
           <td><strong>${window.formatINR(o.total)}</strong> <span style="font-size: 0.75rem; color: var(--admin-text-muted);">(${itemCount} items)</span></td>
           <td><span class="badge ${badgeClass}">${displayStatus}</span>${requestBadgeHtml}</td>

@@ -1,10 +1,10 @@
 /**
  * VADI & SAROJINI BAZAAR - Normalized Cross-Store Availability Service
  * 
- * Manages store availability assignments between Main VADI Store and Sarojini Bazaar
+ * Manages store availability assignments between Main VALORA Store and Sarojini Bazaar
  * WITHOUT duplicating, cloning, moving, or deleting product database records.
  * Products strictly reside in their origin catalog:
- *   - Main VADI products reside in `public.products`
+ *   - Main VALORA products reside in `public.products`
  *   - Sarojini Bazaar products reside in `public.sarojini_products`
  * Multi-store availability is stored as a clean, normalized registry in `store_settings.cross_store_mapping`.
  */
@@ -121,7 +121,7 @@
     },
 
     /**
-     * Add Main VADI Product to Sarojini Bazaar (NO DUPLICATION of product row)
+     * Add Main VALORA Product to Sarojini Bazaar (NO DUPLICATION of product row)
      */
     async addMainToSarojini(client, mainProduct, options = {}) {
       if (!mainProduct || !mainProduct.id) {
@@ -188,7 +188,7 @@
     },
 
     /**
-     * Add Sarojini Product to Main VADI Store (NO DUPLICATION of product row)
+     * Add Sarojini Product to Main VALORA Store (NO DUPLICATION of product row)
      */
     async addSarojiniToMain(client, sarojiniProduct, options = {}) {
       if (!sarojiniProduct || !sarojiniProduct.id) {

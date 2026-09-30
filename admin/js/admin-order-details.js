@@ -327,84 +327,298 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("detail-shipping").textContent = (!order.shipping_charge || order.shipping_charge === 0) ? "FREE (₹0)" : window.formatINR(order.shipping_charge);
     document.getElementById("detail-total").textContent = window.formatINR(order.total);
 
-    // Razorpay Transaction and Refund Data
-    const rzpPaymentId = order.razorpay_payment_id || 
-      (typeof order.transaction_reference === "string" && order.transaction_reference.startsWith("pay_") ? order.transaction_reference : null) || 
-      (order.tracking_data && order.tracking_data.razorpay_payment_id) || null;
-    const rzpOrderId = order.razorpay_order_id || 
-      (order.tracking_data && order.tracking_data.razorpay_order_id) || null;
+    // Direct UPI Payment & Verification Data
+    const customerUtr = order.customer_utr || (order.tracking_data && order.tracking_data.customer_utr) || null;
+    const elUtr = document.getElementById("detail-customer-utr");
+    const btnCopyUtr = document.getElementById("btn-copy-utr");
+    const elTxRef = document.getElementById("detail-transaction-ref");
+    const auditBox = document.getElementById("payment-audit-box");
+    const auditContent = document.getElementById("payment-audit-content");
+    const actionsWrap = document.getElementById("admin-payment-actions-wrap");
+    const btnVerify = document.getElementById("btn-admin-verify-payment");
+    const btnReject = document.getElementById("btn-admin-reject-payment");
 
-    const rowRzpPaymentId = document.getElementById("row-rzp-payment-id");
-    const elRzpPaymentId = document.getElementById("detail-rzp-payment-id");
-    if (rowRzpPaymentId && elRzpPaymentId) {
-      if (rzpPaymentId) {
-        rowRzpPaymentId.style.display = "block";
-        elRzpPaymentId.textContent = rzpPaymentId;
-      } else {
-        rowRzpPaymentId.style.display = "none";
-      }
-    }
+    if (elTxRef) elTxRef.textContent = order.transaction_reference || order.order_number || "-";
 
-    const rowRzpOrderId = document.getElementById("row-rzp-order-id");
-    const elRzpOrderId = document.getElementById("detail-rzp-order-id");
-    if (rowRzpOrderId && elRzpOrderId) {
-      if (rzpOrderId) {
-        rowRzpOrderId.style.display = "block";
-        elRzpOrderId.textContent = rzpOrderId;
-      } else {
-        rowRzpOrderId.style.display = "none";
-      }
-    }
-
-    // Refund Display and Action
-    const rowRefundInfo = document.getElementById("row-refund-info");
-    const elRefundId = document.getElementById("detail-refund-id");
-    const elRefundAmount = document.getElementById("detail-refund-amount");
-    const rowRefundAction = document.getElementById("row-refund-action");
-    const btnRefund = document.getElementById("btn-initiate-refund");
-
-    if (order.refund_status === "processed" || order.refund_id) {
-      if (rowRefundInfo) rowRefundInfo.style.display = "block";
-      if (elRefundId) elRefundId.textContent = order.refund_id || "Completed";
-      if (elRefundAmount) elRefundAmount.textContent = window.formatINR(order.refund_amount || order.total);
-      if (rowRefundAction) rowRefundAction.style.display = "none";
-    } else {
-      if (rowRefundInfo) rowRefundInfo.style.display = "none";
-      if (rzpPaymentId && rowRefundAction) {
-        rowRefundAction.style.display = "block";
-        if (btnRefund) {
-          btnRefund.onclick = async () => {
-            const maxRefund = (order.is_full_online_payment || advancePaidVal === 0) ? Number(order.total) : advancePaidVal;
-            const reason = prompt(`Confirm initiating real Razorpay refund of ${window.formatINR(maxRefund)} for Order ${order.order_number}:\nEnter reason:`, "Customer cancellation / return");
-            if (reason === null) return;
-            btnRefund.disabled = true;
-            btnRefund.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Razorpay Refund...';
-
-            try {
-              const resp = await fetch("/api/razorpay/refund", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  order_id: order.id,
-                  amount: maxRefund,
-                  reason: reason
-                })
-              });
-              const resData = await resp.json();
-              if (!resp.ok || !resData.success) {
-                throw new Error(resData.error || "Refund failed.");
-              }
-              window.showToast(`Refund processed successfully! Refund ID: ${resData.refund_id}`, "success");
-              await loadOrder();
-            } catch (err) {
-              alert("Refund Error: " + err.message);
-              btnRefund.disabled = false;
-              btnRefund.innerHTML = '<i class="fas fa-undo"></i> Issue Razorpay Online Refund';
-            }
+    if (elUtr) {
+      if (customerUtr) {
+        elUtr.textContent = customerUtr;
+        if (btnCopyUtr) {
+          btnCopyUtr.style.display = "inline-block";
+          btnCopyUtr.onclick = () => {
+            navigator.clipboard.writeText(customerUtr).then(() => {
+              btnCopyUtr.textContent = "Copied!";
+              setTimeout(() => { btnCopyUtr.textContent = "Copy"; }, 2000);
+            });
           };
         }
-      } else if (rowRefundAction) {
-        rowRefundAction.style.display = "none";
+      } else {
+        elUtr.textContent = "None Provided";
+        if (btnCopyUtr) btnCopyUtr.style.display = "none";
+      }
+    }
+
+    // Payment Status Badge Styling
+    const elPayStatus = document.getElementById("detail-payment-status");
+    const rawPayStatus = (order.payment_status || "pending").toLowerCase();
+    const rawOrdStatus = (order.order_status || "placed").toLowerCase();
+    const isVerified = rawPayStatus === "verified" || rawPayStatus === "paid" || rawOrdStatus === "confirmed" || (order.tracking_data && (order.tracking_data.payment_verified || order.tracking_data.payment_verification_status === "verified"));
+    const isRejected = rawPayStatus === "rejected" || rawPayStatus === "failed" || rawOrdStatus === "payment_rejected" || (order.tracking_data && order.tracking_data.payment_verification_status === "rejected");
+    const isPendingVerification = (rawPayStatus === "customer_submitted" || rawOrdStatus === "payment_verification_pending" || rawPayStatus === "pending" || (order.tracking_data && order.tracking_data.payment_verification_status === "verification_pending") || Boolean(order.tracking_data && order.tracking_data.customer_utr && !isVerified)) && !isVerified && !isRejected;
+
+    if (elPayStatus) {
+      if (isVerified) {
+        elPayStatus.className = "badge badge-success";
+        elPayStatus.textContent = "✓ VERIFIED";
+      } else if (isRejected) {
+        elPayStatus.className = "badge badge-danger";
+        elPayStatus.textContent = "✕ REJECTED";
+      } else if (order.payment_method && order.payment_method.toLowerCase().includes("cash on delivery") && !order.payment_method.toLowerCase().includes("advance")) {
+        elPayStatus.className = "badge badge-info";
+        elPayStatus.textContent = "COD PENDING";
+      } else {
+        elPayStatus.className = "badge badge-warning";
+        elPayStatus.textContent = "⏳ VERIFICATION PENDING";
+      }
+    }
+
+    // Verification Audit Box
+    if (auditBox && auditContent) {
+      if (isVerified && (order.verified_by || (order.tracking_data && order.tracking_data.verified_by))) {
+        auditBox.style.display = "block";
+        auditBox.style.background = "rgba(16, 185, 129, 0.1)";
+        auditBox.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+        auditBox.style.color = "#34d399";
+        const vBy = order.verified_by || (order.tracking_data && order.tracking_data.verified_by) || "Admin";
+        const vAt = order.verified_at || (order.tracking_data && order.tracking_data.verified_at);
+        const vDate = vAt ? new Date(vAt).toLocaleString("en-IN") : "Recorded";
+        auditContent.innerHTML = `<i class="fas fa-check-circle"></i> <strong>Verified against bank records</strong><br>Verified by: ${vBy}<br>Time: ${vDate}`;
+      } else if (isRejected) {
+        auditBox.style.display = "block";
+        auditBox.style.background = "rgba(239, 68, 68, 0.1)";
+        auditBox.style.border = "1px solid rgba(239, 68, 68, 0.3)";
+        auditBox.style.color = "#f87171";
+        const rReason = order.rejection_reason || (order.tracking_data && order.tracking_data.rejection_reason) || "Transaction not found in merchant bank ledger";
+        auditContent.innerHTML = `<i class="fas fa-times-circle"></i> <strong>Payment Verification Rejected</strong><br>Reason: ${rReason}`;
+      } else {
+        auditBox.style.display = "none";
+      }
+    }
+
+    // Actions buttons visibility & event handlers
+    const isCodOnly = order.payment_method && order.payment_method.toLowerCase().includes("cash on delivery") && !Number(order.advance_amount || order.advance_paid || 0);
+    if (actionsWrap) {
+      if (isCodOnly) {
+        actionsWrap.style.display = "none";
+      } else {
+        actionsWrap.style.display = "flex";
+      }
+    }
+
+    if (btnVerify) {
+      if (isVerified) {
+        btnVerify.disabled = true;
+        btnVerify.style.opacity = "0.6";
+        btnVerify.innerHTML = '<i class="fas fa-check-double"></i> Payment Already Verified';
+      } else {
+        btnVerify.disabled = false;
+        btnVerify.style.opacity = "1";
+        btnVerify.innerHTML = '<i class="fas fa-check-circle"></i> VERIFY PAYMENT (Bank Confirmed)';
+        btnVerify.onclick = async () => {
+          const advVal = Number(order.advance_amount || order.advance_paid || 0);
+          const verifyAmt = advVal > 0 ? advVal : Number(order.total);
+          const confirmMsg = `Have you verified this payment of ${window.formatINR(verifyAmt)} in the merchant UPI/bank transaction history for vadii@ptaxis?\n\nCustomer UTR: ${customerUtr || 'None'}\nOrder: ${order.order_number}`;
+          if (!confirm(confirmMsg)) return;
+
+          btnVerify.disabled = true;
+          btnVerify.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+
+          try {
+            const { data: { session } } = await client.auth.getSession();
+            const token = session?.access_token || "";
+
+            let resData = null;
+            try {
+              const resp = await fetch("/api/admin/verify-payment", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  order_id: order.id,
+                  action: "verify"
+                })
+              });
+              let resText = "";
+              try { resText = await resp.text(); } catch (_) {}
+              try { resData = resText ? JSON.parse(resText) : null; } catch (_) {}
+
+              if (!resp.ok) {
+                if (resp.status === 404 || resp.status === 405 || (!resData && resp.status >= 400)) {
+                  // Static server fallback: update directly via Supabase client with valid constraints
+                  const isAdv = order.advance_amount > 0 && order.payment_method?.toLowerCase().includes("advance");
+                  const currentTracking = (order.tracking_data && typeof order.tracking_data === "object") ? order.tracking_data : {};
+                  const updatedTracking = {
+                    ...currentTracking,
+                    payment_verified: true,
+                    payment_verification_status: "verified",
+                    verified_at: new Date().toISOString(),
+                    verified_by: "Administrator (Direct UI)"
+                  };
+                  await client.from("orders").update({
+                    order_status: "confirmed",
+                    payment_status: "paid",
+                    advance_paid: isAdv ? order.advance_amount : (order.advance_paid || order.total),
+                    advance_payment_status: isAdv ? "paid" : "not_required",
+                    cod_payment_status: (order.cod_balance > 0) ? "pending" : "not_applicable",
+                    tracking_data: updatedTracking
+                  }).eq("id", order.id);
+                  resData = { success: true };
+                } else {
+                  throw new Error(resData?.error || "Verification failed");
+                }
+              }
+            } catch (netErr) {
+              if (netErr.message && !netErr.message.includes("Failed to fetch") && !netErr.message.includes("NetworkError")) {
+                throw netErr;
+              }
+              const isAdv = order.advance_amount > 0 && order.payment_method?.toLowerCase().includes("advance");
+              const currentTracking = (order.tracking_data && typeof order.tracking_data === "object") ? order.tracking_data : {};
+              const updatedTracking = {
+                ...currentTracking,
+                payment_verified: true,
+                payment_verification_status: "verified",
+                verified_at: new Date().toISOString(),
+                verified_by: "Administrator (Direct UI)"
+              };
+              await client.from("orders").update({
+                order_status: "confirmed",
+                payment_status: "paid",
+                advance_paid: isAdv ? order.advance_amount : (order.advance_paid || order.total),
+                advance_payment_status: isAdv ? "paid" : "not_required",
+                cod_payment_status: (order.cod_balance > 0) ? "pending" : "not_applicable",
+                tracking_data: updatedTracking
+              }).eq("id", order.id);
+            }
+            window.showToast("Payment verified! Order is now confirmed.", "success");
+            await loadOrder();
+          } catch (err) {
+            alert("Verification Error: " + err.message);
+            btnVerify.disabled = false;
+            btnVerify.innerHTML = '<i class="fas fa-check-circle"></i> VERIFY PAYMENT (Bank Confirmed)';
+          }
+        };
+      }
+    }
+
+    if (btnReject) {
+      if (isRejected) {
+        btnReject.disabled = true;
+        btnReject.style.opacity = "0.6";
+        btnReject.innerHTML = '<i class="fas fa-ban"></i> Payment Already Rejected';
+      } else {
+        btnReject.disabled = false;
+        btnReject.style.opacity = "1";
+        btnReject.innerHTML = '<i class="fas fa-times-circle"></i> REJECT PAYMENT (Not Received)';
+        btnReject.onclick = async () => {
+          const reason = prompt("Enter reason for rejecting this payment (e.g. Payment not received in bank account, Incorrect amount, UTR not found, Duplicate payment):", "Payment transaction not found in merchant bank ledger");
+          if (reason === null) return;
+
+          btnReject.disabled = true;
+          btnReject.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rejecting...';
+
+          try {
+            const { data: { session } } = await client.auth.getSession();
+            const token = session?.access_token || "";
+
+            let resData = null;
+            try {
+              const resp = await fetch("/api/admin/verify-payment", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  order_id: order.id,
+                  action: "reject",
+                  rejection_reason: reason
+                })
+              });
+              let resText = "";
+              try { resText = await resp.text(); } catch (_) {}
+              try { resData = resText ? JSON.parse(resText) : null; } catch (_) {}
+
+              if (!resp.ok) {
+                if (resp.status === 404 || resp.status === 405 || (!resData && resp.status >= 400)) {
+                  const currentTracking = (order.tracking_data && typeof order.tracking_data === "object") ? order.tracking_data : {};
+                  const updatedTracking = {
+                    ...currentTracking,
+                    payment_verified: false,
+                    payment_verification_status: "rejected",
+                    rejection_reason: reason,
+                    rejected_at: new Date().toISOString(),
+                    rejected_by: "Administrator (Direct UI)"
+                  };
+                  await client.from("orders").update({
+                    order_status: "placed",
+                    payment_status: "failed",
+                    tracking_data: updatedTracking
+                  }).eq("id", order.id);
+                  resData = { success: true };
+                } else {
+                  throw new Error(resData?.error || "Rejection failed");
+                }
+              }
+            } catch (netErr) {
+              if (netErr.message && !netErr.message.includes("Failed to fetch") && !netErr.message.includes("NetworkError")) {
+                throw netErr;
+              }
+              const currentTracking = (order.tracking_data && typeof order.tracking_data === "object") ? order.tracking_data : {};
+              const updatedTracking = {
+                ...currentTracking,
+                payment_verified: false,
+                payment_verification_status: "rejected",
+                rejection_reason: reason,
+                rejected_at: new Date().toISOString(),
+                rejected_by: "Administrator (Direct UI)"
+              };
+              await client.from("orders").update({
+                order_status: "placed",
+                payment_status: "failed",
+                tracking_data: updatedTracking
+              }).eq("id", order.id);
+            }
+            window.showToast("Payment rejected. Order remains open for retry.", "info");
+            await loadOrder();
+          } catch (err) {
+            alert("Rejection Error: " + err.message);
+            btnReject.disabled = false;
+            btnReject.innerHTML = '<i class="fas fa-times-circle"></i> REJECT PAYMENT (Not Received)';
+          }
+        };
+      }
+    }
+
+    // Razorpay payment details
+    const rzpPayId = order.razorpay_payment_id || (order.tracking_data && order.tracking_data.razorpay_payment_id);
+    const rzpOrderId = order.razorpay_order_id || (order.tracking_data && order.tracking_data.razorpay_order_id);
+    const rowRzpInfo = document.getElementById("row-rzp-info") || document.getElementById("row-rzp-legacy-info");
+    const elRzpId = document.getElementById("detail-rzp-payment-id");
+    const elRzpOrderId = document.getElementById("detail-rzp-order-id");
+    const rowRzpOrderWrap = document.getElementById("row-rzp-order-id-wrap");
+
+    if (rowRzpInfo) {
+      if (rzpPayId || rzpOrderId) {
+        rowRzpInfo.style.display = "block";
+        if (elRzpId) elRzpId.textContent = rzpPayId || "N/A";
+        if (elRzpOrderId) {
+          elRzpOrderId.textContent = rzpOrderId || "N/A";
+          if (rowRzpOrderWrap) rowRzpOrderWrap.style.display = rzpOrderId ? "block" : "none";
+        }
+      } else {
+        rowRzpInfo.style.display = "none";
       }
     }
 
@@ -539,7 +753,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               isAvailable = true;
             }
           } else {
-            // Main VADI product
+            // Main VALORA product
             try {
               let query = client.from("products").select("id, name, slug, price, is_active, images");
               if (targetId) {
@@ -611,7 +825,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const isSarojiniItem = linkInfo.isSarojini || (item.catalog_type === 'sarojini' || item.sarojini_product_id != null);
           const storeBadge = isSarojiniItem
             ? `<span class="badge" style="background: rgba(225, 29, 72, 0.15); color: #fb7185; border: 1px solid rgba(225, 29, 72, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🛍️ SAROJINI BAZAAR</span>`
-            : `<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🏪 MAIN VALORA</span>`;
+            : `<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">🏪 Main VALORA</span>`;
 
           const recoveredBadge = item._recovered_from_snapshot
             ? `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.68rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; margin-left: 6px;" title="Restored from secure order transaction snapshot">⚡ Recovered</span>`

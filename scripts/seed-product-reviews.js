@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * VADI & Sarojini Bazaar - Product Review Seeding & Management CLI
+ * VALORA & Sarojini Bazaar - Product Review Seeding & Management CLI
  * 
  * Developer / Admin utility to seed and manage realistic, product-specific reviews.
  * 
@@ -34,7 +34,7 @@ async function getAdminToken() {
     const lRes = await fetch(`${SUPABASE_PROJECT_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@vadi.com', password: 'AdminPassword2026!' })
+      body: JSON.stringify({ email: 'admin@valora.com', password: 'AdminPassword2026!' })
     });
     const lData = await lRes.json();
     if (lData.access_token) {
@@ -64,7 +64,7 @@ function getHeaders(token) {
 async function fetchProductById(productId) {
   const token = await getAdminToken();
 
-  // Try Main VADI products
+  // Try Main VALORA products
   const mRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/products?id=eq.${productId}&select=*`, {
     headers: getHeaders(token)
   });

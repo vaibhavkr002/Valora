@@ -226,21 +226,21 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Trending Now";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Trending Now";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Handpicked bestsellers crafted for timeless style, all-day comfort, and daily durability.";
-      document.title = "Trending Now | VALORA - Everything. Simply Yours.";
+      document.title = "Trending Now | VALORA — Everything. Simply Yours.";
     }
     if (path.includes("deals") || sectionParam === "deals" || dealsParam === "true" || dealsParam === "1") {
       state.filters.dealsOnly = true;
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Today's Flash Deals";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Today's Deals";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Deep discounts on high-demand pieces. Quantities are strictly limited!";
-      document.title = "Today's Deals | VALORA - Everything. Simply Yours.";
+      document.title = "Today's Deals | VALORA — Everything. Simply Yours.";
     }
     if (path.includes("new-arrivals") || path.includes("new_arrivals") || sectionParam === "new" || sectionParam === "new-arrivals") {
       state.filters.newOnly = true;
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "New Arrivals";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "New Arrivals";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Just landed in the catalog. Be the first to experience our latest release pieces.";
-      document.title = "New Arrivals | VALORA - Everything. Simply Yours.";
+      document.title = "New Arrivals | VALORA — Everything. Simply Yours.";
     }
     const bogoParam = (urlParams.get("bogo") || urlParams.get("is_bogo") || "").toLowerCase();
     if (path.includes("bogo") || sectionParam === "bogo" || bogoParam === "true" || bogoParam === "1") {
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = "Buy 1 Get 1 Free";
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = "Buy 1 Get 1 Free";
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = "Select any qualifying luxury item and unlock an eligible free companion product!";
-      document.title = "Buy 1 Get 1 Free | VALORA - Everything. Simply Yours.";
+      document.title = "Buy 1 Get 1 Free | VALORA — Everything. Simply Yours.";
     }
 
     if (categoryParam) {
@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.breadcrumbCategory) elements.breadcrumbCategory.textContent = decodedBrand;
       if (elements.shopPageTitle) elements.shopPageTitle.textContent = decodedBrand;
       if (elements.shopPageSubtitle) elements.shopPageSubtitle.textContent = `Explore authentic premium footwear, timepieces, and apparel by ${decodedBrand}.`;
-      document.title = `${decodedBrand} | VALORA - Everything. Simply Yours.`;
+      document.title = `${decodedBrand} | VALORA — Everything. Simply Yours.`;
     }
   }
 

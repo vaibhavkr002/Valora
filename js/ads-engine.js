@@ -1,7 +1,7 @@
 /**
  * VELORA & SAROJINI BAZAAR - Dynamic Multi-Store Advertisement System & Storefront Engine
  * Single source of truth for customer-facing advertisements and promotional bars.
- * Strictly isolates advertisements between Main VADI and Sarojini Bazaar, with controlled cross-promotion.
+ * Strictly isolates advertisements between Main VALORA and Sarojini Bazaar, with controlled cross-promotion.
  * Fetches from Supabase (store_settings / banners), validates scheduling and page targeting,
  * supports multi-ad smooth rotation, responsive mobile visuals, and clean zero-ad collapse.
  */

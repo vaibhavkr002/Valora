@@ -329,7 +329,7 @@
   }
 
   /**
-   * Applies a dynamic, premium, opaque "● VALORA STORE / SAROJINI BAZAAR" watermark badge
+   * Applies a dynamic, premium, opaque "● VALORA Store / SAROJINI BAZAAR" watermark badge
    * exactly over the detected code area.
    */
   function applyVadiWatermark(ctx, box, width, height, options = {}) {
@@ -388,7 +388,7 @@
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.30)';
     ctx.stroke();
 
-    // 3. Branded Typography: ● VALORA STORE / SAROJINI BAZAAR
+    // 3. Branded Typography: ● VALORA Store / SAROJINI BAZAAR
     const titleSize = Math.max(9, Math.min(16, Math.round(bh * 0.38)));
     const subSize = Math.max(7, Math.min(12, Math.round(bh * 0.28)));
 
@@ -404,10 +404,10 @@
     ctx.fillStyle = '#e11d48';
     ctx.fillText('●', textStartX, line1Y);
 
-    // Draw VADI STORE
+    // Draw VALORA Store
     ctx.fillStyle = '#ffffff';
     const dotW = Math.round(titleSize * 1.05);
-    ctx.fillText('VALORA STORE', textStartX + dotW, line1Y);
+    ctx.fillText('VALORA Store', textStartX + dotW, line1Y);
 
     // Subtitle line (SAROJINI BAZAAR)
     ctx.font = `700 ${subSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
@@ -531,7 +531,7 @@
     const box = detectCodeBoundingBox(watermarkCtx, width, height, opts.zone, { sourceUrl: resolvedSource });
     let watermarkBox = null;
 
-    // 6. Place dynamic VALORA STORE watermark over the exact code area
+    // 6. Place dynamic VALORA Store watermark over the exact code area
     if (box && (box.detected || opts.forceClean)) {
       watermarkBox = applyVadiWatermark(watermarkCtx, box, width, height, opts);
     }

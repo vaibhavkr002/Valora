@@ -559,13 +559,13 @@
         if (sec.title) {
           const heading = el.querySelector('.section-heading') || el.querySelector('h2');
           if (heading && sec.section_type !== 'sarojini_hero') {
-            heading.textContent = String(sec.title).replace(/\bVADI\b/g, 'VALORA');
+            heading.textContent = String(sec.title).replace(/\b(VALORA|VALORA|VADI)\b/gi, 'VALORA');
           }
         }
         if (sec.subtitle) {
           const subheading = el.querySelector('.section-subheading') || el.querySelector('.section-desc');
           if (subheading && sec.section_type !== 'sarojini_hero') {
-            subheading.textContent = String(sec.subtitle).replace(/\bVADI\b/g, 'VALORA');
+            subheading.textContent = String(sec.subtitle).replace(/\b(VALORA|VALORA|VADI)\b/gi, 'VALORA');
           }
         }
 

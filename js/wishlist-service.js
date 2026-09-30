@@ -2,11 +2,11 @@
  * VADI & SAROJINI BAZAAR - UNIFIED SHARED WISHLIST SERVICE
  * 
  * Provides a single, database-authoritative, two-way synchronized wishlist
- * shared across both Main VADI and Sarojini Bazaar storefronts.
+ * shared across both Main VALORA and Sarojini Bazaar storefronts.
  * 
  * Features:
  * - Realtime Supabase PostgreSQL synchronization with RLS compliance.
- * - Multi-catalog support: handles Main VADI products and Sarojini Bazaar products.
+ * - Multi-catalog support: handles Main VALORA products and Sarojini Bazaar products.
  * - Cross-storefront consistency: hearts update instantly everywhere.
  * - Session & auth isolation: prevents data leaking between different customers.
  * - Local optimistic caching for instantaneous UX.
@@ -448,18 +448,18 @@
     },
 
     /**
-     * Resolve product metadata from either Main VADI or Sarojini Bazaar catalogs
+     * Resolve product metadata from either Main VALORA or Sarojini Bazaar catalogs
      */
     resolveProduct: function (id) {
       const strId = String(id);
 
-      // 1. Try window.getProductById (Main VADI)
+      // 1. Try window.getProductById (Main VALORA)
       if (typeof window.getProductById === 'function') {
         const p = window.getProductById(strId);
         if (p) return { ...p, catalog_type: 'main' };
       }
 
-      // 2. Try window.PRODUCTS_DATA (Main VADI)
+      // 2. Try window.PRODUCTS_DATA (Main VALORA)
       if (Array.isArray(window.PRODUCTS_DATA)) {
         const p = window.PRODUCTS_DATA.find(x => String(x.id) === strId || String(x.slug) === strId);
         if (p) return { ...p, catalog_type: 'main' };

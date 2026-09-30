@@ -1,0 +1,13 @@
+{
+  "name": "valora-ecommerce",
+  "version": "1.0.0",
+  "description": "VALORA E-Commerce Store",
+  "private": true,
+  "main": "api/create-order.js",
+  "scripts": {
+    "test": "node scratch/test-razorpay-integration.js"
+  },
+  "dependencies": {
+    "razorpay": "^2.9.8"
+  }
+}

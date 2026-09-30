@@ -8,7 +8,7 @@
  * 2. 🔥 UP TO 70% OFF / BAZAAR SPECIAL (Obsidian Charcoal)
  * 3. 🏷️ ₹199+ STREET DROPS / LIMITED FINDS (Delhi Terracotta)
  * 4. ⚡ NEW STREET DROP / JUST LANDED (Bazaar Emerald)
- * 5. ✦ BAZAAR PRICE / VADI QUALITY (Midnight Slate)
+ * 5. ✦ BAZAAR PRICE / VALORA QUALITY (Midnight Slate)
  *
  * Features:
  * - 3D depth with perspective, preserve-3d, and realistic beveled edges.

@@ -1,5 +1,5 @@
 /**
- * VADI & Sarojini Bazaar - Dynamic Product Review Generation Engine
+ * VALORA & Sarojini Bazaar - Dynamic Product Review Generation Engine
  * 
  * Generates natural, 100% UNIQUE, product-specific review records based on actual database attributes:
  * - Product Name, Model, Category, Department, Price, Colors, Sizes, Materials, Description.

@@ -4,7 +4,7 @@
  *
  * Guarantees that embedded supplier codes (e.g. S-1084290722, S-990006640)
  * are completely covered by a dynamic, luxury branded:
- *   ● VALORA STORE
+ *   ● VALORA Store
  *   SAROJINI BAZAAR
  * watermark overlay placed INSIDE the image wrapper, strictly relative to the image itself.
  */
@@ -132,7 +132,7 @@
 
   /**
    * Generates the luxury branded watermark badge HTML:
-   * ● VALORA STORE
+   * ● VALORA Store
    * SAROJINI BAZAAR
    */
   function getWatermarkBadgeHtml(options = {}) {
@@ -140,7 +140,7 @@
     const styleAttr = options.style ? ` style="${options.style}"` : '';
     return `
       <div class="sarojini-watermark-overlay${extraClass}"${styleAttr} aria-label="Authentic Sarojini Bazaar Find">
-        <div class="swm-title"><span class="swm-dot">●</span> VALORA STORE</div>
+        <div class="swm-title"><span class="swm-dot">●</span> VALORA Store</div>
         <div class="swm-sub">SAROJINI BAZAAR</div>
       </div>
     `.trim();

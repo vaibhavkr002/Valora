@@ -159,7 +159,7 @@
 
   // Determine if a section record maps to an existing static DOM unit or is dynamic
   function resolveSectionBinding(sec, domUnitMap, claimedDomKeys) {
-    // Sarojini sections belong to the Sarojini storefront, ignore for Main VADI dynamic injection
+    // Sarojini sections belong to the Sarojini storefront, ignore for Main VALORA dynamic injection
     if (isSarojiniSection(sec)) {
       return { isDynamic: false, key: 'ignore' };
     }
@@ -641,13 +641,13 @@
         if (active && sec.title && sec.section_type !== 'hero' && sec.section_type !== 'advertisement') {
           const mainEl = unit.elements[0];
           const titleEl = mainEl.querySelector('.section-title, .brands-section-title');
-          if (titleEl) titleEl.textContent = String(sec.title).replace(/\bVADI\b/g, 'VALORA');
+          if (titleEl) titleEl.textContent = String(sec.title).replace(/\b(VALORA|VALORA|VADI)\b/gi, 'VALORA');
         }
         if (active && sec.subtitle && sec.section_type !== 'hero' && sec.section_type !== 'advertisement') {
           const mainEl = unit.elements[0];
           const subEl = mainEl.querySelector('.section-subtitle, .section-eyebrow');
           if (subEl) {
-            const cleanSub = String(sec.subtitle).replace(/\bVADI\b/g, 'VALORA');
+            const cleanSub = String(sec.subtitle).replace(/\b(VALORA|VALORA|VADI)\b/gi, 'VALORA');
             if (subEl.classList.contains('section-eyebrow')) {
               subEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg> ${cleanSub}`;
             } else {

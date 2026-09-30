@@ -297,32 +297,60 @@
               </div>
             </div>
 
-            <div class="admin-card">
-              <h3 class="card-title" style="margin-bottom: 16px;">Payment Information</h3>
+            <div class="admin-card" id="card-payment-verification">
+              <h3 class="card-title" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                <span><i class="fas fa-qrcode" style="color: #6366f1; margin-right: 6px;"></i> Payment & Verification</span>
+                <span id="detail-payment-status" class="badge badge-warning">-</span>
+              </h3>
+              
               <div style="font-size: 0.9rem; line-height: 1.8;">
-                <p><strong>Method:</strong> <span id="detail-payment-method" style="text-transform: uppercase;">-</span></p>
-                <p><strong>Payment Status:</strong> <span id="detail-payment-status" class="badge badge-success">-</span></p>
-                <p id="row-rzp-payment-id" style="display: none;"><strong>Razorpay Payment ID:</strong> <code id="detail-rzp-payment-id" style="color: #60a5fa; background: rgba(37,99,235,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">-</code></p>
-                <p id="row-rzp-order-id" style="display: none;"><strong>Razorpay Order ID:</strong> <code id="detail-rzp-order-id" style="color: #94a3b8; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">-</code></p>
-                <div id="row-refund-info" style="display: none; margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px;">
-                  <div style="font-weight: 700; color: #f87171; font-size: 0.82rem; margin-bottom: 4px;">Refund Processed</div>
-                  <div style="font-size: 0.78rem; color: var(--admin-text-muted);">
-                    Refund ID: <span id="detail-refund-id" style="color: #fff;">-</span><br>
-                    Refund Amount: <strong id="detail-refund-amount" style="color: #4ade80;">₹0</strong>
+                <p><strong>Payment Method:</strong> <span id="detail-payment-method" style="text-transform: uppercase; font-weight: 600; color: #fff;">-</span></p>
+                <p><strong>Merchant UPI ID:</strong> <code style="color: #a5b4fc; background: rgba(99,102,241,0.15); padding: 2px 7px; border-radius: 4px; font-weight: 700;">vadii@ptaxis</code></p>
+                <p><strong>Payment Reference:</strong> <code id="detail-transaction-ref" style="color: #94a3b8; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">-</code></p>
+                
+                <div id="row-customer-utr" style="margin-top: 8px; padding: 10px 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;">
+                  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 700;">Customer Submitted UTR / Ref:</div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                    <strong id="detail-customer-utr" style="font-family: monospace; font-size: 1rem; color: #38bdf8;">None Provided</strong>
+                    <button type="button" id="btn-copy-utr" class="btn-copy-upi" style="padding: 2px 8px; font-size: 0.72rem; display: none;">Copy</button>
                   </div>
                 </div>
-                <div id="row-refund-action" style="display: none; margin-top: 12px;">
-                  <button type="button" id="btn-initiate-refund" class="btn-admin-danger" style="width: 100%; font-size: 0.8rem; padding: 7px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                    <i class="fas fa-undo"></i> Issue Razorpay Online Refund
+
+                <!-- Admin Manual Verification Action Buttons -->
+                <div id="admin-payment-actions-wrap" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                  <button type="button" id="btn-admin-verify-payment" class="btn-admin-primary" style="width: 100%; background: #059669; border-color: #059669; justify-content: center; padding: 10px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>VERIFY PAYMENT (Bank Confirmed)</span>
+                  </button>
+                  <button type="button" id="btn-admin-reject-payment" class="btn-admin-danger" style="width: 100%; justify-content: center; padding: 8px; font-size: 0.82rem;">
+                    <i class="fas fa-times-circle"></i>
+                    <span>REJECT PAYMENT (Not Received)</span>
                   </button>
                 </div>
+
+                <!-- Verification Audit Record -->
+                <div id="payment-audit-box" style="display: none; margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 0.8rem; line-height: 1.5;">
+                  <div id="payment-audit-content"></div>
+                </div>
+
+                <!-- Razorpay Gateway Payment Details -->
+                <div id="row-rzp-info" style="display: none; margin-top: 12px; padding: 10px 12px; background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.25); border-radius: 8px; font-size: 0.8rem; line-height: 1.6;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="color: #60a5fa; font-weight: 700;"><i class="fas fa-shield-alt"></i> Razorpay Payment</span>
+                    <span id="badge-rzp-status" class="badge badge-success" style="font-size: 0.65rem;">VERIFIED</span>
+                  </div>
+                  <div><strong>Payment ID:</strong> <code id="detail-rzp-payment-id" style="font-family: monospace; color: #38bdf8; word-break: break-all;">-</code></div>
+                  <div id="row-rzp-order-id-wrap" style="margin-top: 2px;"><strong>Order ID:</strong> <code id="detail-rzp-order-id" style="font-family: monospace; color: #94a3b8; word-break: break-all;">-</code></div>
+                </div>
+                <!-- Legacy Alias -->
+                <div id="row-rzp-legacy-info" style="display: none;"></div>
               </div>
 
               <!-- Advance Status Details -->
               <div id="detail-advance-status-box" style="display: none; margin-top: 14px; padding: 12px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px;">
                 <div style="font-size: 0.85rem; color: #818cf8; font-weight: 700; margin-bottom: 6px;">⚡ Advance Payment Split</div>
                 <div style="font-size: 0.8rem; color: var(--admin-text-muted); line-height: 1.6;">
-                  Advance Status: <span id="detail-advance-status" class="badge badge-success">Paid</span><br>
+                  Advance Status: <span id="detail-advance-status" class="badge badge-success">Pending</span><br>
                   COD Balance Status: <span id="detail-cod-status" class="badge badge-warning">Pending</span>
                 </div>
                 <div id="cod-collection-control" style="margin-top: 10px; display: none;">
@@ -331,6 +359,7 @@
                   </button>
                 </div>
               </div>
+            </div>
             </div>
 
             <!-- Courier & Shipment Tracking Card -->

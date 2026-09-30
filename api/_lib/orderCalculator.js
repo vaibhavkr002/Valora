@@ -41,14 +41,18 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
       (typeof item.image === 'string' && item.image.includes('sarojni'));
 
     const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const targetId = isUuid(item.id) ? item.id : (isUuid(item.supabase_id) ? item.supabase_id : (isUuid(item.sarojini_product_id) ? item.sarojini_product_id : null));
+    const targetId = isUuid(item.id) ? item.id
+      : (isUuid(item.product_id) ? item.product_id
+      : (isUuid(item.supabase_id) ? item.supabase_id
+      : (isUuid(item.sarojini_product_id) ? item.sarojini_product_id : null)));
 
     let dbProduct = null;
     if (targetId) {
       dbProduct = await fetchProduct(targetId, isSarojini);
     }
-    if (!dbProduct && (item.slug || item.name)) {
-      dbProduct = await fetchProductBySlugOrName(item.slug || item.name, isSarojini);
+    const searchIdentifier = item.slug || item.name || item.product_name;
+    if (!dbProduct && searchIdentifier) {
+      dbProduct = await fetchProductBySlugOrName(searchIdentifier, isSarojini);
     }
 
     // If product is still not found in designated catalog, attempt fallback check in other catalog
@@ -187,19 +191,19 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
     advancePaymentStatus = 'not_required';
     codPaymentStatus = 'pending';
   } else if (normalizedMethod === 'full_online') {
-    // 100% Online Payment via Razorpay
+    // 100% Online Payment via Direct UPI (vadii@ptaxis)
     payableNow = finalTotal;
     advanceAmount = 0;
-    advancePaid = 0; // Set to finalTotal after successful verification
+    advancePaid = 0; // Set to finalTotal after successful admin verification
     codBalance = 0;
-    paymentStatus = 'pending'; // Set to 'paid' after successful verification
+    paymentStatus = 'pending'; // Set to 'paid'/'verified' after admin verification
     advancePaymentStatus = 'not_required';
     codPaymentStatus = 'not_applicable';
   } else if (normalizedMethod === 'advance_cod') {
-    // Advance Deposit via Razorpay + Remaining COD upon delivery
+    // Advance Deposit via Direct UPI (vadii@ptaxis) + Remaining COD upon delivery
     payableNow = cappedAdvance;
     advanceAmount = cappedAdvance;
-    advancePaid = 0; // Set to cappedAdvance after successful verification
+    advancePaid = 0; // Set to cappedAdvance after successful admin verification
     codBalance = remainingCod;
     paymentStatus = 'pending';
     advancePaymentStatus = 'pending';

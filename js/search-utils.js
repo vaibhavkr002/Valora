@@ -127,7 +127,7 @@
 
   /**
    * Builds a comprehensive searchable text corpus from all present product attributes.
-   * Works seamlessly on both Main VADI and Sarojini Bazaar product models.
+   * Works seamlessly on both Main VALORA and Sarojini Bazaar product models.
    */
   function buildSearchCorpus(product, options = {}) {
     if (!product || typeof product !== 'object') return '';
@@ -279,7 +279,7 @@
    * Evaluates if a product satisfies the search query.
    * Multi-word queries: EVERY query token must match somewhere in the product's corpus.
    *
-   * @param {Object} product - Product object from either Main VADI or Sarojini Bazaar
+   * @param {Object} product - Product object from either Main VALORA or Sarojini Bazaar
    * @param {string} query - Raw search query string from user
    * @param {Object} options - Optional configuration (e.g. { categories: [] })
    * @returns {boolean} True if product matches the query

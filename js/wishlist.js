@@ -1,7 +1,7 @@
 /**
  * VADI - Unified Wishlist Controller
  * Synchronized with window.VadiWishlist, Supabase PostgreSQL, and Cart Drawer
- * Supports products from both Main VADI and Sarojini Bazaar catalogs.
+ * Supports products from both Main VALORA and Sarojini Bazaar catalogs.
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const storeBadge = isSarojini
         ? `<span style="font-size:0.68rem; font-weight:800; color:#e11d48; background:rgba(225,29,72,0.12); border:1px solid rgba(225,29,72,0.3); padding:2px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;">🛍️ SAROJINI BAZAAR</span>`
-        : `<span style="font-size:0.68rem; font-weight:800; color:#2563eb; background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.3); padding:2px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;">🏪 MAIN VALORA</span>`;
+        : `<span style="font-size:0.68rem; font-weight:800; color:#2563eb; background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.3); padding:2px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;">🏪 Main VALORA</span>`;
 
       return `
         <article class="wishlist-card" data-product-id="${prod.id}" data-catalog-type="${isSarojini ? 'sarojini' : 'main'}">

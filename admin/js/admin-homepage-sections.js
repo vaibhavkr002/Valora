@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     { id: '11111111-1111-4111-a111-000000000012', section_type: 'bogo', title: 'Buy 1 Get 1 Free (BOGO)', subtitle: 'Curated promotional pairing festival', is_active: true, display_order: 12, background_config: { theme: 'dark', padding: 'standard' }, content_config: { limit: 6 } },
     { id: '11111111-1111-4111-a111-000000000013', section_type: 'advertisement', title: 'Ad Slot Below BOGO', subtitle: 'Dynamic Advertisement Slot', is_active: true, display_order: 13, background_config: {}, content_config: { placement: 'below_bogo' } },
     { id: '11111111-1111-4111-a111-000000000014', section_type: 'customer_stories', title: 'REAL CUSTOMERS. REAL LOVE.', subtitle: 'From a simple DM to a VALORA experience — every order has a story', is_active: true, display_order: 14, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
-    { id: '11111111-1111-4111-a111-000000000015', section_type: 'features', title: 'Why Shop With Us?', subtitle: 'The VALORA Standard', is_active: true, display_order: 15, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
+    { id: '11111111-1111-4111-a111-000000000015', section_type: 'features', title: 'Why Shop With Us?', subtitle: 'The VALORA standard', is_active: true, display_order: 15, background_config: { theme: 'dark', padding: 'standard' }, content_config: {} },
     { id: '11111111-1111-4111-a111-000000000016', section_type: 'delivery_partners', title: 'Express Shipping Network', subtitle: 'Trusted Logistics Partners', is_active: true, display_order: 16, background_config: { theme: 'dark', padding: 'compact' }, content_config: {} },
     { id: '11111111-1111-4111-a111-000000000017', section_type: 'newsletter', title: 'Unlock 15% Off Your Next Order', subtitle: 'Join The Collective', is_active: true, display_order: 17, background_config: { theme: 'dark', padding: 'compact' }, content_config: {} }
   ];
@@ -952,7 +952,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       dom.dynamicConfigPanel.innerHTML = `
         <div style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 8px;">
           <i class="fas fa-check-circle" style="color: #10b981;"></i>
-          <span>This is a core VALORA storefront section. Its layout, dynamic queries, and responsive design are fully managed.</span>
+          <span>This is a core VALORA Storefront section. Its layout, dynamic queries, and responsive design are fully managed.</span>
         </div>`;
     }
   }

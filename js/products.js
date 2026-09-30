@@ -999,7 +999,7 @@ if (typeof window !== "undefined") {
         console.warn("Products sync notice:", e);
       }
 
-      // Cross-store: Check if any Sarojini products are made available in Main VADI Store
+      // Cross-store: Check if any Sarojini products are made available in Main VALORA Store
       try {
         const xSetRes = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?key=eq.cross_store_mapping&select=value`, { headers: reqHeaders });
         if (xSetRes.ok) {
@@ -1138,8 +1138,8 @@ if (typeof window !== "undefined") {
             id: dbP.id,
             legacyId: legacyId,
             supabase_id: dbP.id,
-            name: dbP.name ? String(dbP.name).replace(/\bVADI\b/g, "VALORA") : "",
-            brand: dbP.brand ? String(dbP.brand).replace(/\bVADI\b/g, "VALORA") : "VALORA Atelier",
+            name: dbP.name ? String(dbP.name).replace(/\b(VALORA|VALORA|VADI)\b/gi, 'VALORA') : "",
+            brand: dbP.brand ? String(dbP.brand).replace(/\b(VALORA|VALORA|VADI)\b/gi, 'VALORA') : "VALORA Atelier",
             slug: dbP.slug,
             category: categorySlug,
             categoryLabel: categoryLabel,

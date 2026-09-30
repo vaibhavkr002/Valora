@@ -2175,7 +2175,7 @@
     if (lightboxWatermarkBadge) {
       lightboxWatermarkBadge.style.display = codeDet.detected ? 'block' : 'none';
       if (codeDet.detected) {
-        lightboxWatermarkBadge.innerHTML = `● VALORA STORE Watermark Applied (${escapeHtml(codeDet.code || 'Supplier Code')})`;
+        lightboxWatermarkBadge.innerHTML = `● VALORA Store Watermark Applied (${escapeHtml(codeDet.code || 'Supplier Code')})`;
       }
     }
 
