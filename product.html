@@ -586,57 +586,83 @@
             </div>
           </div>
 
-          <!-- Tab 5: Customer Reviews -->
-          <div id="tab-reviews" class="tab-content-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
-              <div>
-                <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 4px;">Verified Customer Reviews</h3>
-                <p style="color: var(--text-secondary); font-size: 0.88rem;">Read what fellow buyers think about this piece or share your experience.</p>
+          <!-- Desktop Mount Slot: Customer Reviews (Active on > 768px) -->
+          <div id="desktop-reviews-slot">
+            <!-- Tab 5: Customer Reviews -->
+            <div id="tab-reviews" class="tab-content-panel">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                <div>
+                  <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 4px;">Verified Customer Reviews</h3>
+                  <p style="color: var(--text-secondary); font-size: 0.88rem;">Read what fellow buyers think about this piece or share your experience.</p>
+                </div>
+                <button id="btn-toggle-review-form" class="btn-primary" style="padding: 8px 18px; font-size: 0.85rem;">Write a Review</button>
               </div>
-              <button id="btn-toggle-review-form" class="btn-primary" style="padding: 8px 18px; font-size: 0.85rem;">Write a Review</button>
-            </div>
 
-            <!-- Review Submission Form (Collapsible) -->
-            <div id="review-submission-box" style="display: none; background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 28px;">
-              <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Share Your Review</h4>
-              <form id="product-review-form" onsubmit="return false;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px;">
-                  <div>
-                    <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Your Name *</label>
-                    <input type="text" id="review-user-name" required placeholder="e.g. Priya Sharma" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
+              <!-- Review Submission Form (Collapsible) -->
+              <div id="review-submission-box" style="display: none; background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 28px;">
+                <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Share Your Review</h4>
+                <form id="product-review-form" onsubmit="return false;">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px;">
+                    <div>
+                      <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Your Name *</label>
+                      <input type="text" id="review-user-name" required placeholder="e.g. Priya Sharma" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Rating *</label>
+                      <select id="review-rating" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
+                        <option value="5">★★★★★ (5/5) - Excellent</option>
+                        <option value="4">★★★★☆ (4/5) - Good</option>
+                        <option value="3">★★★☆☆ (3/5) - Average</option>
+                        <option value="2">★★☆☆☆ (2/5) - Below Average</option>
+                        <option value="1">★☆☆☆☆ (1/5) - Poor</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Rating *</label>
-                    <select id="review-rating" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
-                      <option value="5">★★★★★ (5/5) - Excellent</option>
-                      <option value="4">★★★★☆ (4/5) - Good</option>
-                      <option value="3">★★★☆☆ (3/5) - Average</option>
-                      <option value="2">★★☆☆☆ (2/5) - Below Average</option>
-                      <option value="1">★☆☆☆☆ (1/5) - Poor</option>
-                    </select>
+                  <div style="margin-bottom: 14px;">
+                    <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Your Review *</label>
+                    <textarea id="review-comment" required rows="3" placeholder="Tell us about the quality, fit, comfort, and finish..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; resize: vertical;"></textarea>
                   </div>
-                </div>
-                <div style="margin-bottom: 14px;">
-                  <label style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">Your Review *</label>
-                  <textarea id="review-comment" required rows="3" placeholder="Tell us about the quality, fit, comfort, and finish..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; resize: vertical;"></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                  <button type="button" id="btn-cancel-review" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Cancel</button>
-                  <button type="submit" id="btn-submit-review" class="btn-primary" style="padding: 8px 20px; font-size: 0.85rem;">Submit Review</button>
-                </div>
-              </form>
-            </div>
+                  <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" id="btn-cancel-review" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">Cancel</button>
+                    <button type="submit" id="btn-submit-review" class="btn-primary" style="padding: 8px 20px; font-size: 0.85rem;">Submit Review</button>
+                  </div>
+                </form>
+              </div>
 
-            <!-- Rating Summary & Review Breakdown -->
-            <div id="product-rating-summary" class="product-rating-summary" aria-label="Customer Rating Summary and Review Breakdown"></div>
+              <!-- Rating Summary & Review Breakdown -->
+              <div id="product-rating-summary" class="product-rating-summary" aria-label="Customer Rating Summary and Review Breakdown"></div>
 
-            <!-- Reviews List Container -->
-            <div id="product-reviews-container">
-              <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading reviews...</div>
+              <!-- Reviews List Container -->
+              <div id="product-reviews-container">
+                <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Loading reviews...</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- ====================================================================
+           STANDALONE MOBILE CUSTOMER REVIEWS MOUNT
+           (Rendered directly above "You May Also Like" on mobile screens <= 768px)
+           ==================================================================== -->
+      <section id="mobile-customer-reviews-section" class="mobile-customer-reviews-section" aria-label="Customer Reviews">
+        <div class="container" id="mobile-customer-reviews-container">
+          <!-- Transferred dynamically via responsive layout controller on mobile screens -->
+        </div>
+      </section>
+      <script>
+        (function() {
+          if (window.innerWidth <= 768) {
+            var rev = document.getElementById("tab-reviews");
+            var mCont = document.getElementById("mobile-customer-reviews-container");
+            var mSec = document.getElementById("mobile-customer-reviews-section");
+            if (rev && mCont && rev.parentElement !== mCont) {
+              mCont.appendChild(rev);
+              if (mSec) mSec.style.display = "block";
+            }
+          }
+        })();
+      </script>
 
       <!-- ====================================================================
            YOU MAY ALSO LIKE / RELATED PRODUCTS
@@ -785,20 +811,6 @@
           <p class="footer-brand-desc">
             VALORA is an independent modern lifestyle brand bringing curated footwear, luxury timepieces, tailored apparel, and timeless accessories to discerning customers worldwide. Everything. Simply Yours.
           </p>
-          <div class="footer-social-links">
-            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Instagram">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-            </a>
-            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Twitter / X">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
-            </a>
-            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Facebook">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-            </a>
-            <a href="javascript:void(0)" title="Coming Soon" class="footer-social-icon" aria-label="Pinterest">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-            </a>
-          </div>
         </div>
 
         <div class="footer-links-col">

@@ -134,10 +134,10 @@ document.addEventListener("DOMContentLoaded", () => {
               <div style="flex:1;">
                 <h3 style="margin:0 0 6px 0; font-size:1.05rem; font-weight:700; color:#92400e;">Payment Verification in Progress</h3>
                 <p style="margin:0 0 10px 0; font-size:0.88rem; line-height:1.5; color:#78350f;">
-                  We have received your payment submission. Our admin team will verify the payment against our official merchant account (<strong>vadii@ptaxis</strong>) before your order is confirmed and dispatched.
+                  We have received your payment submission. Our admin team will verify the payment against our official merchant account (<strong>VALORA</strong>) before your order is confirmed and dispatched.
                 </p>
                 <div style="display:flex; flex-wrap:wrap; gap:16px; font-size:0.82rem; color:#92400e; background:rgba(254, 243, 199, 0.6); padding:10px 14px; border-radius:8px;">
-                  <div>Merchant UPI ID: <strong style="font-family:monospace; color:#1e293b;">vadii@ptaxis</strong></div>
+                  <div>Merchant: <strong style="color:#1e293b;">VALORA</strong></div>
                   ${orderData.customer_utr ? `<div>Submitted UTR: <strong style="font-family:monospace; color:#1e293b;">${orderData.customer_utr}</strong></div>` : ''}
                   ${orderData.advance_amount ? `<div>Advance Paid: <strong>${formatPrice(orderData.advance_amount)}</strong></div>` : ''}
                   ${orderData.cod_balance ? `<div>Remaining COD on Delivery: <strong>${formatPrice(orderData.cod_balance)}</strong></div>` : ''}

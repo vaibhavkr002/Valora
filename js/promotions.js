@@ -249,8 +249,9 @@
   let floatingHideTimer = null;
 
   function initFloatingPromoToast() {
-    // Only inject on shopping/product pages, not checkout
-    if (window.location.pathname.includes('checkout.html') || window.location.pathname.includes('admin')) {
+    // Only inject on homepage or shopping pages, not checkout/admin
+    const pathname = (window.location.pathname || '').toLowerCase();
+    if (pathname.includes('checkout') || pathname.includes('admin') || pathname.includes('account')) {
       return;
     }
 
@@ -258,83 +259,87 @@
       return;
     }
 
-    if (document.getElementById('velora-floating-promo')) return;
+    let wrap = document.getElementById('velora-floating-promo');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'velora-floating-promo';
+      wrap.className = 'velora-floating-promo';
 
-    const wrap = document.createElement('div');
-    wrap.id = 'velora-floating-promo';
-    wrap.className = 'velora-floating-promo';
-
-    wrap.innerHTML = `
-      <div class="floating-promo-card" id="floating-promo-card">
-        <span class="floating-promo-icon" id="floating-promo-icon">🎁</span>
-        <div class="floating-promo-content">
-          <div class="floating-promo-title" id="floating-promo-title">BOGO SALE IS LIVE</div>
-          <p class="floating-promo-desc" id="floating-promo-desc">Buy 1 item, get an eligible companion 100% free.</p>
+      wrap.innerHTML = `
+        <div class="floating-promo-card" id="floating-promo-card">
+          <span class="floating-promo-icon" id="floating-promo-icon">🎁</span>
+          <div class="floating-promo-content">
+            <div class="floating-promo-title" id="floating-promo-title">BOGO SALE IS LIVE</div>
+            <p class="floating-promo-desc" id="floating-promo-desc">Buy 1, get eligible piece 100% free</p>
+          </div>
+          <a href="bogo.html" class="floating-promo-btn bogo-theme" id="floating-promo-btn">Shop BOGO</a>
+          <button type="button" class="floating-promo-close" id="floating-promo-close" aria-label="Dismiss">✕</button>
         </div>
-        <a href="bogo.html" class="floating-promo-btn bogo-theme" id="floating-promo-btn">Shop</a>
-        <button type="button" class="floating-promo-close" id="floating-promo-close" aria-label="Dismiss">✕</button>
-      </div>
-    `;
+      `;
 
-    document.body.appendChild(wrap);
+      document.body.appendChild(wrap);
+    }
 
     const closeBtn = document.getElementById('floating-promo-close');
     if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        wrap.classList.remove('is-visible');
-        wrap.classList.add('is-exiting');
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.VeloraNotificationManager && typeof window.VeloraNotificationManager.hideAll === 'function') {
+          window.VeloraNotificationManager.hideAll();
+        } else {
+          hidePromoToast();
+        }
         sessionStorage.setItem('velora_promo_toast_dismissed', 'true');
-        if (floatingTimer) clearTimeout(floatingTimer);
-        if (floatingHideTimer) clearTimeout(floatingHideTimer);
       });
     }
 
-    let isPromoBogo = true;
+    function showPromoToast() {
+      if (!wrap) wrap = document.getElementById('velora-floating-promo');
+      if (!wrap) return;
 
-    function cycleFloatingToast() {
-      if (sessionStorage.getItem('velora_promo_toast_dismissed') === 'true') return;
+      // Ensure Live Sales notification is completely hidden
+      if (window.VeloraOrderActivity && typeof window.VeloraOrderActivity.hide === 'function') {
+        window.VeloraOrderActivity.hide();
+      }
 
       const titleEl = document.getElementById('floating-promo-title');
       const descEl = document.getElementById('floating-promo-desc');
       const iconEl = document.getElementById('floating-promo-icon');
       const btnEl = document.getElementById('floating-promo-btn');
 
-      if (isPromoBogo) {
-        if (iconEl) iconEl.textContent = '🎁';
-        if (titleEl) titleEl.textContent = 'BOGO SALE IS LIVE';
-        if (descEl) descEl.textContent = 'Buy 1, get eligible piece 100% free';
-        if (btnEl) {
-          btnEl.textContent = 'Shop BOGO';
-          btnEl.href = 'bogo.html';
-          btnEl.className = 'floating-promo-btn bogo-theme';
-        }
-      } else {
-        if (iconEl) iconEl.textContent = '⚡';
-        if (titleEl) titleEl.textContent = 'TRENDING NOW PICKS';
-        if (descEl) descEl.textContent = 'Discover what customers love this week';
-        if (btnEl) {
-          btnEl.textContent = 'Explore';
-          btnEl.href = 'trending.html';
-          btnEl.className = 'floating-promo-btn trending-theme';
-        }
+      if (iconEl) iconEl.textContent = '🎁';
+      if (titleEl) titleEl.textContent = 'BOGO SALE IS LIVE';
+      if (descEl) descEl.textContent = 'Buy 1, get eligible piece 100% free';
+      if (btnEl) {
+        btnEl.textContent = 'Shop BOGO';
+        btnEl.href = 'bogo.html';
+        btnEl.className = 'floating-promo-btn bogo-theme';
       }
-
-      isPromoBogo = !isPromoBogo;
 
       wrap.classList.remove('is-exiting');
       wrap.classList.add('is-visible');
-
-      // Hide after 6.5 seconds
-      floatingHideTimer = setTimeout(() => {
-        wrap.classList.remove('is-visible');
-        wrap.classList.add('is-exiting');
-        // Re-appear after 28 seconds
-        floatingTimer = setTimeout(cycleFloatingToast, 28000);
-      }, 6500);
     }
 
-    // Initial appearance after 5.5s
-    floatingTimer = setTimeout(cycleFloatingToast, 5500);
+    function hidePromoToast() {
+      if (!wrap) wrap = document.getElementById('velora-floating-promo');
+      if (!wrap || !wrap.classList.contains('is-visible')) return;
+
+      wrap.classList.remove('is-visible');
+      wrap.classList.add('is-exiting');
+
+      setTimeout(() => {
+        if (wrap) wrap.classList.remove('is-exiting');
+      }, 240);
+    }
+
+    window.VeloraFloatingPromo = {
+      show: showPromoToast,
+      hide: hidePromoToast,
+      isVisible: () => {
+        const el = document.getElementById('velora-floating-promo');
+        return Boolean(el && el.classList.contains('is-visible'));
+      }
+    };
   }
 
   // ==========================================================================

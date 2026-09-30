@@ -121,11 +121,13 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       success: true,
       is_cod: false,
+      order_id: rzpOrder.id,
       razorpay_order_id: rzpOrder.id,
+      id: rzpOrder.id,
       amount: rzpOrder.amount, // in paise
       amount_in_inr: calculated.payableNow,
       currency: rzpOrder.currency,
-      key_id: process.env.RAZORPAY_KEY_ID,
+      key_id: process.env.RAZORPAY_KEY_ID ? String(process.env.RAZORPAY_KEY_ID).trim() : '',
       payment_type: isAdvCod ? 'advance_cod' : 'full_online',
       summary: {
         subtotal: calculated.subtotal,

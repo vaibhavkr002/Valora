@@ -1,0 +1,121 @@
+{
+  "allPass": false,
+  "summary": [
+    {
+      "page": "index.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=861, clientW=805)"
+      ]
+    },
+    {
+      "page": "shop.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "product.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "cart.html",
+      "status": "PASS"
+    },
+    {
+      "page": "checkout.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=927, clientW=805)"
+      ]
+    },
+    {
+      "page": "account.html",
+      "status": "PASS"
+    },
+    {
+      "page": "wishlist.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "login.html",
+      "status": "PASS"
+    },
+    {
+      "page": "signup.html",
+      "status": "PASS"
+    },
+    {
+      "page": "bogo.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "deals.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "new-arrivals.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "trending.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    },
+    {
+      "page": "sarojini-bazaar.html",
+      "status": "PASS"
+    },
+    {
+      "page": "sarojini-shop.html",
+      "status": "PASS"
+    },
+    {
+      "page": "sarojini-product-details.html",
+      "status": "PASS"
+    },
+    {
+      "page": "order-success.html",
+      "status": "PASS"
+    },
+    {
+      "page": "returns-exchanges.html",
+      "status": "FAIL",
+      "failures": [
+        "820px (scrollW=902, clientW=805)"
+      ]
+    }
+  ],
+  "desktopBogo": {
+    "found": true,
+    "flexDirection": "row",
+    "background": "rgb(255, 255, 255)",
+    "overlayDisplay": "none",
+    "picPosition": "relative"
+  },
+  "mobileBogo": {
+    "found": true,
+    "flexDirection": "column",
+    "background": "rgb(2, 44, 34)",
+    "overlayDisplay": "block",
+    "picPosition": "absolute"
+  }
+}

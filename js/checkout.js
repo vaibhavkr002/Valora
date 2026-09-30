@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedUpiApp: "Google Pay",
     activeUpiTransaction: null,
     upiPollingInterval: null,
-    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "vadii@ptaxis",
+    merchantVpa: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_vpa) || "",
     merchantName: (window.VELORA_SETTINGS && window.VELORA_SETTINGS.payment && window.VELORA_SETTINGS.payment.merchant_name) || "VALORA"
   };
 
@@ -91,51 +91,18 @@ document.addEventListener("DOMContentLoaded", () => {
     checkDefaultAddress: document.getElementById("check-default-address"),
     labelDefaultAddress: document.getElementById("label-default-address"),
 
-    // Payment Cards
+    // Payment Cards & 3D Action Buttons
     paymentCards: document.querySelectorAll(".payment-method-card"),
-    inputCardNum: document.getElementById("input-card-num"),
-    inputCardExp: document.getElementById("input-card-exp"),
-    inputCardCvv: document.getElementById("input-card-cvv"),
-    inputCardName: document.getElementById("input-card-name"),
-    bankChips: document.querySelectorAll(".bank-chip"),
+    btnCardCheckout: document.getElementById("btn-card-checkout"),
+    btnNetbankingCheckout: document.getElementById("btn-netbanking-checkout"),
 
-    // UPI Payment Flow Elements
-    upiDesktopScanCard: document.getElementById("upi-desktop-scan-card"),
-    desktopUpiQrContainer: document.getElementById("desktop-upi-qr-container"),
+    // Razorpay UPI Flow Elements
+    razorpayUpiCard: document.getElementById("razorpay-upi-card"),
     desktopScanAmountBadge: document.getElementById("desktop-scan-amount-badge"),
     desktopScanAmountType: document.getElementById("desktop-scan-amount-type"),
-    desktopMerchantVpa: document.getElementById("desktop-merchant-vpa"),
-    desktopUpiRef: document.getElementById("desktop-upi-ref"),
-    btnDesktopCopyUpi: document.getElementById("btn-desktop-copy-upi"),
-    btnDesktopVerifyOrder: document.getElementById("btn-desktop-verify-order"),
-    upiAppsGrid: document.getElementById("upi-apps-grid"),
-    upiAppCards: document.querySelectorAll(".upi-app-card"),
-    upiAmountCard: document.getElementById("upi-amount-card"),
-    upiAmountTitle: document.getElementById("upi-amount-title"),
-    upiAmountVal: document.getElementById("upi-amount-val"),
-    upiAdvanceBreakdown: document.getElementById("upi-advance-breakdown"),
-    upiAdvanceVal: document.getElementById("upi-advance-val"),
-    upiCodVal: document.getElementById("upi-cod-val"),
-    btnUpiPay: document.getElementById("btn-upi-pay"),
-    btnUpiPayText: document.getElementById("btn-upi-pay-text"),
-
-    // UPI Payment Modal Elements
-    upiModal: document.getElementById("upi-payment-modal"),
-    btnUpiModalClose: document.getElementById("btn-upi-modal-close"),
-    upiStatusBox: document.getElementById("upi-status-box"),
-    upiSpinner: document.getElementById("upi-spinner"),
-    upiStatusHeading: document.getElementById("upi-status-heading"),
-    upiStatusDesc: document.getElementById("upi-status-desc"),
-    modalUpiAmount: document.getElementById("modal-upi-amount"),
-    modalUpiRef: document.getElementById("modal-upi-ref"),
-    modalMerchantVpa: document.getElementById("modal-merchant-vpa"),
-    modalAppName: document.getElementById("modal-app-name"),
-    upiQrContainer: document.getElementById("upi-qr-container"),
-    btnLaunchUpiApp: document.getElementById("btn-launch-upi-app"),
-    btnLaunchAnyApp: document.getElementById("btn-launch-any-app"),
-    btnCopyUpi: document.getElementById("btn-copy-upi"),
-    btnConfirmPayment: document.getElementById("btn-confirm-payment"),
-    btnCancelPayment: document.getElementById("btn-cancel-payment"),
+    desktopScanAdvanceNote: document.getElementById("desktop-scan-advance-note"),
+    btnUpiCheckout: document.getElementById("btn-upi-checkout"),
+    btnUpiCheckoutText: document.getElementById("btn-upi-checkout-text"),
 
     // Online Gifts Card Elements
     cardOnlineGifts: document.getElementById("card-online-gifts"),
@@ -1896,233 +1863,91 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  // Card Number Formatting Helper
-  if (elements.inputCardNum) {
-    elements.inputCardNum.addEventListener("input", (e) => {
-      let val = e.target.value.replace(/\D/g, "").substring(0, 16);
-      let formatted = val.match(/.{1,4}/g)?.join(" ") || val;
-      e.target.value = formatted;
-    });
-  }
-
-  // Expiry Date Formatting Helper
-  if (elements.inputCardExp) {
-    elements.inputCardExp.addEventListener("input", (e) => {
-      let val = e.target.value.replace(/\D/g, "").substring(0, 4);
-      if (val.length >= 2) {
-        e.target.value = val.substring(0, 2) + "/" + val.substring(2);
-      } else {
-        e.target.value = val;
-      }
-    });
-  }
-
-  // Bank Chips
-  elements.bankChips.forEach(chip => {
-    chip.addEventListener("click", (e) => {
-      e.stopPropagation();
-      elements.bankChips.forEach(b => b.classList.remove("active"));
-      chip.classList.add("active");
-      state.selectedBank = chip.dataset.bank;
-    });
-  });
-
-  // --- 7C. UPI Payment Apps & Dynamic Deep-Linking Flow ---
-  function getAppShortName(appName) {
-    if (!appName) return "GPAY";
-    const clean = String(appName).trim().toLowerCase();
-    if (clean.includes("gpay") || clean.includes("google")) return "GPAY";
-    if (clean.includes("phonepe")) return "PHONEPE";
-    if (clean.includes("paytm")) return "PAYTM";
-    if (clean.includes("bhim")) return "BHIM";
-    return "UPI APP";
-  }
-
+  // --- 7C. Razorpay UPI Dynamic QR Section & Real-Time Calculation ---
   function updateUpiSection() {
-    const isAdvCod = (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+    const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
     const upiAmount = isAdvCod ? state.advancePayableNow : state.total;
-    const shortApp = getAppShortName(state.selectedUpiApp);
 
-    if (elements.upiAmountVal) {
-      elements.upiAmountVal.textContent = formatPrice(upiAmount);
-    }
-    if (elements.upiAmountTitle) {
-      elements.upiAmountTitle.textContent = isAdvCod ? "Advance Payable Now" : "Total Payable Online";
-    }
-    if (elements.upiAdvanceBreakdown) {
-      if (isAdvCod) {
-        elements.upiAdvanceBreakdown.style.display = "flex";
-        if (elements.upiAdvanceVal) elements.upiAdvanceVal.textContent = formatPrice(state.advancePayableNow);
-        if (elements.upiCodVal) elements.upiCodVal.textContent = formatPrice(state.remainingCodAmount);
-      } else {
-        elements.upiAdvanceBreakdown.style.display = "none";
-      }
-    }
-    if (elements.btnUpiPayText) {
-      elements.btnUpiPayText.textContent = `PAY ${formatPrice(upiAmount)} WITH ${shortApp}`;
-    }
-
-    // Update Desktop Scan to Pay section
     if (elements.desktopScanAmountBadge) {
       elements.desktopScanAmountBadge.textContent = formatPrice(upiAmount);
     }
     if (elements.desktopScanAmountType) {
-      elements.desktopScanAmountType.textContent = isAdvCod ? "Advance Payment" : "Total Payable Online";
+      elements.desktopScanAmountType.textContent = isAdvCod ? "Advance Deposit" : "Payable Now";
     }
-    if (elements.desktopMerchantVpa) {
-      elements.desktopMerchantVpa.textContent = state.merchantVpa || "vadii@ptaxis";
-    }
-    if (elements.desktopUpiRef) {
-      if (!state.desktopTxRef) {
-        state.desktopTxRef = "VEL-TXN-" + Date.now().toString().slice(-6) + "-" + Math.floor(1000 + Math.random() * 9000);
-      }
-      elements.desktopUpiRef.textContent = state.desktopTxRef;
-    }
-
-    if (elements.desktopUpiQrContainer && upiAmount > 0) {
-      const vpa = state.merchantVpa || "vadii@ptaxis";
-      const name = state.merchantName || "VALORA";
-      const ref = state.desktopTxRef || ("VEL-TXN-" + Date.now().toString().slice(-6));
-      const links = generateUpiLinks(vpa, name, ref, upiAmount);
-      renderUpiQrCode(elements.desktopUpiQrContainer, links.generic);
-    }
-  }
-
-  function generateUpiLinks(vpa, name, ref, amount, note) {
-    const cleanVpa = (vpa || "vadii@ptaxis").trim();
-    const cleanName = encodeURIComponent((name || "VALORA").trim());
-    const cleanNote = encodeURIComponent(note || `Order ${ref}`);
-    const amtStr = Number(amount || 0).toFixed(2);
-    const baseQuery = `pa=${cleanVpa}&pn=${cleanName}&tr=${ref}&tn=${cleanNote}&am=${amtStr}&cu=INR`;
-
-    return {
-      generic: `upi://pay?${baseQuery}`,
-      gpay: `tez://upi/pay?${baseQuery}`,
-      phonepe: `phonepe://pay?${baseQuery}`,
-      paytm: `paytmmp://pay?${baseQuery}`,
-      bhim: `bhim://pay?${baseQuery}`
-    };
-  }
-
-  function renderUpiQrCode(container, upiUri) {
-    if (!container) return;
-    container.innerHTML = "";
-
-    if (typeof window.qrcode === "function") {
-      try {
-        const qr = window.qrcode(0, "M");
-        qr.addData(upiUri);
-        qr.make();
-        container.innerHTML = qr.createSvgTag({ scalable: true, margin: 1 });
-        const svg = container.querySelector("svg");
-        if (svg) {
-          svg.setAttribute("width", "100%");
-          svg.setAttribute("height", "100%");
-          svg.style.width = "100%";
-          svg.style.height = "100%";
-          svg.style.maxWidth = "100%";
-          svg.style.maxHeight = "100%";
-          svg.style.objectFit = "contain";
-          svg.style.display = "block";
-        }
-        return;
-      } catch (e) {
-        console.warn("QR generation fallback:", e);
+    if (elements.desktopScanAdvanceNote) {
+      if (isAdvCod) {
+        elements.desktopScanAdvanceNote.style.display = "block";
+        elements.desktopScanAdvanceNote.textContent = `Remaining balance of ${formatPrice(state.remainingCodAmount)} due on delivery.`;
+      } else {
+        elements.desktopScanAdvanceNote.style.display = "none";
+        elements.desktopScanAdvanceNote.textContent = "";
       }
     }
-
-    // Fallback if CDN is unreachable or offline
-    container.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:12px;">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        <span style="font-size:0.75rem;color:#475569;margin-top:8px;font-weight:600;">Tap App Button to Pay</span>
-      </div>`;
+    if (elements.btnUpiCheckoutText) {
+      elements.btnUpiCheckoutText.textContent = `Pay ${formatPrice(upiAmount)} with UPI`;
+    }
   }
 
-  // App Card Selection Handlers
-  if (elements.upiAppCards) {
-    elements.upiAppCards.forEach(card => {
-      card.addEventListener("click", (e) => {
+  // --- 7D. 3D Payment Button Action Handlers ---
+  if (elements.btnCardCheckout) {
+    elements.btnCardCheckout.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.selectedPaymentMethod = "Credit / Debit Card";
+      elements.paymentCards.forEach(c => {
+        c.classList.toggle("selected", c.dataset.method === "Credit / Debit Card");
+      });
+      renderOrderSummary();
+      const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online", "card");
+    });
+  }
+
+  if (elements.btnUpiCheckout) {
+    elements.btnUpiCheckout.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.selectedPaymentMethod = "UPI / QR Payment";
+      elements.paymentCards.forEach(c => {
+        c.classList.toggle("selected", c.dataset.method === "UPI / QR Payment");
+      });
+      renderOrderSummary();
+      const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online", "upi");
+    });
+  }
+
+  const upiAppChips = document.querySelectorAll(".rzp-upi-app-chip");
+  if (upiAppChips.length > 0) {
+    upiAppChips.forEach(chip => {
+      chip.addEventListener("click", (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        elements.upiAppCards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
-        state.selectedUpiApp = card.dataset.app || "Google Pay";
-        updateUpiSection();
-      });
-      card.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          card.click();
-        }
-      });
-    });
-  }
-
-  // Desktop Copy UPI ID Button
-  if (elements.btnDesktopCopyUpi) {
-    elements.btnDesktopCopyUpi.addEventListener("click", () => {
-      const vpa = (elements.desktopMerchantVpa ? elements.desktopMerchantVpa.textContent : state.merchantVpa || "vadii@ptaxis").trim();
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(vpa).then(() => {
-          elements.btnDesktopCopyUpi.textContent = "Copied!";
-          setTimeout(() => { if (elements.btnDesktopCopyUpi) elements.btnDesktopCopyUpi.textContent = "Copy"; }, 2000);
-        }).catch(() => {
-          showToast("UPI ID: " + vpa, "info");
+        upiAppChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        state.selectedPaymentMethod = "UPI / QR Payment";
+        elements.paymentCards.forEach(c => {
+          c.classList.toggle("selected", c.dataset.method === "UPI / QR Payment");
         });
-      } else {
-        showToast("UPI ID: " + vpa, "info");
-      }
+        renderOrderSummary();
+        const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+        startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online", "upi");
+      });
     });
   }
 
-  // Desktop Verify & Confirm Button
-  if (elements.btnDesktopVerifyOrder) {
-    elements.btnDesktopVerifyOrder.addEventListener("click", (e) => {
+  if (elements.btnNetbankingCheckout) {
+    elements.btnNetbankingCheckout.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+      state.selectedPaymentMethod = "Net Banking";
+      elements.paymentCards.forEach(c => {
+        c.classList.toggle("selected", c.dataset.method === "Net Banking");
+      });
+      renderOrderSummary();
       const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
-      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online");
+      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online", "netbanking");
     });
-  }
-
-  // In-Card Quick Pay Button
-  if (elements.btnUpiPay) {
-    elements.btnUpiPay.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
-      startRazorpayCheckout(isAdvCod ? "advance_cod" : "full_online");
-    });
-  }
-
-  // Copy Merchant VPA to Clipboard
-  if (elements.btnCopyUpi) {
-    elements.btnCopyUpi.addEventListener("click", () => {
-      const vpa = (elements.modalMerchantVpa ? elements.modalMerchantVpa.textContent : state.merchantVpa || "vadii@ptaxis").trim();
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(vpa).then(() => {
-          elements.btnCopyUpi.textContent = "Copied!";
-          setTimeout(() => { if (elements.btnCopyUpi) elements.btnCopyUpi.textContent = "Copy"; }, 2000);
-        }).catch(() => {
-          showToast("UPI ID: " + vpa, "info");
-        });
-      } else {
-        showToast("UPI ID: " + vpa, "info");
-      }
-    });
-  }
-
-  // Modal Dismiss / Cancel Handlers
-  if (elements.btnUpiModalClose) {
-    elements.btnUpiModalClose.addEventListener("click", () => cancelActiveUpiPayment("User closed modal"));
-  }
-  if (elements.btnCancelPayment) {
-    elements.btnCancelPayment.addEventListener("click", () => cancelActiveUpiPayment("User cancelled payment"));
-  }
-
-  // Modal "I Have Completed Payment" Button
-  if (elements.btnConfirmPayment) {
-    elements.btnConfirmPayment.addEventListener("click", () => verifyActiveUpiPayment(false));
   }
 
   // =========================================================================
@@ -2163,7 +1988,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  async function startRazorpayCheckout(paymentType = "full_online") {
+  async function startRazorpayCheckout(paymentType = "full_online", preferredMethod = null) {
     if (isSubmittingOrder) {
       console.warn("Order submission already in progress.");
       return;
@@ -2256,21 +2081,42 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 3. Open Razorpay Checkout modal
+    // 3. Authoritative order_id and key_id resolution
+    const resolvedOrderId = (orderRes.razorpay_order_id || orderRes.order_id || orderRes.id || "").trim();
+    if (!resolvedOrderId || !resolvedOrderId.startsWith("order_")) {
+      console.error("[Razorpay Checkout] Invalid or missing order_id from backend:", orderRes);
+      resetBtn();
+      showToast("Payment initialization failed: Invalid order received from payment server. Please refresh.", "error");
+      return;
+    }
+
+    const resolvedKey = (orderRes.key_id || "").trim();
+    if (!resolvedKey) {
+      console.error("[Razorpay Checkout] Missing key_id in response:", orderRes);
+      resetBtn();
+      showToast("Payment gateway configuration missing. Please try again.", "error");
+      return;
+    }
+
+    const isTestMode = resolvedKey.startsWith("rzp_test_");
+
+    // 4. Open Razorpay Checkout modal
     const options = {
-      key: orderRes.key_id,
+      key: resolvedKey,
       amount: orderRes.amount,
-      currency: orderRes.currency || "INR",
+      currency: (orderRes.currency || "INR").toUpperCase(),
       name: "VALORA",
       description: paymentType === "advance_cod"
         ? `Advance Deposit (${formatPrice(orderRes.amount_in_inr)}) • Balance on Delivery`
         : `Order Payment (${formatPrice(orderRes.amount_in_inr)}) • 3 Free Gifts Unlocked`,
       image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200",
-      order_id: orderRes.razorpay_order_id,
+      order_id: resolvedOrderId,
       prefill: {
-        name: deliveryPayload.fullName,
-        email: deliveryPayload.email,
-        contact: deliveryPayload.phone
+        name: (deliveryPayload.fullName || "").trim(),
+        email: (deliveryPayload.email || "").trim(),
+        contact: (deliveryPayload.phone || "").replace(/[^0-9]/g, "").slice(-10),
+        vpa: isTestMode ? "success@razorpay" : undefined,
+        method: preferredMethod || undefined
       },
       notes: {
         payment_type: paymentType,
@@ -2295,13 +2141,20 @@ document.addEventListener("DOMContentLoaded", () => {
           const currentUser = window.VeloraAuth ? window.VeloraAuth.getCurrentUser() : null;
           const resolvedUserId = currentUser ? currentUser.id : null;
 
+          const rzpPaymentId = (paymentResponse.razorpay_payment_id || "").trim();
+          const rzpOrderId = (paymentResponse.razorpay_order_id || resolvedOrderId || "").trim();
+          const rzpSignature = (paymentResponse.razorpay_signature || "").trim();
+
           let verifyResp = await fetch("/api/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              razorpay_order_id: paymentResponse.razorpay_order_id,
-              razorpay_payment_id: paymentResponse.razorpay_payment_id,
-              razorpay_signature: paymentResponse.razorpay_signature,
+              razorpay_order_id: rzpOrderId,
+              razorpay_payment_id: rzpPaymentId,
+              razorpay_signature: rzpSignature,
+              order_id: rzpOrderId,
+              payment_id: rzpPaymentId,
+              signature: rzpSignature,
               payment_method: paymentType,
               items: state.cart,
               coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
@@ -2317,9 +2170,12 @@ document.addEventListener("DOMContentLoaded", () => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                razorpay_order_id: paymentResponse.razorpay_order_id,
-                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                razorpay_signature: paymentResponse.razorpay_signature,
+                razorpay_order_id: rzpOrderId,
+                razorpay_payment_id: rzpPaymentId,
+                razorpay_signature: rzpSignature,
+                order_id: rzpOrderId,
+                payment_id: rzpPaymentId,
+                signature: rzpSignature,
                 payment_method: paymentType,
                 items: state.cart,
                 coupon_code: state.appliedCoupon ? state.appliedCoupon.code : null,
@@ -2592,11 +2448,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.inputCity,
     elements.inputState,
     elements.inputZip,
-    elements.selectCountry,
-    elements.inputCardNum,
-    elements.inputCardExp,
-    elements.inputCardCvv,
-    elements.inputCardName
+    elements.selectCountry
   ].forEach(input => {
     if (input) {
       const clearError = () => {
@@ -2686,33 +2538,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!firstInvalidElement) firstInvalidElement = elements.inputZip;
     }
 
-    // Validate Payment specific details
-    if (state.selectedPaymentMethod === "Credit / Debit Card") {
-      const cardNumClean = elements.inputCardNum.value.replace(/\s+/g, "");
-      const cardNumValid = cardNumClean.length >= 15;
-      if (!validateField(elements.inputCardNum, cardNumValid)) {
-        isValid = false;
-        if (!firstInvalidElement) firstInvalidElement = elements.inputCardNum;
-      }
-
-      const expValid = elements.inputCardExp.value.trim().length >= 4;
-      if (!validateField(elements.inputCardExp, expValid)) {
-        isValid = false;
-        if (!firstInvalidElement) firstInvalidElement = elements.inputCardExp;
-      }
-
-      const cvvValid = elements.inputCardCvv.value.trim().length >= 3;
-      if (!validateField(elements.inputCardCvv, cvvValid)) {
-        isValid = false;
-        if (!firstInvalidElement) firstInvalidElement = elements.inputCardCvv;
-      }
-
-      const cardNameValid = elements.inputCardName.value.trim().length >= 3;
-      if (!validateField(elements.inputCardName, cardNameValid)) {
-        isValid = false;
-        if (!firstInvalidElement) firstInvalidElement = elements.inputCardName;
-      }
-    }
 
     if (!isValid && firstInvalidElement) {
       if (elements.deliveryFormContainer && elements.deliveryFormContainer.style.display === "none") {
@@ -2748,8 +2573,13 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (_) {}
 
     const isAdvCod = (state.selectedPaymentMethod === "Advance + Cash on Delivery") || (state.selectedPaymentMethod === "Cash on Delivery" && state.advanceRequired);
+    let preferredMethod = null;
+    if (state.selectedPaymentMethod === "Credit / Debit Card") preferredMethod = "card";
+    else if (state.selectedPaymentMethod === "Net Banking") preferredMethod = "netbanking";
+    else if (state.selectedPaymentMethod === "UPI / QR Payment") preferredMethod = "upi";
+
     if (isAdvCod) {
-      await startRazorpayCheckout("advance_cod");
+      await startRazorpayCheckout("advance_cod", preferredMethod);
       return;
     }
 
@@ -2766,7 +2596,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Default: Full Online Payment via Razorpay (UPI, Credit/Debit Cards, Net Banking)
-    await startRazorpayCheckout("full_online");
+    await startRazorpayCheckout("full_online", preferredMethod);
   }
 
   async function executeOrderPlacement(overrides = {}) {

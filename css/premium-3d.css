@@ -1532,19 +1532,6 @@ body {
   pointer-events: none;
 }
 
-.footer-social-icon {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  transition: all var(--trans-spring);
-}
-
-.footer-social-icon:hover {
-  background: var(--grad-accent);
-  border-color: transparent;
-  transform: translateY(-4px) scale(1.1);
-  box-shadow: var(--shadow-accent);
-}
-
 .payment-badge {
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.1);

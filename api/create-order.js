@@ -11,14 +11,17 @@ const { calculateTrustedOrder } = require('./_lib/orderCalculator');
 const { recordPaymentTransaction } = require('./_lib/supabaseAdmin');
 
 function getRazorpayInstance() {
-  const key_id = process.env.RAZORPAY_KEY_ID;
-  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  const key_id = process.env.RAZORPAY_KEY_ID ? String(process.env.RAZORPAY_KEY_ID).trim() : null;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET ? String(process.env.RAZORPAY_KEY_SECRET).trim() : null;
 
   if (!key_id || !key_secret) {
     const err = new Error('Razorpay credentials are not configured on the server.');
     err.statusCode = 500;
     throw err;
   }
+
+  const isTest = key_id.startsWith('rzp_test_');
+  console.log(`[Razorpay Debug] MODE=${isTest ? 'TEST' : 'LIVE'} KEY_ID_PRESENT=true KEY_TYPE=${isTest ? 'TEST' : 'LIVE'} KEY_SECRET_PRESENT=true`);
 
   return new Razorpay({ key_id, key_secret });
 }
@@ -75,13 +78,15 @@ module.exports = async (req, res) => {
           }
         });
 
+        console.log(`[Razorpay Debug] ORDER_CREATION=SUCCESS ORDER_ID_PRESENT=true ORDER_ID_PREFIX=${order.id ? order.id.slice(0, 6) : 'none'}`);
         return res.status(200).json({
           success: true,
           order_id: order.id,
+          razorpay_order_id: order.id,
           id: order.id,
           amount: order.amount,
           currency: order.currency,
-          key_id: process.env.RAZORPAY_KEY_ID
+          key_id: process.env.RAZORPAY_KEY_ID ? String(process.env.RAZORPAY_KEY_ID).trim() : ''
         });
       } catch (rzpErr) {
         console.error('[API create-order] Razorpay API Error:', rzpErr);
@@ -200,8 +205,7 @@ module.exports = async (req, res) => {
       id: rzpOrder.id,
       amount: rzpOrder.amount,
       amount_in_inr: calculated.payableNow,
-      currency: rzpOrder.currency,
-      key_id: process.env.RAZORPAY_KEY_ID,
+      key_id: process.env.RAZORPAY_KEY_ID ? String(process.env.RAZORPAY_KEY_ID).trim() : '',
       payment_type: isAdvCod ? 'advance_cod' : 'full_online',
       summary: {
         subtotal: calculated.subtotal,

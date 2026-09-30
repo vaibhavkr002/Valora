@@ -11,9 +11,9 @@
 
 /* ==========================================================================
    DESKTOP PROTECTION GUARD: Ensure mobile-specific components are 100% hidden
-   on desktop / tablet viewports (>= 768px).
+   on desktop / tablet viewports (> 768px).
    ========================================================================== */
-@media (min-width: 768px) {
+@media (min-width: 769px) {
   .mobile-search-bar-row,
   .mobile-sticky-purchase-bar,
   .btn-mobile-filter,
@@ -30,7 +30,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   /* ==========================================================================
      1. GLOBAL MOBILE RESETS & HORIZONTAL OVERFLOW PREVENTION
      ========================================================================== */
@@ -627,15 +627,45 @@
     justify-content: center !important;
   }
 
-  /* Compact 3D Stage on Phone */
-  .hero-visual-stage {
-    min-height: 220px !important;
-    height: 220px !important;
-    margin-top: 6px !important;
+  /* Mobile Hero Image Presentation (Wider, Centered, Natural Aspect Ratio) */
+  .hero-visual-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    margin: 6px auto 0 !important;
+    padding: 0 !important;
   }
 
-  .hero-centerpiece-wrap {
-    transform: scale(0.82) !important;
+  .hero-image-card {
+    width: min(82vw, 340px) !important;
+    max-width: 340px !important;
+    height: clamp(285px, 96vw, 395px) !important;
+    aspect-ratio: 4 / 4.75 !important;
+    margin: 0 auto !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+  }
+
+  .hero-image-card img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center 20% !important;
+    display: block !important;
+    transform: none !important;
+  }
+
+  .hero-card-shadow-plate {
+    bottom: -18px !important;
+    left: 10% !important;
+    width: 80% !important;
+    height: 18px !important;
   }
 
   .floating-glass-card {
@@ -1174,6 +1204,7 @@
 
   .shop-toolbar .toolbar-left {
     display: flex !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     gap: 8px !important;
     width: 100% !important;
@@ -1181,12 +1212,12 @@
 
   .btn-mobile-filter,
   .btn-mobile-sort {
-    flex: 1 !important;
-    height: 38px !important;
+    flex: 1 1 calc(50% - 4px) !important;
+    height: 40px !important;
     border-radius: 10px !important;
     background: #ffffff !important;
     border: 1.5px solid #e2e8f0 !important;
-    font-size: 0.8rem !important;
+    font-size: 0.82rem !important;
     font-weight: 700 !important;
     color: #1e293b !important;
     display: flex !important;
@@ -1203,6 +1234,52 @@
   .btn-mobile-sort:active {
     transform: scale(0.96) !important;
     background: #f1f5f9 !important;
+  }
+
+  .shop-toolbar #results-count-text,
+  .shop-toolbar .results-count-text {
+    width: 100% !important;
+    order: 2 !important;
+    font-size: 0.82rem !important;
+    color: #64748b !important;
+    margin: 2px 0 0 0 !important;
+    display: block !important;
+  }
+
+  .shop-toolbar .active-filters-container {
+    width: 100% !important;
+    order: 3 !important;
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 6px !important;
+    padding: 2px 0 !important;
+  }
+
+  .shop-toolbar .toolbar-right {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    order: 4 !important;
+    gap: 8px !important;
+  }
+
+  .shop-toolbar .toolbar-search-box {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .shop-toolbar .toolbar-search-box input {
+    width: 100% !important;
+    height: 40px !important;
+    font-size: 0.85rem !important;
+    border-radius: 20px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Completely eliminate duplicate sort dropdown on mobile */
+  .shop-toolbar .sort-select-wrapper,
+  #sort-dropdown {
+    display: none !important;
   }
 
   .shop-sidebar,
@@ -2473,6 +2550,26 @@
     gap: 6px !important;
   }
 
+  .footer-brand-logo,
+  .brand-logo.footer-logo,
+  .footer-logo,
+  .footer-brand-logo span,
+  .brand-logo.footer-logo span,
+  .footer-logo span,
+  .footer-brand-logo .dot,
+  .brand-logo.footer-logo .dot,
+  .sarojini-footer .footer-logo,
+  .sarojini-footer .footer-logo span,
+  .sarojini-footer .footer-logo .dot,
+  .site-footer .brand-logo span,
+  .main-footer .brand-logo span,
+  .sarojini-footer .brand-logo span,
+  footer .brand-logo span,
+  footer .brand-icon,
+  footer .dot {
+    color: #ffffff !important;
+  }
+
   .sarojini-footer .footer-logo {
     font-size: 1.35rem !important;
     margin-bottom: 6px !important;
@@ -2490,17 +2587,6 @@
 
   .sarojini-footer .footer-tagline {
     color: #a8a29e !important;
-  }
-
-  .footer-social-links {
-    display: flex !important;
-    gap: 8px !important;
-  }
-
-  .footer-social-icon {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
   }
 
   .sarojini-footer .footer-badges {

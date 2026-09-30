@@ -126,11 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
     stickyAddCartBtn: document.getElementById("btn-sticky-add-cart"),
     stickyBuyNowBtn: document.getElementById("btn-sticky-buy-now"),
 
-    // Tabs
+    // Tabs & Reviews Mounts
     tabNavBtns: document.querySelectorAll(".tab-nav-btn"),
     tabPanels: document.querySelectorAll(".tab-content-panel"),
     specsTableBody: document.getElementById("specs-table-body"),
     overviewFeaturesList: document.getElementById("overview-features-list"),
+    desktopReviewsSlot: document.getElementById("desktop-reviews-slot"),
+    mobileReviewsSection: document.getElementById("mobile-customer-reviews-section"),
+    mobileReviewsContainer: document.getElementById("mobile-customer-reviews-container"),
 
     // Related Products
     relatedGrid: document.getElementById("related-products-grid"),
@@ -580,6 +583,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function showNotFoundState() {
     if (elements.mainView) elements.mainView.style.display = "none";
     if (elements.notFoundView) elements.notFoundView.style.display = "flex";
+    if (elements.stickyBar) elements.stickyBar.style.setProperty("display", "none", "important");
+    document.body.classList.remove('has-sticky-bar');
     document.title = "Product Not Found | VALORA — Everything. Simply Yours.";
     if (elements.breadcrumbProductTitle) elements.breadcrumbProductTitle.textContent = "Product Not Found";
   }
@@ -590,6 +595,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderProductPage(product) {
     if (elements.mainView) elements.mainView.style.display = "block";
     if (elements.notFoundView) elements.notFoundView.style.display = "none";
+    if (elements.stickyBar) elements.stickyBar.style.display = "";
+    document.body.classList.add('has-sticky-bar');
 
     // Set page title
     document.title = `${product.name} | VALORA — Everything. Simply Yours.`;
@@ -978,12 +985,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Top Rating Header Click Handler -> Navigates smoothly to Customer Reviews Tab
+    // Top Rating Header Click Handler -> Navigates smoothly to Customer Reviews (Desktop Tab or Mobile Standalone)
     const ratingRow = document.querySelector(".detail-rating-row") || elements.reviewsCount;
     if (ratingRow && !ratingRow.dataset.reviewsBound) {
       ratingRow.dataset.reviewsBound = "true";
       ratingRow.style.cursor = "pointer";
       ratingRow.addEventListener("click", () => {
+        if (window.innerWidth <= 768) {
+          const mobileSec = document.getElementById("mobile-customer-reviews-section") || document.getElementById("tab-reviews");
+          if (mobileSec) {
+            mobileSec.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+        }
         const tabReviewsBtn = document.querySelector(`.tab-nav-btn[data-tab-target="tab-reviews"]`);
         if (tabReviewsBtn) {
           tabReviewsBtn.click();
@@ -2387,18 +2401,59 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // 6a. Responsive Customer Reviews Sync (Desktop Tab vs Mobile Standalone Above Related Products)
+    function syncReviewsPlacement() {
+      const isMobile = window.innerWidth <= 768;
+      const reviewsPanel = document.getElementById("tab-reviews");
+      const mobileContainer = document.getElementById("mobile-customer-reviews-container");
+      const desktopSlot = document.getElementById("desktop-reviews-slot");
+      const mobileSection = document.getElementById("mobile-customer-reviews-section");
+
+      if (!reviewsPanel || !mobileContainer || !desktopSlot) return;
+
+      if (isMobile) {
+        if (reviewsPanel.parentElement !== mobileContainer) {
+          mobileContainer.appendChild(reviewsPanel);
+        }
+        if (mobileSection) mobileSection.style.display = "block";
+      } else {
+        if (reviewsPanel.parentElement !== desktopSlot) {
+          desktopSlot.appendChild(reviewsPanel);
+        }
+        if (mobileSection) mobileSection.style.display = "none";
+      }
+    }
+
     // 6. Tabs Switcher
     elements.tabNavBtns.forEach(btn => {
       btn.addEventListener("click", () => {
+        const targetId = btn.dataset.tabTarget;
+        if (window.innerWidth <= 768 && targetId === "tab-reviews") {
+          const mobileSec = document.getElementById("mobile-customer-reviews-section") || document.getElementById("tab-reviews");
+          if (mobileSec) {
+            mobileSec.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+          return;
+        }
+
         elements.tabNavBtns.forEach(b => b.classList.remove("active"));
         elements.tabPanels.forEach(p => p.classList.remove("active"));
 
         btn.classList.add("active");
-        const targetId = btn.dataset.tabTarget;
         const panel = document.getElementById(targetId);
         if (panel) panel.classList.add("active");
       });
     });
+
+    // Run initial reviews placement sync and listen for responsive breakpoint transitions
+    syncReviewsPlacement();
+    const reviewsPlacementMql = window.matchMedia("(max-width: 768px)");
+    if (reviewsPlacementMql.addEventListener) {
+      reviewsPlacementMql.addEventListener("change", syncReviewsPlacement);
+    } else if (reviewsPlacementMql.addListener) {
+      reviewsPlacementMql.addListener(syncReviewsPlacement);
+    }
+    window.addEventListener("resize", syncReviewsPlacement);
 
     // 6b. Reviews Form & Submission Handlers
     setupReviewsHandlers();

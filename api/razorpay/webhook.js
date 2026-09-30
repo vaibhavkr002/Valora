@@ -114,8 +114,8 @@ async function handler(req, res) {
   const signature = req.headers['x-razorpay-signature'] || req.headers['X-Razorpay-Signature'] || '';
   const eventIdHeader = req.headers['x-razorpay-event-id'] || req.headers['X-Razorpay-Event-Id'] || 'none';
   const hasSignatureHeader = Boolean(signature && signature.trim().length > 0);
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  const hasWebhookSecret = Boolean(webhookSecret && webhookSecret.trim().length > 0);
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET ? String(process.env.RAZORPAY_WEBHOOK_SECRET).trim() : null;
+  const hasWebhookSecret = Boolean(webhookSecret && webhookSecret.length > 0);
 
   // 1. Method check
   if (req.method !== 'POST') {

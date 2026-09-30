@@ -585,6 +585,11 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* Standalone Mobile Customer Reviews Section (Hidden on desktop > 768px) */
+.mobile-customer-reviews-section {
+  display: none !important;
+}
+
 .tabs-navigation-header {
   display: flex;
   align-items: center;
@@ -835,11 +840,43 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   /* Prevent content being covered by sticky bottom bar */
   main,
   #product-main-view {
     padding-bottom: 110px !important;
+  }
+
+  /* Mobile Product Tabs & Standalone Customer Reviews Placement */
+  .product-tabs-section {
+    padding: 28px 0 24px !important;
+  }
+
+  .mobile-customer-reviews-section {
+    display: block !important;
+    padding: 32px 0 28px !important;
+    background: #ffffff !important;
+    border-top: 1px solid var(--border-color, #e2e8f0) !important;
+    border-bottom: 1px solid var(--border-color, #e2e8f0) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-customer-reviews-section .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Force display block on mobile when moved into the mobile reviews section */
+  .mobile-customer-reviews-section #tab-reviews,
+  .mobile-customer-reviews-section .tab-content-panel {
+    display: block !important;
+    animation: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .product-showcase-section {

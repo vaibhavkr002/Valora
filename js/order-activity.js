@@ -847,47 +847,20 @@
     }
 
     if (containerEl) {
+      // Ensure BOGO floating promo is hidden
+      if (window.VeloraFloatingPromo && typeof window.VeloraFloatingPromo.hide === 'function') {
+        window.VeloraFloatingPromo.hide();
+      }
       containerEl.classList.remove('is-exiting');
       containerEl.classList.add('is-visible');
     }
-
-    // Keep visible for exactly 25 seconds, then transition
-    hideTimer = setTimeout(() => {
-      if (!isHovered) {
-        transitionToNextNotification();
-      }
-    }, CONFIG.displayDurationMs);
-  }
-
-  function transitionToNextNotification() {
-    clearAllTimers();
-
-    if (!containerEl || !containerEl.classList.contains('is-visible')) {
-      showNextNotification();
-      return;
-    }
-
-    containerEl.classList.remove('is-visible');
-    containerEl.classList.add('is-exiting');
-
-    activeTimer = setTimeout(() => {
-      if (containerEl) containerEl.classList.remove('is-exiting');
-      showNextNotification();
-    }, 280);
   }
 
   function dismissNotification() {
-    clearAllTimers();
-
-    if (!containerEl || !containerEl.classList.contains('is-visible')) return;
-
-    containerEl.classList.remove('is-visible');
-    containerEl.classList.add('is-exiting');
-
-    activeTimer = setTimeout(() => {
-      if (containerEl) containerEl.classList.remove('is-exiting');
-      scheduleNextRotation(CONFIG.rotationIntervalMs);
-    }, 280);
+    hideNotification();
+    if (window.VeloraNotificationManager && typeof window.VeloraNotificationManager.hideAll === 'function') {
+      window.VeloraNotificationManager.hideAll();
+    }
   }
 
   function hideNotification() {
@@ -900,17 +873,7 @@
 
     activeTimer = setTimeout(() => {
       if (containerEl) containerEl.classList.remove('is-exiting');
-    }, 280);
-  }
-
-  function scheduleNextRotation(delayMs) {
-    clearAllTimers();
-
-    if (!isEnabled || isPaused) return;
-
-    activeTimer = setTimeout(() => {
-      showNextNotification();
-    }, delayMs || CONFIG.rotationIntervalMs);
+    }, 240);
   }
 
   // ==========================================================================
@@ -1088,6 +1051,18 @@
       };
     },
 
+    showSingleActivity: function (forceType) {
+      showNextNotification(forceType);
+    },
+
+    hide: function () {
+      hideNotification();
+    },
+
+    isVisible: function () {
+      return Boolean(containerEl && containerEl.classList.contains('is-visible'));
+    },
+
     init: async function () {
       try {
         const storedStr = localStorage.getItem(CONFIG.storageKey);
@@ -1096,10 +1071,6 @@
           if (stored.enabled === false) isEnabled = false;
           if (stored.enableBogo !== undefined) enableBogo = Boolean(stored.enableBogo);
           if (stored.enableNormal !== undefined) enableNormal = Boolean(stored.enableNormal);
-          if (stored.rotationIntervalMs) {
-            CONFIG.rotationIntervalMs = stored.rotationIntervalMs;
-            CONFIG.displayDurationMs = stored.rotationIntervalMs;
-          }
         }
       } catch (e) {}
 
@@ -1110,13 +1081,157 @@
       // Initiate dynamic Supabase fetch immediately
       await fetchEligibleProducts();
 
-      // Start initial entrance after 2 seconds on page load
-      if (isEnabled) {
-        scheduleNextRotation(2000);
+      // Start Unified Notification Manager only on homepage
+      if (isHomepage() && isEnabled) {
+        VeloraNotificationManager.init();
       }
     }
   };
 
+  function isHomepage() {
+    const path = (window.location.pathname || '').toLowerCase();
+    const filename = path.substring(path.lastIndexOf('/') + 1);
+    const isHomePath = filename === '' || filename === 'index.html' || filename === 'homepage.html' || path === '/';
+    const hasHomeMain = Boolean(document.getElementById('homepage-main'));
+    return isHomePath || hasHomeMain;
+  }
+
+  // ==========================================================================
+  // UNIFIED HOMEPAGE NOTIFICATION MANAGER (LIVE SALES + BOGO ALTERNATING)
+  // ==========================================================================
+  const VeloraNotificationManager = (function () {
+    const CYCLE_INTERVAL_MS = 300000; // Exact 5-minute cycle (300,000 ms)
+    const DISPLAY_DURATION_MS = 5000; // 5.0 seconds visible duration
+    const ENTRY_DELAY_MS = 1800;      // 1.8 seconds initial entrance after page load
+
+    let cycleInterval = null;
+    let singleHideTimer = null;
+    let entryTimer = null;
+    let nextNotificationType = 'LIVE_SALES'; // 1st: LIVE_SALES, 2nd: BOGO, 3rd: LIVE_SALES, ...
+    let activeNotification = 'NONE';
+    let isInitialized = false;
+
+    function hideAll() {
+      if (singleHideTimer) {
+        clearTimeout(singleHideTimer);
+        singleHideTimer = null;
+      }
+      hideNotification();
+      if (window.VeloraFloatingPromo && typeof window.VeloraFloatingPromo.hide === 'function') {
+        window.VeloraFloatingPromo.hide();
+      }
+      activeNotification = 'NONE';
+    }
+
+    function clearAllScheduleTimers() {
+      if (cycleInterval) {
+        clearInterval(cycleInterval);
+        cycleInterval = null;
+      }
+      if (entryTimer) {
+        clearTimeout(entryTimer);
+        entryTimer = null;
+      }
+      if (singleHideTimer) {
+        clearTimeout(singleHideTimer);
+        singleHideTimer = null;
+      }
+    }
+
+    function triggerNext() {
+      if (!isHomepage() || document.hidden) return;
+
+      // Strictly ensure only one visible notification at any time
+      hideAll();
+
+      const typeToShow = nextNotificationType;
+
+      if (typeToShow === 'LIVE_SALES') {
+        activeNotification = 'LIVE_SALES';
+        nextNotificationType = 'BOGO';
+        showNextNotification();
+      } else {
+        activeNotification = 'BOGO';
+        nextNotificationType = 'LIVE_SALES';
+        if (window.VeloraFloatingPromo && typeof window.VeloraFloatingPromo.show === 'function') {
+          window.VeloraFloatingPromo.show();
+        } else {
+          showNextNotification('bogo');
+        }
+      }
+
+      // Automatically hide after exactly 5.0 seconds
+      singleHideTimer = setTimeout(() => {
+        hideAll();
+      }, DISPLAY_DURATION_MS);
+    }
+
+    function startCycle() {
+      if (!isHomepage()) {
+        hideAll();
+        clearAllScheduleTimers();
+        return;
+      }
+
+      clearAllScheduleTimers();
+
+      // Show first notification immediately upon homepage load (after 1.8s)
+      entryTimer = setTimeout(() => {
+        triggerNext();
+      }, ENTRY_DELAY_MS);
+
+      // Stable 5-minute interval (does not reset every time a toast hides)
+      cycleInterval = setInterval(() => {
+        triggerNext();
+      }, CYCLE_INTERVAL_MS);
+    }
+
+    function init() {
+      if (!isHomepage()) {
+        hideAll();
+        clearAllScheduleTimers();
+        return;
+      }
+
+      if (isInitialized) return;
+      isInitialized = true;
+
+      startCycle();
+
+      // Visibility and cleanup handlers
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          hideAll();
+          clearAllScheduleTimers();
+        } else {
+          if (isHomepage()) {
+            startCycle();
+          }
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        hideAll();
+        clearAllScheduleTimers();
+      });
+
+      window.addEventListener('pagehide', () => {
+        hideAll();
+        clearAllScheduleTimers();
+      });
+    }
+
+    return {
+      init: init,
+      triggerNext: triggerNext,
+      hideAll: hideAll,
+      stop: clearAllScheduleTimers,
+      getActive: () => activeNotification,
+      getNextType: () => nextNotificationType
+    };
+  })();
+
+  window.VeloraNotificationManager = VeloraNotificationManager;
   window.VeloraOrderActivity = VeloraOrderActivity;
 
   if (document.readyState === 'loading') {

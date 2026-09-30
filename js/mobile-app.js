@@ -10,7 +10,7 @@
   'use strict';
 
   function isMobile() {
-    return window.innerWidth <= 767;
+    return window.innerWidth <= 768;
   }
 
   // ==========================================================================

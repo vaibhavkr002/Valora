@@ -1,3 +1,4 @@
+
 /**
  * POST /api/verify-payment
  * Standard Razorpay Web Checkout Verification Endpoint.
@@ -73,7 +74,7 @@ module.exports = async (req, res) => {
         });
       }
 
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      const keySecret = process.env.RAZORPAY_KEY_SECRET ? String(process.env.RAZORPAY_KEY_SECRET).trim() : null;
       if (!keySecret) {
         return res.status(500).json({
           success: false,

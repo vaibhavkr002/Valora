@@ -7,9 +7,9 @@
 const crypto = require('crypto');
 
 function getRazorpayConfig() {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const keyId = process.env.RAZORPAY_KEY_ID ? String(process.env.RAZORPAY_KEY_ID).trim() : null;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET ? String(process.env.RAZORPAY_KEY_SECRET).trim() : null;
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET ? String(process.env.RAZORPAY_WEBHOOK_SECRET).trim() : null;
 
   if (!keyId) {
     throw new Error('RAZORPAY_KEY_ID environment variable is missing.');
@@ -17,6 +17,9 @@ function getRazorpayConfig() {
   if (!keySecret) {
     throw new Error('RAZORPAY_KEY_SECRET environment variable is missing.');
   }
+
+  const isTest = keyId.startsWith('rzp_test_');
+  console.log(`[Razorpay Debug] MODE=${isTest ? 'TEST' : 'LIVE'} KEY_ID_PRESENT=true KEY_TYPE=${isTest ? 'TEST' : 'LIVE'} KEY_SECRET_PRESENT=true`);
 
   return { keyId, keySecret, webhookSecret };
 }

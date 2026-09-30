@@ -956,7 +956,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .auth-section {
     padding: 24px 0 40px !important;
   }
