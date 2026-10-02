@@ -236,7 +236,14 @@
     }
 
     const limit = parseInt(config.limit, 10) || 8;
-    const displayProducts = products.slice(0, limit);
+    // Canonical ID deduplication to guarantee zero duplicate cards
+    const seenGridIds = new Set();
+    const uniqueProducts = products.filter(p => {
+      if (!p || !p.id || seenGridIds.has(p.id)) return false;
+      seenGridIds.add(p.id);
+      return true;
+    });
+    const displayProducts = uniqueProducts.slice(0, limit);
 
     if (displayProducts.length === 0) {
       existing.style.display = 'none';

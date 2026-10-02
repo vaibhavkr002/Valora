@@ -37,13 +37,29 @@
           .eq("id", user.id)
           .maybeSingle();
 
+        // 1. Direct profile check
         if (profile && profile.role === "admin") {
           return { isAdmin: true, user: user, profile: profile };
         }
 
-        // Fallback: check user metadata
+        // 2. User metadata check
         if (user.user_metadata && user.user_metadata.role === "admin") {
           return { isAdmin: true, user: user, profile: profile || user.user_metadata };
+        }
+
+        // 3. Database RPC is_admin() check (authoritative PostgreSQL check)
+        try {
+          const { data: isDbAdmin } = await client.rpc("is_admin");
+          if (isDbAdmin === true) {
+            return { isAdmin: true, user: user, profile: profile || { role: "admin" } };
+          }
+        } catch (_) {}
+
+        // 4. Verified admin emails check
+        const userEmail = (user.email || "").toLowerCase().trim();
+        const ADMIN_EMAILS = ["admin@vadi.com", "admin@velora.com", "alex@velora.com", "support@vadistudio.com", "admin@valora.com"];
+        if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
+          return { isAdmin: true, user: user, profile: profile || { role: "admin" } };
         }
 
         return { isAdmin: false, reason: "unauthorized", user: user };
@@ -86,15 +102,29 @@
           return { success: false, error: error.message };
         }
 
-        // Verify role strictly from database profile or metadata
+        // Verify role strictly from database profile, metadata, or database is_admin()
         const { data: profile } = await client
           .from("profiles")
           .select("id, role, full_name")
           .eq("id", data.user.id)
           .maybeSingle();
 
-        const role = (profile && profile.role) || (data.user.user_metadata && data.user.user_metadata.role);
-        if (role !== "admin") {
+        const isProfileAdmin = Boolean(profile && profile.role === "admin");
+        const isMetaAdmin = Boolean(data.user.user_metadata && data.user.user_metadata.role === "admin");
+
+        let isDbAdmin = false;
+        try {
+          const { data: rpcAdmin } = await client.rpc("is_admin");
+          isDbAdmin = (rpcAdmin === true);
+        } catch (_) {}
+
+        const userEmail = (data.user.email || email || "").toLowerCase().trim();
+        const ADMIN_EMAILS = ["admin@vadi.com", "admin@velora.com", "alex@velora.com", "support@vadistudio.com", "admin@valora.com"];
+        const isEmailAdmin = Boolean(userEmail && ADMIN_EMAILS.includes(userEmail));
+
+        const isAuthorized = isProfileAdmin || isMetaAdmin || isDbAdmin || isEmailAdmin;
+
+        if (!isAuthorized) {
           await client.auth.signOut();
           return {
             success: false,
@@ -102,7 +132,14 @@
           };
         }
 
-        return { success: true, user: data.user, profile: profile };
+        // If profile was not yet marked admin, keep it in sync
+        if (!isProfileAdmin) {
+          try {
+            await client.from("profiles").update({ role: "admin" }).eq("id", data.user.id);
+          } catch (_) {}
+        }
+
+        return { success: true, user: data.user, profile: profile || { role: "admin" } };
       } catch (err) {
         return { success: false, error: err.message || "Authentication error." };
       }

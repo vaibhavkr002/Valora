@@ -463,9 +463,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // --- Sarojini Dedicated Product Manager Sub-Panel ---
   function renderSarojiniProductConfig(existingConfig = {}) {
-    state.modalSelectedProductIds = Array.isArray(existingConfig.product_ids) ? [...existingConfig.product_ids] : [];
-    const limit = existingConfig.limit || 6;
-    const cols = existingConfig.columns || 6;
+    state.modalSelectedProductIds = Array.isArray(existingConfig.product_ids) ? [...existingConfig.product_ids].slice(0, 6) : [];
+    const limit = 6;
+    const cols = 6;
     const viewAllLink = existingConfig.view_all_link || 'sarojini-shop.html';
     const viewAllText = existingConfig.view_all_text || 'View All Finds';
 
@@ -473,14 +473,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div style="background: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
           <h4 style="font-size: 0.88rem; color: #fecdd3; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 0.04em;">
-            <i class="fas fa-shopping-bag" style="color: #e11d48; margin-right: 6px;"></i> Curated Sarojini Products Selection & Ordering
+            <i class="fas fa-shopping-bag" style="color: #e11d48; margin-right: 6px;"></i> Curated Sarojini Products Selection & Ordering (Exactly 6)
           </h4>
-          <span class="badge" style="background: #e11d48; color: #fff; font-size: 0.72rem; padding: 3px 8px;" id="selected-prods-badge">
-            ${state.modalSelectedProductIds.length} Selected
+          <span class="badge" style="background: ${state.modalSelectedProductIds.length === 6 ? '#059669' : '#e11d48'}; color: #fff; font-size: 0.72rem; padding: 3px 8px;" id="selected-prods-badge">
+            Selected: ${state.modalSelectedProductIds.length} / 6
           </span>
         </div>
         <p style="font-size: 0.78rem; color: #cbd5e1; margin: 0; line-height: 1.4;">
-          The customer storefront will display <strong>only</strong> the products listed below in this <strong>exact order</strong> (left to right). Use the arrow buttons (▲ / ▼) to reorder or (✕) to remove.
+          The customer storefront will display <strong>exactly 6 products</strong> in this <strong>exact order</strong> (left to right). Use the arrow buttons (▲ / ▼) to reorder or (✕) to remove.
         </p>
       </div>
 
@@ -548,7 +548,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     function updateSarojiniSelectedList() {
       const container = document.getElementById("sarojini-selected-list");
       const badge = document.getElementById("selected-prods-badge");
-      if (badge) badge.textContent = `${state.modalSelectedProductIds.length} Selected`;
+      if (badge) {
+        badge.textContent = `Selected: ${state.modalSelectedProductIds.length} / 6`;
+        badge.style.background = state.modalSelectedProductIds.length === 6 ? '#059669' : '#e11d48';
+      }
 
       if (state.modalSelectedProductIds.length === 0) {
         container.innerHTML = `
@@ -686,6 +689,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (exists) {
             state.modalSelectedProductIds = state.modalSelectedProductIds.filter(pid => String(pid) !== String(id));
           } else {
+            if (state.modalSelectedProductIds.length >= 6) {
+              window.showToast?.("Exactly 6 products must be selected for Sarojini Homepage. Please remove or replace a product from the list above.", "warning");
+              return;
+            }
             state.modalSelectedProductIds.push(id);
           }
           updateSarojiniSelectedList();
@@ -1016,11 +1023,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const contentCfg = {};
 
     if (type === 'sarojini_trending') {
+      if (state.modalSelectedProductIds.length !== 6) {
+        window.showToast?.(`Please select exactly 6 products for the Sarojini Homepage section (currently ${state.modalSelectedProductIds.length} selected).`, "warning");
+        throw new Error("Must select exactly 6 products for Sarojini Homepage section.");
+      }
       contentCfg.catalog_type = 'sarojini';
       contentCfg.source = 'specific';
-      contentCfg.product_ids = Array.isArray(state.modalSelectedProductIds) ? [...state.modalSelectedProductIds] : [];
-      contentCfg.limit = parseInt(document.getElementById("cfg-grid-limit")?.value, 10) || 6;
-      contentCfg.columns = parseInt(document.getElementById("cfg-grid-columns")?.value, 10) || 6;
+      contentCfg.product_ids = [...state.modalSelectedProductIds];
+      contentCfg.limit = 6;
+      contentCfg.columns = 6;
       contentCfg.view_all_link = document.getElementById("cfg-grid-view-all-link")?.value.trim() || 'sarojini-shop.html';
       contentCfg.view_all_text = document.getElementById("cfg-grid-view-all-text")?.value.trim() || 'View All Finds';
 

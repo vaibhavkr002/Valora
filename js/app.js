@@ -501,6 +501,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function dedupeProductsById(list) {
+    if (!Array.isArray(list)) return [];
+    const seen = new Set();
+    return list.filter(p => {
+      if (!p || !p.id || seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+  }
+
   // 3. Render Trending Now Products (5 cards per row x 3 rows = up to 15)
   function renderTrendingProducts(category = "all") {
     if (!elements.trendingGrid || !window.PRODUCTS_DATA) return;
@@ -510,20 +520,21 @@ document.addEventListener("DOMContentLoaded", () => {
       filtered = window.PRODUCTS_DATA.filter(p => p.category === category || p.category_id === category);
     }
 
-    elements.trendingGrid.innerHTML = filtered.slice(0, 15).map(product => createProductCardHTML(product)).join("");
+    const uniqueFiltered = dedupeProductsById(filtered);
+    elements.trendingGrid.innerHTML = uniqueFiltered.slice(0, 15).map(product => createProductCardHTML(product)).join("");
   }
 
   // 4. Render New Arrivals (5 cards per row x 3 rows = up to 15)
   function renderNewArrivals() {
     if (!elements.newArrivalsGrid || !window.PRODUCTS_DATA) return;
-    const newItems = window.PRODUCTS_DATA.filter(p => p.isNew);
+    const newItems = dedupeProductsById(window.PRODUCTS_DATA.filter(p => p.isNew));
     elements.newArrivalsGrid.innerHTML = newItems.slice(0, 15).map(product => createProductCardHTML(product)).join("");
   }
 
   // 5. Render Today's Flash Deals (5 cards per row x 3 rows = up to 15)
   function renderFlashDeals() {
     if (!elements.dealsGrid || !window.PRODUCTS_DATA) return;
-    const deals = window.PRODUCTS_DATA.filter(p => p.isDeal);
+    const deals = dedupeProductsById(window.PRODUCTS_DATA.filter(p => p.isDeal));
     elements.dealsGrid.innerHTML = deals.slice(0, 15).map(product => createProductCardHTML(product)).join("");
   }
 
@@ -550,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dealIds.length > 0) bogoConfigIds = dealIds;
     }
 
-    const bogoItems = window.PRODUCTS_DATA.filter(p => Boolean(p.isBogo) || Boolean(p.is_bogo) || bogoConfigIds.includes(p.id) || bogoConfigIds.includes(p.supabase_id) || (p.legacyId && bogoConfigIds.includes(p.legacyId)));
+    const bogoItems = dedupeProductsById(window.PRODUCTS_DATA.filter(p => Boolean(p.isBogo) || Boolean(p.is_bogo) || bogoConfigIds.includes(p.id) || bogoConfigIds.includes(p.supabase_id) || (p.legacyId && bogoConfigIds.includes(p.legacyId))));
 
     const bogoSection = document.getElementById("bogo-section");
     if (bogoItems.length === 0) {

@@ -1,4 +1,20 @@
 {
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
+    { "source": "/terms-and-conditions", "destination": "/terms-and-conditions.html" },
+    { "source": "/terms-conditions", "destination": "/terms-and-conditions.html" },
+    { "source": "/terms", "destination": "/terms-and-conditions.html" },
+    { "source": "/shipping-policy", "destination": "/shipping-policy.html" },
+    { "source": "/shipping", "destination": "/shipping-policy.html" },
+    { "source": "/return-refund-policy", "destination": "/return-refund-policy.html" },
+    { "source": "/returns-exchanges", "destination": "/returns-exchanges.html" },
+    { "source": "/returns", "destination": "/returns-exchanges.html" },
+    { "source": "/grievance-redressal", "destination": "/grievance-redressal.html" },
+    { "source": "/contact-support", "destination": "/contact-support.html" },
+    { "source": "/contact", "destination": "/contact-support.html" },
+    { "source": "/support", "destination": "/contact-support.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

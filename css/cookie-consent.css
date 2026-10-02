@@ -1,0 +1,413 @@
+/* ==========================================================================
+   VALORA - Production Cookie & Privacy Consent Stylesheet
+   Compact, accessible, mobile-responsive, no dark patterns
+   ========================================================================== */
+
+/* Floating Banner Container */
+.velora-cookie-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  max-width: 480px;
+  width: calc(100% - 48px);
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 99990;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: var(--font-main, 'Plus Jakarta Sans', -apple-system, sans-serif);
+  animation: veloraCookieSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes veloraCookieSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.velora-cookie-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.velora-cookie-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.18);
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.velora-cookie-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.velora-cookie-desc {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.velora-cookie-desc a {
+  color: #60a5fa;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.velora-cookie-desc a:hover {
+  color: #93c5fd;
+}
+
+/* Button Group (Equal Weight, No Dark Patterns) */
+.velora-cookie-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.velora-cookie-btn {
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.velora-cookie-btn:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.velora-cookie-btn-accept {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.velora-cookie-btn-accept:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.velora-cookie-btn-reject {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.velora-cookie-btn-reject:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.velora-cookie-btn-settings {
+  grid-column: 1 / -1;
+  background: transparent;
+  color: #94a3b8;
+  border-color: transparent;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.velora-cookie-btn-settings:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Cookie Settings Modal */
+.velora-cookie-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 99995;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: veloraModalFadeIn 0.2s ease forwards;
+}
+
+@keyframes veloraModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.velora-cookie-modal {
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 20px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
+}
+
+.velora-cookie-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.velora-cookie-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.velora-cookie-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.velora-cookie-modal-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.velora-cookie-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.velora-cookie-category-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.velora-cookie-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.velora-cookie-category-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.velora-cookie-badge-locked {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.velora-cookie-category-desc {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Accessible Toggle Switch */
+.velora-cookie-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.velora-cookie-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.velora-cookie-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #cbd5e1;
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+}
+
+.velora-cookie-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.velora-cookie-toggle input:checked + .velora-cookie-slider {
+  background-color: #2563eb;
+}
+
+.velora-cookie-toggle input:focus-visible + .velora-cookie-slider {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #2563eb;
+}
+
+.velora-cookie-toggle input:checked + .velora-cookie-slider:before {
+  transform: translateX(20px);
+}
+
+.velora-cookie-toggle input:disabled + .velora-cookie-slider {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.velora-cookie-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.velora-cookie-btn-modal-save {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.velora-cookie-btn-modal-save:hover {
+  background: #1e293b;
+}
+
+.velora-cookie-btn-modal-accept {
+  background: #2563eb;
+  color: #ffffff;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.velora-cookie-btn-modal-accept:hover {
+  background: #1d4ed8;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .velora-cookie-banner {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    padding: 18px;
+    border-radius: 16px;
+    gap: 12px;
+  }
+
+  .velora-cookie-title {
+    font-size: 0.92rem;
+  }
+
+  .velora-cookie-desc {
+    font-size: 0.8rem;
+  }
+
+  .velora-cookie-actions {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .velora-cookie-btn {
+    padding: 9px 12px;
+    font-size: 0.8rem;
+  }
+
+  .velora-cookie-modal {
+    max-height: 92vh;
+    border-radius: 16px;
+  }
+
+  .velora-cookie-modal-header,
+  .velora-cookie-modal-body,
+  .velora-cookie-modal-footer {
+    padding: 16px;
+  }
+
+  .velora-cookie-modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .velora-cookie-btn-modal-save,
+  .velora-cookie-btn-modal-accept {
+    width: 100%;
+    text-align: center;
+  }
+}

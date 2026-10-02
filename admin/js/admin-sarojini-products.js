@@ -148,17 +148,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Map native Sarojini products (exclude inactive/deleted)
-    const mapped = sarojiniItems
-      .filter(p => p.is_active !== false)
-      .map(p => {
-        const isAvailableInMain = Boolean(crossStoreMapping.sarojini_available_in_main?.[p.id]?.available);
-        return {
-          ...p,
-          origin_catalog: 'sarojini',
-          is_in_sarojini: true,
-          is_in_main: isAvailableInMain
-        };
+    // Map native Sarojini products using canonical ID map to prevent any duplicate rows
+    const prodMap = new Map();
+    sarojiniItems
+      .filter(p => p && p.id && p.is_active !== false)
+      .forEach(p => {
+        if (!prodMap.has(p.id)) {
+          const isAvailableInMain = Boolean(crossStoreMapping.sarojini_available_in_main?.[p.id]?.available);
+          prodMap.set(p.id, {
+            ...p,
+            origin_catalog: 'sarojini',
+            is_in_sarojini: true,
+            is_in_main: isAvailableInMain
+          });
+        }
       });
 
     // 2. Fetch any Main VALORA products that are made available in Sarojini Bazaar
@@ -174,16 +177,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (Array.isArray(mainProductsData)) {
           mainProductsData.forEach(mp => {
-            const assignment = crossStoreMapping.main_available_in_sarojini[mp.id] || {};
-            mapped.push({
-              ...mp,
-              origin_catalog: 'main',
-              department: assignment.department || 'MEN',
-              category_id: assignment.category_id || mp.category_id,
-              is_featured: (assignment.is_featured !== undefined) ? assignment.is_featured : mp.is_featured,
-              is_in_sarojini: true,
-              is_in_main: true
-            });
+            if (mp && mp.id && !prodMap.has(mp.id)) {
+              const assignment = crossStoreMapping.main_available_in_sarojini[mp.id] || {};
+              prodMap.set(mp.id, {
+                ...mp,
+                origin_catalog: 'main',
+                department: assignment.department || 'MEN',
+                category_id: assignment.category_id || mp.category_id,
+                is_featured: (assignment.is_featured !== undefined) ? assignment.is_featured : mp.is_featured,
+                is_in_sarojini: true,
+                is_in_main: true
+              });
+            }
           });
         }
       } catch (crossErr) {
@@ -191,7 +196,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    allProducts = mapped;
+    allProducts = Array.from(prodMap.values());
     renderProducts();
   }
 
@@ -864,14 +869,158 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================================================
-  // BULK ACTIONS TOOLBAR CONTROLLER (Publish, Draft, Delete)
+  // BULK ACTIONS TOOLBAR CONTROLLER (Push VADI, Remove VADI, Publish, Draft, Delete)
   // ==========================================================================
   const bulkToolbar = document.getElementById("bulk-actions-toolbar");
   const bulkCountSpan = document.getElementById("bulk-selected-count");
+  const btnBulkPushVadi = document.getElementById("btn-bulk-push-vadi");
+  const btnBulkRemoveVadi = document.getElementById("btn-bulk-remove-vadi");
   const btnBulkPublish = document.getElementById("btn-bulk-publish");
   const btnBulkDraft = document.getElementById("btn-bulk-draft");
   const btnBulkDelete = document.getElementById("btn-bulk-delete");
   const btnBulkDeselect = document.getElementById("btn-bulk-deselect");
+
+  // Bulk Modal Elements
+  const bulkMainModal = document.getElementById("modal-bulk-add-to-main");
+  const btnCloseBulkMainModal = document.getElementById("btn-close-bulk-main-modal");
+  const btnCancelBulkMainModal = document.getElementById("btn-cancel-bulk-main-modal");
+  const btnConfirmBulkAddToMain = document.getElementById("btn-confirm-bulk-add-to-main");
+  const bulkMainModalCount = document.getElementById("bulk-main-modal-count");
+  const bulkMainModalPreviewList = document.getElementById("bulk-main-modal-preview-list");
+  const bulkMainModalCat = document.getElementById("bulk-main-modal-cat");
+  const bulkMainModalFeatured = document.getElementById("bulk-main-modal-featured");
+
+  function openBulkAddToMainModal() {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) return;
+
+    if (bulkMainModalCount) {
+      bulkMainModalCount.textContent = `${selectedList.length} Products Selected`;
+    }
+
+    if (bulkMainModalPreviewList) {
+      bulkMainModalPreviewList.innerHTML = selectedList.map(p => {
+        const thumb = (window.VeloraImageUtils && typeof window.VeloraImageUtils.resolveProductImage === 'function')
+          ? window.VeloraImageUtils.resolveProductImage(p, { isAdmin: true })
+          : (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image || "https://via.placeholder.com/40"));
+        const isAlreadyInMain = Boolean(p.is_in_main);
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--admin-card-border);">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+              <img src="${thumb}" alt="${escapeHtml(p.name)}" style="width: 34px; height: 34px; border-radius: 4px; object-fit: cover; background: #1e293b;" onerror="this.src='https://via.placeholder.com/34';">
+              <div style="overflow: hidden;">
+                <div style="font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;">${escapeHtml(p.name)}</div>
+                <div style="font-size: 0.72rem; color: var(--admin-text-muted);">${formatINR(p.price)} • Stock: ${p.stock}</div>
+              </div>
+            </div>
+            <div>
+              ${isAlreadyInMain ? '<span class="badge badge-success" style="font-size: 0.65rem;">Already in VADI</span>' : '<span class="badge badge-info" style="font-size: 0.65rem;">New to VADI</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Populate category dropdown
+    if (bulkMainModalCat) {
+      if (mainCategories.length === 0) {
+        bulkMainModalCat.innerHTML = '<option value="">(Keep Default / Auto)</option>';
+      } else {
+        bulkMainModalCat.innerHTML = '<option value="">(Keep Default / Auto)</option>' +
+          mainCategories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+      }
+    }
+
+    if (bulkMainModalFeatured) bulkMainModalFeatured.checked = false;
+
+    if (bulkMainModal) bulkMainModal.style.display = "flex";
+  }
+
+  function closeBulkAddToMainModal() {
+    if (bulkMainModal) bulkMainModal.style.display = "none";
+  }
+
+  if (btnCloseBulkMainModal) btnCloseBulkMainModal.addEventListener("click", closeBulkAddToMainModal);
+  if (btnCancelBulkMainModal) btnCancelBulkMainModal.addEventListener("click", closeBulkAddToMainModal);
+
+  btnBulkPushVadi?.addEventListener("click", () => {
+    if (selectedProductIds.size === 0) {
+      window.showToast("Please select at least one product.", "warning");
+      return;
+    }
+    openBulkAddToMainModal();
+  });
+
+  btnConfirmBulkAddToMain?.addEventListener("click", async () => {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) return;
+
+    btnConfirmBulkAddToMain.disabled = true;
+    btnConfirmBulkAddToMain.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Pushing to VADI...';
+
+    try {
+      const categoryId = bulkMainModalCat?.value || null;
+      const isFeatured = Boolean(bulkMainModalFeatured?.checked);
+
+      const res = await window.CrossStoreService.addMultipleSarojiniToMain(client, selectedList, {
+        categoryId,
+        isFeatured
+      });
+
+      window.showToast?.(res.message || `Pushed ${selectedList.length} products to VADI!`, "success");
+      closeBulkAddToMainModal();
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk add to Main error:", err);
+      alert("Failed to push products to VADI: " + (err.message || err));
+    } finally {
+      btnConfirmBulkAddToMain.disabled = false;
+      btnConfirmBulkAddToMain.innerHTML = '<i class="fas fa-store"></i> Confirm &amp; Push to VADI';
+    }
+  });
+
+  btnBulkRemoveVadi?.addEventListener("click", async () => {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) {
+      window.showToast("Please select at least one product.", "warning");
+      return;
+    }
+
+    // Filter which ones are currently available in VADI
+    const inVadiList = selectedList.filter(p => p.is_in_main);
+    if (inVadiList.length === 0) {
+      alert("None of the selected products are currently available in VADI (Main Store).");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to remove ${inVadiList.length} selected product(s) from VADI (Main Store)?\n\nThey will remain active in Sarojini Bazaar.`)) {
+      return;
+    }
+
+    btnBulkRemoveVadi.disabled = true;
+    btnBulkRemoveVadi.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+
+    try {
+      const ids = inVadiList.map(p => p.id);
+      const res = await window.CrossStoreService.removeMultipleFromStore(client, {
+        productIds: ids,
+        targetStore: "main"
+      });
+
+      window.showToast?.(`Removed ${res.removedCount} product(s) from VADI (Main Store).`, "info");
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk remove from Main error:", err);
+      alert("Failed to remove products from VADI: " + (err.message || err));
+    } finally {
+      btnBulkRemoveVadi.disabled = false;
+      btnBulkRemoveVadi.innerHTML = '<i class="fas fa-times-circle"></i> Remove from VADI';
+    }
+  });
 
   function updateBulkToolbar() {
     if (!bulkToolbar || !bulkCountSpan) return;
@@ -988,7 +1137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       for (const id of ids) {
         const prod = allProducts.find(p => String(p.id) === String(id));
-        const isMainOrigin = prod ? (prod.origin === "main") : false;
+        const isMainOrigin = prod ? (prod.origin_catalog === "main" || prod.origin === "main") : false;
 
         if (isMainOrigin) {
           // Remove cross-store availability from Sarojini
@@ -1052,6 +1201,395 @@ document.addEventListener("DOMContentLoaded", async () => {
     tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = false);
     updateBulkToolbar();
   });
+
+  // ==========================================================================
+  // SAROJINI HOMEPAGE PRODUCTS CURATOR (EXACTLY 6 PRODUCTS & ORDERING)
+  // ==========================================================================
+  const btnOpenSarojiniHpCurator = document.getElementById("btn-open-sarojini-hp-curator");
+  const badgeSarojiniHpSummary = document.getElementById("badge-sarojini-hp-summary");
+  const modalSarojiniHp = document.getElementById("modal-sarojini-homepage-products");
+  const btnCloseSarojiniHpModal = document.getElementById("btn-close-sarojini-hp-modal");
+  const btnCancelSarojiniHpModal = document.getElementById("btn-cancel-sarojini-hp-modal");
+  const btnSaveSarojiniHp = document.getElementById("btn-save-sarojini-hp-products");
+  const sarojiniHpCounterBadge = document.getElementById("sarojini-hp-counter-badge");
+  const sarojiniHpStatusHint = document.getElementById("sarojini-hp-status-hint");
+  const sarojiniHpSelectedCountLabel = document.getElementById("sarojini-hp-selected-count-label");
+  const sarojiniHpSelectedContainer = document.getElementById("sarojini-hp-selected-container");
+  const sarojiniHpSearch = document.getElementById("sarojini-hp-search");
+  const sarojiniHpDeptFilter = document.getElementById("sarojini-hp-dept-filter");
+  const sarojiniHpCatalogContainer = document.getElementById("sarojini-hp-catalog-container");
+
+  let curated6ProductIds = [];
+
+  async function fetchCurated6FromDb() {
+    try {
+      const { data: sec } = await client
+        .from("homepage_sections")
+        .select("content_config")
+        .eq("id", "22222222-2222-4222-a222-000000000001")
+        .maybeSingle();
+
+      if (sec && sec.content_config && Array.isArray(sec.content_config.product_ids) && sec.content_config.product_ids.length > 0) {
+        return sec.content_config.product_ids.filter(Boolean).slice(0, 6).map(String);
+      }
+    } catch (_) {}
+
+    try {
+      const { data: sRow } = await client
+        .from("store_settings")
+        .select("value")
+        .eq("key", "sarojini_featured_section")
+        .maybeSingle();
+
+      if (sRow && sRow.value && sRow.value.content_config && Array.isArray(sRow.value.content_config.product_ids)) {
+        return sRow.value.content_config.product_ids.filter(Boolean).slice(0, 6).map(String);
+      }
+    } catch (_) {}
+
+    return [];
+  }
+
+  function updateSummaryBadge() {
+    if (badgeSarojiniHpSummary) {
+      badgeSarojiniHpSummary.textContent = `${curated6ProductIds.length} / 6`;
+      if (curated6ProductIds.length === 6) {
+        badgeSarojiniHpSummary.style.background = "rgba(16, 185, 129, 0.35)";
+        badgeSarojiniHpSummary.style.color = "#34d399";
+      } else {
+        badgeSarojiniHpSummary.style.background = "rgba(255, 255, 255, 0.25)";
+        badgeSarojiniHpSummary.style.color = "#fff";
+      }
+    }
+  }
+
+  function renderCuratedSlots() {
+    if (!sarojiniHpSelectedContainer) return;
+    const count = curated6ProductIds.length;
+
+    if (sarojiniHpSelectedCountLabel) sarojiniHpSelectedCountLabel.textContent = String(count);
+
+    if (sarojiniHpCounterBadge) {
+      sarojiniHpCounterBadge.textContent = `Selected: ${count} / 6`;
+      if (count === 6) {
+        sarojiniHpCounterBadge.style.background = "#059669";
+        sarojiniHpCounterBadge.style.color = "#fff";
+      } else {
+        sarojiniHpCounterBadge.style.background = "#e11d48";
+        sarojiniHpCounterBadge.style.color = "#fff";
+      }
+    }
+
+    if (sarojiniHpStatusHint) {
+      if (count === 6) {
+        sarojiniHpStatusHint.innerHTML = '<span style="color:#34d399;"><i class="fas fa-check-circle"></i> Ready to save! Exactly 6 products selected.</span>';
+      } else {
+        const remaining = 6 - count;
+        sarojiniHpStatusHint.innerHTML = `<span style="color:#fecdd3;"><i class="fas fa-info-circle"></i> Pick ${remaining} more product${remaining > 1 ? 's' : ''} to reach exactly 6.</span>`;
+      }
+    }
+
+    if (btnSaveSarojiniHp) {
+      if (count === 6) {
+        btnSaveSarojiniHp.disabled = false;
+        btnSaveSarojiniHp.style.opacity = "1";
+        btnSaveSarojiniHp.style.cursor = "pointer";
+      } else {
+        btnSaveSarojiniHp.disabled = true;
+        btnSaveSarojiniHp.style.opacity = "0.5";
+        btnSaveSarojiniHp.style.cursor = "not-allowed";
+      }
+    }
+
+    let slotsHtml = "";
+    for (let i = 0; i < 6; i++) {
+      const pid = curated6ProductIds[i];
+      if (pid) {
+        const p = allProducts.find(item => String(item.id) === String(pid));
+        const name = p ? p.name : `Product ID: ${pid}`;
+        const dept = p ? (p.department || 'SAROJINI') : 'BAZAAR';
+        const price = p ? formatINR(p.price) : '';
+        const img = (p && p.images && p.images[0]) ? p.images[0] : (p?.image || 'assets/sarojni/prod-1-graphic-tee.png');
+        const isInactive = p && p.is_active === false;
+        const isFirst = (i === 0);
+        const isLast = (i === curated6ProductIds.length - 1);
+
+        slotsHtml += `
+          <div class="sarojini-hp-slot-card" data-id="${pid}" data-idx="${i}" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--admin-card-border); border-radius: 8px; padding: 7px 12px; ${isInactive ? 'border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06);' : ''}">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+              <span style="font-weight: 800; font-size: 0.85rem; color: #fb7185; width: 26px; text-align: center;">#${i + 1}</span>
+              <img src="${img}" alt="" style="width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: #1e293b; flex-shrink: 0;" onerror="this.src='assets/sarojni/prod-1-graphic-tee.png';">
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-weight: 600; font-size: 0.84rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(name)}
+                  ${isInactive ? '<span class="badge badge-danger" style="font-size:0.65rem; margin-left:6px;"><i class="fas fa-exclamation-triangle"></i> Deactivated</span>' : ''}
+                </div>
+                <div style="font-size: 0.73rem; color: var(--admin-text-muted); display: flex; gap: 8px; align-items: center;">
+                  <span style="color: #fb7185; font-weight: 700;">${escapeHtml(dept)}</span>
+                  <span>•</span>
+                  <strong style="color: #34d399;">${price}</strong>
+                  ${p ? `<span>• Stock: ${p.stock}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+              <button type="button" class="btn-hp-move-up order-control-btn" data-idx="${i}" ${isFirst ? 'disabled style="opacity:0.25; cursor:not-allowed;"' : 'style="cursor:pointer;"'} title="Move Up (Display earlier on homepage)">
+                <i class="fas fa-arrow-up" style="font-size: 0.7rem;"></i>
+              </button>
+              <button type="button" class="btn-hp-move-down order-control-btn" data-idx="${i}" ${isLast ? 'disabled style="opacity:0.25; cursor:not-allowed;"' : 'style="cursor:pointer;"'} title="Move Down (Display later on homepage)">
+                <i class="fas fa-arrow-down" style="font-size: 0.7rem;"></i>
+              </button>
+              <button type="button" class="btn-hp-remove-slot order-control-btn" data-idx="${i}" data-id="${pid}" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); cursor: pointer;" title="Remove this product from homepage slot">
+                <i class="fas fa-times" style="font-size: 0.75rem;"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        slotsHtml += `
+          <div class="sarojini-hp-slot-empty" data-slot="${i + 1}" style="display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 10px; color: var(--admin-text-muted); font-size: 0.78rem; background: rgba(15, 23, 42, 0.3);">
+            <i class="fas fa-plus-circle" style="color: #fb7185;"></i>
+            <span>Empty Slot #${i + 1} — Select a product from the catalog below to place in this slot</span>
+          </div>
+        `;
+      }
+    }
+    sarojiniHpSelectedContainer.innerHTML = slotsHtml;
+
+    // Attach order listeners
+    sarojiniHpSelectedContainer.querySelectorAll(".btn-hp-move-up").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        if (idx > 0) {
+          const temp = curated6ProductIds[idx];
+          curated6ProductIds[idx] = curated6ProductIds[idx - 1];
+          curated6ProductIds[idx - 1] = temp;
+          renderCuratedSlots();
+          renderCatalogPicker();
+        }
+      });
+    });
+
+    sarojiniHpSelectedContainer.querySelectorAll(".btn-hp-move-down").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        if (idx < curated6ProductIds.length - 1) {
+          const temp = curated6ProductIds[idx];
+          curated6ProductIds[idx] = curated6ProductIds[idx + 1];
+          curated6ProductIds[idx + 1] = temp;
+          renderCuratedSlots();
+          renderCatalogPicker();
+        }
+      });
+    });
+
+    sarojiniHpSelectedContainer.querySelectorAll(".btn-hp-remove-slot").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        curated6ProductIds.splice(idx, 1);
+        renderCuratedSlots();
+        renderCatalogPicker();
+      });
+    });
+  }
+
+  function renderCatalogPicker() {
+    if (!sarojiniHpCatalogContainer) return;
+    const q = (sarojiniHpSearch?.value || "").toLowerCase().trim();
+    const dept = (sarojiniHpDeptFilter?.value || "").toUpperCase();
+
+    const filtered = allProducts.filter(p => {
+      if (q && !((p.name && p.name.toLowerCase().includes(q)) || (p.department && p.department.toLowerCase().includes(q)) || (p.brand && p.brand.toLowerCase().includes(q)))) {
+        return false;
+      }
+      if (dept && (p.department || "").toUpperCase() !== dept) {
+        return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      sarojiniHpCatalogContainer.innerHTML = `
+        <div style="text-align: center; padding: 24px; color: var(--admin-text-muted); font-size: 0.82rem;">
+          No matching Sarojini products found.
+        </div>
+      `;
+      return;
+    }
+
+    sarojiniHpCatalogContainer.innerHTML = filtered.map(p => {
+      const isSelected = curated6ProductIds.includes(String(p.id));
+      const slotIndex = curated6ProductIds.indexOf(String(p.id));
+      const img = (p.images && p.images[0]) ? p.images[0] : (p.image || "assets/sarojni/prod-1-graphic-tee.png");
+      const isInactive = p.is_active === false;
+
+      return `
+        <div class="sarojini-hp-picker-item" data-id="${p.id}" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: ${isSelected ? 'rgba(225, 29, 72, 0.12)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isSelected ? 'rgba(225, 29, 72, 0.4)' : 'var(--admin-card-border)'}; border-radius: 8px; padding: 7px 10px; transition: all 0.15s ease;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+            <input type="checkbox" class="cb-hp-picker" data-id="${p.id}" ${isSelected ? 'checked' : ''} style="accent-color: #e11d48; width: 16px; height: 16px; cursor: pointer;">
+            <img src="${img}" alt="" style="width: 34px; height: 34px; border-radius: 4px; object-fit: cover; background: #1e293b; flex-shrink: 0;" onerror="this.src='assets/sarojni/prod-1-graphic-tee.png';">
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-weight: 600; font-size: 0.82rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${escapeHtml(p.name)}
+                ${isInactive ? '<span class="badge badge-danger" style="font-size:0.65rem; margin-left:4px;">Deactivated</span>' : ''}
+              </div>
+              <div style="font-size: 0.72rem; color: var(--admin-text-muted); display: flex; gap: 8px; align-items: center;">
+                <span style="color: #fb7185;">${escapeHtml(p.department || 'SAROJINI')}</span>
+                <span>•</span>
+                <strong style="color: #34d399;">${formatINR(p.price)}</strong>
+                <span>• Stock: ${p.stock}</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex-shrink: 0;">
+            ${isSelected ? `
+              <button type="button" class="btn-toggle-curated-pick btn-admin-danger" data-id="${p.id}" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 6px; cursor: pointer;">
+                ✓ Slot #${slotIndex + 1} (Remove)
+              </button>
+            ` : `
+              <button type="button" class="btn-toggle-curated-pick btn-admin-secondary" data-id="${p.id}" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; border-color: rgba(225, 29, 72, 0.4); color: #fb7185;">
+                + Add to Slot #${curated6ProductIds.length + 1}
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Wire clicks on items
+    sarojiniHpCatalogContainer.querySelectorAll(".cb-hp-picker, .btn-toggle-curated-pick").forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = String(el.dataset.id);
+        const isCurrentlySelected = curated6ProductIds.includes(id);
+
+        if (isCurrentlySelected) {
+          curated6ProductIds = curated6ProductIds.filter(pid => pid !== id);
+          renderCuratedSlots();
+          renderCatalogPicker();
+        } else {
+          if (curated6ProductIds.length >= 6) {
+            window.showToast?.("Exactly 6 products already selected. Please remove or replace one from the slots above.", "warning");
+            if (el.tagName === 'INPUT') el.checked = false;
+            return;
+          }
+          curated6ProductIds.push(id);
+          renderCuratedSlots();
+          renderCatalogPicker();
+        }
+      });
+    });
+  }
+
+  async function openSarojiniHpModal() {
+    if (modalSarojiniHp) modalSarojiniHp.style.display = "flex";
+    if (curated6ProductIds.length === 0) {
+      curated6ProductIds = await fetchCurated6FromDb();
+    }
+    renderCuratedSlots();
+    renderCatalogPicker();
+  }
+
+  function closeSarojiniHpModal() {
+    if (modalSarojiniHp) modalSarojiniHp.style.display = "none";
+  }
+
+  if (btnOpenSarojiniHpCurator) {
+    btnOpenSarojiniHpCurator.addEventListener("click", openSarojiniHpModal);
+  }
+  if (btnCloseSarojiniHpModal) btnCloseSarojiniHpModal.addEventListener("click", closeSarojiniHpModal);
+  if (btnCancelSarojiniHpModal) btnCancelSarojiniHpModal.addEventListener("click", closeSarojiniHpModal);
+
+  if (modalSarojiniHp) {
+    modalSarojiniHp.addEventListener("click", (e) => {
+      if (e.target === modalSarojiniHp) closeSarojiniHpModal();
+    });
+  }
+
+  if (sarojiniHpSearch) {
+    sarojiniHpSearch.addEventListener("input", renderCatalogPicker);
+  }
+  if (sarojiniHpDeptFilter) {
+    sarojiniHpDeptFilter.addEventListener("change", renderCatalogPicker);
+  }
+
+  if (btnSaveSarojiniHp) {
+    btnSaveSarojiniHp.addEventListener("click", async () => {
+      if (curated6ProductIds.length !== 6) {
+        window.showToast?.("Please select exactly 6 products before saving.", "warning");
+        return;
+      }
+
+      btnSaveSarojiniHp.disabled = true;
+      btnSaveSarojiniHp.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving 6 Homepage Products...';
+
+      try {
+        const payloadConfig = {
+          limit: 6,
+          columns: 6,
+          source: "specific",
+          product_ids: curated6ProductIds,
+          catalog_type: "sarojini"
+        };
+
+        // 1. Update homepage_sections table row '22222222-2222-4222-a222-000000000001'
+        const { error: secErr } = await client
+          .from("homepage_sections")
+          .update({
+            content_config: payloadConfig,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", "22222222-2222-4222-a222-000000000001");
+
+        if (secErr) throw secErr;
+
+        // 2. Sync to store_settings 'sarojini_featured_section'
+        await client.from("store_settings").upsert({
+          key: "sarojini_featured_section",
+          value: {
+            id: "22222222-2222-4222-a222-000000000001",
+            section_type: "sarojini_trending",
+            title: "Trending Sarojini Finds",
+            subtitle: "Fresh streetwear drops, viral tops, and daily staples handpicked this week.",
+            is_active: true,
+            display_order: 3,
+            background_config: { theme: "light", padding: "standard" },
+            content_config: payloadConfig,
+            updated_at: new Date().toISOString()
+          },
+          updated_at: new Date().toISOString()
+        }, { onConflict: "key" });
+
+        // 3. Invalidate caches so customer homepage updates immediately
+        try {
+          localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+          if (window.VeloraCache) window.VeloraCache.invalidate();
+          invalidateSarojiniCache();
+          window.dispatchEvent(new CustomEvent("velora:homepage-sections-updated"));
+        } catch (_) {}
+
+        updateSummaryBadge();
+        window.showToast?.("Sarojini Homepage Products saved! Exactly 6 products are now active on the homepage.", "success");
+        closeSarojiniHpModal();
+      } catch (err) {
+        console.error("Save Sarojini Homepage Products error:", err);
+        alert("Failed to save Sarojini Homepage Products: " + (err.message || err));
+      } finally {
+        btnSaveSarojiniHp.disabled = (curated6ProductIds.length !== 6);
+        btnSaveSarojiniHp.innerHTML = '<i class="fas fa-save"></i> Save Sarojini Homepage Products';
+      }
+    });
+  }
+
+  // Initial fetch of curated products to populate badge and preload state
+  fetchCurated6FromDb().then(ids => {
+    curated6ProductIds = ids;
+    updateSummaryBadge();
+  });
+
+  // Check URL param ?curate_homepage=true
+  if (window.location.search.includes("curate_homepage=true") || window.location.hash.includes("curate-homepage")) {
+    setTimeout(openSarojiniHpModal, 300);
+  }
 
   await loadCategories();
   await loadProducts();

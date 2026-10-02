@@ -32,7 +32,7 @@
           .maybeSingle();
 
         if (sec && sec.content_config && Array.isArray(sec.content_config.product_ids) && sec.content_config.product_ids.length > 0) {
-          const pids = sec.content_config.product_ids.filter(Boolean);
+          const pids = sec.content_config.product_ids.filter(Boolean).slice(0, 6);
           const { data: pData } = await client
             .from('sarojini_products')
             .select('*')
@@ -77,7 +77,7 @@
           .eq('is_active', true)
           .eq('is_featured', true)
           .order('created_at', { ascending: false })
-          .limit(8);
+          .limit(6);
 
         if (Array.isArray(pData) && pData.length > 0) {
           products = pData;
@@ -95,7 +95,7 @@
           .maybeSingle();
 
         if (sRow && sRow.value && sRow.value.content_config && Array.isArray(sRow.value.content_config.product_ids)) {
-          const pids = sRow.value.content_config.product_ids;
+          const pids = sRow.value.content_config.product_ids.filter(Boolean).slice(0, 6);
           const { data: sProds } = await client.from('store_settings').select('value').eq('key', 'sarojini_products').maybeSingle();
           if (sProds && Array.isArray(sProds.value)) {
             const pMap = new Map();

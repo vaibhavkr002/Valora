@@ -441,6 +441,14 @@ document.addEventListener("DOMContentLoaded", () => {
     pipelineTimer = setTimeout(() => {
       let filtered = [...window.PRODUCTS_DATA];
 
+      // Guarantee zero duplicate products by canonical ID
+      const seenProdIds = new Set();
+      filtered = filtered.filter(p => {
+        if (!p || !p.id || seenProdIds.has(p.id)) return false;
+        seenProdIds.add(p.id);
+        return true;
+      });
+
       // 1. Category Filter
       if (state.filters.category && state.filters.category !== "all") {
         filtered = filtered.filter(p => p.category === state.filters.category || p.category_id === state.filters.category);
@@ -691,18 +699,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Render first batch of products immediately
-    const firstBatch = state.totalFilteredProducts.slice(0, state.itemsPerPage);
+    // Clear grid and rendered tracker before rendering initial batch
+    elements.productsGrid.innerHTML = "";
+    state.renderedProductIds.clear();
+
+    // Render first batch of products immediately (deduplicated against rendered IDs)
+    const firstBatch = [];
+    for (const prod of state.totalFilteredProducts) {
+      if (firstBatch.length >= state.itemsPerPage) break;
+      if (prod && prod.id && !state.renderedProductIds.has(prod.id)) {
+        state.renderedProductIds.add(prod.id);
+        firstBatch.push(prod);
+      }
+    }
+
     const fragment = document.createDocumentFragment();
     const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = firstBatch.map(product => {
-      state.renderedProductIds.add(product.id);
-      return createProductCardSingleHTML(product);
-    }).join("");
+    tempDiv.innerHTML = firstBatch.map(product => createProductCardSingleHTML(product)).join("");
     while (tempDiv.firstChild) {
       fragment.appendChild(tempDiv.firstChild);
     }
-    elements.productsGrid.innerHTML = "";
     elements.productsGrid.appendChild(fragment);
     updateToolbarCounters();
 

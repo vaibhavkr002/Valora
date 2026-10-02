@@ -363,6 +363,320 @@
   }
 }
 
+/* ==========================================================================
+   HOMEPAGE SPECIFIC BOGO HERO ADVERTISEMENT (SCOPED OVERRIDE)
+   Targets exclusively the below_hero BOGO banner on the main homepage.
+   Full-width background image coverage, zero blank white side, high-contrast overlay.
+   ========================================================================== */
+.homepage-bogo-banner,
+.velora-ad-slot.homepage-bogo-banner,
+.velora-ad-slot[data-ad-placement="below_hero"] {
+  width: 100% !important;
+  margin: 32px 0 24px !important;
+}
+
+.homepage-bogo-banner .ad-slot-container,
+.velora-ad-slot[data-ad-placement="below_hero"] .ad-slot-container {
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+
+.homepage-bogo-banner .velora-ad-card,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-card,
+.velora-ad-card.homepage-bogo-banner {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 290px !important;
+  max-height: 330px !important;
+  height: 310px !important;
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 38px 52px !important;
+  gap: 0 !important;
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.28) !important;
+  transition: transform 260ms ease, box-shadow 260ms ease !important;
+  box-sizing: border-box !important;
+}
+
+.homepage-bogo-banner .velora-ad-card:hover,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-card:hover,
+.velora-ad-card.homepage-bogo-banner:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 22px 48px -10px rgba(0, 0, 0, 0.38) !important;
+}
+
+/* Background image & responsive picture elements - FULL WIDTH across entire card */
+.homepage-bogo-banner .ad-bg-picture,
+.velora-ad-slot[data-ad-placement="below_hero"] .ad-bg-picture,
+.velora-ad-card.homepage-bogo-banner .ad-bg-picture {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  z-index: 1 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+.homepage-bogo-banner .ad-bg-image,
+.velora-ad-slot[data-ad-placement="below_hero"] .ad-bg-image,
+.velora-ad-card.homepage-bogo-banner .ad-bg-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 30% !important;
+  display: block !important;
+  border-radius: 0 !important;
+}
+
+/* High-contrast gradient overlay ensuring text readability */
+.homepage-bogo-banner .ad-overlay-gradient,
+.velora-ad-slot[data-ad-placement="below_hero"] .ad-overlay-gradient,
+.velora-ad-card.homepage-bogo-banner .ad-overlay-gradient {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 2 !important;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.94) 0%, rgba(15, 23, 42, 0.85) 45%, rgba(15, 23, 42, 0.45) 75%, rgba(15, 23, 42, 0.15) 100%) !important;
+  pointer-events: none !important;
+}
+
+/* Content presentation on the left */
+.homepage-bogo-banner .velora-ad-content,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-content,
+.velora-ad-card.homepage-bogo-banner .velora-ad-content {
+  position: relative !important;
+  z-index: 3 !important;
+  max-width: 600px !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.homepage-bogo-banner .velora-ad-badge,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-badge,
+.velora-ad-card.homepage-bogo-banner .velora-ad-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(16, 185, 129, 0.22) !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  color: #6ee7b7 !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  margin-bottom: 12px !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+.homepage-bogo-banner .velora-ad-title,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-title,
+.velora-ad-card.homepage-bogo-banner .velora-ad-title {
+  font-size: 2.1rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  color: #ffffff !important;
+  margin: 0 0 10px 0 !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+}
+
+.homepage-bogo-banner .velora-ad-desc,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-desc,
+.velora-ad-card.homepage-bogo-banner .velora-ad-desc {
+  font-size: 0.94rem !important;
+  line-height: 1.55 !important;
+  color: #e2e8f0 !important;
+  max-width: 530px !important;
+  margin: 0 0 20px 0 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.homepage-bogo-banner .velora-ad-actions,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-actions,
+.velora-ad-card.homepage-bogo-banner .velora-ad-actions {
+  display: flex !important;
+  align-items: center !important;
+  margin-top: 2px !important;
+}
+
+.homepage-bogo-banner .velora-ad-btn,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-btn,
+.velora-ad-card.homepage-bogo-banner .velora-ad-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  padding: 11px 26px !important;
+  border-radius: 50px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 8px 20px -3px rgba(5, 150, 105, 0.45) !important;
+  transition: transform 200ms ease, box-shadow 200ms ease !important;
+  text-decoration: none !important;
+}
+
+.homepage-bogo-banner .velora-ad-btn:hover,
+.velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-btn:hover,
+.velora-ad-card.homepage-bogo-banner .velora-ad-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 28px -4px rgba(5, 150, 105, 0.6) !important;
+}
+
+/* Tablet (768px to 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .homepage-bogo-banner .velora-ad-card,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-card,
+  .velora-ad-card.homepage-bogo-banner {
+    height: 260px !important;
+    min-height: 240px !important;
+    max-height: 280px !important;
+    padding: 28px 36px !important;
+  }
+  .homepage-bogo-banner .velora-ad-title,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-title,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-title {
+    font-size: 1.65rem !important;
+    margin-bottom: 8px !important;
+  }
+  .homepage-bogo-banner .velora-ad-desc,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-desc,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-desc {
+    font-size: 0.86rem !important;
+    margin-bottom: 16px !important;
+  }
+  .homepage-bogo-banner .velora-ad-btn,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-btn,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-btn {
+    font-size: 0.82rem !important;
+    padding: 9px 20px !important;
+  }
+}
+
+/* Mobile (<= 767px) */
+@media (max-width: 767px) {
+  .homepage-bogo-banner,
+  .velora-ad-slot.homepage-bogo-banner,
+  .velora-ad-slot[data-ad-placement="below_hero"] {
+    margin: 16px 0 !important;
+  }
+  .homepage-bogo-banner .ad-slot-container,
+  .velora-ad-slot[data-ad-placement="below_hero"] .ad-slot-container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .homepage-bogo-banner .velora-ad-card,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-card,
+  .velora-ad-card.homepage-bogo-banner {
+    height: auto !important;
+    min-height: 165px !important;
+    max-height: 220px !important;
+    padding: 18px 20px !important;
+    border-radius: 16px !important;
+    gap: 0 !important;
+    justify-content: center !important;
+  }
+  .homepage-bogo-banner .ad-overlay-gradient,
+  .velora-ad-slot[data-ad-placement="below_hero"] .ad-overlay-gradient,
+  .velora-ad-card.homepage-bogo-banner .ad-overlay-gradient {
+    background: linear-gradient(100deg, rgba(15, 23, 42, 0.94) 0%, rgba(15, 23, 42, 0.88) 60%, rgba(15, 23, 42, 0.65) 100%) !important;
+  }
+  .homepage-bogo-banner .velora-ad-badge,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-badge,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-badge {
+    font-size: 0.60rem !important;
+    padding: 2px 8px !important;
+    margin-bottom: 6px !important;
+  }
+  .homepage-bogo-banner .velora-ad-title,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-title,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-title {
+    font-size: 1.15rem !important;
+    margin-bottom: 4px !important;
+    line-height: 1.25 !important;
+  }
+  .homepage-bogo-banner .velora-ad-desc,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-desc,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-desc {
+    font-size: 0.74rem !important;
+    line-height: 1.35 !important;
+    margin-bottom: 10px !important;
+    max-width: 95% !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  .homepage-bogo-banner .velora-ad-btn,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-btn,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-btn {
+    font-size: 0.72rem !important;
+    padding: 7px 18px !important;
+  }
+}
+
+/* Extra small mobile (<= 380px) */
+@media (max-width: 380px) {
+  .homepage-bogo-banner .velora-ad-card,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-card,
+  .velora-ad-card.homepage-bogo-banner {
+    min-height: 145px !important;
+    max-height: 190px !important;
+    padding: 14px 16px !important;
+  }
+  .homepage-bogo-banner .velora-ad-title,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-title,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-title {
+    font-size: 1.0rem !important;
+  }
+  .homepage-bogo-banner .velora-ad-desc,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-desc,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-desc {
+    font-size: 0.68rem !important;
+    margin-bottom: 8px !important;
+  }
+  .homepage-bogo-banner .velora-ad-btn,
+  .velora-ad-slot[data-ad-placement="below_hero"] .velora-ad-btn,
+  .velora-ad-card.homepage-bogo-banner .velora-ad-btn {
+    font-size: 0.68rem !important;
+    padding: 6px 14px !important;
+  }
+}
+
 .velora-ad-card.theme-trending .velora-ad-badge {
   background: rgba(245, 158, 11, 0.2);
   border-color: rgba(251, 191, 36, 0.4);
@@ -2182,6 +2496,7 @@
   .top-announcement-bar .inner {
     padding: 6px 10px !important;
     font-size: 0.72rem !important;
+  }
 }
 
 /* Extra small phones (<= 360px down to 320px) */
@@ -2405,14 +2720,16 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  min-height: 280px;
-  border-radius: 24px;
-  overflow: hidden;
+  min-height: 220px;
+  max-height: 275px;
+  height: 250px;
+  border-radius: 22px;
+  overflow: hidden !important;
   background: linear-gradient(105deg, #1c1917 0%, #292524 55%, #1c1917 100%);
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 44px 52px;
+  padding: 34px 48px;
   box-shadow: 0 16px 38px -8px rgba(0, 0, 0, 0.22);
   border: 1.5px solid rgba(225, 29, 72, 0.25);
   transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
@@ -2425,23 +2742,30 @@
   border-color: rgba(225, 29, 72, 0.45);
 }
 
-/* Background image & responsive picture elements */
-.ad-bg-picture {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* Background image & responsive picture elements - strictly constrained to container bounds */
+.ad-bg-picture,
+.sarojini-ad-card .ad-bg-picture {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
   z-index: 1;
   pointer-events: none;
+  overflow: hidden !important;
 }
 
-.ad-bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+.ad-bg-image,
+.sarojini-ad-card .ad-bg-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block !important;
 }
 
 .ad-overlay-gradient {
@@ -2456,7 +2780,92 @@
 }
 
 .sarojini-ad-card .ad-overlay-gradient {
-  background: linear-gradient(90deg, rgba(28, 25, 23, 0.95) 0%, rgba(41, 37, 36, 0.76) 55%, rgba(28, 25, 23, 0.35) 100%);
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+  background: linear-gradient(90deg, rgba(28, 25, 23, 0.95) 0%, rgba(41, 37, 36, 0.78) 55%, rgba(28, 25, 23, 0.38) 100%) !important;
+  pointer-events: none;
+}
+
+/* Sarojini Card Layout: Content Presentation */
+.sarojini-ad-card .velora-ad-content {
+  position: relative;
+  z-index: 2;
+  max-width: 580px;
+}
+
+.sarojini-ad-card .velora-ad-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.22;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.sarojini-ad-card .velora-ad-desc {
+  font-size: 0.90rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+  margin: 0 0 16px 0;
+  max-width: 520px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.sarojini-ad-card .velora-ad-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.sarojini-ad-card .velora-ad-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 9px 22px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+/* Optional two-column BOGO / Split layout on Sarojini Desktop */
+@media (min-width: 768px) {
+  .sarojini-ad-card.theme-bogo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 38px;
+    gap: 32px;
+  }
+  .sarojini-ad-card.theme-bogo .ad-bg-picture {
+    position: relative !important;
+    width: 360px !important;
+    max-width: 44% !important;
+    height: 200px !important;
+    flex-shrink: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+  .sarojini-ad-card.theme-bogo .ad-bg-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+  .sarojini-ad-card.theme-bogo .ad-overlay-gradient {
+    display: none !important;
+  }
+  .sarojini-ad-card.theme-bogo .velora-ad-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 560px;
+  }
 }
 
 /* Sarojini specific badges and buttons */
@@ -2643,22 +3052,168 @@
   color: #ffffff;
 }
 
-/* Mobile & Tablet Adjustments for Sarojini Ads */
+/* Mobile & Tablet Responsive Adjustments for Sarojini Ads */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .sarojini-ad-card {
+    height: 220px !important;
+    min-height: 180px !important;
+    max-height: 240px !important;
+    padding: 24px 32px !important;
+  }
+  .sarojini-ad-card .velora-ad-title {
+    font-size: 1.35rem !important;
+    margin-bottom: 6px !important;
+  }
+  .sarojini-ad-card .velora-ad-desc {
+    font-size: 0.84rem !important;
+    margin-bottom: 12px !important;
+  }
+}
+
 @media (max-width: 767px) {
   .sarojini-ad-slot {
-    margin: 8px 0 10px;
+    margin: 8px 0 12px !important;
+    width: 100% !important;
+  }
+  .sarojini-ad-slot .container,
+  .sarojini-ad-slot .ad-slot-container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   .sarojini-ad-card {
-    min-height: 180px;
-    padding: 24px 20px;
-    border-radius: 16px;
-    width: 100%;
-    margin: 0 auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    min-height: 140px !important;
+    max-height: 195px !important;
+    height: auto !important;
+    padding: 16px 18px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.28) !important;
+  }
+  .sarojini-ad-card .ad-bg-picture {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+  }
+  .sarojini-ad-card .ad-bg-image {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+  }
+  .sarojini-ad-card .ad-overlay-gradient {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1 !important;
+    background: linear-gradient(100deg, rgba(28, 25, 23, 0.95) 0%, rgba(28, 25, 23, 0.86) 60%, rgba(28, 25, 23, 0.65) 100%) !important;
+    pointer-events: none !important;
+  }
+  .sarojini-ad-card .velora-ad-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 0 !important;
+  }
+  .sarojini-ad-card .velora-ad-badge {
+    display: inline-flex !important;
+    font-size: 0.60rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    padding: 2px 7px !important;
+    margin-bottom: 5px !important;
+    line-height: 1.2 !important;
+    border-radius: 5px !important;
+  }
+  .sarojini-ad-card .velora-ad-title {
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    margin: 0 0 4px 0 !important;
+    color: #ffffff !important;
+    word-break: break-word !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+  }
+  .sarojini-ad-card .velora-ad-desc {
+    font-size: 0.73rem !important;
+    line-height: 1.34 !important;
+    margin: 0 0 9px 0 !important;
+    color: #cbd5e1 !important;
+    max-width: 96% !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+  }
+  .sarojini-ad-card .velora-ad-actions {
+    margin-top: 2px !important;
+    display: flex !important;
+  }
+  .sarojini-ad-card .velora-ad-btn {
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    padding: 6px 15px !important;
+    border-radius: 50px !important;
+    white-space: nowrap !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25) !important;
   }
   .sarojini-announcement-slide {
     white-space: normal;
     text-align: center;
     font-size: 0.74rem;
+  }
+}
+
+/* Extra small mobile devices (<= 380px) */
+@media (max-width: 380px) {
+  .sarojini-ad-card {
+    min-height: 130px !important;
+    max-height: 180px !important;
+    padding: 12px 14px !important;
+  }
+  .sarojini-ad-card .velora-ad-title {
+    font-size: 0.96rem !important;
+  }
+  .sarojini-ad-card .velora-ad-desc {
+    font-size: 0.68rem !important;
+    margin-bottom: 7px !important;
+  }
+  .sarojini-ad-card .velora-ad-btn {
+    font-size: 0.68rem !important;
+    padding: 5px 12px !important;
   }
 }
 

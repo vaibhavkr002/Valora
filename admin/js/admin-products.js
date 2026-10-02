@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let sarojiniCategories = [];
   let productToAddSarojini = null;
   let bogoConfigIds = [];
+  let selectedProductIds = new Set();
 
   function escapeHtml(str) {
     if (!str) return "";
@@ -89,15 +90,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Map native Main products
-    const mapped = (mainProductsData || []).map(p => {
-      const isAvailableInSarojini = Boolean(crossStoreMapping.main_available_in_sarojini?.[p.id]?.available);
-      return {
-        ...p,
-        origin_catalog: 'main',
-        is_in_main: true,
-        is_in_sarojini: isAvailableInSarojini
-      };
+    // Map native Main products using canonical ID map to prevent any duplicate rows
+    const prodMap = new Map();
+    (mainProductsData || []).forEach(p => {
+      if (p && p.id && !prodMap.has(p.id)) {
+        const isAvailableInSarojini = Boolean(crossStoreMapping.main_available_in_sarojini?.[p.id]?.available);
+        prodMap.set(p.id, {
+          ...p,
+          origin_catalog: 'main',
+          is_in_main: true,
+          is_in_sarojini: isAvailableInSarojini
+        });
+      }
     });
 
     // 2. Fetch any Sarojini Bazaar products that are made available in Main Store
@@ -113,15 +117,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (Array.isArray(sarojiniProductsData)) {
           sarojiniProductsData.forEach(sp => {
-            const assignment = crossStoreMapping.sarojini_available_in_main[sp.id] || {};
-            mapped.push({
-              ...sp,
-              origin_catalog: 'sarojini',
-              category_id: assignment.category_id || sp.category_id,
-              is_featured: (assignment.is_featured !== undefined) ? assignment.is_featured : sp.is_featured,
-              is_in_main: true,
-              is_in_sarojini: true
-            });
+            if (sp && sp.id && !prodMap.has(sp.id)) {
+              const assignment = crossStoreMapping.sarojini_available_in_main[sp.id] || {};
+              prodMap.set(sp.id, {
+                ...sp,
+                origin_catalog: 'sarojini',
+                category_id: assignment.category_id || sp.category_id,
+                is_featured: (assignment.is_featured !== undefined) ? assignment.is_featured : sp.is_featured,
+                is_in_main: true,
+                is_in_sarojini: true
+              });
+            }
           });
         }
       } catch (crossErr) {
@@ -129,7 +135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    allProducts = mapped;
+    allProducts = Array.from(prodMap.values());
     renderProducts();
   }
 
@@ -158,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (stockFilter === "out") filtered = filtered.filter(p => (Number(p.stock) || 0) === 0);
     if (stockFilter === "in") filtered = filtered.filter(p => (Number(p.stock) || 0) > 5);
     if (stockFilter === "bogo") filtered = filtered.filter(p => bogoConfigIds.includes(p.id) || Boolean(p.is_bogo));
+    if (stockFilter === "trending") filtered = filtered.filter(p => Boolean(p.is_featured));
 
     // Availability filter
     const availFilter = availabilitySelect?.value || "";
@@ -172,7 +179,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (countBadge) countBadge.textContent = `Showing ${filtered.length} of ${allProducts.length} Products`;
 
     if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 40px 20px; color: var(--admin-text-muted);">No products match your criteria.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 40px 20px; color: var(--admin-text-muted);">No products match your criteria.</td></tr>';
+      updateBulkToolbar();
       return;
     }
 
@@ -191,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const isBogo = bogoConfigIds.includes(p.id) || Boolean(p.is_bogo);
       const badgesHtml = [
-        p.is_featured ? '<span class="badge badge-warning" style="font-size: 0.68rem;">Featured</span>' : '',
+        p.is_featured ? '<span class="badge badge-warning" style="font-size: 0.68rem; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">🔥 Trending</span>' : '',
         p.is_new ? '<span class="badge badge-info" style="font-size: 0.68rem;">New</span>' : '',
         p.is_deal ? '<span class="badge badge-danger" style="font-size: 0.68rem;">Deal</span>' : '',
         isBogo ? '<span class="badge badge-success" style="font-size: 0.68rem; background: #059669; color: #fff;">🎁 BOGO</span>' : ''
@@ -241,7 +249,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         : `edit-product.html?id=${encodeURIComponent(p.id)}`;
 
       return `
-        <tr>
+        <tr data-prod-id="${p.id}">
+          <td style="text-align: center;">
+            <input type="checkbox" class="row-select-prod" data-id="${p.id}" ${selectedProductIds.has(String(p.id)) ? 'checked' : ''}>
+          </td>
           <td>
             <div style="display:flex; align-items:center; gap: 12px;">
               <img src="${primaryImage}" alt="${escapeHtml(p.name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid var(--admin-card-border);" onerror="this.src='https://via.placeholder.com/60';">
@@ -270,6 +281,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         </tr>
       `;
     }).join("");
+
+    // Wire Table Selection Checkboxes
+    const thSelectAll = document.getElementById("th-select-all-prods");
+    if (thSelectAll) {
+      thSelectAll.checked = filtered.length > 0 && filtered.every(p => selectedProductIds.has(String(p.id)));
+      thSelectAll.onchange = () => {
+        const isChecked = thSelectAll.checked;
+        filtered.forEach(p => {
+          if (isChecked) selectedProductIds.add(String(p.id));
+          else selectedProductIds.delete(String(p.id));
+        });
+        tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = isChecked);
+        updateBulkToolbar();
+      };
+    }
+
+    tbody.querySelectorAll(".row-select-prod").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const id = String(cb.dataset.id);
+        if (cb.checked) selectedProductIds.add(id);
+        else selectedProductIds.delete(id);
+        updateBulkToolbar();
+      });
+    });
+
+    updateBulkToolbar();
 
     // Attach delete listeners
     document.querySelectorAll(".btn-delete-product").forEach(btn => {
@@ -527,6 +564,665 @@ document.addEventListener("DOMContentLoaded", async () => {
       } finally {
         btnConfirmAddToSarojini.disabled = false;
         btnConfirmAddToSarojini.innerHTML = '<i class="fas fa-store"></i> Confirm &amp; Add to Sarojini';
+      }
+    });
+  }
+
+  // ==========================================================================
+  // BULK ACTIONS TOOLBAR CONTROLLER (Push Sarojini, Remove Sarojini, Delete)
+  // ==========================================================================
+  const bulkToolbar = document.getElementById("bulk-actions-toolbar");
+  const bulkCountSpan = document.getElementById("bulk-selected-count");
+  const btnBulkTrending = document.getElementById("btn-bulk-trending");
+  const btnBulkPushSarojini = document.getElementById("btn-bulk-push-sarojini");
+  const btnBulkRemoveSarojini = document.getElementById("btn-bulk-remove-sarojini");
+  const btnBulkBogo = document.getElementById("btn-bulk-bogo");
+  const btnBulkDelete = document.getElementById("btn-bulk-delete");
+  const btnBulkDeselect = document.getElementById("btn-bulk-deselect");
+
+  // Bulk Trending Modal Elements
+  const bulkTrendingModal = document.getElementById("modal-bulk-trending");
+  const btnCloseBulkTrendingModal = document.getElementById("btn-close-bulk-trending-modal");
+  const btnCancelBulkTrendingModal = document.getElementById("btn-cancel-bulk-trending-modal");
+  const btnConfirmBulkTrending = document.getElementById("btn-confirm-bulk-trending");
+  const bulkTrendingModalCount = document.getElementById("bulk-trending-modal-count");
+  const bulkTrendingPreviewCount = document.getElementById("bulk-trending-preview-count");
+  const bulkTrendingModalPreviewList = document.getElementById("bulk-trending-modal-preview-list");
+
+  // Bulk BOGO Modal Elements
+  const bulkBogoModal = document.getElementById("modal-bulk-bogo");
+  const btnCloseBulkBogoModal = document.getElementById("btn-close-bulk-bogo-modal");
+  const btnCancelBulkBogoModal = document.getElementById("btn-cancel-bulk-bogo-modal");
+  const btnConfirmBulkBogo = document.getElementById("btn-confirm-bulk-bogo");
+  const bulkBogoModalCount = document.getElementById("bulk-bogo-modal-count");
+  const bulkBogoPreviewCount = document.getElementById("bulk-bogo-preview-count");
+  const bulkBogoModalPreviewList = document.getElementById("bulk-bogo-modal-preview-list");
+
+  // Bulk Modal Elements
+  const bulkSarojiniModal = document.getElementById("modal-bulk-add-to-sarojini");
+  const btnCloseBulkSarojiniModal = document.getElementById("btn-close-bulk-sarojini-modal");
+  const btnCancelBulkSarojiniModal = document.getElementById("btn-cancel-bulk-sarojini-modal");
+  const btnConfirmBulkAddToSarojini = document.getElementById("btn-confirm-bulk-add-to-sarojini");
+  const bulkSarojiniModalCount = document.getElementById("bulk-sarojini-modal-count");
+  const bulkSarojiniModalPreviewList = document.getElementById("bulk-sarojini-modal-preview-list");
+  const bulkSarojiniModalDept = document.getElementById("bulk-sarojini-modal-dept");
+  const bulkSarojiniModalCat = document.getElementById("bulk-sarojini-modal-cat");
+  const bulkSarojiniModalFeatured = document.getElementById("bulk-sarojini-modal-featured");
+
+  function updateBulkToolbar() {
+    if (!bulkToolbar || !bulkCountSpan) return;
+    const count = selectedProductIds.size;
+    if (count > 0) {
+      bulkToolbar.style.display = "flex";
+      bulkCountSpan.textContent = `${count} Selected`;
+    } else {
+      bulkToolbar.style.display = "none";
+    }
+  }
+
+  function updateBulkSarojiniModalCategories() {
+    if (!bulkSarojiniModalCat) return;
+    const dept = (bulkSarojiniModalDept?.value || "MEN").toUpperCase();
+    const filteredCats = sarojiniCategories.filter(c => (c.department || "").toUpperCase() === dept);
+
+    if (filteredCats.length === 0) {
+      bulkSarojiniModalCat.innerHTML = '<option value="">No categories in department</option>';
+      return;
+    }
+
+    bulkSarojiniModalCat.innerHTML = filteredCats.map(c => `<option value="${c.id}" data-slug="${c.slug || ''}">${escapeHtml(c.name)}</option>`).join("");
+  }
+
+  if (bulkSarojiniModalDept) {
+    bulkSarojiniModalDept.addEventListener("change", updateBulkSarojiniModalCategories);
+  }
+
+  function openBulkAddToSarojiniModal() {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) return;
+
+    if (bulkSarojiniModalCount) {
+      bulkSarojiniModalCount.textContent = `${selectedList.length} Products Selected`;
+    }
+
+    if (bulkSarojiniModalPreviewList) {
+      bulkSarojiniModalPreviewList.innerHTML = selectedList.map(p => {
+        const thumb = (p.images && p.images.length > 0) ? p.images[0] : (p.image || "https://via.placeholder.com/34");
+        const isAlreadyInSarojini = Boolean(p.is_in_sarojini);
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--admin-card-border);">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+              <img src="${thumb}" alt="${escapeHtml(p.name)}" style="width: 34px; height: 34px; border-radius: 4px; object-fit: cover; background: #1e293b;" onerror="this.src='https://via.placeholder.com/34';">
+              <div style="overflow: hidden;">
+                <div style="font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;">${escapeHtml(p.name)}</div>
+                <div style="font-size: 0.72rem; color: var(--admin-text-muted);">${window.formatINR(p.price)} • Stock: ${p.stock}</div>
+              </div>
+            </div>
+            <div>
+              ${isAlreadyInSarojini ? '<span class="badge badge-success" style="font-size: 0.65rem;">Already in Sarojini</span>' : '<span class="badge badge-pink" style="font-size: 0.65rem; background: rgba(225, 29, 72, 0.15); color: #fb7185;">New to Sarojini</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    updateBulkSarojiniModalCategories();
+    if (bulkSarojiniModalFeatured) bulkSarojiniModalFeatured.checked = false;
+
+    if (bulkSarojiniModal) bulkSarojiniModal.style.display = "flex";
+  }
+
+  function closeBulkAddToSarojiniModal() {
+    if (bulkSarojiniModal) bulkSarojiniModal.style.display = "none";
+  }
+
+  if (btnCloseBulkSarojiniModal) btnCloseBulkSarojiniModal.addEventListener("click", closeBulkAddToSarojiniModal);
+  if (btnCancelBulkSarojiniModal) btnCancelBulkSarojiniModal.addEventListener("click", closeBulkAddToSarojiniModal);
+
+  btnBulkPushSarojini?.addEventListener("click", () => {
+    if (selectedProductIds.size === 0) {
+      window.showToast("Please select at least one product.", "warning");
+      return;
+    }
+    openBulkAddToSarojiniModal();
+  });
+
+  btnConfirmBulkAddToSarojini?.addEventListener("click", async () => {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) return;
+
+    btnConfirmBulkAddToSarojini.disabled = true;
+    btnConfirmBulkAddToSarojini.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Pushing to Sarojini...';
+
+    try {
+      const selectedDept = bulkSarojiniModalDept?.value || "MEN";
+      const selectedCatOpt = bulkSarojiniModalCat?.selectedOptions[0];
+      const selectedCatId = selectedCatOpt ? selectedCatOpt.value : null;
+      const selectedCatSlug = selectedCatOpt ? selectedCatOpt.dataset.slug : null;
+      const isFeatured = Boolean(bulkSarojiniModalFeatured?.checked);
+
+      const res = await window.CrossStoreService.addMultipleMainToSarojini(client, selectedList, {
+        department: selectedDept,
+        categoryId: selectedCatId,
+        categorySlug: selectedCatSlug,
+        isFeatured: isFeatured
+      });
+
+      window.showToast?.(res.message || `Pushed ${selectedList.length} products to Sarojini Bazaar!`, "success");
+      closeBulkAddToSarojiniModal();
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk add to Sarojini error:", err);
+      alert("Failed to push products to Sarojini Bazaar: " + (err.message || err));
+    } finally {
+      btnConfirmBulkAddToSarojini.disabled = false;
+      btnConfirmBulkAddToSarojini.innerHTML = '<i class="fas fa-store"></i> Confirm &amp; Push to Sarojini';
+    }
+  });
+
+  btnBulkRemoveSarojini?.addEventListener("click", async () => {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) {
+      window.showToast("Please select at least one product.", "warning");
+      return;
+    }
+
+    const inSarojiniList = selectedList.filter(p => p.is_in_sarojini);
+    if (inSarojiniList.length === 0) {
+      alert("None of the selected products are currently available in Sarojini Bazaar.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to remove ${inSarojiniList.length} selected product(s) from Sarojini Bazaar?\n\nThey will remain active in Main VALORA Store.`)) {
+      return;
+    }
+
+    btnBulkRemoveSarojini.disabled = true;
+    btnBulkRemoveSarojini.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+
+    try {
+      const ids = inSarojiniList.map(p => p.id);
+      const res = await window.CrossStoreService.removeMultipleFromStore(client, {
+        productIds: ids,
+        targetStore: "sarojini"
+      });
+
+      window.showToast?.(`Removed ${res.removedCount} product(s) from Sarojini Bazaar.`, "info");
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk remove from Sarojini error:", err);
+      alert("Failed to remove products from Sarojini: " + (err.message || err));
+    } finally {
+      btnBulkRemoveSarojini.disabled = false;
+      btnBulkRemoveSarojini.innerHTML = '<i class="fas fa-times-circle"></i> Remove from Sarojini';
+    }
+  });
+
+  btnBulkDelete?.addEventListener("click", async () => {
+    const count = selectedProductIds.size;
+    if (count === 0) return;
+
+    if (!confirm(`Are you sure you want to delete/remove ${count} selected products from VADI?\n\nNative VADI products will be safely removed, and cross-listed products will have their VADI availability removed.`)) {
+      return;
+    }
+
+    btnBulkDelete.disabled = true;
+    btnBulkDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+    try {
+      const ids = Array.from(selectedProductIds);
+
+      for (const id of ids) {
+        const prod = allProducts.find(p => String(p.id) === String(id));
+        const isSarojiniOrigin = prod ? (prod.origin_catalog === "sarojini") : false;
+
+        if (isSarojiniOrigin) {
+          // Remove availability from Main
+          try {
+            await window.CrossStoreService.removeFromStore(client, {
+              originCatalog: "sarojini",
+              productId: id,
+              targetStore: "main"
+            });
+          } catch (e) {
+            console.warn(`Failed to remove cross-listed Sarojini item ${id} from Main:`, e);
+          }
+        } else {
+          // Native Main
+          const isCrossInSarojini = Boolean(crossStoreMapping?.main_available_in_sarojini?.[id]?.available);
+          if (!isCrossInSarojini) {
+            try {
+              await window.CrossStoreService.removeFromStore(client, {
+                originCatalog: "main",
+                productId: id,
+                targetStore: "sarojini"
+              });
+            } catch (_) {}
+          }
+
+          // Deactivate product
+          await client.from("products").update({
+            is_active: false,
+            updated_at: new Date().toISOString()
+          }).eq("id", id);
+        }
+      }
+
+      try {
+        localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+        if (window.VeloraCache) window.VeloraCache.invalidate();
+      } catch (_) {}
+
+      window.showToast?.(`Deleted/removed ${count} products successfully.`, "info");
+      selectedProductIds.clear();
+      updateBulkToolbar();
+      await loadProducts();
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+      alert("Failed to delete products: " + (err.message || err));
+    } finally {
+      btnBulkDelete.disabled = false;
+      btnBulkDelete.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+    }
+  });
+
+  btnBulkDeselect?.addEventListener("click", () => {
+    selectedProductIds.clear();
+    const thSelectAll = document.getElementById("th-select-all-prods");
+    if (thSelectAll) thSelectAll.checked = false;
+    tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = false);
+    updateBulkToolbar();
+  });
+
+  // ==========================================================================
+  // BULK BOGO (BUY 1 GET 1 FREE) MODAL CONTROLLER
+  // ==========================================================================
+  function openBulkBogoModal() {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) {
+      window.showToast?.("Please select at least one product.", "warning");
+      return;
+    }
+
+    if (bulkBogoModalCount) {
+      bulkBogoModalCount.textContent = `${selectedList.length} Product${selectedList.length === 1 ? '' : 's'} Selected`;
+    }
+    if (bulkBogoPreviewCount) {
+      bulkBogoPreviewCount.textContent = `${selectedList.length}`;
+    }
+
+    // Check how many are currently in BOGO
+    const bogoCount = selectedList.filter(p => bogoConfigIds.includes(p.id) || Boolean(p.is_bogo)).length;
+    const radioEnable = document.querySelector('input[name="bulk-bogo-action-radio"][value="enable"]');
+    const radioDisable = document.querySelector('input[name="bulk-bogo-action-radio"][value="disable"]');
+    if (bogoCount === selectedList.length && radioDisable) {
+      radioDisable.checked = true;
+    } else if (radioEnable) {
+      radioEnable.checked = true;
+    }
+
+    if (bulkBogoModalPreviewList) {
+      bulkBogoModalPreviewList.innerHTML = selectedList.map(p => {
+        const thumb = (p.images && p.images.length > 0) ? p.images[0] : (p.image || "https://via.placeholder.com/38");
+        const isCurrentlyBogo = bogoConfigIds.includes(p.id) || Boolean(p.is_bogo);
+        const catName = p.categories ? p.categories.name : (p.department || 'Uncategorized');
+        return `
+          <div class="bulk-bogo-item-row" data-id="${p.id}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--admin-card-border); transition: opacity 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1;">
+              <img src="${thumb}" alt="${escapeHtml(p.name)}" style="width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: #1e293b; flex-shrink: 0;" onerror="this.src='https://via.placeholder.com/38';">
+              <div style="overflow: hidden; min-width: 0;">
+                <div style="font-size: 0.84rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(p.name)}</div>
+                <div style="font-size: 0.74rem; color: var(--admin-text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span>${escapeHtml(catName)}</span>
+                  <span>•</span>
+                  <strong style="color: #10b981;">${window.formatINR(p.price)}</strong>
+                  ${p.original_price ? `<span style="text-decoration: line-through; color: #64748b;">${window.formatINR(p.original_price)}</span>` : ''}
+                  <span>•</span>
+                  <span>Stock: ${p.stock}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+              ${isCurrentlyBogo 
+                ? '<span class="badge badge-success" style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">🎁 In BOGO</span>'
+                : '<span class="badge badge-neutral" style="font-size: 0.7rem; color: var(--admin-text-muted);">Standard</span>'}
+              <button type="button" class="btn-remove-preview-bogo" data-id="${p.id}" title="Exclude from this bulk action" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.15s ease;">
+                ✕
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Wire individual item removal within the preview list
+      bulkBogoModalPreviewList.querySelectorAll(".btn-remove-preview-bogo").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const removeId = String(btn.dataset.id);
+          selectedProductIds.delete(removeId);
+
+          // Uncheck corresponding table row checkbox
+          const rowCb = tbody.querySelector(`.row-select-prod[data-id="${removeId}"]`);
+          if (rowCb) rowCb.checked = false;
+
+          const thSelectAll = document.getElementById("th-select-all-prods");
+          if (thSelectAll) thSelectAll.checked = false;
+
+          updateBulkToolbar();
+
+          if (selectedProductIds.size === 0) {
+            closeBulkBogoModal();
+          } else {
+            openBulkBogoModal();
+          }
+        });
+      });
+    }
+
+    if (bulkBogoModal) bulkBogoModal.style.display = "flex";
+  }
+
+  function closeBulkBogoModal() {
+    if (bulkBogoModal) bulkBogoModal.style.display = "none";
+  }
+
+  if (bulkBogoModal) {
+    bulkBogoModal.addEventListener("click", (e) => {
+      if (e.target === bulkBogoModal) closeBulkBogoModal();
+    });
+  }
+
+  if (btnBulkBogo) {
+    btnBulkBogo.addEventListener("click", () => {
+      if (selectedProductIds.size === 0) {
+        window.showToast?.("Please select at least one product.", "warning");
+        return;
+      }
+      openBulkBogoModal();
+    });
+  }
+
+  if (btnCloseBulkBogoModal) btnCloseBulkBogoModal.addEventListener("click", closeBulkBogoModal);
+  if (btnCancelBulkBogoModal) btnCancelBulkBogoModal.addEventListener("click", closeBulkBogoModal);
+
+  if (btnConfirmBulkBogo) {
+    btnConfirmBulkBogo.addEventListener("click", async () => {
+      const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+      if (selectedList.length === 0) return;
+
+      const action = document.querySelector('input[name="bulk-bogo-action-radio"]:checked')?.value || "enable";
+
+      btnConfirmBulkBogo.disabled = true;
+      btnConfirmBulkBogo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving BOGO changes...';
+
+      try {
+        // Authoritatively fetch latest store_settings bogo_config
+        const { data: bogoSetting, error: fetchErr } = await client
+          .from("store_settings")
+          .select("value")
+          .eq("key", "bogo_config")
+          .maybeSingle();
+
+        if (fetchErr) throw fetchErr;
+
+        let currentIds = (bogoSetting && bogoSetting.value && Array.isArray(bogoSetting.value.product_ids))
+          ? [...bogoSetting.value.product_ids]
+          : [];
+
+        // Safe deduplicated Set operations
+        const idSet = new Set(currentIds);
+        const targetIds = selectedList.map(p => String(p.id));
+
+        if (action === "enable") {
+          targetIds.forEach(id => idSet.add(id));
+        } else {
+          targetIds.forEach(id => idSet.delete(id));
+        }
+
+        const finalIds = Array.from(idSet);
+
+        // Atomic upsert to store_settings
+        const { error: saveErr } = await client.from("store_settings").upsert({
+          key: "bogo_config",
+          value: {
+            product_ids: finalIds,
+            updated_at: new Date().toISOString()
+          },
+          updated_at: new Date().toISOString()
+        }, { onConflict: "key" });
+
+        if (saveErr) throw saveErr;
+
+        // Invalidate caches & sync state
+        bogoConfigIds = finalIds;
+        try {
+          localStorage.setItem("velora_bogo_config", JSON.stringify({ product_ids: finalIds }));
+          localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+          if (window.VeloraCache) window.VeloraCache.invalidate();
+        } catch (_) {}
+
+        const actionText = action === "enable" ? "enabled for" : "disabled for";
+        window.showToast?.(`BOGO successfully ${actionText} ${targetIds.length} product(s)!`, "success");
+
+        closeBulkBogoModal();
+        selectedProductIds.clear();
+        const thSelectAll = document.getElementById("th-select-all-prods");
+        if (thSelectAll) thSelectAll.checked = false;
+        tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = false);
+        updateBulkToolbar();
+
+        renderProducts();
+      } catch (err) {
+        console.error("Bulk BOGO save error:", err);
+        alert("Failed to save BOGO changes: " + (err.message || "An unexpected error occurred."));
+      } finally {
+        btnConfirmBulkBogo.disabled = false;
+        btnConfirmBulkBogo.innerHTML = '<i class="fas fa-check-circle"></i> Save BOGO Changes';
+      }
+    });
+  }
+
+  // ==========================================================================
+  // BULK TRENDING CONTROLLER & MODAL
+  // ==========================================================================
+  function openBulkTrendingModal() {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) return;
+
+    if (bulkTrendingModalCount) {
+      bulkTrendingModalCount.textContent = `${selectedList.length} Product${selectedList.length > 1 ? 's' : ''} Selected`;
+    }
+    if (bulkTrendingPreviewCount) {
+      bulkTrendingPreviewCount.textContent = String(selectedList.length);
+    }
+
+    const trendingCount = selectedList.filter(p => Boolean(p.is_featured)).length;
+    const radioEnable = document.querySelector('input[name="bulk-trending-action-radio"][value="enable"]');
+    const radioDisable = document.querySelector('input[name="bulk-trending-action-radio"][value="disable"]');
+    if (trendingCount === selectedList.length && radioDisable) {
+      radioDisable.checked = true;
+    } else if (radioEnable) {
+      radioEnable.checked = true;
+    }
+
+    if (bulkTrendingModalPreviewList) {
+      bulkTrendingModalPreviewList.innerHTML = selectedList.map(p => {
+        const thumb = (p.images && p.images.length > 0) ? p.images[0] : (p.image || "https://via.placeholder.com/38");
+        const isCurrentlyTrending = Boolean(p.is_featured);
+        const catName = p.categories ? p.categories.name : (p.department || 'Uncategorized');
+        return `
+          <div class="bulk-trending-item-row" data-id="${p.id}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--admin-card-border); transition: opacity 0.2s ease;">
+            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1;">
+              <img src="${thumb}" alt="${escapeHtml(p.name)}" style="width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: #1e293b; flex-shrink: 0;" onerror="this.src='https://via.placeholder.com/38';">
+              <div style="overflow: hidden; min-width: 0;">
+                <div style="font-size: 0.84rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(p.name)}</div>
+                <div style="font-size: 0.74rem; color: var(--admin-text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span>${escapeHtml(catName)}</span>
+                  <span>•</span>
+                  <strong style="color: #fbbf24;">${window.formatINR(p.price)}</strong>
+                  ${p.original_price ? `<span style="text-decoration: line-through; color: #64748b;">${window.formatINR(p.original_price)}</span>` : ''}
+                  <span>•</span>
+                  <span>Stock: ${p.stock}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+              ${isCurrentlyTrending 
+                ? '<span class="badge badge-warning" style="font-size: 0.7rem; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">🔥 Trending</span>'
+                : '<span class="badge badge-neutral" style="font-size: 0.7rem; color: var(--admin-text-muted);">Standard</span>'}
+              <button type="button" class="btn-remove-preview-trending" data-id="${p.id}" title="Exclude from this bulk action" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.15s ease;">
+                ✕
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Wire individual item removal within preview list
+      bulkTrendingModalPreviewList.querySelectorAll(".btn-remove-preview-trending").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const removeId = String(btn.dataset.id);
+          selectedProductIds.delete(removeId);
+
+          const rowCb = tbody.querySelector(`.row-select-prod[data-id="${removeId}"]`);
+          if (rowCb) rowCb.checked = false;
+
+          const thSelectAll = document.getElementById("th-select-all-prods");
+          if (thSelectAll) thSelectAll.checked = false;
+
+          updateBulkToolbar();
+
+          if (selectedProductIds.size === 0) {
+            closeBulkTrendingModal();
+          } else {
+            openBulkTrendingModal();
+          }
+        });
+      });
+    }
+
+    if (bulkTrendingModal) bulkTrendingModal.style.display = "flex";
+  }
+
+  function closeBulkTrendingModal() {
+    if (bulkTrendingModal) bulkTrendingModal.style.display = "none";
+  }
+
+  if (bulkTrendingModal) {
+    bulkTrendingModal.addEventListener("click", (e) => {
+      if (e.target === bulkTrendingModal) closeBulkTrendingModal();
+    });
+  }
+
+  if (btnBulkTrending) {
+    btnBulkTrending.addEventListener("click", () => {
+      if (selectedProductIds.size === 0) {
+        window.showToast?.("Please select at least one product.", "warning");
+        return;
+      }
+      openBulkTrendingModal();
+    });
+  }
+
+  if (btnCloseBulkTrendingModal) btnCloseBulkTrendingModal.addEventListener("click", closeBulkTrendingModal);
+  if (btnCancelBulkTrendingModal) btnCancelBulkTrendingModal.addEventListener("click", closeBulkTrendingModal);
+
+  if (btnConfirmBulkTrending) {
+    btnConfirmBulkTrending.addEventListener("click", async () => {
+      const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+      if (selectedList.length === 0) return;
+
+      const action = document.querySelector('input[name="bulk-trending-action-radio"]:checked')?.value || "enable";
+      const isTrending = (action === "enable");
+
+      btnConfirmBulkTrending.disabled = true;
+      btnConfirmBulkTrending.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Trending changes...';
+
+      try {
+        const client = window.AdminAuth ? window.AdminAuth.getClient() : (window.getSupabase ? window.getSupabase() : null);
+        if (!client) throw new Error("Database client not available. Please ensure you are logged in.");
+
+        const mainIds = selectedList.filter(p => p.origin_catalog !== 'sarojini').map(p => p.id);
+        const sarojiniIds = selectedList.filter(p => p.origin_catalog === 'sarojini').map(p => p.id);
+
+        // 1. Batch update Main Store products in public.products table
+        if (mainIds.length > 0) {
+          const { error: mainUpdErr } = await client
+            .from("products")
+            .update({
+              is_featured: isTrending,
+              updated_at: new Date().toISOString()
+            })
+            .in("id", mainIds);
+
+          if (mainUpdErr) throw mainUpdErr;
+        }
+
+        // 2. Batch update Sarojini cross-listed products in cross_store_mapping and sarojini_products
+        if (sarojiniIds.length > 0) {
+          const { data: mappingSetting } = await client
+            .from("store_settings")
+            .select("value")
+            .eq("key", "cross_store_mapping")
+            .maybeSingle();
+
+          let mapping = mappingSetting?.value || { main_available_in_sarojini: {}, sarojini_available_in_main: {} };
+          if (!mapping.sarojini_available_in_main) mapping.sarojini_available_in_main = {};
+
+          sarojiniIds.forEach(id => {
+            if (mapping.sarojini_available_in_main[id]) {
+              mapping.sarojini_available_in_main[id].is_featured = isTrending;
+            }
+          });
+
+          await client.from("store_settings").upsert({
+            key: "cross_store_mapping",
+            value: mapping,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "key" });
+
+          await client
+            .from("sarojini_products")
+            .update({
+              is_featured: isTrending,
+              updated_at: new Date().toISOString()
+            })
+            .in("id", sarojiniIds);
+        }
+
+        // 3. Update in-memory product objects
+        selectedList.forEach(p => {
+          p.is_featured = isTrending;
+        });
+
+        // 4. Invalidate global caches so customer storefront immediately reflects updates
+        try {
+          localStorage.setItem("velora_global_cache_invalidated", Date.now().toString());
+          if (window.VeloraCache) window.VeloraCache.invalidate();
+        } catch (_) {}
+
+        const actionText = isTrending ? "added to" : "removed from";
+        window.showToast?.(`Trending status successfully ${actionText} ${selectedList.length} product(s)!`, "success");
+
+        closeBulkTrendingModal();
+        selectedProductIds.clear();
+        const thSelectAll = document.getElementById("th-select-all-prods");
+        if (thSelectAll) thSelectAll.checked = false;
+        tbody.querySelectorAll(".row-select-prod").forEach(cb => cb.checked = false);
+        updateBulkToolbar();
+
+        renderProducts();
+      } catch (err) {
+        console.error("Bulk Trending save error:", err);
+        alert("Failed to save Trending changes: " + (err.message || "An unexpected error occurred."));
+      } finally {
+        btnConfirmBulkTrending.disabled = false;
+        btnConfirmBulkTrending.innerHTML = '<i class="fas fa-check-circle"></i> Save Trending Changes';
       }
     });
   }

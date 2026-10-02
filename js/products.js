@@ -926,8 +926,21 @@ if (typeof window !== "undefined") {
   const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
 
-  // Authoritative Live Supabase Product & Category Sync
-  window.syncProductsFromSupabase = async function() {
+  // Authoritative Live Supabase Product & Category Sync with In-Flight Deduplication
+  let _syncProductsInFlightPromise = null;
+  window.syncProductsFromSupabase = function() {
+    if (_syncProductsInFlightPromise) return _syncProductsInFlightPromise;
+    _syncProductsInFlightPromise = (async () => {
+      try {
+        return await _doSyncProductsFromSupabase();
+      } finally {
+        _syncProductsInFlightPromise = null;
+      }
+    })();
+    return _syncProductsInFlightPromise;
+  };
+
+  async function _doSyncProductsFromSupabase() {
     try {
       const reqHeaders = {
         'apikey': SUPABASE_ANON_KEY,
@@ -984,9 +997,9 @@ if (typeof window !== "undefined") {
 
       // 2. Fetch Active Products with Categories Join (Projected, Cached & Deduplicated)
       const prodCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,is_featured,is_new,is_deal,advance_payment_enabled,advance_payment_type,advance_payment_value,is_active,created_at,categories(id,name,slug)";
-      let dbProducts = null;
+      let rawMainProducts = null;
       try {
-        dbProducts = await (window.VeloraCache
+        rawMainProducts = await (window.VeloraCache
           ? window.VeloraCache.getOrFetch('products', async () => {
               const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/products?select=${prodCols}&is_active=eq.true&order=created_at.desc`, { headers: reqHeaders });
               return res.ok ? await res.json() : null;
@@ -997,6 +1010,21 @@ if (typeof window !== "undefined") {
             })());
       } catch (e) {
         console.warn("Products sync notice:", e);
+      }
+
+      // Canonical product ID map (keyed strictly by canonical UUID / ID)
+      // Guarantees zero duplicate cards and never mutates the underlying cached array in-place
+      const canonicalDbProductsMap = new Map();
+
+      if (Array.isArray(rawMainProducts)) {
+        rawMainProducts.forEach(p => {
+          if (p && p.id && !canonicalDbProductsMap.has(p.id)) {
+            canonicalDbProductsMap.set(p.id, {
+              ...p,
+              origin_catalog: 'main'
+            });
+          }
+        });
       }
 
       // Cross-store: Check if any Sarojini products are made available in Main VALORA Store
@@ -1013,14 +1041,26 @@ if (typeof window !== "undefined") {
               if (sRes.ok) {
                 const sProds = await sRes.json();
                 if (Array.isArray(sProds) && sProds.length > 0) {
-                  dbProducts = dbProducts || [];
                   sProds.forEach(sp => {
+                    if (!sp || !sp.id) return;
                     const assign = sMap[sp.id] || {};
-                    dbProducts.push({
-                      ...sp,
-                      category_id: assign.category_id || sp.category_id,
-                      is_featured: (assign.is_featured !== undefined) ? assign.is_featured : sp.is_featured
-                    });
+                    // If product already in canonicalDbProductsMap, update assigned category/featured without creating duplicate card
+                    if (canonicalDbProductsMap.has(sp.id)) {
+                      const existing = canonicalDbProductsMap.get(sp.id);
+                      canonicalDbProductsMap.set(sp.id, {
+                        ...existing,
+                        category_id: assign.category_id || existing.category_id,
+                        is_featured: (assign.is_featured !== undefined) ? assign.is_featured : existing.is_featured
+                      });
+                    } else {
+                      // Insert new cross-listed item exactly once
+                      canonicalDbProductsMap.set(sp.id, {
+                        ...sp,
+                        origin_catalog: 'sarojini',
+                        category_id: assign.category_id || sp.category_id,
+                        is_featured: (assign.is_featured !== undefined) ? assign.is_featured : sp.is_featured
+                      });
+                    }
                   });
                 }
               }
@@ -1030,6 +1070,8 @@ if (typeof window !== "undefined") {
       } catch (xErr) {
         console.warn("Cross-store products sync notice:", xErr);
       }
+
+      const dbProducts = Array.from(canonicalDbProductsMap.values());
 
       // Fetch BOGO config if not yet loaded in window.VELORA_SETTINGS
       let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
@@ -1174,9 +1216,18 @@ if (typeof window !== "undefined") {
           };
         });
 
+        // Guarantee strict canonical ID uniqueness for PRODUCTS_DATA
+        const finalProductsMap = new Map();
+        mappedProducts.forEach(prod => {
+          if (prod && prod.id && !finalProductsMap.has(prod.id)) {
+            finalProductsMap.set(prod.id, prod);
+          }
+        });
+        const uniqueProducts = Array.from(finalProductsMap.values());
+
         // Make Supabase the single source of truth
         PRODUCTS_DATA.length = 0;
-        PRODUCTS_DATA.push(...mappedProducts);
+        PRODUCTS_DATA.push(...uniqueProducts);
 
         // Update category counts on CATEGORIES_DATA
         CATEGORIES_DATA.forEach(cat => {

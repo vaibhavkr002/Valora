@@ -132,6 +132,23 @@
       const existing = mapping.main_available_in_sarojini[mainProduct.id];
 
       if (existing && existing.available) {
+        let updated = false;
+        if (options.department && existing.department !== options.department.toUpperCase()) {
+          existing.department = options.department.toUpperCase();
+          updated = true;
+        }
+        if (options.categoryId !== undefined && existing.category_id !== options.categoryId) {
+          existing.category_id = options.categoryId;
+          updated = true;
+        }
+        if (options.isFeatured !== undefined && existing.is_featured !== Boolean(options.isFeatured)) {
+          existing.is_featured = Boolean(options.isFeatured);
+          updated = true;
+        }
+        if (updated) {
+          await this.saveMapping(client, mapping);
+          this.invalidateCaches();
+        }
         return {
           success: true,
           alreadyExists: true,
@@ -199,6 +216,19 @@
       const existing = mapping.sarojini_available_in_main[sarojiniProduct.id];
 
       if (existing && existing.available) {
+        let updated = false;
+        if (options.categoryId !== undefined && existing.category_id !== options.categoryId) {
+          existing.category_id = options.categoryId;
+          updated = true;
+        }
+        if (options.isFeatured !== undefined && existing.is_featured !== Boolean(options.isFeatured)) {
+          existing.is_featured = Boolean(options.isFeatured);
+          updated = true;
+        }
+        if (updated) {
+          await this.saveMapping(client, mapping);
+          this.invalidateCaches();
+        }
         return {
           success: true,
           alreadyExists: true,
@@ -288,6 +318,190 @@
       }
 
       return { success: true, message: "No cross-store mapping found to remove." };
+    },
+
+    /**
+     * Add Multiple Main VALORA Products to Sarojini Bazaar in a single atomic batch
+     */
+    async addMultipleMainToSarojini(client, mainProducts, options = {}) {
+      if (!Array.isArray(mainProducts) || mainProducts.length === 0) {
+        throw new Error("No products provided for batch transfer.");
+      }
+
+      const mapping = await this.getMapping(client);
+      const department = (options.department || "MEN").toUpperCase();
+      const categoryId = options.categoryId || null;
+      const categorySlug = options.categorySlug || null;
+      const isFeatured = Boolean(options.isFeatured);
+      const nowIso = new Date().toISOString();
+
+      let addedCount = 0;
+      let alreadyCount = 0;
+
+      mainProducts.forEach(item => {
+        const id = (typeof item === 'object' && item) ? item.id : String(item);
+        if (!id) return;
+
+        if (mapping.main_available_in_sarojini[id] && mapping.main_available_in_sarojini[id].available) {
+          alreadyCount++;
+          if (department) mapping.main_available_in_sarojini[id].department = department;
+          if (categoryId) mapping.main_available_in_sarojini[id].category_id = categoryId;
+          if (categorySlug) mapping.main_available_in_sarojini[id].category_slug = categorySlug;
+          if (options.isFeatured !== undefined) mapping.main_available_in_sarojini[id].is_featured = isFeatured;
+        } else {
+          mapping.main_available_in_sarojini[id] = {
+            available: true,
+            department: department,
+            category_id: categoryId,
+            category_slug: categorySlug,
+            is_featured: isFeatured,
+            added_at: nowIso
+          };
+          addedCount++;
+        }
+      });
+
+      await this.saveMapping(client, mapping);
+
+      // If marked featured, sync to homepage section product_ids
+      if (isFeatured && (addedCount > 0 || alreadyCount > 0)) {
+        try {
+          const SAROJINI_SEC_ID = '22222222-2222-4222-a222-000000000001';
+          const { data: sec } = await client.from('homepage_sections').select('*').eq('id', SAROJINI_SEC_ID).maybeSingle();
+          if (sec) {
+            const cfg = sec.content_config || {};
+            let pids = Array.isArray(cfg.product_ids) ? [...cfg.product_ids] : [];
+            mainProducts.forEach(item => {
+              const id = (typeof item === 'object' && item) ? item.id : String(item);
+              if (id && !pids.includes(id)) {
+                pids.unshift(id);
+              }
+            });
+            cfg.product_ids = pids;
+            await client.from('homepage_sections').update({
+              content_config: cfg,
+              updated_at: new Date().toISOString()
+            }).eq('id', SAROJINI_SEC_ID);
+          }
+        } catch (e) {
+          console.warn("[CrossStoreService] Bulk homepage section feature sync note:", e);
+        }
+      }
+
+      this.invalidateCaches();
+
+      return {
+        success: true,
+        addedCount,
+        alreadyCount,
+        total: mainProducts.length,
+        message: `Successfully pushed ${addedCount} products to Sarojini Bazaar (${alreadyCount} updated/already active).`
+      };
+    },
+
+    /**
+     * Add Multiple Sarojini Products to Main VALORA Store in a single atomic batch
+     */
+    async addMultipleSarojiniToMain(client, sarojiniProducts, options = {}) {
+      if (!Array.isArray(sarojiniProducts) || sarojiniProducts.length === 0) {
+        throw new Error("No products provided for batch transfer.");
+      }
+
+      const mapping = await this.getMapping(client);
+      const categoryId = options.categoryId || null;
+      const isFeatured = Boolean(options.isFeatured);
+      const nowIso = new Date().toISOString();
+
+      let addedCount = 0;
+      let alreadyCount = 0;
+
+      sarojiniProducts.forEach(item => {
+        const id = (typeof item === 'object' && item) ? item.id : String(item);
+        if (!id) return;
+
+        if (mapping.sarojini_available_in_main[id] && mapping.sarojini_available_in_main[id].available) {
+          alreadyCount++;
+          if (categoryId) mapping.sarojini_available_in_main[id].category_id = categoryId;
+          if (options.isFeatured !== undefined) mapping.sarojini_available_in_main[id].is_featured = isFeatured;
+        } else {
+          mapping.sarojini_available_in_main[id] = {
+            available: true,
+            category_id: categoryId,
+            is_featured: isFeatured,
+            added_at: nowIso
+          };
+          addedCount++;
+        }
+      });
+
+      await this.saveMapping(client, mapping);
+      this.invalidateCaches();
+
+      return {
+        success: true,
+        addedCount,
+        alreadyCount,
+        total: sarojiniProducts.length,
+        message: `Successfully pushed ${addedCount} products to Main VALORA Store (${alreadyCount} updated/already active).`
+      };
+    },
+
+    /**
+     * Remove Multiple products availability from target store in a single atomic batch
+     */
+    async removeMultipleFromStore(client, { productIds, targetStore }) {
+      if (!Array.isArray(productIds) || productIds.length === 0) {
+        throw new Error("Product IDs required for batch removal.");
+      }
+
+      const mapping = await this.getMapping(client);
+      const target = (targetStore || "both").toLowerCase();
+      const idSet = new Set(productIds.map(String));
+      let removedCount = 0;
+
+      if (target === "sarojini" || target === "both") {
+        idSet.forEach(id => {
+          if (mapping.main_available_in_sarojini && mapping.main_available_in_sarojini[id]) {
+            delete mapping.main_available_in_sarojini[id];
+            removedCount++;
+          }
+        });
+
+        // Clean up from Sarojini homepage_sections
+        try {
+          const SAROJINI_SEC_ID = '22222222-2222-4222-a222-000000000001';
+          const { data: sec } = await client.from('homepage_sections').select('*').eq('id', SAROJINI_SEC_ID).maybeSingle();
+          if (sec && sec.content_config && Array.isArray(sec.content_config.product_ids)) {
+            const filteredPids = sec.content_config.product_ids.filter(id => !idSet.has(String(id)));
+            if (filteredPids.length !== sec.content_config.product_ids.length) {
+              sec.content_config.product_ids = filteredPids;
+              await client.from('homepage_sections').update({
+                content_config: sec.content_config,
+                updated_at: new Date().toISOString()
+              }).eq('id', SAROJINI_SEC_ID);
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (target === "main" || target === "both") {
+        idSet.forEach(id => {
+          if (mapping.sarojini_available_in_main && mapping.sarojini_available_in_main[id]) {
+            delete mapping.sarojini_available_in_main[id];
+            removedCount++;
+          }
+        });
+      }
+
+      await this.saveMapping(client, mapping);
+      this.invalidateCaches();
+
+      return {
+        success: true,
+        removedCount,
+        total: productIds.length,
+        message: `Successfully removed cross-store availability for ${removedCount} product(s).`
+      };
     },
 
     /**

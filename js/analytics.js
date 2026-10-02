@@ -72,8 +72,38 @@
   }
 
   // 5. Send Batch to Supabase
+  function isAnalyticsPermitted() {
+    if (window.VeloraConsent && typeof window.VeloraConsent.hasConsent === 'function') {
+      return window.VeloraConsent.hasConsent('analytics');
+    }
+    try {
+      const raw = localStorage.getItem('velora_cookie_consent');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return Boolean(parsed.analytics);
+      }
+    } catch (_) {}
+    return false; // Require consent before network telemetry
+  }
+
   async function flushQueue() {
     if (isFlushing || eventQueue.length === 0) return;
+
+    // Respect customer consent choices under DPDP / Privacy standards
+    if (!isAnalyticsPermitted()) {
+      // If user has explicitly rejected, clear any pending events
+      const raw = localStorage.getItem('velora_cookie_consent');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.analytics === false) {
+            eventQueue.length = 0;
+          }
+        } catch (_) {}
+      }
+      return;
+    }
+
     isFlushing = true;
 
     // Take current snapshot of items
@@ -109,6 +139,15 @@
       isFlushing = false;
     }
   }
+
+  // Reactive listener for consent updates
+  window.addEventListener('velora:consent-updated', (e) => {
+    if (e.detail && e.detail.analytics) {
+      flushQueue();
+    } else {
+      eventQueue.length = 0;
+    }
+  });
 
   function scheduleFlush(delay = 3000) {
     if (flushTimer) clearTimeout(flushTimer);
@@ -221,7 +260,14 @@
     flush: flushQueue
   };
 
-  // 9. Initialize Auto-Tracking on DOM Ready
+  // 9. Reactive consent listener
+  window.addEventListener('velora:consent-updated', (e) => {
+    if (e.detail && e.detail.analytics) {
+      flushQueue();
+    }
+  });
+
+  // 10. Initialize Auto-Tracking on DOM Ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', autoTrackPageView);
   } else {

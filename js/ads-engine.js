@@ -655,6 +655,11 @@
     if (isBogo) themeClass = 'theme-bogo';
     if (isTrending) themeClass = 'theme-trending';
 
+    let extraCardClass = '';
+    if (!isSarojini && isBogo && (ad.placement === 'below_hero' || ad.placement === 'hero')) {
+      extraCardClass = ' homepage-bogo-banner';
+    }
+
     // Cross-promotion pill if promoted from the other store
     let crossPromoHtml = '';
     if (ad.is_cross_promotion) {
@@ -691,7 +696,7 @@
 
     return `
       <div class="container ad-slot-container">
-        <div class="${cardClass} ${themeClass}">
+        <div class="${cardClass} ${themeClass}${extraCardClass}">
           ${visualHtml}
           <div class="velora-ad-content">
             ${crossPromoHtml}
@@ -720,6 +725,11 @@
       let themeClass = 'theme-standard';
       if (isBogo) themeClass = 'theme-bogo';
       if (isTrending) themeClass = 'theme-trending';
+
+      let extraCardClass = '';
+      if (!isSarojini && isBogo && (ad.placement === 'below_hero' || ad.placement === 'hero')) {
+        extraCardClass = ' homepage-bogo-banner';
+      }
 
       let crossPromoHtml = '';
       if (ad.is_cross_promotion) {
@@ -755,7 +765,7 @@
 
       return `
         <div class="ad-slide ${activeClass}" data-slide-index="${idx}">
-          <div class="${cardClass} ${themeClass}">
+          <div class="${cardClass} ${themeClass}${extraCardClass}">
             ${visualHtml}
             <div class="velora-ad-content">
               ${crossPromoHtml}
