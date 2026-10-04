@@ -140,25 +140,23 @@
       return typeof id === 'string' && id.startsWith('00005eed-');
     },
 
-    seedProduct: async function (product, catalogType = 'main', targetCount = 14) {
+    seedProduct: async function (product, catalogType = 'main', targetCount = 22) {
       const client = window.AdminAuth ? window.AdminAuth.getClient() : window.supabaseClient;
       if (!client || !product || !product.id) throw new Error("Database client or product missing");
 
-      const count = Math.max(12, Math.min(15, targetCount));
+      const count = Math.max(20, Math.min(25, targetCount || 22));
       const catKey = detectCategory(product);
       const templates = CATEGORY_TEMPLATES[catKey] || CATEGORY_TEMPLATES.general;
 
-      // Realistic rating distribution
+      // Realistic rating distribution between 3 and 5 stars only:
       const ratings = [];
-      const fiveCount = Math.floor(count * 0.50);
-      const fourCount = Math.floor(count * 0.35);
-      const threeCount = Math.max(1, Math.floor(count * 0.12));
-      const twoCount = count - (fiveCount + fourCount + threeCount);
+      const fiveCount = Math.floor(count * 0.58);
+      const fourCount = Math.floor(count * 0.30);
+      const threeCount = count - (fiveCount + fourCount);
 
       for (let i = 0; i < fiveCount; i++) ratings.push(5);
       for (let i = 0; i < fourCount; i++) ratings.push(4);
       for (let i = 0; i < threeCount; i++) ratings.push(3);
-      for (let i = 0; i < twoCount; i++) ratings.push(2);
 
       // Shuffle
       ratings.sort(() => Math.random() - 0.5);

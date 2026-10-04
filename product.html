@@ -481,6 +481,89 @@
                 </div>
               </div>
 
+              <!-- Dedicated BOGO Selection Section (Rendered dynamically when product has active BOGO) -->
+              <div id="pdp-bogo-selection-section" class="pdp-bogo-container" style="display: none;">
+                <div class="pdp-bogo-banner">
+                  <div class="pdp-bogo-banner-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12V22H4V12H20ZM20 6H16.83C17.57 5.15 18 4.14 18 3C18 1.34 16.66 0 15 0C13.5 0 12.24 1.1 12.03 2.54L12 2.76L11.97 2.54C11.76 1.1 10.5 0 9 0C7.34 0 6 1.34 6 3C6 4.14 6.43 5.15 7.17 6H4C2.9 6 2 6.9 2 8V10H22V8C22 6.9 21.1 6 20 6ZM9 2C9.55 2 10 2.45 10 3C10 3.55 9.55 4 9 4C8.45 4 8 3.55 8 3C8 2.45 8.45 2 9 2ZM15 2C15.55 2 16 2.45 16 3C16 3.55 15.55 4 15 4C14.45 4 14 3.55 14 3C14 2.45 14.45 2 15 2Z"/></svg>
+                  </div>
+                  <div class="pdp-bogo-banner-text">
+                    <div class="pdp-bogo-heading">BUY 1 GET 1 FREE</div>
+                    <div class="pdp-bogo-subheading">Choose any companion shoe below as your 100% complimentary free gift!</div>
+                  </div>
+                  <span class="pdp-bogo-free-pill">100% FREE</span>
+                </div>
+
+                <!-- Step 1: Paid Shoe Info Summary -->
+                <div class="pdp-bogo-step-card pdp-bogo-step-1">
+                  <div class="pdp-bogo-step-hdr">
+                    <span class="pdp-bogo-step-badge">1</span>
+                    <span class="pdp-bogo-step-title">Your Product</span>
+                    <span class="pdp-bogo-status-done">✓ Paid</span>
+                  </div>
+                  <div class="pdp-bogo-item-preview" id="pdp-bogo-paid-preview">
+                    <img id="pdp-bogo-paid-thumb" src="" alt="Selected Product" class="pdp-bogo-thumb">
+                    <div class="pdp-bogo-item-details">
+                      <div id="pdp-bogo-paid-name" class="pdp-bogo-item-name">Selected Shoe</div>
+                      <div class="pdp-bogo-item-sub">
+                        <span>Size: <strong id="pdp-bogo-paid-size-badge" class="pdp-bogo-highlight-size">UK 6</strong></span>
+                        <span class="pdp-bogo-divider">•</span>
+                        <span id="pdp-bogo-paid-price-badge" class="pdp-bogo-paid-price">₹-</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 2: Choose Free Shoe -->
+                <div class="pdp-bogo-step-card pdp-bogo-step-2" id="pdp-bogo-step-2-container">
+                  <div class="pdp-bogo-step-hdr">
+                    <span class="pdp-bogo-step-badge">2</span>
+                    <span class="pdp-bogo-step-title">CHOOSE YOUR FREE PRODUCT</span>
+                    <span id="pdp-bogo-free-prod-status" class="pdp-bogo-status-tag required">Select 1 free product</span>
+                  </div>
+                  <p class="pdp-bogo-instruction">Select 1 free product from our eligible BOGO catalog:</p>
+                  <div id="pdp-bogo-free-products-grid" class="pdp-bogo-free-grid">
+                    <!-- Dynamic free product cards injected here -->
+                  </div>
+                </div>
+
+                <!-- Step 3: Choose Free Shoe Size -->
+                <div class="pdp-bogo-step-card pdp-bogo-step-3" id="pdp-bogo-free-size-step" style="display: none;">
+                  <div class="pdp-bogo-step-hdr">
+                    <span class="pdp-bogo-step-badge">3</span>
+                    <span class="pdp-bogo-step-title">FREE PRODUCT SIZE</span>
+                    <span id="pdp-bogo-free-size-status" class="pdp-bogo-status-tag required">Required</span>
+                  </div>
+                  <p class="pdp-bogo-instruction" id="pdp-bogo-free-size-prompt">Select the size for your free product (can be different from your paid shoe):</p>
+                  <div id="pdp-bogo-free-sizes-container" class="pdp-bogo-free-sizes-list">
+                    <!-- Dynamic size pills for chosen free shoe -->
+                  </div>
+                </div>
+
+                <!-- Live BOGO Pair Summary & Validation Notice -->
+                <div class="pdp-bogo-pair-summary" id="pdp-bogo-pair-summary">
+                  <div class="pdp-bogo-pair-summary-header">
+                    <span>Your BOGO Pair</span>
+                    <span class="pdp-bogo-save-tag">You Save 100% on Companion</span>
+                  </div>
+                  <div class="pdp-bogo-pair-lines">
+                    <div class="pdp-bogo-pair-line">
+                      <span class="pdp-bogo-line-role">👟 Paid:</span>
+                      <span id="pdp-bogo-summary-paid-text" class="pdp-bogo-line-desc">Shoe Name • Size: UK 6</span>
+                      <span id="pdp-bogo-summary-paid-val" class="pdp-bogo-line-cost">₹-</span>
+                    </div>
+                    <div class="pdp-bogo-pair-line pdp-bogo-pair-free-line">
+                      <span class="pdp-bogo-line-role">🎁 FREE:</span>
+                      <span id="pdp-bogo-summary-free-text" class="pdp-bogo-line-desc text-muted">Please select free product &amp; size above</span>
+                      <span class="pdp-bogo-line-cost text-free">₹0 FREE</span>
+                    </div>
+                  </div>
+                  <div id="pdp-bogo-validation-msg" class="pdp-bogo-validation-msg" style="display: none;">
+                    <!-- Highlighted message when selection is incomplete -->
+                  </div>
+                </div>
+              </div>
+
               <!-- Quantity Selector & Action Buttons -->
               <div class="purchase-action-container">
                 <div class="qty-and-buttons-row">

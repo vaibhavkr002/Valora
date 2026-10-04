@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let productToAddSarojini = null;
   let bogoConfigIds = [];
   let selectedProductIds = new Set();
+  let globalAdvanceSettings = null;
 
   function escapeHtml(str) {
     if (!str) return "";
@@ -77,6 +78,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     } catch (mErr) {
       console.warn("CrossStoreService mapping notice:", mErr);
+    }
+
+    try {
+      if (window.AdvancePaymentService) {
+        globalAdvanceSettings = await window.AdvancePaymentService.getGlobalSettings(client);
+      }
+    } catch (advErr) {
+      console.warn("AdvancePaymentService load notice:", advErr);
     }
 
     const { data: mainProductsData, error } = await client
@@ -191,11 +200,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? '<span class="badge badge-success">Active</span>'
         : '<span class="badge badge-danger">Inactive</span>';
 
-      const advanceBadge = p.advance_payment_enabled
-        ? (p.advance_payment_type === 'percentage'
-            ? `<span class="badge badge-indigo" title="Requires ${p.advance_payment_value}% upfront deposit">✓ ${p.advance_payment_value}%</span>`
-            : `<span class="badge badge-indigo" title="Requires ${window.formatINR(p.advance_payment_value)} upfront deposit">✓ ${window.formatINR(p.advance_payment_value)}</span>`)
-        : '<span style="color: var(--admin-text-muted); font-size: 0.78rem;">—</span>';
+      const advanceInfo = window.AdvancePaymentService
+        ? window.AdvancePaymentService.getProductAdvanceInfo(p, globalAdvanceSettings)
+        : null;
+      const advanceBadge = advanceInfo
+        ? advanceInfo.badgeHtml
+        : (p.advance_payment_enabled
+            ? (p.advance_payment_type === 'percentage'
+                ? `<span class="badge badge-indigo" title="Requires ${p.advance_payment_value}% upfront deposit">✓ ${p.advance_payment_value}%</span>`
+                : `<span class="badge badge-indigo" title="Requires ${window.formatINR(p.advance_payment_value)} upfront deposit">✓ ${window.formatINR(p.advance_payment_value)}</span>`)
+            : '<span style="color: var(--admin-text-muted); font-size: 0.78rem;">—</span>');
 
       const isBogo = bogoConfigIds.includes(p.id) || Boolean(p.is_bogo);
       const badgesHtml = [
@@ -1340,6 +1354,189 @@ document.addEventListener("DOMContentLoaded", async () => {
       } finally {
         btnSaveBogo.disabled = false;
         btnSaveBogo.innerHTML = 'Save BOGO Deals';
+      }
+    });
+  }
+
+  // ==========================================================================
+  // Bulk Advance Payment Modal Controller
+  // ==========================================================================
+  const bulkAdvanceModal = document.getElementById("modal-bulk-advance");
+  const btnBulkAdvance = document.getElementById("btn-bulk-advance");
+  const btnCloseBulkAdvanceModal = document.getElementById("btn-close-bulk-advance-modal");
+  const btnCancelBulkAdvanceModal = document.getElementById("btn-cancel-bulk-advance-modal");
+  const bulkAdvanceModalCount = document.getElementById("bulk-advance-modal-count");
+  const bulkAdvanceCustomCount = document.getElementById("bulk-advance-custom-count");
+  const bulkAdvanceToggle = document.getElementById("bulk-advance-toggle");
+  const bulkAdvanceAmountSection = document.getElementById("bulk-advance-amount-section");
+  const bulkAdvanceAmount = document.getElementById("bulk-advance-amount");
+  const bulkAdvanceModalPreviewList = document.getElementById("bulk-advance-modal-preview-list");
+  const bulkAdvancePreviewCount = document.getElementById("bulk-advance-preview-count");
+  const btnConfirmBulkAdvanceSkip = document.getElementById("btn-confirm-bulk-advance-skip");
+  const btnConfirmBulkAdvanceOverride = document.getElementById("btn-confirm-bulk-advance-override");
+
+  function openBulkAdvanceModal() {
+    const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+    if (selectedList.length === 0) {
+      alert("Please select at least one product using the checkboxes.");
+      return;
+    }
+
+    if (bulkAdvanceModalCount) {
+      bulkAdvanceModalCount.textContent = `${selectedList.length} Product${selectedList.length === 1 ? '' : 's'} Selected`;
+    }
+
+    if (bulkAdvancePreviewCount) {
+      bulkAdvancePreviewCount.textContent = selectedList.length;
+    }
+
+    // Set default amount from global settings or 120
+    const defaultAmt = globalAdvanceSettings?.default_amount || 120;
+    if (bulkAdvanceAmount) {
+      bulkAdvanceAmount.value = defaultAmt;
+    }
+
+    // Count how many selected products have custom overrides
+    let customCount = 0;
+    selectedList.forEach(p => {
+      if (window.AdvancePaymentService && window.AdvancePaymentService.isCustomOverride(p, globalAdvanceSettings)) {
+        customCount++;
+      }
+    });
+
+    if (bulkAdvanceCustomCount) {
+      bulkAdvanceCustomCount.textContent = `${customCount} Custom Override${customCount === 1 ? '' : 's'}`;
+      bulkAdvanceCustomCount.style.color = customCount > 0 ? '#fbbf24' : '#94a3b8';
+    }
+
+    // Render Preview List
+    if (bulkAdvanceModalPreviewList) {
+      bulkAdvanceModalPreviewList.innerHTML = selectedList.map(p => {
+        const thumb = (p.images && p.images.length > 0) ? p.images[0] : (p.image || "https://via.placeholder.com/44");
+        const info = window.AdvancePaymentService ? window.AdvancePaymentService.getProductAdvanceInfo(p, globalAdvanceSettings) : null;
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--admin-card-border); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+              <img src="${thumb}" alt="${escapeHtml(p.name)}" style="width: 34px; height: 34px; border-radius: 4px; object-fit: contain; background: #1e293b; padding: 1px;">
+              <div style="overflow: hidden;">
+                <div style="font-weight: 600; font-size: 0.82rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">${escapeHtml(p.name)}</div>
+                <div style="font-size: 0.72rem; color: var(--admin-text-muted);">Selling Price: ${window.formatINR(p.price)}</div>
+              </div>
+            </div>
+            <div>
+              ${info ? info.badgeHtml : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    if (bulkAdvanceModal) bulkAdvanceModal.style.display = "flex";
+  }
+
+  function closeBulkAdvanceModal() {
+    if (bulkAdvanceModal) bulkAdvanceModal.style.display = "none";
+  }
+
+  if (btnBulkAdvance) btnBulkAdvance.addEventListener("click", openBulkAdvanceModal);
+  if (btnCloseBulkAdvanceModal) btnCloseBulkAdvanceModal.addEventListener("click", closeBulkAdvanceModal);
+  if (btnCancelBulkAdvanceModal) btnCancelBulkAdvanceModal.addEventListener("click", closeBulkAdvanceModal);
+
+  if (bulkAdvanceToggle) {
+    bulkAdvanceToggle.addEventListener("change", () => {
+      if (bulkAdvanceAmountSection) {
+        bulkAdvanceAmountSection.style.display = bulkAdvanceToggle.checked ? "block" : "none";
+      }
+    });
+  }
+
+  document.querySelectorAll(".btn-quick-bulk-amt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const amt = btn.getAttribute("data-amt");
+      if (bulkAdvanceAmount) bulkAdvanceAmount.value = amt;
+    });
+  });
+
+  // Action 1: Apply Default (Skip Custom Overrides)
+  if (btnConfirmBulkAdvanceSkip) {
+    btnConfirmBulkAdvanceSkip.addEventListener("click", async () => {
+      const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+      if (selectedList.length === 0) return;
+
+      const isEnabled = bulkAdvanceToggle ? bulkAdvanceToggle.checked : true;
+      const amount = parseFloat(bulkAdvanceAmount ? bulkAdvanceAmount.value : 120) || 0;
+
+      btnConfirmBulkAdvanceSkip.disabled = true;
+      btnConfirmBulkAdvanceSkip.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+
+      try {
+        const result = await window.AdvancePaymentService.applyBulkAdvance(client, {
+          products: selectedList,
+          isEnabled,
+          amount,
+          overrideCustom: false
+        });
+
+        globalAdvanceSettings = await window.AdvancePaymentService.getGlobalSettings(client);
+        window.showToast?.(`Applied advance (₹${amount}) to ${result.updatedCount} product(s). Preserved ${result.skippedCustomCount} custom override(s).`, "success");
+        closeBulkAdvanceModal();
+        renderProducts();
+      } catch (err) {
+        console.error("Bulk advance skip error:", err);
+        alert("Failed to apply advance payment: " + err.message);
+      } finally {
+        btnConfirmBulkAdvanceSkip.disabled = false;
+        btnConfirmBulkAdvanceSkip.innerHTML = '<i class="fas fa-check-circle"></i> Apply Default (Skip Custom)';
+      }
+    });
+  }
+
+  // Action 2: Apply & Override Custom Amounts
+  if (btnConfirmBulkAdvanceOverride) {
+    btnConfirmBulkAdvanceOverride.addEventListener("click", async () => {
+      const selectedList = allProducts.filter(p => selectedProductIds.has(String(p.id)));
+      if (selectedList.length === 0) return;
+
+      const isEnabled = bulkAdvanceToggle ? bulkAdvanceToggle.checked : true;
+      const amount = parseFloat(bulkAdvanceAmount ? bulkAdvanceAmount.value : 120) || 0;
+
+      let customCount = 0;
+      selectedList.forEach(p => {
+        if (window.AdvancePaymentService && window.AdvancePaymentService.isCustomOverride(p, globalAdvanceSettings)) {
+          customCount++;
+        }
+      });
+
+      if (customCount > 0) {
+        const confirmed = confirm(
+          `⚠️ WARNING: OVERWRITE CUSTOM ADVANCE AMOUNTS\n\n` +
+          `You have selected ${selectedList.length} product(s), including ${customCount} product(s) with custom advance amounts.\n\n` +
+          `Are you sure you want to FORCE OVERWRITE all custom amounts with ₹${amount}?`
+        );
+        if (!confirmed) return;
+      }
+
+      btnConfirmBulkAdvanceOverride.disabled = true;
+      btnConfirmBulkAdvanceOverride.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Overwriting...';
+
+      try {
+        const result = await window.AdvancePaymentService.applyBulkAdvance(client, {
+          products: selectedList,
+          isEnabled,
+          amount,
+          overrideCustom: true
+        });
+
+        globalAdvanceSettings = await window.AdvancePaymentService.getGlobalSettings(client);
+        window.showToast?.(`Force applied ₹${amount} across all ${result.updatedCount} selected product(s) and cleared overrides.`, "success");
+        closeBulkAdvanceModal();
+        renderProducts();
+      } catch (err) {
+        console.error("Bulk advance override error:", err);
+        alert("Failed to overwrite advance payment: " + err.message);
+      } finally {
+        btnConfirmBulkAdvanceOverride.disabled = false;
+        btnConfirmBulkAdvanceOverride.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Apply &amp; Override Custom';
       }
     });
   }

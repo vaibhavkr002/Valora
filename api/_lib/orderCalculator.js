@@ -5,7 +5,7 @@
  * Never trusts frontend prices or advance amounts.
  */
 
-const { fetchProduct, fetchProductBySlugOrName, fetchCoupon } = require('./supabaseAdmin');
+const { fetchProduct, fetchProductBySlugOrName, fetchCoupon, fetchGlobalAdvanceSettings, fetchBogoConfig } = require('./supabaseAdmin');
 
 /**
  * Validates cart items, verifies stock, and calculates canonical order totals.
@@ -30,6 +30,10 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
   let totalProductAdvance = 0;
   const resolvedItems = [];
   const outOfStockItems = [];
+
+  const globalAdvance = await fetchGlobalAdvanceSettings();
+  const bogoConfig = await fetchBogoConfig();
+  const bogoProductIds = (bogoConfig && Array.isArray(bogoConfig.product_ids)) ? bogoConfig.product_ids : [];
 
   for (const item of items) {
     const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
@@ -64,6 +68,14 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
       throw new Error(`Product "${item.name || item.id}" could not be verified in store catalog.`);
     }
 
+    // Verify BOGO pairing integrity if free item
+    if (isFreeBogo) {
+      const isPaired = items.some(p => p !== item && !p.is_free_bogo && (p.bogo_pair_id === item.bogo_pair_id || bogoProductIds.includes(p.id) || p.isBogo || p.is_bogo));
+      if (!isPaired) {
+        throw new Error(`Free complimentary gift "${item.name || item.id}" must be accompanied by an eligible paid product in the order.`);
+      }
+    }
+
     // Verify stock availability
     const availableStock = typeof dbProduct.stock === 'number' ? dbProduct.stock : 0;
     if (availableStock < qty) {
@@ -79,16 +91,30 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
     const lineTotal = unitPrice * qty;
     subtotal += lineTotal;
 
-    // Calculate line advance
+    // Calculate line advance based on Authoritative Priority Precedence:
+    // 1. Individual Product Advance Amount (Highest Priority)
+    // 2. Global / Default Store Advance (Fallback if not explicitly set)
+    // 3. Disabled / None (₹0)
     let unitAdvance = 0;
-    if (!isFreeBogo && dbProduct.advance_payment_enabled) {
+    if (!isFreeBogo) {
+      const isAdvExplicit = dbProduct.advance_payment_enabled;
       const advType = dbProduct.advance_payment_type || 'fixed';
-      const advVal = Number(dbProduct.advance_payment_value) || 0;
+      const advVal = Number(dbProduct.advance_payment_value);
 
-      if (advType === 'percentage') {
-        unitAdvance = Math.round(unitPrice * (advVal / 100));
-      } else {
-        unitAdvance = Math.min(unitPrice, Math.max(0, advVal));
+      if (isAdvExplicit === true && !isNaN(advVal) && advVal > 0) {
+        // Individual Product Custom/Explicit Setting
+        if (advType === 'percentage') {
+          unitAdvance = Math.round(unitPrice * (advVal / 100));
+        } else {
+          unitAdvance = Math.min(unitPrice, Math.max(0, advVal));
+        }
+      } else if (isAdvExplicit === false) {
+        // Explicitly disabled on product
+        unitAdvance = 0;
+      } else if (globalAdvance && globalAdvance.enabled) {
+        // Global default store fallback
+        const defAmt = Number(globalAdvance.default_amount) || 120;
+        unitAdvance = Math.min(unitPrice, Math.max(0, defAmt));
       }
     }
 
@@ -113,10 +139,11 @@ async function calculateTrustedOrder({ items, paymentMethod, couponCode }) {
       advance_amount: lineAdvance,
       line_cod_balance: Math.max(0, lineTotal - lineAdvance),
       cod_balance: Math.max(0, lineTotal - lineAdvance),
-      advance_payment_enabled: Boolean(dbProduct.advance_payment_enabled),
-      advance_payment_type: dbProduct.advance_payment_type || null,
-      advance_payment_value: dbProduct.advance_payment_value || null,
-      is_free_bogo: isFreeBogo
+      advance_payment_enabled: Boolean(unitAdvance > 0),
+      advance_payment_type: dbProduct.advance_payment_type || 'fixed',
+      advance_payment_value: unitAdvance,
+      is_free_bogo: isFreeBogo,
+      bogo_pair_id: item.bogo_pair_id || null
     });
   }
 

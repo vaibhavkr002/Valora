@@ -31,6 +31,11 @@
           <i class="fas fa-box-open"></i>
           <span>Products</span>
         </a>
+
+        <a href="advance-payment.html" class="sidebar-link ">
+          <i class="fas fa-hand-holding-usd"></i>
+          <span>Advance Payment</span>
+        </a>
   
 
         <a href="add-product.html" class="sidebar-link ">
@@ -185,7 +190,10 @@
             <h1 class="page-heading">Products Catalog</h1>
             <p class="page-subheading">Manage prices, inventory, variants and storefront status</p>
           </div>
-          <div style="display:flex; gap: 10px;">
+          <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+            <a href="advance-payment.html" class="btn-admin-secondary" style="background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; padding: 8px 16px; border-radius: 8px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-hand-holding-usd"></i> Advance Payment
+            </a>
             <button type="button" id="btn-open-bogo-modal" class="btn-admin-secondary" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #059669; color: #10b981; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
               <i class="fas fa-gift"></i> Manage BOGO Deals
             </button>
@@ -349,6 +357,9 @@
         <div id="bulk-actions-toolbar" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; border: 1px solid rgba(225, 29, 72, 0.4); border-radius: 50px; padding: 10px 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; align-items: center; gap: 12px; color: #fff; flex-wrap: wrap; max-width: 92vw; justify-content: center;">
           <span style="font-weight: 700; font-size: 0.88rem; color: #fb7185;" id="bulk-selected-count">0 Selected</span>
           <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2);"></div>
+          <button type="button" id="btn-bulk-advance" class="btn-admin-primary" style="background: #2563eb; border-color: #1d4ed8; padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;" title="Set Advance Payment for selected products">
+            <i class="fas fa-hand-holding-usd"></i> Set Advance
+          </button>
           <button type="button" id="btn-bulk-trending" class="btn-admin-primary" style="background: #d97706; border-color: #b45309; padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;" title="Add selected products to Trending or configure Trending status">
             <i class="fas fa-fire"></i> Add to Trending
           </button>
@@ -550,6 +561,74 @@
             </div>
           </div>
         </div>
+        <!-- Bulk Advance Payment Configuration Modal -->
+        <div id="modal-bulk-advance" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+          <div class="admin-card" style="width: 90%; max-width: 660px; max-height: 85vh; display: flex; flex-direction: column; padding: 24px; border: 1px solid rgba(59, 130, 246, 0.4); background: #0f172a; border-radius: 14px; box-shadow: 0 25px 50px rgba(0,0,0,0.85); overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--admin-card-border); padding-bottom: 12px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.18rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-hand-holding-usd" style="color: #60a5fa;"></i> Bulk Advance Payment Management
+                </h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.82rem; color: var(--admin-text-muted);">
+                  Configure advance payment amounts for selected products in 1–2 clicks
+                </p>
+              </div>
+              <button type="button" id="btn-close-bulk-advance-modal" style="background: transparent; border: none; color: var(--admin-text-muted); font-size: 1.25rem; cursor: pointer; padding: 4px 8px;">✕</button>
+            </div>
+
+            <div style="overflow-y: auto; flex: 1; padding-right: 4px;">
+              <!-- Selected Count & Summary Badge -->
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <span style="font-weight: 700; color: #60a5fa; font-size: 0.88rem;" id="bulk-advance-modal-count">0 Products Selected</span>
+                <span style="font-size: 0.78rem; color: #fbbf24; font-weight: 600;" id="bulk-advance-custom-count">0 Custom Overrides</span>
+              </div>
+
+              <!-- Advance Toggle & Amount Input -->
+              <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid var(--admin-card-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="font-size: 0.84rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">Advance Payment Status:</span>
+                  <label class="toggle-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                    <input type="checkbox" id="bulk-advance-toggle" checked style="opacity: 0; width: 0; height: 0;">
+                    <span style="position: absolute; cursor: pointer; inset: 0; background-color: #3b82f6; transition: 0.25s; border-radius: 34px;"></span>
+                  </label>
+                </div>
+                <div id="bulk-advance-amount-section">
+                  <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">Advance Deposit Amount (₹):</label>
+                  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <div style="position: relative; width: 180px;">
+                      <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #3b82f6;">₹</span>
+                      <input type="number" id="bulk-advance-amount" class="admin-input" value="120" min="0" step="5" style="padding-left: 28px; font-weight: 700;">
+                    </div>
+                    <button type="button" class="btn-admin-secondary btn-quick-bulk-amt" data-amt="80" style="padding: 6px 10px; font-size: 0.78rem;">₹80</button>
+                    <button type="button" class="btn-admin-secondary btn-quick-bulk-amt" data-amt="120" style="padding: 6px 10px; font-size: 0.78rem; border-color: #3b82f6; color: #60a5fa;">₹120</button>
+                    <button type="button" class="btn-admin-secondary btn-quick-bulk-amt" data-amt="150" style="padding: 6px 10px; font-size: 0.78rem;">₹150</button>
+                    <button type="button" class="btn-admin-secondary btn-quick-bulk-amt" data-amt="200" style="padding: 6px 10px; font-size: 0.78rem;">₹200</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Products Preview List -->
+              <div style="font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">
+                Selected Products Summary (<span id="bulk-advance-preview-count">0</span>):
+              </div>
+              <div id="bulk-advance-modal-preview-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 16px; padding: 6px; border: 1px solid var(--admin-card-border); border-radius: 8px; background: rgba(15, 23, 42, 0.5);">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; border-top: 1px solid var(--admin-card-border); padding-top: 14px; flex-wrap: wrap;">
+              <button type="button" id="btn-cancel-bulk-advance-modal" class="btn-admin-secondary" style="padding: 8px 16px;">Cancel</button>
+              <div style="display: flex; gap: 10px;">
+                <button type="button" id="btn-confirm-bulk-advance-skip" class="btn-admin-primary" style="background: #059669; border-color: #059669; padding: 8px 18px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" title="Applies to products without custom overrides">
+                  <i class="fas fa-check-circle"></i> Apply Default (Skip Custom)
+                </button>
+                <button type="button" id="btn-confirm-bulk-advance-override" class="btn-admin-primary" style="background: #d97706; border-color: #b45309; padding: 8px 18px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" title="Forces all selected products to use new amount, replacing custom overrides">
+                  <i class="fas fa-exclamation-triangle"></i> Apply &amp; Override Custom
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -559,6 +638,7 @@
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-layout.js"></script>
   <script src="js/cross-store-service.js"></script>
+  <script src="js/advance-payment-service.js"></script>
   <script src="js/admin-products.js"></script>
 </body>
 </html>

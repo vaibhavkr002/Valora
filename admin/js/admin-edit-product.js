@@ -182,6 +182,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const advErrorMsg = document.getElementById("advance-error-msg");
   const productPriceInput = document.getElementById("product-price");
 
+  const policyModeDefault = document.getElementById("policy-mode-default");
+  const policyModeCustom = document.getElementById("policy-mode-custom");
+  const policyGlobalDisplay = document.getElementById("policy-global-amount-display");
+  let cachedGlobalAdvance = null;
+
   function updateAdvancePreview() {
     if (!advEnabledCheckbox) return;
     const isEnabled = advEnabledCheckbox.checked;
@@ -258,8 +263,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (advEnabledCheckbox) advEnabledCheckbox.addEventListener("change", updateAdvancePreview);
   if (advTypeSelect) advTypeSelect.addEventListener("change", updateAdvancePreview);
-  if (advValueInput) advValueInput.addEventListener("input", updateAdvancePreview);
+  if (advValueInput) advValueInput.addEventListener("input", () => {
+    if (policyModeCustom && !policyModeCustom.checked) {
+      policyModeCustom.checked = true;
+    }
+    updateAdvancePreview();
+  });
   if (productPriceInput) productPriceInput.addEventListener("input", updateAdvancePreview);
+
+  if (policyModeDefault) {
+    policyModeDefault.addEventListener("change", () => {
+      if (policyModeDefault.checked && cachedGlobalAdvance) {
+        if (advTypeSelect) advTypeSelect.value = "fixed";
+        if (advValueInput) advValueInput.value = cachedGlobalAdvance.default_amount || 120;
+        updateAdvancePreview();
+      }
+    });
+  }
+
+  if (policyModeCustom) {
+    policyModeCustom.addEventListener("change", () => {
+      if (policyModeCustom.checked) {
+        updateAdvancePreview();
+      }
+    });
+  }
 
   // Load current product data
   async function loadProduct() {
@@ -301,6 +329,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn("BOGO load notice:", bErr);
     }
 
+    // Fetch global advance settings
+    try {
+      if (window.AdvancePaymentService) {
+        cachedGlobalAdvance = await window.AdvancePaymentService.getGlobalSettings(client);
+        if (policyGlobalDisplay) {
+          policyGlobalDisplay.textContent = `₹${cachedGlobalAdvance.default_amount || 120}`;
+        }
+      }
+    } catch (_) {}
+
+    const isCustom = window.AdvancePaymentService
+      ? window.AdvancePaymentService.isCustomOverride(p, cachedGlobalAdvance)
+      : false;
+
+    if (policyModeCustom && policyModeDefault) {
+      if (isCustom) {
+        policyModeCustom.checked = true;
+      } else {
+        policyModeDefault.checked = true;
+      }
+    }
+
     // Populate advance payment settings
     if (advEnabledCheckbox) {
       advEnabledCheckbox.checked = Boolean(p.advance_payment_enabled);
@@ -309,7 +359,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       advTypeSelect.value = p.advance_payment_type || "fixed";
     }
     if (advValueInput) {
-      advValueInput.value = p.advance_payment_value !== undefined && p.advance_payment_value !== null ? p.advance_payment_value : "";
+      if (!isCustom && cachedGlobalAdvance) {
+        advValueInput.value = cachedGlobalAdvance.default_amount || 120;
+      } else {
+        advValueInput.value = (p.advance_payment_value !== undefined && p.advance_payment_value !== null) ? p.advance_payment_value : "";
+      }
     }
     updateAdvancePreview();
 
@@ -366,24 +420,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Advance payment configuration validation
       const advanceEnabled = Boolean(advEnabledCheckbox && advEnabledCheckbox.checked);
-      const advanceType = (advTypeSelect && advTypeSelect.value) ? advTypeSelect.value : "fixed";
+      const isCustomMode = policyModeCustom ? policyModeCustom.checked : false;
+      let advanceType = (advTypeSelect && advTypeSelect.value) ? advTypeSelect.value : "fixed";
       let advanceValue = parseFloat(advValueInput ? advValueInput.value : 0) || 0;
+      let isCustomOverrideVal = false;
 
       if (advanceEnabled) {
-        if (advanceValue <= 0) {
-          alert("Please enter a valid positive advance payment amount or percentage.");
-          return;
-        }
-        if (advanceType === "fixed" && advanceValue > price) {
-          alert(`The fixed advance amount (${window.formatINR(advanceValue)}) cannot exceed the product selling price (${window.formatINR(price)}).`);
-          return;
-        }
-        if (advanceType === "percentage" && advanceValue > 100) {
-          alert("The advance percentage cannot exceed 100%.");
-          return;
+        if (!isCustomMode && cachedGlobalAdvance) {
+          advanceValue = Number(cachedGlobalAdvance.default_amount) || 120;
+          advanceType = "fixed";
+          isCustomOverrideVal = false;
+        } else {
+          isCustomOverrideVal = true;
+          if (advanceValue <= 0) {
+            alert("Please enter a valid positive advance payment amount or percentage.");
+            return;
+          }
+          if (advanceType === "fixed" && advanceValue > price) {
+            alert(`The fixed advance amount (${window.formatINR(advanceValue)}) cannot exceed the product selling price (${window.formatINR(price)}).`);
+            return;
+          }
+          if (advanceType === "percentage" && advanceValue > 100) {
+            alert("The advance percentage cannot exceed 100%.");
+            return;
+          }
         }
       } else {
         advanceValue = 0;
+        isCustomOverrideVal = true; // explicitly disabled is a custom override
       }
 
       let discountPct = 0;
@@ -431,6 +495,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { error } = await client.from("products").update(updates).eq("id", productId);
         if (error) throw error;
+
+        // Sync custom override registry in store_settings
+        if (window.AdvancePaymentService) {
+          try {
+            await window.AdvancePaymentService.markCustomOverride(client, productId, isCustomOverrideVal);
+          } catch (advErr) {
+            console.warn("[AdvanceService] Custom override sync warning:", advErr);
+          }
+        }
 
         // Sync core fields to linked Sarojini product if available
         if (window.CrossStoreService) {

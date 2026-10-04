@@ -30,19 +30,26 @@ let cachedAuthToken = null;
 async function getAdminToken() {
   if (cachedAuthToken) return cachedAuthToken;
 
-  try {
-    const lRes = await fetch(`${SUPABASE_PROJECT_URL}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@valora.com', password: 'AdminPassword2026!' })
-    });
-    const lData = await lRes.json();
-    if (lData.access_token) {
-      cachedAuthToken = lData.access_token;
-      return cachedAuthToken;
-    }
-  } catch (err) {
-    console.warn('Could not authenticate as admin, falling back to anon key:', err.message);
+  const credentials = [
+    { email: 'admin@vadi.com', password: 'AdminPassword2026!' },
+    { email: 'support@vadistudio.com', password: 'VadiSupport2026!' }
+  ];
+
+  for (const cred of credentials) {
+    try {
+      const lRes = await fetch(`${SUPABASE_PROJECT_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(cred)
+      });
+      if (lRes.ok) {
+        const lData = await lRes.json();
+        if (lData.access_token) {
+          cachedAuthToken = lData.access_token;
+          return cachedAuthToken;
+        }
+      }
+    } catch (_) {}
   }
 
   return SUPABASE_ANON_KEY;
@@ -89,11 +96,11 @@ async function fetchProductById(productId) {
   return null;
 }
 
-async function fetchProducts(catalogType = 'main', limit = 20) {
+async function fetchProducts(catalogType = 'main', limit = 500) {
   const token = await getAdminToken();
   const table = catalogType === 'sarojini' ? 'sarojini_products' : 'products';
 
-  const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/${table}?select=*&is_active=eq.true&order=created_at.desc&limit=${limit}`, {
+  const res = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/${table}?select=*&order=created_at.desc&limit=${limit}`, {
     headers: getHeaders(token)
   });
   if (!res.ok) throw new Error(`Failed to fetch ${catalogType} products: ${res.status}`);
@@ -202,7 +209,6 @@ async function updateProductRatingStats(productId, catalogType = 'main') {
 // ============================================================================
 
 async function seedProduct(product, catalogType, options = {}) {
-  const targetCount = options.count || 14;
   const force = Boolean(options.force);
 
   console.log(`\nProcessing: "${product.name}" [ID: ${product.id}] (${catalogType.toUpperCase()})`);
@@ -212,23 +218,34 @@ async function seedProduct(product, catalogType, options = {}) {
   const seededCount = existingReviews.filter(r => isSeedReviewId(r.id)).length;
   const genuineCount = existingReviews.length - seededCount;
 
-  if (seededCount > 0 && !force) {
-    console.log(`  -> Already has ${seededCount} seeded reviews (${genuineCount} genuine). Skipping. Use --force to replace.`);
+  // Compute product's deterministic target count between 20 and 25
+  const crypto = require('crypto');
+  const productHash = crypto.createHash('sha256').update(String(product.id)).digest('hex');
+  const defaultTarget = 20 + (parseInt(productHash.slice(0, 2), 16) % 6);
+  const targetCount = options.count ? Math.max(20, Math.min(25, Number(options.count))) : defaultTarget;
+
+  // We want total reviews = targetCount. So seeded reviews = targetCount - genuineCount.
+  const neededSeededCount = Math.max(0, targetCount - genuineCount);
+
+  if (seededCount === neededSeededCount && !force) {
+    console.log(`  -> Already has ${seededCount} seeded reviews (${genuineCount} genuine, total: ${existingReviews.length}). Skipping. Use --force to replace.`);
     return { skipped: true, seededCount, genuineCount };
   }
 
-  if (seededCount > 0 && force) {
-    console.log(`  -> Removing ${seededCount} existing seeded reviews before re-seeding...`);
+  if (seededCount > 0) {
+    console.log(`  -> Removing ${seededCount} existing seeded reviews before re-seeding to target ${targetCount}...`);
     await deleteSeededReviewsForProduct(product.id, catalogType);
   }
 
-  // 2. Generate 12-15 reviews
-  const reviews = generateReviewsForProduct(product, catalogType, targetCount);
-  console.log(`  -> Generated ${reviews.length} product-specific reviews (Category: ${detectProductCategory(product)}).`);
+  // 2. Generate neededSeededCount reviews
+  const reviews = generateReviewsForProduct(product, catalogType, neededSeededCount);
+  console.log(`  -> Generated ${reviews.length} product-specific reviews (Category: ${detectProductCategory(product)}, ${genuineCount} genuine preserved).`);
 
   // 3. Batch insert into Supabase
-  await insertReviewsBatch(reviews);
-  console.log(`  -> Successfully inserted ${reviews.length} review records into public.reviews.`);
+  if (reviews.length > 0) {
+    await insertReviewsBatch(reviews);
+    console.log(`  -> Successfully inserted ${reviews.length} review records into public.reviews.`);
+  }
 
   // 4. Recalculate stats and update product
   const stats = await updateProductRatingStats(product.id, catalogType);
@@ -292,7 +309,7 @@ async function main() {
       process.exit(1);
     }
     await seedProduct(found.product, found.catalogType, {
-      count: parseInt(flags.count, 10) || 14,
+      count: flags.count ? parseInt(flags.count, 10) : null,
       force: flags.force
     });
     return;
@@ -301,7 +318,7 @@ async function main() {
   // Case 4: Seed by catalog or all
   const targetCatalog = flags.catalog || (flags.all ? 'all' : 'main');
   const limit = flags.limit ? parseInt(flags.limit, 10) : 500;
-  const count = parseInt(flags.count, 10) || 14;
+  const count = flags.count ? parseInt(flags.count, 10) : null;
 
   let productsToSeed = [];
 
@@ -315,17 +332,35 @@ async function main() {
     productsToSeed.push(...sarList.map(p => ({ product: p, catalogType: 'sarojini' })));
   }
 
-  console.log(`Found ${productsToSeed.length} active products to process.`);
+  console.log(`Found ${productsToSeed.length} products to process.`);
 
   let totalInserted = 0;
-  for (const item of productsToSeed) {
-    try {
-      const res = await seedProduct(item.product, item.catalogType, { count, force: flags.force });
-      if (res && res.inserted) totalInserted += res.inserted;
-    } catch (err) {
-      console.error(`Failed to seed product ${item.product.id}:`, err.message);
+  let processed = 0;
+  const concurrency = parseInt(flags.concurrency, 10) || 4;
+
+  async function worker(items) {
+    for (const item of items) {
+      try {
+        const res = await seedProduct(item.product, item.catalogType, { count, force: flags.force });
+        if (res && res.inserted) totalInserted += res.inserted;
+      } catch (err) {
+        console.error(`Failed to seed product ${item.product.id}:`, err.message);
+      } finally {
+        processed++;
+        if (processed % 10 === 0 || processed === productsToSeed.length) {
+          console.log(`>>> PROGRESS: ${processed}/${productsToSeed.length} products processed (${totalInserted} reviews seeded).`);
+        }
+      }
     }
   }
+
+  // Split into chunks for concurrency
+  const chunks = Array.from({ length: concurrency }, () => []);
+  productsToSeed.forEach((item, idx) => {
+    chunks[idx % concurrency].push(item);
+  });
+
+  await Promise.all(chunks.map(chunk => worker(chunk)));
 
   console.log('\n================================================================');
   console.log(`COMPLETED: Inserted ${totalInserted} reviews across ${productsToSeed.length} products.`);

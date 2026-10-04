@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advance Payment Manager | VALORA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
+  <link rel="stylesheet" href="css/admin-components.css">
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--admin-card-bg, #0f172a);
+      border: 1px solid var(--admin-card-border, #1e293b);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+    .kpi-content h4 {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--admin-text-muted, #94a3b8);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .kpi-content .kpi-value {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .manager-card {
+      background: var(--admin-card-bg, #0f172a);
+      border: 1px solid var(--admin-card-border, #1e293b);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .scope-pill-btn {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.84rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .scope-pill-btn:hover {
+      border-color: #3b82f6;
+      color: #fff;
+    }
+    .scope-pill-btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: #3b82f6;
+      color: #60a5fa;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+    }
+
+    .preview-summary-box {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .summary-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .summary-stat-label {
+      font-size: 0.76rem;
+      color: var(--admin-text-muted, #94a3b8);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .summary-stat-val {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #334155;
+      transition: 0.25s;
+      border-radius: 34px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.25s;
+      border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+      background-color: #3b82f6;
+    }
+    input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="sidebar-logo">VALORA</a>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+      <nav class="sidebar-nav">
+        
+        <a href="dashboard.html" class="sidebar-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+  
+        <a href="products.html" class="sidebar-link">
+          <i class="fas fa-box-open"></i>
+          <span>Products</span>
+        </a>
+
+        <a href="advance-payment.html" class="sidebar-link active">
+          <i class="fas fa-hand-holding-usd" style="color: #60a5fa;"></i>
+          <span style="font-weight: 700; color: #60a5fa;">Advance Payment</span>
+        </a>
+  
+        <a href="add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+  
+        <a href="categories.html" class="sidebar-link">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+  
+        <a href="orders.html" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Orders</span>
+        </a>
+  
+        <a href="customers.html" class="sidebar-link">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+  
+        <a href="coupons.html" class="sidebar-link">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+  
+        <a href="reviews.html" class="sidebar-link">
+          <i class="fas fa-star"></i>
+          <span>Reviews</span>
+        </a>
+  
+        <a href="analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+  
+        <a href="advertisements.html" class="sidebar-link">
+          <i class="fas fa-bullhorn"></i>
+          <span>Advertisements</span>
+        </a>
+  
+        <a href="homepage-sections.html" class="sidebar-link">
+          <i class="fas fa-layer-group"></i>
+          <span>Homepage Sections</span>
+        </a>
+  
+        <a href="delivery-partners.html" class="sidebar-link">
+          <i class="fas fa-truck-fast"></i>
+          <span>Delivery Partners</span>
+        </a>
+  
+        <a href="settings.html" class="sidebar-link">
+          <i class="fas fa-cog"></i>
+          <span>Store Settings</span>
+        </a>
+      
+        <!-- SAROJINI BAZAAR SECTION -->
+        <div style="padding: 16px 16px 6px; font-size: 0.7rem; font-weight: 800; color: #e11d48; letter-spacing: 0.08em; text-transform: uppercase;">
+          SAROJINI BAZAAR
+        </div>
+        <a href="sarojini-dashboard.html" class="sidebar-link">
+          <i class="fas fa-store-alt"></i>
+          <span>Sarojini Dashboard</span>
+        </a>
+        <a href="sarojini-products.html" class="sidebar-link">
+          <i class="fas fa-tshirt"></i>
+          <span>Sarojini Products</span>
+        </a>
+        <a href="sarojini-products.html?openBulk=true" class="sidebar-link">
+          <i class="fas fa-file-import" style="color: #fb7185;"></i>
+          <span>Bulk Import</span>
+        </a>
+        <a href="sarojini-add-product.html" class="sidebar-link">
+          <i class="fas fa-plus-square"></i>
+          <span>Add Sarojini Product</span>
+        </a>
+        <a href="sarojini-categories.html" class="sidebar-link">
+          <i class="fas fa-sitemap"></i>
+          <span>Sarojini Categories</span>
+        </a>
+        <a href="sarojini-offers.html" class="sidebar-link">
+          <i class="fas fa-fire"></i>
+          <span>Sarojini Offers</span>
+        </a>
+        <a href="sarojini-reviews.html" class="sidebar-link">
+          <i class="fas fa-star-half-alt"></i>
+          <span>Sarojini Reviews</span>
+        </a>
+        <a href="sarojini-analytics.html" class="sidebar-link">
+          <i class="fas fa-chart-bar"></i>
+          <span>Sarojini Analytics</span>
+        </a>
+        <a href="sarojini-homepage-sections.html" class="sidebar-link">
+          <i class="fas fa-layer-group" style="color: #e11d48;"></i>
+          <span>Homepage Sections</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" target="_blank" class="btn-sidebar-view-site">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Storefront</span>
+        </a>
+      </div>
+    </aside>
+  
+    <div class="admin-main">
+      
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="btn-menu-toggle" class="btn-menu-toggle" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="admin-breadcrumbs">
+            <a href="dashboard.html">VALORA Admin</a>
+            <span>/</span>
+            <a href="products.html">Products</a>
+            <span>/</span>
+            <span class="current">Advance Payment Manager</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="admin-user-menu-wrap">
+            <div class="admin-user-pill" id="admin-user-pill">
+              <div class="admin-avatar" id="header-admin-avatar">AD</div>
+              <div class="admin-info-text">
+                <div class="admin-name-display" id="header-admin-name">Admin</div>
+                <div class="admin-role-display">ADMINISTRATOR</div>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i>
+            </div>
+            <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+              <a href="settings.html" class="admin-dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+              <a href="../index.html" target="_blank" class="admin-dropdown-item"><i class="fas fa-store"></i> Storefront</a>
+              <button class="admin-dropdown-item logout" id="btn-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+  
+      <main class="admin-content">
+        <!-- Title Row -->
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-heading" style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-hand-holding-usd" style="color: #3b82f6;"></i> Global Advance Payment Manager
+            </h1>
+            <p class="page-subheading">Centrally manage upfront advance amounts across Main Store and Sarojini Bazaar products while preserving individual custom overrides</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="products.html" class="btn-admin-secondary">
+              <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+          </div>
+        </div>
+
+        <!-- KPI Stats Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+              <i class="fas fa-globe"></i>
+            </div>
+            <div class="kpi-content">
+              <h4>Store Global Default</h4>
+              <div class="kpi-value" id="kpi-global-default">₹120</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+              <i class="fas fa-boxes"></i>
+            </div>
+            <div class="kpi-content">
+              <h4>Total Catalog Products</h4>
+              <div class="kpi-value" id="kpi-total-prods">—</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+              <i class="fas fa-user-cog"></i>
+            </div>
+            <div class="kpi-content">
+              <h4>Custom Overrides</h4>
+              <div class="kpi-value" id="kpi-custom-overrides" style="color: #fbbf24;">—</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">
+              <i class="fas fa-ban"></i>
+            </div>
+            <div class="kpi-content">
+              <h4>Disabled (₹0 Advance)</h4>
+              <div class="kpi-value" id="kpi-disabled-count" style="color: #94a3b8;">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-2 CLICK BULK CONFIGURATION CARD -->
+        <div class="manager-card" style="border: 1px solid rgba(59, 130, 246, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid var(--admin-card-border); padding-bottom: 16px; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <h3 style="margin: 0; font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-sliders-h" style="color: #3b82f6;"></i> Quick Bulk Advance Configuration
+              </h3>
+              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--admin-text-muted);">
+                Select targeting scope and advance amount to apply changes across multiple products in 1–2 clicks
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; background: rgba(30, 41, 59, 0.6); padding: 8px 16px; border-radius: 10px; border: 1px solid var(--admin-card-border);">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">Global Advance Status:</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="manager-global-toggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span id="manager-global-status-label" style="font-size: 0.85rem; font-weight: 700; color: #10b981;">ENABLED</span>
+            </div>
+          </div>
+
+          <!-- Step 1: Select Scope -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+              Step 1: Choose Target Scope
+            </label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="scope-buttons-container">
+              <button type="button" class="scope-pill-btn active" data-scope="all">
+                <i class="fas fa-layer-group"></i> All Products
+              </button>
+              <button type="button" class="scope-pill-btn" data-scope="main">
+                <i class="fas fa-store"></i> All Main Store Products
+              </button>
+              <button type="button" class="scope-pill-btn" data-scope="sarojini">
+                <i class="fas fa-tshirt"></i> All Sarojini Bazaar Products
+              </button>
+              <button type="button" class="scope-pill-btn" data-scope="category">
+                <i class="fas fa-tags"></i> By Category
+              </button>
+              <button type="button" class="scope-pill-btn" data-scope="selected">
+                <i class="fas fa-check-square"></i> Selected Products (<span id="scope-selected-count">0</span>)
+              </button>
+              <button type="button" class="scope-pill-btn" data-scope="active">
+                <i class="fas fa-bolt"></i> All Active Products
+              </button>
+            </div>
+
+            <!-- Category Selector (Visible when 'category' scope is active) -->
+            <div id="scope-category-wrapper" style="display: none; margin-top: 14px;">
+              <label style="display: block; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 6px;">Select Category:</label>
+              <select id="scope-category-select" class="admin-select" style="max-width: 400px; width: 100%;">
+                <option value="">Select a category...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step 2: Configure Advance Amount -->
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+              Step 2: Set Advance Amount
+            </label>
+            <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+              <div style="position: relative; width: 220px;">
+                <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #3b82f6; font-size: 1.1rem;">₹</span>
+                <input type="number" id="manager-advance-amount" class="admin-input" value="120" min="0" step="5" style="padding-left: 34px; font-size: 1.1rem; font-weight: 700; height: 44px;">
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-admin-secondary btn-quick-amount" data-amt="50" style="padding: 8px 14px; font-size: 0.82rem;">₹50</button>
+                <button type="button" class="btn-admin-secondary btn-quick-amount" data-amt="80" style="padding: 8px 14px; font-size: 0.82rem;">₹80</button>
+                <button type="button" class="btn-admin-secondary btn-quick-amount" data-amt="100" style="padding: 8px 14px; font-size: 0.82rem;">₹100</button>
+                <button type="button" class="btn-admin-secondary btn-quick-amount" data-amt="120" style="padding: 8px 14px; font-size: 0.82rem; border-color: #3b82f6; color: #60a5fa;">₹120 (Standard)</button>
+                <button type="button" class="btn-admin-secondary btn-quick-amount" data-amt="150" style="padding: 8px 14px; font-size: 0.82rem;">₹150</button>
+                <button type="button" class="btn-admin-secondary btn-quick-amount" data-amt="200" style="padding: 8px 14px; font-size: 0.82rem;">₹200</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Dynamic Live Summary Box -->
+          <div class="preview-summary-box" style="margin-bottom: 24px;">
+            <div class="summary-stat-item">
+              <span class="summary-stat-label">Products in Target Scope</span>
+              <span class="summary-stat-val" id="summary-target-count" style="color: #60a5fa;">0 Products</span>
+            </div>
+            <div style="width: 1px; height: 32px; background: rgba(255,255,255,0.1);"></div>
+            <div class="summary-stat-item">
+              <span class="summary-stat-label">Current Global Default</span>
+              <span class="summary-stat-val" id="summary-curr-default">₹120</span>
+            </div>
+            <div style="width: 1px; height: 32px; background: rgba(255,255,255,0.1);"></div>
+            <div class="summary-stat-item">
+              <span class="summary-stat-label">New Advance to Apply</span>
+              <span class="summary-stat-val" id="summary-new-advance" style="color: #10b981;">₹120</span>
+            </div>
+            <div style="width: 1px; height: 32px; background: rgba(255,255,255,0.1);"></div>
+            <div class="summary-stat-item">
+              <span class="summary-stat-label">Custom Overrides in Scope</span>
+              <span class="summary-stat-val" id="summary-custom-count" style="color: #fbbf24;">0 Products</span>
+            </div>
+          </div>
+
+          <!-- Step 4: The Two Distinct Apply Actions -->
+          <div style="display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap;">
+            <!-- Option 1: Apply Default (Skip Custom Overrides) -->
+            <button type="button" id="btn-apply-default" class="btn-admin-primary" style="background: #059669; border-color: #059669; padding: 12px 24px; font-size: 0.92rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;" title="Applies advance to products without custom overrides">
+              <i class="fas fa-check-circle"></i> Apply Default (Skip Custom Overrides)
+            </button>
+
+            <!-- Option 2: Apply & Override Custom Amounts -->
+            <button type="button" id="btn-apply-override" class="btn-admin-primary" style="background: #d97706; border-color: #b45309; padding: 12px 24px; font-size: 0.92rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;" title="Forces all selected products to use new advance amount, replacing custom amounts">
+              <i class="fas fa-exclamation-triangle"></i> Apply &amp; Override Custom Amounts
+            </button>
+          </div>
+        </div>
+
+        <!-- PRODUCTS CATALOG TABLE & LIVE FILTER -->
+        <div class="admin-card">
+          <div class="filter-bar">
+            <div class="filter-group">
+              <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="table-search" class="admin-search-input" placeholder="Search products by title, slug, brand...">
+              </div>
+              <select id="table-filter-catalog" class="admin-select">
+                <option value="">All Stores (Main &amp; Sarojini)</option>
+                <option value="main">Main Store Only</option>
+                <option value="sarojini">Sarojini Bazaar Only</option>
+              </select>
+              <select id="table-filter-override" class="admin-select">
+                <option value="">All Advance Types</option>
+                <option value="custom">Custom Overrides Only</option>
+                <option value="default">Global Default Only</option>
+                <option value="disabled">Disabled (₹0) Only</option>
+              </select>
+            </div>
+            <div>
+              <span class="badge badge-indigo" id="table-badge-count">Loading...</span>
+            </div>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;">
+                    <input type="checkbox" id="th-select-all" title="Select All Visible Products">
+                  </th>
+                  <th>Product</th>
+                  <th>Store / Dept</th>
+                  <th>Selling Price</th>
+                  <th>Current Advance</th>
+                  <th>Override Status</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-tbody">
+                <tr><td colspan="8" style="text-align: center; padding: 28px;">Loading products...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Overwrite Confirmation Modal -->
+        <div id="modal-override-confirm" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+          <div class="admin-card" style="width: 90%; max-width: 540px; display: flex; flex-direction: column; padding: 26px; border: 1px solid rgba(245, 158, 11, 0.5); background: #0f172a; border-radius: 14px; box-shadow: 0 25px 50px rgba(0,0,0,0.85);">
+            <div style="display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 1.18rem; color: #fff;">Confirm Overwriting Custom Overrides</h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.84rem; color: #cbd5e1; line-height: 1.4;">
+                  You have chosen <strong>"Apply &amp; Override Custom Amounts"</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;">
+              <div style="font-size: 0.88rem; color: #fbbf24; font-weight: 700; margin-bottom: 6px;">
+                ⚠️ Warning: Product-Level Overrides Will Be Replaced
+              </div>
+              <p style="margin: 0; font-size: 0.82rem; color: #e2e8f0; line-height: 1.5;">
+                There are <strong id="modal-override-custom-count" style="color: #fbbf24;">0 products</strong> in your target selection with custom advance amounts.
+                This action will permanently overwrite their existing custom values and set all <strong id="modal-override-total-count" style="color: #60a5fa;">0 products</strong> to <strong id="modal-override-new-amount" style="color: #10b981;">₹0</strong>.
+              </p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+              <button type="button" id="btn-cancel-override-modal" class="btn-admin-secondary" style="padding: 9px 18px;">Cancel</button>
+              <button type="button" id="btn-confirm-override-action" class="btn-admin-primary" style="background: #d97706; border-color: #b45309; padding: 9px 24px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-check"></i> Yes, Overwrite &amp; Apply
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Edit Single Product Modal -->
+        <div id="modal-quick-edit" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+          <div class="admin-card" style="width: 90%; max-width: 480px; display: flex; flex-direction: column; padding: 22px; border: 1px solid var(--admin-card-border); background: #0f172a; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--admin-card-border); padding-bottom: 12px;">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-edit" style="color: #3b82f6;"></i> Configure Product Advance
+              </h3>
+              <button type="button" id="btn-close-quick-edit" style="background: transparent; border: none; color: var(--admin-text-muted); font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <div id="quick-edit-prod-title" style="font-weight: 700; color: #fff; font-size: 0.95rem;">Product Title</div>
+              <div id="quick-edit-prod-sub" style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 2px;">Price: ₹0</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="radio" name="quick-edit-mode" value="default" checked style="accent-color: #3b82f6; width: 16px; height: 16px;">
+                <span style="font-size: 0.88rem; color: #fff;">
+                  Use Store Global Default (<strong id="quick-edit-global-label">₹120</strong>)
+                </span>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="radio" name="quick-edit-mode" value="custom" style="accent-color: #f59e0b; width: 16px; height: 16px;">
+                <span style="font-size: 0.88rem; color: #fff;">
+                  Custom Product Override Amount (₹)
+                </span>
+              </label>
+
+              <div id="quick-edit-custom-input-wrap" style="display: none; padding-left: 26px;">
+                <input type="number" id="quick-edit-amount" class="admin-input" min="0" placeholder="e.g. 300" style="max-width: 200px;">
+              </div>
+
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="radio" name="quick-edit-mode" value="disabled" style="accent-color: #ef4444; width: 16px; height: 16px;">
+                <span style="font-size: 0.88rem; color: #cbd5e1;">
+                  Disable Advance Payment (100% COD / ₹0 Advance)
+                </span>
+              </label>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--admin-card-border); padding-top: 14px;">
+              <button type="button" id="btn-cancel-quick-edit" class="btn-admin-secondary" style="padding: 8px 16px;">Cancel</button>
+              <button type="button" id="btn-save-quick-edit" class="btn-admin-primary" style="padding: 8px 20px;">Save Changes</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-layout.js"></script>
+  <script src="js/advance-payment-service.js"></script>
+  <script src="js/admin-advance-payment.js"></script>
+</body>
+</html>

@@ -894,6 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================================
   let selectedBogoPaidProduct = null;
   let selectedBogoFreeProduct = null;
+  let selectedBogoFreeSize = null;
 
   function openBogoModal(productId) {
     const paidProduct = (window.PRODUCTS_DATA && window.PRODUCTS_DATA.find(p => p.id === productId)) || 
@@ -902,6 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     selectedBogoPaidProduct = paidProduct;
     selectedBogoFreeProduct = null;
+    selectedBogoFreeSize = null;
 
     if (elements.bogoPaidBanner) {
       elements.bogoPaidBanner.innerHTML = `
@@ -973,6 +975,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!chosen) return;
 
           selectedBogoFreeProduct = chosen;
+          selectedBogoFreeSize = null;
           elements.bogoEligibleGrid.querySelectorAll(".bogo-card").forEach(c => {
             c.classList.remove("selected");
             const btn = c.querySelector(".bogo-select-btn");
@@ -984,12 +987,57 @@ document.addEventListener("DOMContentLoaded", () => {
           if (selBtn) selBtn.textContent = "✓ Selected Free Gift";
 
           if (elements.bogoSelectedFreeName) {
-            elements.bogoSelectedFreeName.textContent = `${chosen.name} (${formatPrice(chosen.price)} value — Free)`;
+            elements.bogoSelectedFreeName.textContent = `${chosen.name} (${formatPrice(chosen.price)} value — Free) — Please select size below`;
             elements.bogoSelectedFreeName.style.color = "#059669";
           }
 
+          let freeSizeContainer = document.getElementById("bogo-modal-free-sizes-container");
+          if (!freeSizeContainer && elements.bogoSelectionSummary) {
+            const wrap = document.createElement("div");
+            wrap.id = "bogo-modal-free-size-wrap";
+            wrap.style.marginTop = "10px";
+            wrap.innerHTML = `
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Select FREE Shoe Size (Independent from Paid Shoe):</div>
+              <div id="bogo-modal-free-sizes-container" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            `;
+            elements.bogoSelectionSummary.appendChild(wrap);
+            freeSizeContainer = wrap.querySelector("#bogo-modal-free-sizes-container");
+          }
+
+          if (freeSizeContainer) {
+            const sizes = (Array.isArray(chosen.sizes) && chosen.sizes.length > 0)
+              ? chosen.sizes
+              : ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'];
+
+            freeSizeContainer.innerHTML = sizes.map(sz => `
+              <button type="button" class="bogo-modal-size-pill" data-modal-free-size="${sz}" style="padding: 6px 12px; border-radius: 6px; border: 1.5px solid var(--border-color); background: #fff; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s;">
+                ${sz}
+              </button>
+            `).join("");
+
+            if (freeSizeContainer.parentElement) freeSizeContainer.parentElement.style.display = "block";
+
+            freeSizeContainer.querySelectorAll(".bogo-modal-size-pill").forEach(pill => {
+              pill.addEventListener("click", () => {
+                selectedBogoFreeSize = pill.dataset.modalFreeSize;
+                freeSizeContainer.querySelectorAll(".bogo-modal-size-pill").forEach(p => {
+                  const isAct = p === pill;
+                  p.style.background = isAct ? "#059669" : "#fff";
+                  p.style.borderColor = isAct ? "#059669" : "var(--border-color)";
+                  p.style.color = isAct ? "#fff" : "var(--text-main)";
+                });
+                if (elements.bogoSelectedFreeName) {
+                  elements.bogoSelectedFreeName.textContent = `${chosen.name} (${formatPrice(chosen.price)} value — Free) • Size: ${selectedBogoFreeSize}`;
+                }
+                if (elements.bogoConfirmAddBtn) {
+                  elements.bogoConfirmAddBtn.disabled = false;
+                }
+              });
+            });
+          }
+
           if (elements.bogoConfirmAddBtn) {
-            elements.bogoConfirmAddBtn.disabled = false;
+            elements.bogoConfirmAddBtn.disabled = true;
           }
         });
       });
@@ -1018,6 +1066,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     selectedBogoPaidProduct = null;
     selectedBogoFreeProduct = null;
+    selectedBogoFreeSize = null;
+    const wrap = document.getElementById("bogo-modal-free-size-wrap");
+    if (wrap) wrap.style.display = "none";
   }
 
   document.addEventListener("keydown", (e) => {
@@ -1821,7 +1872,7 @@ document.addEventListener("DOMContentLoaded", () => {
           price: 0,
           originalPrice: free.price,
           image: free.image,
-          size: free.sizes ? free.sizes[0] : "Standard",
+          size: selectedBogoFreeSize || (free.sizes ? free.sizes[0] : "Standard"),
           color: free.colors ? free.colors[0] : "Default",
           quantity: 1,
           advance_payment_enabled: false,

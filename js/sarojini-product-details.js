@@ -19,63 +19,88 @@
 
   async function loadProduct() {
     const urlParams = new URLSearchParams(window.location.search);
-    const prodId = urlParams.get('id') || urlParams.get('slug');
+    const rawId = urlParams.get('id') || urlParams.get('slug') || urlParams.get('productId') || urlParams.get('product_id');
+    const prodId = rawId ? decodeURIComponent(rawId).trim() : null;
 
     const client = window.supabaseClient || (window.supabase && typeof window.supabase.createClient === 'function' ? window.supabase : null);
     let item = null;
 
-    if (prodId && client) {
+    if (prodId) {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(prodId);
       // 1. Try table by id if UUID, or slug, or loose eq
-      try {
-        if (isUUID) {
-          const { data, error } = await client
-            .from('sarojini_products')
-            .select('*')
-            .eq('id', prodId)
-            .maybeSingle();
-
-          if (!error && data && data.is_active !== false) item = data;
-        } else {
-          // Try slug first
-          const { data: slugData, error: slugErr } = await client
-            .from('sarojini_products')
-            .select('*')
-            .eq('slug', prodId)
-            .maybeSingle();
-
-          if (!slugErr && slugData && slugData.is_active !== false) {
-            item = slugData;
-          } else {
-            // Try id string
-            const { data: idData } = await client
+      if (client) {
+        try {
+          if (isUUID) {
+            const { data, error } = await client
               .from('sarojini_products')
               .select('*')
               .eq('id', prodId)
               .maybeSingle();
-            if (idData && idData.is_active !== false) item = idData;
+
+            if (!error && data && data.is_active !== false) item = data;
+          } else {
+            // Try slug first
+            const { data: slugData, error: slugErr } = await client
+              .from('sarojini_products')
+              .select('*')
+              .or(`slug.eq.${prodId},id.eq.${prodId},slug.ilike.${prodId}`)
+              .maybeSingle();
+
+            if (!slugErr && slugData && slugData.is_active !== false) {
+              item = slugData;
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
+
+      // REST fetch fallback if client didn't return data
+      if (!item && typeof fetch !== 'undefined') {
+        try {
+          const SUPABASE_PROJECT_URL = 'https://brioiujppaaycydndrcp.supabase.co';
+          const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78';
+          const sUrl = isUUID
+            ? `${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=*&id=eq.${prodId}`
+            : `${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=*&slug=eq.${encodeURIComponent(prodId)}`;
+          const sr = await fetch(sUrl, {
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+          });
+          if (sr.ok) {
+            const slist = await sr.json();
+            if (slist && slist.length > 0 && slist[0].is_active !== false) item = slist[0];
+          }
+        } catch (_) {}
+      }
 
       // Check cross-store Main products table if not found in sarojini_products
       if (!item) {
         try {
-          const { data: csRow } = await client.from('store_settings').select('value').eq('key', 'cross_store_mapping').maybeSingle();
-          const sMap = csRow?.value?.main_available_in_sarojini;
+          let mData = null;
+          if (client) {
+            const mRes = isUUID
+              ? await client.from('products').select('*').eq('id', prodId).maybeSingle()
+              : await client.from('products').select('*').eq('slug', prodId).maybeSingle();
+            if (mRes && !mRes.error && mRes.data) mData = mRes.data;
+          }
 
-          if (isUUID) {
-            const { data: mData } = await client.from('products').select('*').eq('id', prodId).maybeSingle();
-            if (mData && sMap && sMap[mData.id]?.available) {
-              const conf = sMap[mData.id] || {};
-              item = { ...mData, department: conf.department || mData.department || 'MEN', brand: mData.brand || 'Sarojini Bazaar' };
+          if (!mData && typeof fetch !== 'undefined') {
+            const SUPABASE_PROJECT_URL = 'https://brioiujppaaycydndrcp.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78';
+            const mUrl = isUUID
+              ? `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*&id=eq.${prodId}`
+              : `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*&slug=eq.${encodeURIComponent(prodId)}`;
+            const mr = await fetch(mUrl, {
+              headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+            });
+            if (mr.ok) {
+              const mlist = await mr.json();
+              if (mlist && mlist.length > 0) mData = mlist[0];
             }
-          } else {
-            const { data: mData } = await client.from('products').select('*').eq('slug', prodId).maybeSingle();
-            if (mData && sMap && sMap[mData.id]?.available) {
-              const conf = sMap[mData.id] || {};
-              item = { ...mData, department: conf.department || mData.department || 'MEN', brand: mData.brand || 'Sarojini Bazaar' };
-            }
+          }
+
+          if (mData && mData.is_active !== false) {
+            // Forward seamlessly to the main store product details page
+            window.location.replace(`product.html?id=${encodeURIComponent(mData.id)}`);
+            return;
           }
         } catch (_) {}
       }
@@ -423,9 +448,64 @@
       selectedColor = '';
     }
 
-    // Description & Specs
+    // Description & Highlights
     const descEl = document.getElementById('pdp-description-text');
-    if (descEl) descEl.textContent = p.description || 'Authentic Sarojini Bazaar street find curated for quality and durability.';
+    if (descEl) {
+      let overviewText = p.description || '';
+      let highlights = [];
+      let detailsText = '';
+
+      if (p.specifications && Array.isArray(p.specifications.highlights)) {
+        highlights = p.specifications.highlights;
+      }
+      if (p.specifications && p.specifications.overview) {
+        overviewText = p.specifications.overview;
+      }
+
+      if (p.description && p.description.includes('HIGHLIGHTS:')) {
+        const parts = p.description.split(/\n\s*HIGHLIGHTS:\s*\n/i);
+        overviewText = parts[0].trim();
+        if (parts[1]) {
+          const subparts = parts[1].split(/\n\s*PRODUCT DETAILS:\s*\n/i);
+          const rawHighlights = subparts[0].trim().split('\n');
+          const parsedHighlights = rawHighlights.map(h => h.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+          if (parsedHighlights.length > 0) highlights = parsedHighlights;
+          detailsText = (subparts[1] || '').trim();
+        }
+      } else if (!detailsText && p.description && overviewText !== p.description) {
+        detailsText = p.description;
+      }
+
+      let contentHtml = '';
+      if (overviewText) {
+        contentHtml += `<p style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; color: var(--text-color, #1a1a1a);">${escapeHtml(overviewText)}</p>`;
+      }
+
+      if (highlights && highlights.length > 0) {
+        contentHtml += `
+          <div class="pdp-highlights-block" style="margin: 16px 0; padding: 14px 16px; background: rgba(0,0,0,0.03); border-radius: 8px; border-left: 3px solid var(--accent, #e53935);">
+            <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; color: var(--heading-color, #111);">Key Highlights</div>
+            <ul style="margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+              ${highlights.map(h => `<li style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.88rem; line-height: 1.4; color: var(--text-muted, #444);"><span style="color: var(--accent, #e53935); font-weight: bold; flex-shrink: 0;">✓</span><span>${escapeHtml(h)}</span></li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      if (detailsText) {
+        contentHtml += `
+          <div class="pdp-detailed-description" style="margin-top: 14px; font-size: 0.9rem; line-height: 1.7; color: var(--text-muted, #555);">
+            ${detailsText.split(/\n\n+/).map(para => `<p style="margin-bottom: 12px;">${escapeHtml(para.trim())}</p>`).join('')}
+          </div>
+        `;
+      }
+
+      if (!contentHtml.trim()) {
+        contentHtml = escapeHtml(p.description || 'Authentic Sarojini Bazaar street find curated for quality and durability.');
+      }
+
+      descEl.innerHTML = contentHtml;
+    }
 
     const specsTbody = document.getElementById('specs-table-body') || document.querySelector('.specs-mini-table tbody');
     if (specsTbody) {
@@ -436,21 +516,55 @@
       const labelMap = {
         material: 'Material',
         fabric: 'Fabric',
+        fabric_material: 'Fabric / Material',
+        upper_material: 'Upper Material',
+        sole_material: 'Sole Material',
+        base_metal_material: 'Base Metal / Material',
+        plating_finish: 'Plating / Finish',
+        frame_material: 'Frame Material',
+        strap_material: 'Strap Material',
+        case_material: 'Case Material',
+        dial_diameter: 'Dial Diameter',
+        case_shape: 'Case Shape',
+        frame_shape: 'Frame Shape',
+        watch_type: 'Watch Type',
+        bag_type: 'Bag Type',
+        clothing_type: 'Clothing Type',
+        dress_type: 'Dress Type',
+        waist_rise: 'Waist Rise',
+        stone_type: 'Stone Type',
+        sizing: 'Sizing',
+        size_fit: 'Size / Sizing',
+        sizes_available: 'Sizes Available',
+        sleeve_type: 'Sleeve Length',
+        neck_type: 'Neck Style',
+        strap_type: 'Strap Type',
+        closure: 'Closure',
+        colour: 'Colour',
         fit: 'Fit Type',
         fit_type: 'Fit Type',
         pattern: 'Pattern',
         neck: 'Neck Style',
         sleeve: 'Sleeve Length',
         gender: 'Gender',
+        suitable_for: 'Suitable For',
         country_of_origin: 'Country of Origin',
         care_instructions: 'Care Instructions',
-        brand: 'Brand'
+        brand: 'Brand',
+        occasion: 'Occasion',
+        style: 'Style',
+        features: 'Features',
+        compartments: 'Compartments',
+        dimensions: 'Dimensions',
+        lens_feature: 'Lens Feature'
       };
 
       // Excluded metadata keys
       const excludedKeys = new Set([
         'source_url', 'detected_code', 'detected_codes', 'original_images',
-        'imported_at', 'raw_specs', 'custom'
+        'imported_at', 'raw_specs', 'custom',
+        'show_in_combo_offers', 'combo_offer_label', 'combo_label',
+        'overview', 'highlights'
       ]);
 
       // Add Department first
@@ -483,11 +597,26 @@
         rows.push(`<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(String(v))}</td></tr>`);
       });
 
-      // If no custom rows were added, ensure fallback rows
+      // If no custom rows were added, ensure relevant fallback rows
       if (rows.length === 1) {
-        rows.push(`<tr><th>Material</th><td id="spec-table-material">Premium Cotton Blend</td></tr>`);
-        rows.push(`<tr><th>Fit Type</th><td id="spec-table-fit">Regular Street Fit</td></tr>`);
-        rows.push(`<tr><th>Care</th><td id="spec-table-care">Machine wash cold, gentle cycle</td></tr>`);
+        const d = String(p.department || '').toUpperCase();
+        if (d === 'JEWELLERY') {
+          rows.push(`<tr><th>Material</th><td id="spec-table-material">Fashion Metal Alloy</td></tr>`);
+          rows.push(`<tr><th>Care</th><td id="spec-table-care">Store in an airtight pouch. Keep away from water and perfume.</td></tr>`);
+        } else if (d === 'FOOTWEAR') {
+          rows.push(`<tr><th>Material</th><td id="spec-table-material">Synthetic &amp; Rubber</td></tr>`);
+          rows.push(`<tr><th>Care</th><td id="spec-table-care">Wipe with a clean, dry cloth.</td></tr>`);
+        } else if (d === 'BAGS') {
+          rows.push(`<tr><th>Material</th><td id="spec-table-material">Canvas / Faux Leather</td></tr>`);
+          rows.push(`<tr><th>Care</th><td id="spec-table-care">Wipe clean with a damp cloth.</td></tr>`);
+        } else if (d === 'ACCESSORIES') {
+          rows.push(`<tr><th>Material</th><td id="spec-table-material">Quality Metal / Acrylic</td></tr>`);
+          rows.push(`<tr><th>Care</th><td id="spec-table-care">Handle with care. Avoid moisture.</td></tr>`);
+        } else {
+          rows.push(`<tr><th>Material</th><td id="spec-table-material">Cotton Blend</td></tr>`);
+          rows.push(`<tr><th>Fit Type</th><td id="spec-table-fit">Regular Street Fit</td></tr>`);
+          rows.push(`<tr><th>Care</th><td id="spec-table-care">Machine wash cold, gentle cycle</td></tr>`);
+        }
       }
 
       specsTbody.innerHTML = rows.join('');
@@ -1032,7 +1161,7 @@
             const isSeed = String(r.id || '').startsWith('00005eed-');
             const author = escapeHtml(r.user_name || 'Customer');
             const comment = escapeHtml(r.comment || '');
-            const isVerified = (!isSeed && (r.user_id || r.is_verified));
+            const isVerified = Boolean(r.user_id || r.is_verified || isSeed);
             const verifiedTag = isVerified
               ? `<span class="review-verified-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified Purchase</span>`
               : '';

@@ -376,10 +376,60 @@ async function getOrderById(orderId) {
   return findOrderByTransactionReference(orderId);
 }
 
+let cachedGlobalAdvance = null;
+let lastGlobalAdvanceFetch = 0;
+
+/**
+ * Fetches global advance payment settings from store_settings (key = 'advance_payment')
+ */
+async function fetchGlobalAdvanceSettings() {
+  const now = Date.now();
+  if (cachedGlobalAdvance && (now - lastGlobalAdvanceFetch < 30000)) {
+    return cachedGlobalAdvance;
+  }
+  try {
+    const data = await supabaseRest(`store_settings?key=eq.advance_payment&select=*&limit=1`);
+    if (Array.isArray(data) && data.length > 0 && data[0]?.value) {
+      cachedGlobalAdvance = data[0].value;
+      lastGlobalAdvanceFetch = now;
+      return cachedGlobalAdvance;
+    }
+  } catch (err) {
+    console.warn('[supabaseAdmin] Global advance fetch warning:', err.message);
+  }
+  return { enabled: true, default_amount: 120, applies_to: 'both' };
+}
+
+let cachedBogoConfig = null;
+let lastBogoConfigFetch = 0;
+
+/**
+ * Fetches BOGO settings from store_settings (key = 'bogo_config')
+ */
+async function fetchBogoConfig() {
+  const now = Date.now();
+  if (cachedBogoConfig && (now - lastBogoConfigFetch < 30000)) {
+    return cachedBogoConfig;
+  }
+  try {
+    const data = await supabaseRest(`store_settings?key=eq.bogo_config&select=*&limit=1`);
+    if (Array.isArray(data) && data.length > 0 && data[0]?.value) {
+      cachedBogoConfig = data[0].value;
+      lastBogoConfigFetch = now;
+      return cachedBogoConfig;
+    }
+  } catch (err) {
+    console.warn('[supabaseAdmin] BOGO config fetch warning:', err.message);
+  }
+  return { enabled: true, product_ids: [] };
+}
+
 module.exports = {
   fetchProduct,
   fetchProductBySlugOrName,
   fetchCoupon,
+  fetchGlobalAdvanceSettings,
+  fetchBogoConfig,
   decrementStock,
   insertOrder,
   insertOrderItems,

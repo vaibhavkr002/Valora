@@ -9,6 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Currency Formatter helper
   const formatPrice = (amount) => (window.formatINR ? window.formatINR(amount) : ('₹' + Math.round(amount).toLocaleString('en-IN')));
 
+  // HTML Escaper helper
+  function escapeHTML(str) {
+    if (typeof str !== 'string') return str == null ? '' : String(str);
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag));
+  }
+
   // --- Global State ---
   const state = {
     cart: JSON.parse(localStorage.getItem("velora_cart")) || [],
@@ -20,7 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedDeliveryPreference: localStorage.getItem("velora_preferred_delivery") || "Simple Delivery",
     quantity: 1,
     currentImageIndex: 0,
-    galleryImages: []
+    galleryImages: [],
+    // Dedicated BOGO Flow State
+    isBogo: false,
+    selectedFreeProduct: null,
+    selectedFreeSize: null,
+    bogoEligibleProducts: []
   };
 
   // --- SVG Icons Helpers ---
@@ -113,6 +130,23 @@ document.addEventListener("DOMContentLoaded", () => {
     colorsContainer: document.getElementById("detail-colors-container"),
     selectedSizeLabel: document.getElementById("selected-size-label"),
     selectedColorLabel: document.getElementById("selected-color-label"),
+
+    // PDP BOGO Selectors & Flow
+    bogoContainer: document.getElementById("pdp-bogo-selection-section"),
+    bogoPaidThumb: document.getElementById("pdp-bogo-paid-thumb"),
+    bogoPaidName: document.getElementById("pdp-bogo-paid-name"),
+    bogoPaidSizeBadge: document.getElementById("pdp-bogo-paid-size-badge"),
+    bogoPaidPriceBadge: document.getElementById("pdp-bogo-paid-price-badge"),
+    bogoFreeGrid: document.getElementById("pdp-bogo-free-products-grid"),
+    bogoFreeProdStatus: document.getElementById("pdp-bogo-free-prod-status"),
+    bogoFreeSizeStep: document.getElementById("pdp-bogo-free-size-step"),
+    bogoFreeSizePrompt: document.getElementById("pdp-bogo-free-size-prompt"),
+    bogoFreeSizesContainer: document.getElementById("pdp-bogo-free-sizes-container"),
+    bogoFreeSizeStatus: document.getElementById("pdp-bogo-free-size-status"),
+    bogoSummaryPaidText: document.getElementById("pdp-bogo-summary-paid-text"),
+    bogoSummaryPaidVal: document.getElementById("pdp-bogo-summary-paid-val"),
+    bogoSummaryFreeText: document.getElementById("pdp-bogo-summary-free-text"),
+    bogoValidationMsg: document.getElementById("pdp-bogo-validation-msg"),
     
     // Quantity & Actions
     qtyValInput: document.getElementById("detail-qty-val"),
@@ -175,9 +209,10 @@ document.addEventListener("DOMContentLoaded", () => {
       bindCommonEvents();
       window.addEventListener("velora:gift-offers-updated", () => updatePaymentSelectionUI());
 
-    // 1. Parse Product ID from URL (?id=... or ?slug=...)
+    // 1. Parse Product Identifier from URL (?id=... or ?slug=... or ?productId=... or ?product_id=...)
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get("id") || urlParams.get("slug");
+    const rawId = urlParams.get("id") || urlParams.get("slug") || urlParams.get("productId") || urlParams.get("product_id");
+    const productId = rawId ? decodeURIComponent(rawId).trim() : null;
 
     if (!productId) {
       showNotFoundState();
@@ -211,16 +246,26 @@ document.addEventListener("DOMContentLoaded", () => {
         let query = client.from("products").select(detailCols);
         if (isUUID) {
           query = query.eq("id", productId);
-        } else if (fallbackStatic && fallbackStatic.name) {
-          query = query.ilike("name", fallbackStatic.name);
         } else {
-          query = query.eq("slug", productId);
+          query = query.or(`slug.eq.${productId},id.eq.${productId},slug.ilike.${productId}`);
         }
 
         const res = await query.maybeSingle();
         if (res && !res.error && res.data) {
           if (res.data.is_active !== false) {
             dbP = res.data;
+          }
+        } else if (res && res.error) {
+          // Retry without categories relation join in case of schema cache or relation issue
+          let retryQuery = client.from("products").select("*");
+          if (isUUID) {
+            retryQuery = retryQuery.eq("id", productId);
+          } else {
+            retryQuery = retryQuery.or(`slug.eq.${productId},id.eq.${productId}`);
+          }
+          const retryRes = await retryQuery.maybeSingle();
+          if (retryRes && !retryRes.error && retryRes.data && retryRes.data.is_active !== false) {
+            dbP = retryRes.data;
           }
         }
       } catch (err) {
@@ -234,21 +279,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
         const detailCols = "id,name,brand,slug,category_id,price,original_price,discount_percentage,rating,review_count,stock,sizes,colors,images,description,advance_payment_enabled,advance_payment_type,advance_payment_value,is_featured,is_new,is_deal,is_active,categories(id,name,slug)";
-        let restUrl = '';
-        if (isUUID) {
-          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&id=eq.${productId}`;
-        } else if (fallbackStatic && fallbackStatic.name) {
-          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&name=ilike.${encodeURIComponent(fallbackStatic.name)}`;
-        } else {
-          restUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&slug=eq.${encodeURIComponent(productId)}`;
-        }
+        let restUrl = isUUID
+          ? `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&id=eq.${productId}`
+          : `${SUPABASE_PROJECT_URL}/rest/v1/products?select=${detailCols}&or=(slug.eq.${encodeURIComponent(productId)},id.eq.${encodeURIComponent(productId)})`;
 
-        const r = await fetch(restUrl, {
+        let r = await fetch(restUrl, {
           headers: {
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
           }
         });
+        if (!r.ok) {
+          // Retry without categories join
+          const retryUrl = isUUID
+            ? `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*&id=eq.${productId}`
+            : `${SUPABASE_PROJECT_URL}/rest/v1/products?select=*&slug=eq.${encodeURIComponent(productId)}`;
+          r = await fetch(retryUrl, {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
+        }
         if (r.ok) {
           const list = await r.json();
           if (list && list.length > 0 && list[0].is_active !== false) {
@@ -260,26 +312,45 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Cross-store check: If product not found in products table, check sarojini_products if available in Main
-    if (!dbP && client) {
+    // Cross-store check: If product not found in products table, check sarojini_products
+    if (!dbP && (client || typeof fetch !== "undefined")) {
       try {
-        let sQuery = client.from("sarojini_products").select("*");
-        if (isUUID) {
-          sQuery = sQuery.eq("id", productId);
-        } else {
-          sQuery = sQuery.eq("slug", productId);
-        }
-        const sRes = await sQuery.maybeSingle();
-        if (sRes && !sRes.error && sRes.data) {
-          const { data: csRow } = await client.from('store_settings').select('value').eq('key', 'cross_store_mapping').maybeSingle();
-          const sMap = csRow?.value?.sarojini_available_in_main;
-          if (sMap && sMap[sRes.data.id]?.available) {
-            dbP = {
-              ...sRes.data,
-              brand: sRes.data.brand || "Sarojini Bazaar",
-              categories: { id: sRes.data.category_id, name: sRes.data.department || "Sarojini Bazaar", slug: "sarojini" }
-            };
+        let sData = null;
+        if (client) {
+          let sQuery = client.from("sarojini_products").select("*");
+          if (isUUID) {
+            sQuery = sQuery.eq("id", productId);
+          } else {
+            sQuery = sQuery.or(`slug.eq.${productId},id.eq.${productId},slug.ilike.${productId}`);
           }
+          const sRes = await sQuery.maybeSingle();
+          if (sRes && !sRes.error && sRes.data) sData = sRes.data;
+        }
+
+        if (!sData && typeof fetch !== "undefined") {
+          const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
+          const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
+          const sUrl = isUUID
+            ? `${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=*&id=eq.${productId}`
+            : `${SUPABASE_PROJECT_URL}/rest/v1/sarojini_products?select=*&slug=eq.${encodeURIComponent(productId)}`;
+          const sr = await fetch(sUrl, {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
+          if (sr.ok) {
+            const slist = await sr.json();
+            if (slist && slist.length > 0) sData = slist[0];
+          }
+        }
+
+        if (sData && sData.is_active !== false) {
+          dbP = {
+            ...sData,
+            brand: sData.brand || "Sarojini Bazaar",
+            categories: { id: sData.category_id, name: sData.department || "Sarojini Bazaar", slug: "sarojini" }
+          };
         }
       } catch (err) {
         console.warn("Cross-store sarojini lookup notice:", err);
@@ -291,8 +362,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ? dbP.images 
         : (fallbackStatic && fallbackStatic.image ? [fallbackStatic.image] : ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80"]);
       
-      const categorySlug = dbP.categories?.slug || (fallbackStatic ? fallbackStatic.category : "shoes");
-      const categoryLabel = dbP.categories?.name || (fallbackStatic ? fallbackStatic.categoryLabel : "Shoes & Footwear");
+      const categorySlug = dbP.categories?.slug || (fallbackStatic ? fallbackStatic.category : (dbP.department ? "sarojini" : "general"));
+      const categoryLabel = dbP.categories?.name || (fallbackStatic ? fallbackStatic.categoryLabel : (dbP.department || "All Products"));
 
       product = {
         id: dbP.id,
@@ -335,10 +406,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     state.currentProduct = product;
-    renderProductPage(product);
+    try {
+      renderProductPage(product);
+    } catch (renderErr) {
+      console.error("renderProductPage error:", renderErr);
+      if (elements.mainView) elements.mainView.style.display = "block";
+      if (elements.notFoundView) elements.notFoundView.style.display = "none";
+    }
   } catch (err) {
-    console.warn("initProductDetails error:", err);
-    showNotFoundState();
+    console.error("initProductDetails error:", err);
+    if (!state.currentProduct) {
+      showNotFoundState();
+    }
   }
 }
 
@@ -652,7 +731,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    if (elements.descParagraph) elements.descParagraph.textContent = product.description;
+    let overviewText = product.description || '';
+    let highlights = Array.isArray(product.features) ? [...product.features] : [];
+    let detailsText = '';
+
+    if (product.description && product.description.includes('HIGHLIGHTS:')) {
+      const parts = product.description.split(/\n\s*HIGHLIGHTS:\s*\n/i);
+      overviewText = parts[0].trim();
+      if (parts[1]) {
+        const subparts = parts[1].split(/\n\s*PRODUCT DETAILS:\s*\n/i);
+        const rawHighlights = subparts[0].trim().split('\n');
+        highlights = rawHighlights.map(h => h.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+        detailsText = (subparts[1] || '').trim();
+      }
+    }
+
+    if (elements.descParagraph) elements.descParagraph.textContent = overviewText || product.description;
 
     // Advance Payment Banner
     updateAdvanceNotice();
@@ -678,14 +772,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // 5. Option Selectors (Sizes & Colors)
     renderOptions(product);
 
+    // 5b. Dedicated BOGO Flow
+    initBogoSection(product);
+
     // 6. Wishlist Button State
     updateWishlistButton();
 
     // 7. Specifications & Overview Features
-    renderTabsContent(product);
+    try {
+      renderTabsContent(product);
+    } catch (tabsErr) {
+      console.error("renderTabsContent error:", tabsErr);
+    }
 
     // 8. Related Products
-    renderRelatedProducts(product);
+    try {
+      renderRelatedProducts(product);
+    } catch (relErr) {
+      console.error("renderRelatedProducts error:", relErr);
+    }
   }
 
   // ==========================================================================
@@ -791,15 +896,479 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================================
+  // PDP BOGO CONTROLLER & FLOW
+  // ==========================================================================
+  async function fetchBogoEligibleProducts(currentProductId) {
+    const SUPABASE_PROJECT_URL = "https://brioiujppaaycydndrcp.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaW9pdWpwcGFheWN5ZG5kcmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTU3MzQsImV4cCI6MjEwNDM3MTczNH0.6HHJ0wv66obc6wj72CQJE8tvr6KgAXgWDs2DYnjPO78";
+
+    let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+      ? window.VELORA_SETTINGS.bogo_config.product_ids
+      : [];
+
+    if (bogoConfigIds.length === 0) {
+      try {
+        const cached = localStorage.getItem("velora_bogo_config");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.product_ids)) bogoConfigIds = parsed.product_ids;
+        }
+      } catch (_) {}
+    }
+
+    if (bogoConfigIds.length === 0) {
+      try {
+        const resp = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/store_settings?key=eq.bogo_config&select=key,value`, {
+          headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (resp.ok) {
+          const rows = await resp.json();
+          if (rows[0]?.value?.product_ids) {
+            bogoConfigIds = rows[0].value.product_ids;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Try in-memory products data first
+    if (window.PRODUCTS_DATA && window.PRODUCTS_DATA.length > 0) {
+      const matched = window.PRODUCTS_DATA.filter(p => 
+        (bogoConfigIds.includes(p.id) || p.isBogo || p.is_bogo) &&
+        p.stock !== 0 && p.stockCount !== 0
+      );
+      if (matched.length > 0) return matched;
+    }
+
+    // Otherwise fetch directly from Supabase
+    try {
+      let queryUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?select=id,name,price,original_price,image_url,images,sizes,stock,is_bogo,category&stock=gt.0&limit=30`;
+      if (bogoConfigIds.length > 0) {
+        const idFilter = bogoConfigIds.slice(0, 30).join(",");
+        queryUrl = `${SUPABASE_PROJECT_URL}/rest/v1/products?id=in.(${idFilter})&stock=gt.0&select=id,name,price,original_price,image_url,images,sizes,stock,is_bogo,category&limit=30`;
+      }
+      const resp = await fetch(queryUrl, {
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+      });
+      if (resp.ok) {
+        const rows = await resp.json();
+        return rows.map(r => ({
+          id: r.id,
+          name: r.name,
+          price: Number(r.price) || 0,
+          originalPrice: Number(r.original_price) || Number(r.price) || 0,
+          image: (Array.isArray(r.images) && r.images[0]) || r.image_url || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+          sizes: (Array.isArray(r.sizes) && r.sizes.length > 0) ? r.sizes : ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
+          stock: r.stock,
+          isBogo: true
+        }));
+      }
+    } catch (e) {
+      console.warn("fetchBogoEligibleProducts warning:", e);
+    }
+    return [];
+  }
+
+  async function initBogoSection(product) {
+    if (!elements.bogoContainer) return;
+
+    let bogoConfigIds = (window.VELORA_SETTINGS && window.VELORA_SETTINGS.bogo_config && Array.isArray(window.VELORA_SETTINGS.bogo_config.product_ids))
+      ? window.VELORA_SETTINGS.bogo_config.product_ids
+      : [];
+
+    if (bogoConfigIds.length === 0) {
+      try {
+        const cached = localStorage.getItem("velora_bogo_config");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.product_ids)) bogoConfigIds = parsed.product_ids;
+        }
+      } catch (_) {}
+    }
+
+    const isBogoEligible = Boolean(product.isBogo || product.is_bogo || bogoConfigIds.includes(product.id));
+
+    if (!isBogoEligible) {
+      elements.bogoContainer.style.display = "none";
+      state.isBogo = false;
+      state.selectedFreeProduct = null;
+      state.selectedFreeSize = null;
+      return;
+    }
+
+    state.isBogo = true;
+    state.selectedFreeProduct = null;
+    state.selectedFreeSize = null;
+    elements.bogoContainer.style.display = "block";
+
+    // Populate Step 1: Paid Shoe Info
+    if (elements.bogoPaidThumb) {
+      elements.bogoPaidThumb.src = product.image || (Array.isArray(product.images) && product.images[0]) || "";
+      elements.bogoPaidThumb.alt = product.name;
+    }
+    if (elements.bogoPaidName) elements.bogoPaidName.textContent = product.name;
+    if (elements.bogoPaidSizeBadge) elements.bogoPaidSizeBadge.textContent = state.selectedSize || "Standard";
+    if (elements.bogoPaidPriceBadge) elements.bogoPaidPriceBadge.textContent = formatPrice(product.price);
+
+    // Reset Step 2 status
+    if (elements.bogoFreeProdStatus) {
+      elements.bogoFreeProdStatus.textContent = "Select 1 free product";
+      elements.bogoFreeProdStatus.className = "pdp-bogo-status-tag required";
+    }
+
+    // Hide Step 3 initially
+    if (elements.bogoFreeSizeStep) {
+      elements.bogoFreeSizeStep.style.display = "none";
+    }
+    if (elements.bogoFreeSizesContainer) {
+      elements.bogoFreeSizesContainer.innerHTML = "";
+    }
+
+    clearBogoValidationError();
+    updateBogoSummary();
+
+    if (elements.bogoFreeGrid) {
+      elements.bogoFreeGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+          Loading eligible BOGO complimentary products...
+        </div>
+      `;
+    }
+
+    const eligibleProducts = await fetchBogoEligibleProducts(product.id);
+    state.bogoEligibleProducts = eligibleProducts;
+    renderBogoFreeProducts(eligibleProducts);
+  }
+
+  function renderBogoFreeProducts(products) {
+    if (!elements.bogoFreeGrid) return;
+    if (!products || products.length === 0) {
+      elements.bogoFreeGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+          No other complimentary products currently in stock.
+        </div>
+      `;
+      return;
+    }
+
+    elements.bogoFreeGrid.innerHTML = products.map(p => {
+      const isSelected = state.selectedFreeProduct && state.selectedFreeProduct.id === p.id;
+      return `
+        <div class="pdp-bogo-card ${isSelected ? 'selected' : ''}" data-bogo-free-id="${p.id}">
+          <div class="pdp-bogo-card-thumb-wrap">
+            <img src="${p.image}" alt="${escapeHTML(p.name)}" class="pdp-bogo-card-img" loading="lazy">
+            <span class="pdp-bogo-card-selected-badge">✓</span>
+          </div>
+          <div class="pdp-bogo-card-name" title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</div>
+          <div class="pdp-bogo-card-price-row">
+            <span class="pdp-bogo-card-free-tag">₹0 FREE</span>
+            <span class="pdp-bogo-card-orig-price">${formatPrice(p.price)}</span>
+          </div>
+          <button type="button" class="pdp-bogo-card-select-btn">
+            ${isSelected ? '✓ Selected Free Shoe' : 'Select Free Shoe'}
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    elements.bogoFreeGrid.querySelectorAll(".pdp-bogo-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const freeId = card.dataset.bogoFreeId;
+        const chosen = products.find(item => item.id === freeId);
+        if (chosen) {
+          selectBogoFreeProduct(chosen);
+        }
+      });
+    });
+  }
+
+  function selectBogoFreeProduct(freeProduct) {
+    state.selectedFreeProduct = freeProduct;
+    // CRITICAL: Do NOT copy paid size! User must select free shoe's size separately
+    state.selectedFreeSize = null;
+
+    clearBogoValidationError();
+
+    if (elements.bogoFreeGrid) {
+      elements.bogoFreeGrid.querySelectorAll(".pdp-bogo-card").forEach(card => {
+        const isTarget = card.dataset.bogoFreeId === freeProduct.id;
+        card.classList.toggle("selected", isTarget);
+        const btn = card.querySelector(".pdp-bogo-card-select-btn");
+        if (btn) {
+          btn.textContent = isTarget ? "✓ Selected Free Shoe" : "Select Free Shoe";
+        }
+      });
+    }
+
+    if (elements.bogoFreeProdStatus) {
+      elements.bogoFreeProdStatus.textContent = "✓ 1 Selected";
+      elements.bogoFreeProdStatus.className = "pdp-bogo-status-tag done";
+    }
+
+    if (elements.bogoFreeSizeStep) {
+      elements.bogoFreeSizeStep.style.display = "block";
+    }
+    if (elements.bogoFreeSizeStatus) {
+      elements.bogoFreeSizeStatus.textContent = "Required";
+      elements.bogoFreeSizeStatus.className = "pdp-bogo-status-tag required";
+    }
+    if (elements.bogoFreeSizePrompt) {
+      elements.bogoFreeSizePrompt.textContent = `Select size for "${freeProduct.name}" (Sizes can be chosen independently from your paid shoe):`;
+    }
+
+    if (elements.bogoFreeSizesContainer) {
+      const sizes = (Array.isArray(freeProduct.sizes) && freeProduct.sizes.length > 0)
+        ? freeProduct.sizes
+        : ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'];
+
+      elements.bogoFreeSizesContainer.innerHTML = sizes.map(sz => `
+        <button type="button" class="pdp-bogo-free-size-pill" data-free-size="${sz}">
+          ${sz}
+        </button>
+      `).join("");
+
+      elements.bogoFreeSizesContainer.querySelectorAll(".pdp-bogo-free-size-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          selectBogoFreeSize(pill.dataset.freeSize);
+        });
+      });
+    }
+
+    updateBogoSummary();
+
+    setTimeout(() => {
+      elements.bogoFreeSizeStep?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+  }
+
+  function selectBogoFreeSize(sizeVal) {
+    state.selectedFreeSize = sizeVal;
+    clearBogoValidationError();
+
+    if (elements.bogoFreeSizesContainer) {
+      elements.bogoFreeSizesContainer.querySelectorAll(".pdp-bogo-free-size-pill").forEach(pill => {
+        pill.classList.toggle("active", pill.dataset.freeSize === sizeVal);
+      });
+    }
+
+    if (elements.bogoFreeSizeStatus) {
+      elements.bogoFreeSizeStatus.textContent = `✓ ${sizeVal}`;
+      elements.bogoFreeSizeStatus.className = "pdp-bogo-status-tag done";
+    }
+
+    updateBogoSummary();
+  }
+
+  function updateBogoSummary() {
+    if (elements.bogoPaidSizeBadge) {
+      elements.bogoPaidSizeBadge.textContent = state.selectedSize || "Standard";
+    }
+    if (elements.bogoSummaryPaidText) {
+      const prodName = state.currentProduct ? state.currentProduct.name : "Your Product";
+      const sizeStr = state.selectedSize ? `Size: ${state.selectedSize}` : "Size not selected";
+      elements.bogoSummaryPaidText.textContent = `${prodName} • ${sizeStr}`;
+    }
+    if (elements.bogoSummaryPaidVal && state.currentProduct) {
+      elements.bogoSummaryPaidVal.textContent = formatPrice(state.currentProduct.price);
+    }
+
+    if (elements.bogoSummaryFreeText) {
+      if (state.selectedFreeProduct) {
+        const freeName = state.selectedFreeProduct.name;
+        const freeSizeStr = state.selectedFreeSize ? `Size: ${state.selectedFreeSize}` : "Size Required (Select above)";
+        elements.bogoSummaryFreeText.textContent = `${freeName} • ${freeSizeStr}`;
+        elements.bogoSummaryFreeText.classList.remove("text-muted");
+      } else {
+        elements.bogoSummaryFreeText.textContent = "Please select free product & size above";
+        elements.bogoSummaryFreeText.classList.add("text-muted");
+      }
+    }
+  }
+
+  function showBogoValidationError(msg) {
+    if (elements.bogoValidationMsg) {
+      elements.bogoValidationMsg.innerHTML = `<span>⚠️ ${msg}</span>`;
+      elements.bogoValidationMsg.style.display = "flex";
+    }
+  }
+
+  function clearBogoValidationError() {
+    if (elements.bogoValidationMsg) {
+      elements.bogoValidationMsg.style.display = "none";
+    }
+  }
+
+  function validateBogoSelections() {
+    if (!state.isBogo) return true;
+
+    if (!state.selectedSize) {
+      showToast("Please select your shoe size", "warning");
+      elements.sizesContainer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+
+    if (!state.selectedFreeProduct) {
+      showToast("Please choose your FREE product to claim this BOGO offer", "warning");
+      showBogoValidationError("Please choose 1 complimentary free product in Step 2.");
+      document.getElementById("pdp-bogo-step-2-container")?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+
+    if (!state.selectedFreeSize) {
+      showToast(`Please select a size for your FREE shoe (${state.selectedFreeProduct.name})`, "warning");
+      showBogoValidationError(`Please select a size for your free shoe (${state.selectedFreeProduct.name}) in Step 3.`);
+      elements.bogoFreeSizeStep?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+
+    return true;
+  }
+
+  function addBogoPairToCart(paidProduct, paidSize, freeProduct, freeSize) {
+    try {
+      state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
+    } catch (_) {
+      state.cart = [];
+    }
+
+    const bogoPairId = "bogo-" + Date.now();
+
+    const isAdv = Boolean(paidProduct.advance_payment_enabled);
+    const advType = paidProduct.advance_payment_type || 'fixed';
+    const advVal = Number(paidProduct.advance_payment_value) || 0;
+
+    let unitAdv = 0;
+    if (isAdv) {
+      if (advType === "percentage") {
+        unitAdv = Math.round(paidProduct.price * (advVal / 100));
+      } else {
+        unitAdv = Math.min(paidProduct.price, advVal);
+      }
+    }
+
+    const isOnline = state.selectedPaymentMethod === "online";
+    const selectedDelivery = isOnline ? (state.selectedDeliveryPreference || "Simple Delivery") : "Simple Delivery";
+    const effectiveUnitAdv = isOnline ? 0 : unitAdv;
+    const effectiveCodPerUnit = isOnline ? 0 : Math.max(0, paidProduct.price - unitAdv);
+
+    // 1. Add Paid Product
+    state.cart.push({
+      id: paidProduct.id,
+      name: paidProduct.name,
+      price: paidProduct.price,
+      originalPrice: paidProduct.originalPrice || paidProduct.price,
+      image: paidProduct.image,
+      size: paidSize,
+      color: state.selectedColor || "Default",
+      quantity: 1,
+      selected_payment_method: state.selectedPaymentMethod,
+      delivery_preference: selectedDelivery,
+      advance_payment_enabled: isAdv,
+      advance_payment_type: advType,
+      advance_payment_value: advVal,
+      advance_per_unit: effectiveUnitAdv,
+      cod_per_unit: effectiveCodPerUnit,
+      category_id: paidProduct.category_id || null,
+      category: paidProduct.category || null,
+      categoryLabel: paidProduct.categoryLabel || null,
+      is_free_bogo: false,
+      bogo_pair_id: bogoPairId
+    });
+
+    // 2. Add Free Companion Product
+    state.cart.push({
+      id: freeProduct.id,
+      name: `${freeProduct.name} (Free BOGO Gift)`,
+      price: 0,
+      originalPrice: freeProduct.price,
+      image: freeProduct.image,
+      size: freeSize,
+      color: "Default",
+      quantity: 1,
+      selected_payment_method: state.selectedPaymentMethod,
+      delivery_preference: selectedDelivery,
+      advance_payment_enabled: false,
+      advance_payment_type: "fixed",
+      advance_payment_value: 0,
+      advance_per_unit: 0,
+      cod_per_unit: 0,
+      category_id: freeProduct.category_id || null,
+      category: freeProduct.category || null,
+      categoryLabel: freeProduct.categoryLabel || null,
+      is_free_bogo: true,
+      bogo_pair_id: bogoPairId
+    });
+
+    saveCart();
+    updateBadges();
+    renderCartDrawer();
+    openCartDrawer();
+    showToast(`Added "${paidProduct.name}" (${paidSize}) + FREE "${freeProduct.name}" (${freeSize}) to cart!`, "success");
+
+    if (window.VeloraAnalytics) {
+      window.VeloraAnalytics.trackAddToCart(paidProduct.id, paidProduct.category);
+    }
+
+    if (elements.addCartBtn) {
+      elements.addCartBtn.classList.add("added");
+      elements.addCartBtn.innerHTML = `${icons.check} Added BOGO Pair!`;
+      setTimeout(() => {
+        elements.addCartBtn.classList.remove("added");
+        elements.addCartBtn.innerHTML = `${icons.cart} Add to Cart`;
+      }, 2500);
+    }
+  }
+
+  // ==========================================================================
   // TABS & SPECIFICATIONS
   // ==========================================================================
   function renderTabsContent(product) {
-    // Features list
-    if (elements.overviewFeaturesList && product.features) {
-      elements.overviewFeaturesList.innerHTML = product.features.map(f => `
+    let overviewText = product.description || '';
+    let highlights = Array.isArray(product.features) ? [...product.features] : [];
+    let detailsText = '';
+
+    if (product.description && product.description.includes('HIGHLIGHTS:')) {
+      const parts = product.description.split(/\n\s*HIGHLIGHTS:\s*\n/i);
+      overviewText = parts[0].trim();
+      if (parts[1]) {
+        const subparts = parts[1].split(/\n\s*PRODUCT DETAILS:\s*\n/i);
+        const rawHighlights = subparts[0].trim().split('\n');
+        highlights = rawHighlights.map(h => h.replace(/^[•\-\*]\s*/, '').trim()).filter(Boolean);
+        detailsText = (subparts[1] || '').trim();
+      }
+    }
+
+    const tabOverviewPanel = document.getElementById("tab-overview");
+    if (tabOverviewPanel) {
+      const headingEl = tabOverviewPanel.querySelector("h3");
+      if (headingEl) headingEl.textContent = `About ${product.name}`;
+
+      const leadP = tabOverviewPanel.querySelector("p");
+      if (leadP && overviewText) leadP.textContent = overviewText;
+
+      if (elements.overviewFeaturesList && highlights.length > 0) {
+        elements.overviewFeaturesList.innerHTML = highlights.map(f => `
+          <div class="feature-item">
+            <div class="feature-check-icon">✓</div>
+            <span>${escapeHTML(f)}</span>
+          </div>
+        `).join("");
+      }
+
+      if (detailsText) {
+        let detailsBox = tabOverviewPanel.querySelector("#tab-overview-details-box");
+        if (!detailsBox) {
+          detailsBox = document.createElement("div");
+          detailsBox.id = "tab-overview-details-box";
+          detailsBox.style.cssText = "margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color); color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem;";
+          tabOverviewPanel.appendChild(detailsBox);
+        }
+        detailsBox.innerHTML = detailsText.split(/\n\n+/).map(p => `<p style="margin-bottom: 14px;">${escapeHTML(p.trim())}</p>`).join("");
+      }
+    } else if (elements.overviewFeaturesList && highlights.length > 0) {
+      elements.overviewFeaturesList.innerHTML = highlights.map(f => `
         <div class="feature-item">
           <div class="feature-check-icon">✓</div>
-          <span>${f}</span>
+          <span>${escapeHTML(f)}</span>
         </div>
       `).join("");
     }
@@ -1269,7 +1838,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const isSeed = String(r.id || '').startsWith('00005eed-');
               const authorName = escapeHTML(r.user_name || "Customer");
               const commentText = escapeHTML(r.comment || "");
-              const isVerified = (!isSeed && (r.user_id || r.is_verified));
+              const isVerified = Boolean(r.user_id || r.is_verified || isSeed);
               const verifiedBadge = isVerified
                 ? `<span class="review-verified-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified Purchase</span>`
                 : '';
@@ -1805,6 +2374,12 @@ document.addEventListener("DOMContentLoaded", () => {
       : (window.getProductById(productId) || state.currentProduct);
     if (!product) return;
 
+    if (state.isBogo && state.currentProduct && state.currentProduct.id === productId) {
+      if (!validateBogoSelections()) return;
+      addBogoPairToCart(state.currentProduct, state.selectedSize, state.selectedFreeProduct, state.selectedFreeSize);
+      return;
+    }
+
     try {
       state.cart = JSON.parse(localStorage.getItem("velora_cart")) || [];
     } catch (_) {
@@ -2242,6 +2817,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sizePill.classList.add("active");
         state.selectedSize = sizePill.dataset.sizeVal;
         if (elements.selectedSizeLabel) elements.selectedSizeLabel.textContent = state.selectedSize;
+        if (state.isBogo) updateBogoSummary();
         return;
       }
 
@@ -2364,6 +2940,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.addCartBtn) {
       elements.addCartBtn.addEventListener("click", () => {
         if (state.currentProduct) {
+          if (state.isBogo && !validateBogoSelections()) return;
           addToCart(
             state.currentProduct.id,
             state.selectedSize,
@@ -2378,6 +2955,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.buyNowBtn) {
       elements.buyNowBtn.addEventListener("click", () => {
         if (state.currentProduct) {
+          if (state.isBogo) {
+            if (!validateBogoSelections()) return;
+            addBogoPairToCart(state.currentProduct, state.selectedSize, state.selectedFreeProduct, state.selectedFreeSize);
+            showToast("BOGO pair added! Redirecting to checkout...", "success");
+            setTimeout(() => {
+              window.location.href = "checkout.html";
+            }, 350);
+            return;
+          }
           addToCart(
             state.currentProduct.id,
             state.selectedSize,

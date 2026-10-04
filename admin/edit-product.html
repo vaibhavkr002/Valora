@@ -31,6 +31,11 @@
           <i class="fas fa-box-open"></i>
           <span>Products</span>
         </a>
+
+        <a href="advance-payment.html" class="sidebar-link">
+          <i class="fas fa-hand-holding-usd"></i>
+          <span>Advance Payment</span>
+        </a>
   
 
         <a href="add-product.html" class="sidebar-link ">
@@ -242,6 +247,22 @@
                   Configure whether customers must pay an upfront deposit (via UPI/Card) before order confirmation, with the balance collected via COD upon delivery.
                 </p>
 
+                <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid var(--admin-card-border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                  <div style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Advance Policy Mode:
+                  </div>
+                  <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff; font-size: 0.88rem;">
+                      <input type="radio" name="advance-policy-mode" id="policy-mode-default" value="default" checked style="accent-color: #3b82f6;">
+                      <span>Use Store Global Default (<strong id="policy-global-amount-display" style="color: #60a5fa;">₹120</strong>)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff; font-size: 0.88rem;">
+                      <input type="radio" name="advance-policy-mode" id="policy-mode-custom" value="custom" style="accent-color: #f59e0b;">
+                      <span><strong style="color: #fbbf24;">Custom Product Override</strong></span>
+                    </label>
+                  </div>
+                </div>
+
                 <div id="advance-config-fields" style="display: none; padding-top: 10px; border-top: 1px solid var(--admin-card-border);">
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group">
@@ -366,6 +387,7 @@
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-layout.js"></script>
   <script src="js/cross-store-service.js"></script>
+  <script src="js/advance-payment-service.js"></script>
   <script src="js/admin-edit-product.js"></script>
 </body>
 </html>

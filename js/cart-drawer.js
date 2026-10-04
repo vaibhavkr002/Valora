@@ -207,7 +207,7 @@
 
       const bogoBadge = isFreeBogo
         ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#059669; background:rgba(16,185,129,0.12); padding:1px 5px; border-radius:4px; margin-left:6px;">🎁 FREE BOGO</span>`
-        : '';
+        : (item.bogo_pair_id ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#4f46e5; background:rgba(79,70,229,0.1); padding:1px 5px; border-radius:4px; margin-left:6px;">👟 BOGO PAIR</span>` : '');
 
       const sarojiniBadge = item.catalog_type === 'sarojini'
         ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#e11d48; background:rgba(225,29,72,0.1); padding:1px 6px; border-radius:4px; margin-left:6px;">🛍️ Sarojini Bazaar</span>`
@@ -234,7 +234,7 @@
           <img class="cart-item-img" src="${item.image || fallbackImg}" alt="${item.name || 'Product'}">
           <div class="cart-item-details">
             <h4 class="cart-item-title">${item.name || 'Product Item'}</h4>
-            <span class="cart-item-meta">${item.size ? item.size + ' • ' : ''}${item.color || 'Default'} ${payBadge} ${bogoBadge} ${sarojiniBadge}</span>
+            <span class="cart-item-meta">${item.size ? 'Size: <strong>' + item.size + '</strong> • ' : ''}${item.color || 'Default'} ${payBadge} ${bogoBadge} ${sarojiniBadge}</span>
             <div class="cart-item-bottom">
               ${qtyControls}
               ${priceDisplay}
@@ -365,6 +365,12 @@
   function updateCartQuantity(index, delta) {
     const cart = getCart();
     if (!cart[index]) return;
+    if (cart[index].is_free_bogo) {
+      if (typeof window.showToast === "function") {
+        window.showToast("Complimentary BOGO gift quantity is 1 per pair.", "info");
+      }
+      return;
+    }
     const currentQty = Number(cart[index].quantity) || 1;
 
     if (delta > 0) {
@@ -392,10 +398,22 @@
     }
   }
 
-  // Remove item from cart
+  // Remove item from cart (with BOGO pair synchronization)
   function removeFromCart(index) {
     const cart = getCart();
     if (!cart[index]) return;
+    const targetItem = cart[index];
+    if (targetItem.bogo_pair_id) {
+      const pairId = targetItem.bogo_pair_id;
+      const newCart = cart.filter(it => it.bogo_pair_id !== pairId);
+      saveCart(newCart);
+      renderCartDrawer();
+      syncAllProductButtons();
+      if (typeof window.showToast === "function") {
+        window.showToast("Removed BOGO pair from cart", "info");
+      }
+      return;
+    }
     cart.splice(index, 1);
     saveCart(cart);
     renderCartDrawer();
