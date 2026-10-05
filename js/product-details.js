@@ -1064,7 +1064,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="pdp-bogo-card-orig-price">${formatPrice(p.price)}</span>
           </div>
           <button type="button" class="pdp-bogo-card-select-btn">
-            ${isSelected ? '✓ Selected Free Shoe' : 'Select Free Shoe'}
+            ${isSelected ? '✓ Selected Free Product' : 'Select Free Product'}
           </button>
         </div>
       `;
@@ -1083,7 +1083,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function selectBogoFreeProduct(freeProduct) {
     state.selectedFreeProduct = freeProduct;
-    // CRITICAL: Do NOT copy paid size! User must select free shoe's size separately
+    // CRITICAL: Do NOT copy paid size! User must select free product's size separately
     state.selectedFreeSize = null;
 
     clearBogoValidationError();
@@ -1094,7 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
         card.classList.toggle("selected", isTarget);
         const btn = card.querySelector(".pdp-bogo-card-select-btn");
         if (btn) {
-          btn.textContent = isTarget ? "✓ Selected Free Shoe" : "Select Free Shoe";
+          btn.textContent = isTarget ? "✓ Selected Free Product" : "Select Free Product";
         }
       });
     }
