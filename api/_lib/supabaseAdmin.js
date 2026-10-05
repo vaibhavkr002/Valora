@@ -169,7 +169,7 @@ async function insertOrderItems(itemsPayload) {
 /**
  * Updates order status/payment details
  */
-async function updateOrder(orderIdOrNumber, updatePayload) {
+async function updateOrder(orderIdOrNumber, updatePayload, customToken = null) {
   // Try by id first if UUID, else order_number
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdOrNumber);
   const filter = isUuid ? `id=eq.${encodeURIComponent(orderIdOrNumber)}` : `order_number=eq.${encodeURIComponent(orderIdOrNumber)}`;
@@ -177,7 +177,8 @@ async function updateOrder(orderIdOrNumber, updatePayload) {
   try {
     const data = await supabaseRest(`orders?${filter}`, {
       method: 'PATCH',
-      body: updatePayload
+      body: updatePayload,
+      token: customToken
     });
     return Array.isArray(data) ? data[0] : data;
   } catch (err) {
@@ -193,7 +194,8 @@ async function updateOrder(orderIdOrNumber, updatePayload) {
 
       const fallbackData = await supabaseRest(`orders?${filter}`, {
         method: 'PATCH',
-        body: safePayload
+        body: safePayload,
+        token: customToken
       });
       return Array.isArray(fallbackData) ? fallbackData[0] : fallbackData;
     }
@@ -202,6 +204,7 @@ async function updateOrder(orderIdOrNumber, updatePayload) {
       const minData = await supabaseRest(`orders?${filter}`, {
         method: 'PATCH',
         body: updatePayload,
+        token: customToken,
         headers: { 'Prefer': 'return=minimal' }
       });
       return minData;

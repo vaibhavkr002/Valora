@@ -15,7 +15,8 @@ const {
   findOrderByRazorpayOrderId,
   findOrderByRazorpayPaymentId,
   updateOrder,
-  updatePaymentTransaction
+  updatePaymentTransaction,
+  supabaseRest
 } = require('../_lib/supabaseAdmin');
 
 // In-memory LRU cache for idempotent event processing
@@ -346,19 +347,115 @@ async function handler(req, res) {
           const rzpPaymentId = refund.payment_id;
           const refundId = refund.id;
           const refundAmount = Number(refund.amount || 0) / 100;
+          const nowIso = new Date().toISOString();
 
           try {
             const order = await findOrderByRazorpayPaymentId(rzpPaymentId);
             if (order) {
+              const trackingData = (order.tracking_data && typeof order.tracking_data === 'object') ? { ...order.tracking_data } : {};
+              const returnWorkflow = (trackingData.return_workflow && typeof trackingData.return_workflow === 'object') ? { ...trackingData.return_workflow } : {};
+
+              returnWorkflow.status = 'REFUND_COMPLETED';
+              returnWorkflow.refund_details = {
+                ...(returnWorkflow.refund_details || {}),
+                refund_id: refundId,
+                amount: refundAmount,
+                status: 'completed',
+                completed_at: nowIso,
+                webhook_event_id: canonicalEventId
+              };
+              trackingData.return_workflow = returnWorkflow;
+
               await updateOrder(order.id, {
                 refund_id: refundId,
                 refund_status: 'completed',
                 refund_amount: refundAmount,
-                refunded_at: new Date().toISOString()
+                refunded_at: nowIso,
+                order_status: 'returned',
+                tracking_data: trackingData
               });
+
+              // Update order_requests table
+              try {
+                await supabaseRest(`order_requests?order_id=eq.${encodeURIComponent(order.id)}&request_type=eq.return`, {
+                  method: 'PATCH',
+                  body: {
+                    status: 'refund_completed',
+                    refund_status: 'completed',
+                    refund_amount: refundAmount,
+                    updated_at: nowIso
+                  }
+                });
+              } catch (_) {}
+
+              // Sync store_settings backup
+              try {
+                const sRow = await supabaseRest('store_settings?key=eq.order_requests&select=value&limit=1');
+                if (Array.isArray(sRow) && sRow[0]?.value && Array.isArray(sRow[0].value)) {
+                  let reqs = sRow[0].value.map(r => {
+                    if (r.order_id === order.id && r.request_type === 'return') {
+                      return { ...r, status: 'refund_completed', refund_status: 'completed', refund_amount: refundAmount, refund_id: refundId, updated_at: nowIso };
+                    }
+                    return r;
+                  });
+                  await supabaseRest('store_settings', {
+                    method: 'POST',
+                    headers: { 'Prefer': 'resolution=merge-duplicates' },
+                    body: { key: 'order_requests', value: reqs }
+                  });
+                }
+              } catch (_) {}
             }
           } catch (dbErr) {
             console.warn('[Razorpay Webhook] Database sync notice for refund.processed:', dbErr.message);
+          }
+        }
+        break;
+      }
+
+      // 5. REFUND FAILED
+      case 'refund.failed': {
+        const refund = eventPayload.payload?.refund?.entity;
+        if (refund) {
+          const rzpPaymentId = refund.payment_id;
+          const refundId = refund.id;
+          const nowIso = new Date().toISOString();
+
+          try {
+            const order = await findOrderByRazorpayPaymentId(rzpPaymentId);
+            if (order) {
+              const trackingData = (order.tracking_data && typeof order.tracking_data === 'object') ? { ...order.tracking_data } : {};
+              const returnWorkflow = (trackingData.return_workflow && typeof trackingData.return_workflow === 'object') ? { ...trackingData.return_workflow } : {};
+
+              returnWorkflow.status = 'REFUND_FAILED';
+              returnWorkflow.refund_failure = {
+                refund_id: refundId,
+                error_code: refund.error_code || 'unknown',
+                error_description: refund.error_description || 'Refund failed at gateway',
+                failed_at: nowIso,
+                webhook_event_id: canonicalEventId
+              };
+              trackingData.return_workflow = returnWorkflow;
+
+              await updateOrder(order.id, {
+                refund_status: 'failed',
+                refund_notes: `Gateway refund failed: ${refund.error_description || 'Error'}`,
+                tracking_data: trackingData
+              });
+
+              try {
+                await supabaseRest(`order_requests?order_id=eq.${encodeURIComponent(order.id)}&request_type=eq.return`, {
+                  method: 'PATCH',
+                  body: {
+                    refund_status: 'failed',
+                    admin_notes: `Razorpay refund failed: ${refund.error_description || 'Gateway failure'}`,
+                    updated_at: nowIso
+                  }
+                });
+              } catch (_) {}
+            }
+          } catch (dbErr) {
+            console.warn('[Razorpay Webhook] Database sync notice for refund.failed:', dbErr.message);
           }
         }
         break;

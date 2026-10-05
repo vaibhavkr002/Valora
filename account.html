@@ -602,7 +602,7 @@
         <!-- Return Policy Notice -->
         <div style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-left: 4px solid #4f46e5; border-radius: 8px; padding: 12px 14px; font-size: 0.84rem; color: #312e81; line-height: 1.5;">
           <strong>Return Policy Notice:</strong><br>
-          Return pickup is usually arranged within 2 days after approval. Once the item is received and the return is approved, your eligible refund will be processed to the original payment method and may take up to 48 hours to reflect.
+          Refund will be processed only after the returned product is received and approved by our team following a mandatory 7-point physical inspection.
         </div>
 
         <!-- Item Selection -->
@@ -659,6 +659,26 @@
         <div>
           <label for="return-description" style="display: block; font-size: 0.84rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Additional Details (Optional):</label>
           <textarea id="return-description" placeholder="Provide any additional details to help our inspection team..." rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+
+        <!-- Preferred Resolution (Refund vs Replacement) -->
+        <div>
+          <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Preferred Resolution: <span style="color: #dc2626;">*</span></label>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; flex: 1; min-width: 170px; font-size: 0.84rem; background: #fff;">
+              <input type="radio" name="return_resolution_type" value="refund" checked style="accent-color: #4f46e5;">
+              <span><strong>💳 Refund</strong> (Source Payment)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; flex: 1; min-width: 170px; font-size: 0.84rem; background: #fff;">
+              <input type="radio" name="return_resolution_type" value="replacement" id="radio-res-replacement" style="accent-color: #4f46e5;">
+              <span><strong>🔄 Replacement</strong> (Exchange Size/Item)</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="return-replacement-details-wrap" style="display: none;">
+          <label for="return-replacement-notes" style="display: block; font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Requested Replacement Size / Notes:</label>
+          <input type="text" id="return-replacement-notes" class="admin-input" placeholder="e.g. Please send Size UK 9 instead of UK 8" style="width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem;">
         </div>
 
         <!-- Optional Photo Attachment -->
@@ -1160,19 +1180,32 @@
       let userRequestsCache = [];
 
       function formatReturnStatus(status) {
+        const s = (status || "").toLowerCase();
         const map = {
-          requested: "Requested",
-          approved: "Approved",
-          rejected: "Rejected",
-          pickup_scheduled: "Pickup Scheduled",
-          in_transit: "In Transit",
-          received: "Received",
-          refund_processing: "Refund Processing",
-          refunded: "Refunded",
+          requested: "1. Requested",
+          return_requested: "1. Requested",
+          approved: "2. Approved",
+          return_approved: "2. Approved",
+          pickup_assigned: "3. Pickup Assigned",
+          pickup_scheduled: "3. Pickup Assigned",
+          return_picked_up: "4. Picked Up",
+          in_transit: "4. Picked Up",
+          return_received: "5. Received at Warehouse",
+          received: "5. Received at Warehouse",
+          inspection_approved: "6. Inspection Passed",
+          return_approved_after_inspection: "6. Inspection Passed",
+          return_rejected_after_inspection: "Inspection Failed",
+          refund_initiated: "7. Refund Initiated",
+          refund_processing: "7. Refund Initiated",
+          refund_completed: "8. Refund Completed",
+          refunded: "8. Refund Completed",
+          rejected: "Return Rejected",
+          return_rejected: "Return Rejected",
+          replacement_approved: "Replacement Approved",
           closed: "Closed",
           cancelled: "Cancelled"
         };
-        return map[status] || (status ? status.charAt(0).toUpperCase() + status.slice(1) : "Requested");
+        return map[s] || (status ? status.charAt(0).toUpperCase() + status.slice(1) : "Requested");
       }
 
       let isRenderingOrders = false;
@@ -1815,6 +1848,36 @@
                       <span>ℹ️ Cash on Delivery Order — zero advance was captured. No financial refund required.</span>
                     </div>
                   `;
+                }
+
+                if (hasActiveReturn) {
+                  const activeRet = returnReqs[0];
+                  const retStatus = (activeRet.status || ord.order_status || "").toLowerCase();
+                  let stepNum = 1;
+                  let stepLabel = "1. Return Requested (Under Review)";
+
+                  if (retStatus.includes("approve") && !retStatus.includes("inspection")) { stepNum = 2; stepLabel = "2. Return Approved"; }
+                  else if (retStatus.includes("pickup_assigned") || retStatus.includes("pickup_scheduled")) { stepNum = 3; stepLabel = "3. Pickup Partner Assigned"; }
+                  else if (retStatus.includes("picked_up") || retStatus.includes("in_transit")) { stepNum = 4; stepLabel = "4. Product Picked Up (In Transit)"; }
+                  else if (retStatus.includes("return_received") || retStatus === "received") { stepNum = 5; stepLabel = "5. Received at Warehouse"; }
+                  else if (retStatus.includes("inspection_approved") || retStatus.includes("inspection")) { stepNum = 6; stepLabel = "6. Inspection Passed (Ready for Refund)"; }
+                  else if (retStatus.includes("refund_initiated") || retStatus.includes("refund_processing")) { stepNum = 7; stepLabel = "7. Razorpay Refund Initiated"; }
+                  else if (retStatus.includes("refunded") || retStatus.includes("completed")) { stepNum = 8; stepLabel = "8. Refund Completed & Disbursed"; }
+                  else if (retStatus.includes("rejected")) { stepNum = 0; stepLabel = "Return Rejected"; }
+                  else if (retStatus.includes("replacement")) { stepNum = 6; stepLabel = "Replacement Approved"; }
+
+                  const returnLifecycleBanner = `
+                    <div style="margin-top: 10px; padding: 12px 14px; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; font-size: 0.82rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                        <strong style="color: #4f46e5;">↩️ Return Progress: ${stepLabel}</strong>
+                        ${stepNum > 0 ? `<span class="badge" style="background: rgba(99, 102, 241, 0.15); color: #4338ca; font-weight: 700; font-size: 0.72rem;">Stage ${stepNum} of 8</span>` : ''}
+                      </div>
+                      <div style="font-size: 0.78rem; color: #475569; line-height: 1.4;">
+                        ℹ️ <em>Refund will be processed only after the returned product is received and approved by our team following a mandatory 7-point physical inspection.</em>
+                      </div>
+                    </div>
+                  `;
+                  refundInfoHtml = returnLifecycleBanner + refundInfoHtml;
                 }
               }
 
@@ -2570,6 +2633,15 @@
         });
       });
 
+      document.querySelectorAll('input[name="return_resolution_type"]').forEach(radio => {
+        radio.addEventListener("change", () => {
+          const repWrap = document.getElementById("return-replacement-details-wrap");
+          if (repWrap) {
+            repWrap.style.display = (radio.value === "replacement" && radio.checked) ? "block" : "none";
+          }
+        });
+      });
+
       if (returnPhotoInput) {
         returnPhotoInput.addEventListener("change", (e) => {
           const file = e.target.files && e.target.files[0];
@@ -2660,6 +2732,14 @@
           }
 
           const selectedItemIds = checkedItemBoxes.map(cb => cb.value);
+          const selectedResolution = document.querySelector('input[name="return_resolution_type"]:checked')?.value || 'refund';
+          const replacementNotes = document.getElementById("return-replacement-notes")?.value.trim() || "";
+
+          let fullDescription = notes || "";
+          if (selectedResolution === "replacement") {
+            const repSuffix = `Preferred Resolution: Replacement (${replacementNotes || "Exchange"})`;
+            fullDescription = fullDescription ? `${fullDescription}\n${repSuffix}` : repSuffix;
+          }
 
           const newRequests = selectedItemIds.map(itemId => ({
             id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
@@ -2668,11 +2748,12 @@
             order_item_id: itemId,
             request_type: "return",
             reason: reason,
-            description: notes || null,
+            description: fullDescription || null,
             images: attachedReturnPhotoDataUrl ? [attachedReturnPhotoDataUrl] : [],
-            status: "requested",
-            refund_amount: selectedItemIds.length > 0 ? Math.round((returnRefundAmount / selectedItemIds.length) * 100) / 100 : 0,
-            refund_status: returnRefundStatus,
+            status: "return_requested",
+            refund_amount: selectedResolution === 'replacement' ? 0 : (selectedItemIds.length > 0 ? Math.round((returnRefundAmount / selectedItemIds.length) * 100) / 100 : 0),
+            refund_status: selectedResolution === 'replacement' ? "not_applicable" : returnRefundStatus,
+            admin_notes: selectedResolution === 'replacement' ? `Customer requested replacement: ${replacementNotes || 'Exchange'}` : null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }));
@@ -2709,7 +2790,7 @@
               await client.from("store_settings").upsert({ key: "order_requests", value: allReqs }, { onConflict: "key" });
             } catch (_) {}
 
-            showToast("Return request submitted. Our team will review your request and arrange the next steps.", "success");
+            showToast("Return request submitted. Refund will be processed only after the returned product is received and approved by our team.", "success");
             closeReturnModal();
             await renderOrders();
           } catch (submitErr) {

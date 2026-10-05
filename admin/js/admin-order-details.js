@@ -1374,6 +1374,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
             <span class="badge badge-indigo">Refund Status: ${activeReturn.refund_status || 'pending'}</span>
           </div>
+          <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+            <a href="returns.html" class="btn-admin-primary" style="padding: 6px 14px; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fas fa-undo-alt"></i> Open 9-Step Inspection & Refund Console
+            </a>
+          </div>
           ${activeReturn.admin_notes ? `
             <div style="margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; font-size: 0.82rem;">
               <strong style="color: #818cf8;">Admin Log:</strong> <span style="color: #fff;">${escapeHTML(activeReturn.admin_notes)}</span>
